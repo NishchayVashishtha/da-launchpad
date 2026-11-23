@@ -1,0 +1,509 @@
+[
+  {
+    "id": "sql-pattern-streaks-001",
+    "module": "sql",
+    "topic": "pattern-streaks",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "The engagement team wants to know who builds a habit. An active day is a day with an `app_open` or `content_view` event (case-insensitive). List every streak of at least 4 consecutive active days: `user_id`, `streak_start`, `streak_end` and `streak_days`. Order by `streak_days` descending, then `user_id`, then `streak_start`.",
+    "dataset": "subscription",
+    "hint": "DISTINCT user and date first, ROW_NUMBER per user, then group by user and date minus row number.",
+    "solutionSql": "WITH d AS (SELECT DISTINCT user_id, date(event_time) AS day FROM events WHERE LOWER(event_name) IN ('app_open', 'content_view')),\nn AS (SELECT user_id, day, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY day) AS rn FROM d)\nSELECT user_id, MIN(day) AS streak_start, MAX(day) AS streak_end, COUNT(*) AS streak_days\nFROM n GROUP BY user_id, date(day, '-' || rn || ' days')\nHAVING COUNT(*) >= 4\nORDER BY streak_days DESC, user_id, streak_start",
+    "expectedOutput": {
+      "columns": [
+        "user_id",
+        "streak_start",
+        "streak_end",
+        "streak_days"
+      ],
+      "rows": [
+        [
+          1882,
+          "2023-11-21",
+          "2023-11-25",
+          5
+        ],
+        [
+          2918,
+          "2024-04-13",
+          "2024-04-17",
+          5
+        ],
+        [
+          3518,
+          "2024-07-02",
+          "2024-07-06",
+          5
+        ],
+        [
+          3764,
+          "2024-07-31",
+          "2024-08-04",
+          5
+        ],
+        [
+          202,
+          "2023-02-16",
+          "2023-02-19",
+          4
+        ],
+        [
+          336,
+          "2023-03-07",
+          "2023-03-10",
+          4
+        ],
+        [
+          388,
+          "2023-03-24",
+          "2023-03-27",
+          4
+        ],
+        [
+          515,
+          "2023-04-15",
+          "2023-04-18",
+          4
+        ],
+        [
+          609,
+          "2023-05-06",
+          "2023-05-09",
+          4
+        ],
+        [
+          793,
+          "2023-06-08",
+          "2023-06-11",
+          4
+        ],
+        [
+          905,
+          "2023-06-23",
+          "2023-06-26",
+          4
+        ],
+        [
+          1619,
+          "2023-10-18",
+          "2023-10-21",
+          4
+        ],
+        [
+          1764,
+          "2023-11-03",
+          "2023-11-06",
+          4
+        ],
+        [
+          1808,
+          "2023-11-13",
+          "2023-11-16",
+          4
+        ],
+        [
+          1831,
+          "2023-11-20",
+          "2023-11-23",
+          4
+        ],
+        [
+          2427,
+          "2024-02-07",
+          "2024-02-10",
+          4
+        ],
+        [
+          2604,
+          "2024-06-06",
+          "2024-06-09",
+          4
+        ],
+        [
+          2687,
+          "2024-03-21",
+          "2024-03-24",
+          4
+        ],
+        [
+          2696,
+          "2024-03-26",
+          "2024-03-29",
+          4
+        ],
+        [
+          2766,
+          "2024-04-01",
+          "2024-04-04",
+          4
+        ],
+        [
+          3120,
+          "2024-05-18",
+          "2024-05-21",
+          4
+        ],
+        [
+          3269,
+          "2024-06-05",
+          "2024-06-08",
+          4
+        ],
+        [
+          3444,
+          "2024-06-15",
+          "2024-06-18",
+          4
+        ],
+        [
+          3811,
+          "2024-08-01",
+          "2024-08-04",
+          4
+        ],
+        [
+          3994,
+          "2024-08-31",
+          "2024-09-03",
+          4
+        ],
+        [
+          4241,
+          "2024-09-22",
+          "2024-09-25",
+          4
+        ],
+        [
+          4324,
+          "2024-09-30",
+          "2024-10-03",
+          4
+        ],
+        [
+          4488,
+          "2024-10-19",
+          "2024-10-22",
+          4
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Within a streak both the date and the row number increase by 1, so date minus row number stays constant and works as a streak label. Grouping by user and that label gives one row per streak, and HAVING keeps the long ones. DISTINCT on user and day matters, otherwise two events on one day would cut a streak in two.",
+    "commonMistake": "Skipping the DISTINCT per day breaks streaks into smaller pieces; grouping by the label alone mixes streaks of different users.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 15,
+    "tags": [
+      "streaks",
+      "interview-pattern",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-pattern-streaks-002",
+    "module": "sql",
+    "topic": "pattern-streaks",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Fraud analysts look at users who transact day after day. Using successful transactions (`status = 'SUCCESS'`), list every streak of 3 or more consecutive calendar days with at least one transaction for a user: `user_id`, `streak_start`, `streak_end`, `streak_days`. Count a day once even if there are several transactions. Order by `streak_days` descending, then `user_id`, then `streak_start`.",
+    "dataset": "fintech",
+    "hint": "Same island idea: unique user-days, ROW_NUMBER, date minus row number, HAVING COUNT(*) >= 3.",
+    "solutionSql": "WITH d AS (SELECT DISTINCT user_id, date(txn_datetime) AS day FROM transactions WHERE status = 'SUCCESS'),\nn AS (SELECT user_id, day, ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY day) AS rn FROM d)\nSELECT user_id, MIN(day) AS streak_start, MAX(day) AS streak_end, COUNT(*) AS streak_days\nFROM n GROUP BY user_id, date(day, '-' || rn || ' days')\nHAVING COUNT(*) >= 3\nORDER BY streak_days DESC, user_id, streak_start",
+    "expectedOutput": {
+      "columns": [
+        "user_id",
+        "streak_start",
+        "streak_end",
+        "streak_days"
+      ],
+      "rows": [
+        [
+          726,
+          "2023-10-13",
+          "2023-10-16",
+          4
+        ],
+        [
+          22,
+          "2024-12-20",
+          "2024-12-22",
+          3
+        ],
+        [
+          47,
+          "2023-02-25",
+          "2023-02-27",
+          3
+        ],
+        [
+          94,
+          "2023-07-26",
+          "2023-07-28",
+          3
+        ],
+        [
+          152,
+          "2023-01-01",
+          "2023-01-03",
+          3
+        ],
+        [
+          152,
+          "2023-03-15",
+          "2023-03-17",
+          3
+        ],
+        [
+          348,
+          "2023-02-08",
+          "2023-02-10",
+          3
+        ],
+        [
+          348,
+          "2024-11-18",
+          "2024-11-20",
+          3
+        ],
+        [
+          351,
+          "2023-05-30",
+          "2023-06-01",
+          3
+        ],
+        [
+          423,
+          "2024-06-30",
+          "2024-07-02",
+          3
+        ],
+        [
+          436,
+          "2023-02-15",
+          "2023-02-17",
+          3
+        ],
+        [
+          436,
+          "2023-10-08",
+          "2023-10-10",
+          3
+        ],
+        [
+          632,
+          "2024-08-30",
+          "2024-09-01",
+          3
+        ],
+        [
+          787,
+          "2023-10-21",
+          "2023-10-23",
+          3
+        ],
+        [
+          818,
+          "2023-05-30",
+          "2023-06-01",
+          3
+        ],
+        [
+          882,
+          "2024-01-23",
+          "2024-01-25",
+          3
+        ],
+        [
+          945,
+          "2023-07-08",
+          "2023-07-10",
+          3
+        ],
+        [
+          1051,
+          "2023-10-31",
+          "2023-11-02",
+          3
+        ],
+        [
+          1506,
+          "2023-10-21",
+          "2023-10-23",
+          3
+        ],
+        [
+          1548,
+          "2023-07-27",
+          "2023-07-29",
+          3
+        ],
+        [
+          1614,
+          "2024-08-29",
+          "2024-08-31",
+          3
+        ],
+        [
+          1657,
+          "2023-04-26",
+          "2023-04-28",
+          3
+        ],
+        [
+          1709,
+          "2023-08-12",
+          "2023-08-14",
+          3
+        ],
+        [
+          1790,
+          "2024-02-13",
+          "2024-02-15",
+          3
+        ],
+        [
+          1865,
+          "2023-07-31",
+          "2023-08-02",
+          3
+        ],
+        [
+          1985,
+          "2024-10-28",
+          "2024-10-30",
+          3
+        ],
+        [
+          2291,
+          "2024-10-17",
+          "2024-10-19",
+          3
+        ],
+        [
+          2460,
+          "2024-03-17",
+          "2024-03-19",
+          3
+        ],
+        [
+          2754,
+          "2024-03-08",
+          "2024-03-10",
+          3
+        ],
+        [
+          2762,
+          "2024-05-26",
+          "2024-05-28",
+          3
+        ],
+        [
+          2796,
+          "2024-04-09",
+          "2024-04-11",
+          3
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The transaction timestamps are cut to calendar dates with date(), then reduced to unique user-days. Inside any unbroken run the difference date minus row number is identical, so grouping by it isolates each run. HAVING keeps streaks of three days or more, and user_id is the tie-breaker for a stable order.",
+    "commonMistake": "Using the raw timestamp instead of date() makes every transaction a different 'day', so almost no streak is found.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 15,
+    "tags": [
+      "streaks",
+      "interview-pattern",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-pattern-streaks-003",
+    "module": "sql",
+    "topic": "pattern-streaks",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Loyalty wants customers who order month after month. Using delivered orders (ignore duplicates), find each customer's longest streak of consecutive calendar months with at least one delivered order. Return the 10 customers with the longest streaks: `customer_id`, `streak_months`, `start_month` and `end_month` (both YYYY-MM). If a customer has two streaks of the same longest length, show the earlier one. Order by `streak_months` descending, then `customer_id`.",
+    "dataset": "ecommerce",
+    "hint": "Convert each month to an index (year*12 + month), number each customer's distinct months, and subtract. Then rank each customer's streaks by length.",
+    "solutionSql": "WITH m AS (\n  SELECT DISTINCT customer_id,\n         CAST(strftime('%Y', order_date) AS INT) * 12 + CAST(strftime('%m', order_date) AS INT) AS mi\n  FROM orders WHERE order_status = 'Delivered'\n),\nn AS (SELECT customer_id, mi, ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY mi) AS rn FROM m),\ns AS (SELECT customer_id, MIN(mi) AS smi, MAX(mi) AS emi, COUNT(*) AS streak_months FROM n GROUP BY customer_id, mi - rn),\nr AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY streak_months DESC, smi) AS pick FROM s)\nSELECT customer_id, streak_months,\n       printf('%04d-%02d', (smi - 1) / 12, (smi - 1) % 12 + 1) AS start_month,\n       printf('%04d-%02d', (emi - 1) / 12, (emi - 1) % 12 + 1) AS end_month\nFROM r WHERE pick = 1\nORDER BY streak_months DESC, customer_id LIMIT 10",
+    "expectedOutput": {
+      "columns": [
+        "customer_id",
+        "streak_months",
+        "start_month",
+        "end_month"
+      ],
+      "rows": [
+        [
+          614,
+          21,
+          "2023-04",
+          "2024-12"
+        ],
+        [
+          1140,
+          19,
+          "2023-01",
+          "2024-07"
+        ],
+        [
+          85,
+          13,
+          "2023-01",
+          "2024-01"
+        ],
+        [
+          762,
+          13,
+          "2023-01",
+          "2024-01"
+        ],
+        [
+          980,
+          13,
+          "2023-01",
+          "2024-01"
+        ],
+        [
+          278,
+          12,
+          "2023-01",
+          "2023-12"
+        ],
+        [
+          1013,
+          11,
+          "2023-01",
+          "2023-11"
+        ],
+        [
+          953,
+          10,
+          "2023-01",
+          "2023-10"
+        ],
+        [
+          1826,
+          10,
+          "2023-09",
+          "2024-06"
+        ],
+        [
+          1183,
+          9,
+          "2023-11",
+          "2024-07"
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The island trick works on any consecutive integer sequence, so months are turned into a month index (year*12 + month). Inside a streak the index and the row number rise together, so their difference is a label. A second ranking picks each customer's longest streak, and printf turns the index back into a YYYY-MM label.",
+    "commonMistake": "Comparing month numbers without the year makes December followed by January look like a break, and missing the DISTINCT on customer-month lets two orders in one month shift the row numbers.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 22,
+    "tags": [
+      "streaks",
+      "interview-pattern",
+      "sql"
+    ]
+  }
+]

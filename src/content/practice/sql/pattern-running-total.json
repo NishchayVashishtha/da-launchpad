@@ -1,0 +1,517 @@
+[
+  {
+    "id": "sql-pattern-running-total-001",
+    "module": "sql",
+    "topic": "pattern-running-total",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "The ops head wants to see how delivered orders accumulate through 2023. Return `month` (YYYY-MM), `orders` (delivered orders that month, ignoring duplicate rows) and `cumulative_orders`, ordered by `month`, for the 12 months of 2023.",
+    "dataset": "ecommerce",
+    "hint": "Count per month first, then SUM() OVER (ORDER BY month).",
+    "solutionSql": "WITH o AS (SELECT DISTINCT order_id, order_date FROM orders WHERE order_status = 'Delivered' AND order_date >= '2023-01-01' AND order_date < '2024-01-01'),\nm AS (SELECT strftime('%Y-%m', order_date) AS month, COUNT(*) AS orders FROM o GROUP BY month)\nSELECT month, orders, SUM(orders) OVER (ORDER BY month) AS cumulative_orders FROM m ORDER BY month",
+    "expectedOutput": {
+      "columns": [
+        "month",
+        "orders",
+        "cumulative_orders"
+      ],
+      "rows": [
+        [
+          "2023-01",
+          332,
+          332
+        ],
+        [
+          "2023-02",
+          295,
+          627
+        ],
+        [
+          "2023-03",
+          284,
+          911
+        ],
+        [
+          "2023-04",
+          332,
+          1243
+        ],
+        [
+          "2023-05",
+          330,
+          1573
+        ],
+        [
+          "2023-06",
+          320,
+          1893
+        ],
+        [
+          "2023-07",
+          356,
+          2249
+        ],
+        [
+          "2023-08",
+          374,
+          2623
+        ],
+        [
+          "2023-09",
+          353,
+          2976
+        ],
+        [
+          "2023-10",
+          404,
+          3380
+        ],
+        [
+          "2023-11",
+          404,
+          3784
+        ],
+        [
+          "2023-12",
+          411,
+          4195
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The CTE reduces the data to one row per month. SUM(orders) OVER (ORDER BY month) then adds all months from the first one up to the current one. The last cumulative value should equal the total of the orders column, which is a quick check.",
+    "commonMistake": "Putting the window over raw order rows and then grouping can return several rows per month with partial totals.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "running-total",
+      "interview-pattern",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-pattern-running-total-002",
+    "module": "sql",
+    "topic": "pattern-running-total",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Finance wants year-to-date delivered revenue. For every month of 2023 and 2024 return `month` (YYYY-MM), `revenue` (rounded to 0 decimals), and `ytd_revenue` (rounded to 0 decimals) that restarts each January. Ignore duplicate order rows. Order by `month`.",
+    "dataset": "ecommerce",
+    "hint": "Use PARTITION BY year in the window, and ORDER BY month.",
+    "solutionSql": "WITH o AS (SELECT DISTINCT order_id, order_date, total_amount FROM orders WHERE order_status = 'Delivered'),\nm AS (SELECT strftime('%Y-%m', order_date) AS month, strftime('%Y', order_date) AS yr, SUM(total_amount) AS revenue FROM o GROUP BY month, yr)\nSELECT month, ROUND(revenue, 0) AS revenue, ROUND(SUM(revenue) OVER (PARTITION BY yr ORDER BY month), 0) AS ytd_revenue FROM m ORDER BY month",
+    "expectedOutput": {
+      "columns": [
+        "month",
+        "revenue",
+        "ytd_revenue"
+      ],
+      "rows": [
+        [
+          "2023-01",
+          1891351,
+          1891351
+        ],
+        [
+          "2023-02",
+          1672373,
+          3563723
+        ],
+        [
+          "2023-03",
+          1370181,
+          4933905
+        ],
+        [
+          "2023-04",
+          1679260,
+          6613165
+        ],
+        [
+          "2023-05",
+          1847753,
+          8460917
+        ],
+        [
+          "2023-06",
+          1594534,
+          10055452
+        ],
+        [
+          "2023-07",
+          1945220,
+          12000672
+        ],
+        [
+          "2023-08",
+          2105201,
+          14105873
+        ],
+        [
+          "2023-09",
+          1777927,
+          15883800
+        ],
+        [
+          "2023-10",
+          2356485,
+          18240285
+        ],
+        [
+          "2023-11",
+          2075133,
+          20315418
+        ],
+        [
+          "2023-12",
+          1910326,
+          22225745
+        ],
+        [
+          "2024-01",
+          2177042,
+          2177042
+        ],
+        [
+          "2024-02",
+          2594640,
+          4771682
+        ],
+        [
+          "2024-03",
+          1952587,
+          6724268
+        ],
+        [
+          "2024-04",
+          2010858,
+          8735127
+        ],
+        [
+          "2024-05",
+          2011182,
+          10746309
+        ],
+        [
+          "2024-06",
+          2356236,
+          13102545
+        ],
+        [
+          "2024-07",
+          2544531,
+          15647076
+        ],
+        [
+          "2024-08",
+          2544467,
+          18191543
+        ],
+        [
+          "2024-09",
+          2172132,
+          20363675
+        ],
+        [
+          "2024-10",
+          2661384,
+          23025059
+        ],
+        [
+          "2024-11",
+          2591559,
+          25616618
+        ],
+        [
+          "2024-12",
+          2059545,
+          27676163
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "PARTITION BY yr makes a separate running total for each year, so January 2024 starts again from its own revenue. Rounding happens in the outer SELECT so the running sum is not built from already rounded numbers. The monthly step comes first so the window works on one row per month.",
+    "commonMistake": "Using SUM() OVER (ORDER BY month) without PARTITION BY gives a two-year running total, so 2024 never restarts.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "running-total",
+      "interview-pattern",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-pattern-running-total-003",
+    "module": "sql",
+    "topic": "pattern-running-total",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "The payments head wants to know how early in 2024 the year's volume was built. For successful transactions (`status = 'SUCCESS'`, ignore amounts of 500000 or more as errors, count each `txn_id` once), return `month` (YYYY-MM), `total` (month total, rounded to 0 decimals) and `cum_pct` (cumulative percent of the 2024 total, 1 decimal) for each month of 2024, ordered by `month`.",
+    "dataset": "fintech",
+    "hint": "Cumulative SUM divided by SUM() OVER () gives the cumulative share.",
+    "solutionSql": "WITH t AS (SELECT DISTINCT txn_id, txn_datetime, amount FROM transactions WHERE status = 'SUCCESS' AND amount < 500000 AND txn_datetime >= '2024-01-01' AND txn_datetime < '2025-01-01'),\nm AS (SELECT strftime('%Y-%m', txn_datetime) AS month, SUM(amount) AS total FROM t GROUP BY month)\nSELECT month, ROUND(total, 0) AS total, ROUND(100.0 * SUM(total) OVER (ORDER BY month) / SUM(total) OVER (), 1) AS cum_pct FROM m ORDER BY month",
+    "expectedOutput": {
+      "columns": [
+        "month",
+        "total",
+        "cum_pct"
+      ],
+      "rows": [
+        [
+          "2024-01",
+          1221024,
+          7.3
+        ],
+        [
+          "2024-02",
+          1266291,
+          14.9
+        ],
+        [
+          "2024-03",
+          1153469,
+          21.8
+        ],
+        [
+          "2024-04",
+          1186457,
+          28.9
+        ],
+        [
+          "2024-05",
+          1359411,
+          37
+        ],
+        [
+          "2024-06",
+          1335363,
+          45
+        ],
+        [
+          "2024-07",
+          1448168,
+          53.7
+        ],
+        [
+          "2024-08",
+          1473476,
+          62.5
+        ],
+        [
+          "2024-09",
+          1504824,
+          71.6
+        ],
+        [
+          "2024-10",
+          1739502,
+          82
+        ],
+        [
+          "2024-11",
+          1527663,
+          91.1
+        ],
+        [
+          "2024-12",
+          1483652,
+          100
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The numerator is the running total up to the current month, and the denominator is the grand total from SUM(total) OVER () with empty brackets. December must come out at exactly 100.0, which proves the query is complete. DISTINCT on the transaction rows removes duplicate txn_ids before summing.",
+    "commonMistake": "Dividing by the monthly total instead of the grand total gives 100% on every row.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "running-total",
+      "interview-pattern",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-pattern-running-total-004",
+    "module": "sql",
+    "topic": "pattern-running-total",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Operations wants a smoothed picture of demand. For every day in January 2024, return `order_date`, `deliveries` (distinct delivered `delivery_id`s that day) and `moving_avg_7d`, the average of deliveries over that day and the previous 6 days (rounded to 2 decimals). The moving average for 1 January must use December 2023 days, so only the output is limited to January. Order by `order_date`.",
+    "dataset": "food_delivery",
+    "hint": "Compute the window over a wider date range in a CTE, then filter the output dates in the outer query.",
+    "solutionSql": "WITH d AS (SELECT order_date, COUNT(DISTINCT delivery_id) AS deliveries FROM deliveries WHERE delivery_status = 'Delivered' AND order_date >= '2023-12-01' AND order_date < '2024-02-01' GROUP BY order_date),\nw AS (SELECT order_date, deliveries, ROUND(AVG(deliveries) OVER (ORDER BY order_date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW), 2) AS moving_avg_7d FROM d)\nSELECT order_date, deliveries, moving_avg_7d FROM w WHERE order_date >= '2024-01-01' AND order_date < '2024-02-01' ORDER BY order_date",
+    "expectedOutput": {
+      "columns": [
+        "order_date",
+        "deliveries",
+        "moving_avg_7d"
+      ],
+      "rows": [
+        [
+          "2024-01-01",
+          18,
+          19.57
+        ],
+        [
+          "2024-01-02",
+          16,
+          18.57
+        ],
+        [
+          "2024-01-03",
+          13,
+          17.43
+        ],
+        [
+          "2024-01-04",
+          23,
+          17.86
+        ],
+        [
+          "2024-01-05",
+          17,
+          17.43
+        ],
+        [
+          "2024-01-06",
+          16,
+          17.14
+        ],
+        [
+          "2024-01-07",
+          19,
+          17.43
+        ],
+        [
+          "2024-01-08",
+          13,
+          16.71
+        ],
+        [
+          "2024-01-09",
+          15,
+          16.57
+        ],
+        [
+          "2024-01-10",
+          19,
+          17.43
+        ],
+        [
+          "2024-01-11",
+          18,
+          16.71
+        ],
+        [
+          "2024-01-12",
+          19,
+          17
+        ],
+        [
+          "2024-01-13",
+          24,
+          18.14
+        ],
+        [
+          "2024-01-14",
+          34,
+          20.29
+        ],
+        [
+          "2024-01-15",
+          19,
+          21.14
+        ],
+        [
+          "2024-01-16",
+          19,
+          21.71
+        ],
+        [
+          "2024-01-17",
+          11,
+          20.57
+        ],
+        [
+          "2024-01-18",
+          24,
+          21.43
+        ],
+        [
+          "2024-01-19",
+          25,
+          22.29
+        ],
+        [
+          "2024-01-20",
+          24,
+          22.29
+        ],
+        [
+          "2024-01-21",
+          26,
+          21.14
+        ],
+        [
+          "2024-01-22",
+          18,
+          21
+        ],
+        [
+          "2024-01-23",
+          22,
+          21.43
+        ],
+        [
+          "2024-01-24",
+          19,
+          22.57
+        ],
+        [
+          "2024-01-25",
+          20,
+          22
+        ],
+        [
+          "2024-01-26",
+          20,
+          21.29
+        ],
+        [
+          "2024-01-27",
+          17,
+          20.29
+        ],
+        [
+          "2024-01-28",
+          23,
+          19.86
+        ],
+        [
+          "2024-01-29",
+          24,
+          20.71
+        ],
+        [
+          "2024-01-30",
+          22,
+          20.71
+        ],
+        [
+          "2024-01-31",
+          19,
+          20.71
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "ROWS BETWEEN 6 PRECEDING AND CURRENT ROW takes the current day plus six earlier days, which is a 7-day window as long as every calendar day has a row. The WHERE for January sits in the outer query, because filtering before the window would remove the December days that the first January averages need. COUNT(DISTINCT delivery_id) protects against the duplicate delivery rows.",
+    "commonMistake": "Filtering to January inside the first CTE makes the first six days average over fewer than seven days, so the early values are too noisy.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 15,
+    "tags": [
+      "running-total",
+      "interview-pattern",
+      "sql"
+    ]
+  }
+]

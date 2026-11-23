@@ -1,0 +1,444 @@
+[
+  {
+    "id": "sql-pattern-mom-001",
+    "module": "sql",
+    "topic": "pattern-mom",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Customer care is tracking cancellations. For each month of 2024 return `month` (YYYY-MM), `cancelled` (distinct cancelled orders, ignoring duplicate rows), `prev_cancelled` and `mom_pct`, the percent change versus the previous month rounded to 1 decimal (NULL for January). The previous month for January must come from the data, i.e. December 2023 is used for January's comparison. Order by `month`.",
+    "dataset": "ecommerce",
+    "hint": "Compute LAG over a range that includes December 2023, then keep only 2024 in the outer query.",
+    "solutionSql": "WITH o AS (SELECT DISTINCT order_id, order_date FROM orders WHERE order_status = 'Cancelled' AND order_date >= '2023-12-01' AND order_date < '2025-01-01'),\nm AS (SELECT strftime('%Y-%m', order_date) AS month, COUNT(*) AS cancelled FROM o GROUP BY month),\ng AS (SELECT month, cancelled, LAG(cancelled) OVER (ORDER BY month) AS prev_cancelled FROM m)\nSELECT month, cancelled, prev_cancelled, ROUND(100.0 * (cancelled - prev_cancelled) / NULLIF(prev_cancelled, 0), 1) AS mom_pct FROM g WHERE month >= '2024-01' ORDER BY month",
+    "expectedOutput": {
+      "columns": [
+        "month",
+        "cancelled",
+        "prev_cancelled",
+        "mom_pct"
+      ],
+      "rows": [
+        [
+          "2024-01",
+          34,
+          19,
+          78.9
+        ],
+        [
+          "2024-02",
+          22,
+          34,
+          -35.3
+        ],
+        [
+          "2024-03",
+          30,
+          22,
+          36.4
+        ],
+        [
+          "2024-04",
+          27,
+          30,
+          -10
+        ],
+        [
+          "2024-05",
+          22,
+          27,
+          -18.5
+        ],
+        [
+          "2024-06",
+          28,
+          22,
+          27.3
+        ],
+        [
+          "2024-07",
+          28,
+          28,
+          0
+        ],
+        [
+          "2024-08",
+          29,
+          28,
+          3.6
+        ],
+        [
+          "2024-09",
+          19,
+          29,
+          -34.5
+        ],
+        [
+          "2024-10",
+          25,
+          19,
+          31.6
+        ],
+        [
+          "2024-11",
+          27,
+          25,
+          8
+        ],
+        [
+          "2024-12",
+          27,
+          27,
+          0
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "LAG brings last month's count onto the current row, and the growth formula divides by last month (the base). December 2023 is included in the CTE so that January has a real previous value, then the outer WHERE hides it. NULLIF guards against division by zero.",
+    "commonMistake": "Filtering to 2024 before LAG leaves January with a NULL previous month, so its growth cannot be shown.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "mom",
+      "interview-pattern",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-pattern-mom-002",
+    "module": "sql",
+    "topic": "pattern-mom",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "The UPI reliability team tracks success rate. For each month of 2024 return `month` (YYYY-MM), `success_rate_pct` (successful transactions as a percent of all transactions, 2 decimals, counting each `txn_id` once) and `change_pp`, the change in percentage points versus the previous month (2 decimals; compare January 2024 against December 2023). Order by `month`.",
+    "dataset": "fintech",
+    "hint": "Compute the monthly rate first, then LAG on the rate and subtract.",
+    "solutionSql": "WITH t AS (SELECT DISTINCT txn_id, txn_datetime, status FROM transactions WHERE txn_datetime >= '2023-12-01' AND txn_datetime < '2025-01-01'),\nm AS (SELECT strftime('%Y-%m', txn_datetime) AS month, 100.0 * SUM(status = 'SUCCESS') / COUNT(*) AS rate FROM t GROUP BY month),\ng AS (SELECT month, rate, LAG(rate) OVER (ORDER BY month) AS prev_rate FROM m)\nSELECT month, ROUND(rate, 2) AS success_rate_pct, ROUND(rate - prev_rate, 2) AS change_pp FROM g WHERE month >= '2024-01' ORDER BY month",
+    "expectedOutput": {
+      "columns": [
+        "month",
+        "success_rate_pct",
+        "change_pp"
+      ],
+      "rows": [
+        [
+          "2024-01",
+          96.07,
+          -0.22
+        ],
+        [
+          "2024-02",
+          97.28,
+          1.22
+        ],
+        [
+          "2024-03",
+          96.95,
+          -0.34
+        ],
+        [
+          "2024-04",
+          97.51,
+          0.56
+        ],
+        [
+          "2024-05",
+          97.03,
+          -0.47
+        ],
+        [
+          "2024-06",
+          98.17,
+          1.14
+        ],
+        [
+          "2024-07",
+          96.89,
+          -1.29
+        ],
+        [
+          "2024-08",
+          96.67,
+          -0.22
+        ],
+        [
+          "2024-09",
+          97.46,
+          0.79
+        ],
+        [
+          "2024-10",
+          95.86,
+          -1.6
+        ],
+        [
+          "2024-11",
+          95.87,
+          0.01
+        ],
+        [
+          "2024-12",
+          96.5,
+          0.63
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "A rate is a ratio, so the month-over-month change is shown in percentage points (subtract the two rates), not as a percent of a percent. SUM(status = 'SUCCESS') counts successes because the comparison is 1 or 0 in SQLite. December 2023 is calculated so that January has a comparison and then removed from the output.",
+    "commonMistake": "Averaging the daily success rates instead of dividing total successes by total transactions gives a different, biased rate.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "mom",
+      "interview-pattern",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-pattern-mom-003",
+    "module": "sql",
+    "topic": "pattern-mom",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "HR wants a clean monthly series of retirements (`exit_type = 'Retirement'`). Build every month from 2023-01 to 2024-12 (24 rows), including months with zero retirements. Return `month` (YYYY-MM), `retirements`, `prev_retirements` and `change` (retirements minus prev_retirements; NULL for 2023-01). Order by `month`.",
+    "dataset": "hr",
+    "hint": "Generate the months with WITH RECURSIVE, LEFT JOIN the counts and COALESCE missing months to 0 before using LAG.",
+    "solutionSql": "WITH RECURSIVE cal(m) AS (SELECT '2023-01-01' UNION ALL SELECT date(m, '+1 month') FROM cal WHERE m < '2024-12-01'),\nx AS (SELECT strftime('%Y-%m', exit_date) AS month, COUNT(*) AS n FROM attrition WHERE exit_type = 'Retirement' GROUP BY month),\nf AS (SELECT strftime('%Y-%m', c.m) AS month, COALESCE(x.n, 0) AS retirements FROM cal c LEFT JOIN x ON x.month = strftime('%Y-%m', c.m))\nSELECT month, retirements, LAG(retirements) OVER (ORDER BY month) AS prev_retirements, retirements - LAG(retirements) OVER (ORDER BY month) AS change FROM f ORDER BY month",
+    "expectedOutput": {
+      "columns": [
+        "month",
+        "retirements",
+        "prev_retirements",
+        "change"
+      ],
+      "rows": [
+        [
+          "2023-01",
+          0,
+          null,
+          null
+        ],
+        [
+          "2023-02",
+          1,
+          0,
+          1
+        ],
+        [
+          "2023-03",
+          0,
+          1,
+          -1
+        ],
+        [
+          "2023-04",
+          0,
+          0,
+          0
+        ],
+        [
+          "2023-05",
+          1,
+          0,
+          1
+        ],
+        [
+          "2023-06",
+          1,
+          1,
+          0
+        ],
+        [
+          "2023-07",
+          0,
+          1,
+          -1
+        ],
+        [
+          "2023-08",
+          0,
+          0,
+          0
+        ],
+        [
+          "2023-09",
+          1,
+          0,
+          1
+        ],
+        [
+          "2023-10",
+          0,
+          1,
+          -1
+        ],
+        [
+          "2023-11",
+          0,
+          0,
+          0
+        ],
+        [
+          "2023-12",
+          0,
+          0,
+          0
+        ],
+        [
+          "2024-01",
+          0,
+          0,
+          0
+        ],
+        [
+          "2024-02",
+          0,
+          0,
+          0
+        ],
+        [
+          "2024-03",
+          1,
+          0,
+          1
+        ],
+        [
+          "2024-04",
+          0,
+          1,
+          -1
+        ],
+        [
+          "2024-05",
+          1,
+          0,
+          1
+        ],
+        [
+          "2024-06",
+          0,
+          1,
+          -1
+        ],
+        [
+          "2024-07",
+          0,
+          0,
+          0
+        ],
+        [
+          "2024-08",
+          0,
+          0,
+          0
+        ],
+        [
+          "2024-09",
+          2,
+          0,
+          2
+        ],
+        [
+          "2024-10",
+          0,
+          2,
+          -2
+        ],
+        [
+          "2024-11",
+          0,
+          0,
+          0
+        ],
+        [
+          "2024-12",
+          1,
+          0,
+          1
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Retirements are rare, so many months have no rows and would vanish after GROUP BY. The recursive CTE builds all 24 months, the LEFT JOIN keeps them, and COALESCE turns the missing counts into 0. Only then does LAG compare real neighbouring months instead of skipping the gaps.",
+    "commonMistake": "Running LAG directly on the grouped result compares a month with the last month that had data, so 'change' hides the empty months.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 15,
+    "tags": [
+      "mom",
+      "interview-pattern",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-pattern-mom-004",
+    "module": "sql",
+    "topic": "pattern-mom",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Growth wants to know each acquisition channel's best growth month in 2024. Count distinct signups per `acquisition_source` and month (using the `users` table, 2024 only, but use December 2023 as the base for January). For each source return the single month with the highest month-over-month percent growth: `acquisition_source`, `month`, `signups`, `prev_signups`, `growth_pct` (1 decimal). Break ties by the earlier month. Order by `acquisition_source`.",
+    "dataset": "subscription",
+    "hint": "LAG per source with PARTITION BY, compute growth, then ROW_NUMBER per source ordered by growth to pick the best month.",
+    "solutionSql": "WITH u AS (SELECT DISTINCT user_id, acquisition_source, signup_date FROM users WHERE signup_date >= '2023-12-01' AND signup_date < '2025-01-01'),\nm AS (SELECT acquisition_source, strftime('%Y-%m', signup_date) AS month, COUNT(*) AS signups FROM u GROUP BY acquisition_source, month),\ng AS (SELECT acquisition_source, month, signups, LAG(signups) OVER (PARTITION BY acquisition_source ORDER BY month) AS prev_signups FROM m),\ngr AS (SELECT acquisition_source, month, signups, prev_signups, ROUND(100.0 * (signups - prev_signups) / prev_signups, 1) AS growth_pct FROM g WHERE month >= '2024-01' AND prev_signups > 0),\nbest AS (SELECT *, ROW_NUMBER() OVER (PARTITION BY acquisition_source ORDER BY growth_pct DESC, month) AS rn FROM gr)\nSELECT acquisition_source, month, signups, prev_signups, growth_pct FROM best WHERE rn = 1 ORDER BY acquisition_source",
+    "expectedOutput": {
+      "columns": [
+        "acquisition_source",
+        "month",
+        "signups",
+        "prev_signups",
+        "growth_pct"
+      ],
+      "rows": [
+        [
+          "Google Ads",
+          "2024-05",
+          59,
+          42,
+          40.5
+        ],
+        [
+          "Influencer",
+          "2024-07",
+          31,
+          20,
+          55
+        ],
+        [
+          "Instagram",
+          "2024-10",
+          50,
+          30,
+          66.7
+        ],
+        [
+          "Organic",
+          "2024-05",
+          92,
+          56,
+          64.3
+        ],
+        [
+          "Play Store Feature",
+          "2024-07",
+          24,
+          9,
+          166.7
+        ],
+        [
+          "Referral",
+          "2024-09",
+          34,
+          21,
+          61.9
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Three patterns are chained: LAG with PARTITION BY gives each channel its own previous month, the growth formula uses the previous month as the base, and ROW_NUMBER picks one best month per channel. The 2023-12 base is kept inside the CTEs and removed only after LAG has run. The DISTINCT on user rows protects against the duplicate users.",
+    "commonMistake": "Leaving out PARTITION BY source in LAG compares the first month of one channel with the last month of the previous channel.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 18,
+    "tags": [
+      "mom",
+      "interview-pattern",
+      "sql"
+    ]
+  }
+]

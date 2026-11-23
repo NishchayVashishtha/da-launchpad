@@ -1,0 +1,102 @@
+[
+ {
+  "id": "sql-window-ranking-001",
+  "module": "sql",
+  "topic": "window-ranking",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "The operations team wants to see which Mumbai kitchens are fastest. For restaurants whose `city` is exactly `Mumbai`, rank them by `avg_prep_minutes` from lowest to highest using `RANK()`. Return `restaurant_name`, `avg_prep_minutes` and `rnk`, ordered by `rnk`, then `restaurant_id`, and show only the first 15 rows.",
+  "dataset": "food_delivery",
+  "hint": "RANK() OVER (ORDER BY ... ASC). Add restaurant_id to the outer ORDER BY so ties come out in a fixed order.",
+  "solutionSql": "SELECT restaurant_name, avg_prep_minutes, RANK() OVER (ORDER BY avg_prep_minutes) AS rnk FROM restaurants WHERE city = 'Mumbai' ORDER BY rnk, restaurant_id LIMIT 15",
+  "orderMatters": true,
+  "explanation": "RANK() numbers the rows in the order given inside OVER. The WHERE clause runs first, so only Mumbai restaurants are ranked. Restaurants with the same prep time share a rank and the next rank is skipped, which is how a sports leaderboard works. The outer ORDER BY only controls how the rows are listed.",
+  "commonMistake": "Using ROW_NUMBER() instead of RANK(). Two restaurants with the same prep time then get different numbers (for example 3 and 4), which wrongly implies one is better than the other.",
+  "interviewFrequency": "high",
+  "estimatedMinutes": 4,
+  "tags": [
+   "window-ranking",
+   "sql"
+  ]
+ },
+ {
+  "id": "sql-window-ranking-002",
+  "module": "sql",
+  "topic": "window-ranking",
+  "difficulty": "medium",
+  "language": "sql",
+  "question": "The marketing head wants the two biggest budgets in every channel. Rank campaigns inside each `channel` by `budget_inr` from highest to lowest using `DENSE_RANK()` and keep ranks 1 and 2. Return `channel`, `campaign_name`, `budget_inr` and `budget_rank`, ordered by `channel`, `budget_rank`, `campaign_name`.",
+  "dataset": "marketing",
+  "hint": "DENSE_RANK in a CTE with PARTITION BY channel, then filter in the outer query.",
+  "solutionSql": "WITH r AS (SELECT channel, campaign_name, budget_inr, DENSE_RANK() OVER (PARTITION BY channel ORDER BY budget_inr DESC) AS budget_rank FROM campaigns) SELECT channel, campaign_name, budget_inr, budget_rank FROM r WHERE budget_rank <= 2 ORDER BY channel, budget_rank, campaign_name",
+  "orderMatters": true,
+  "explanation": "PARTITION BY channel restarts the ranking for every channel, and DENSE_RANK gives tied budgets the same rank without gaps. A window function cannot be filtered in WHERE of the same query, so we compute it in a CTE and filter outside. If two campaigns tie for first place, both appear, and the next campaign is still rank 2.",
+  "commonMistake": "Writing WHERE DENSE_RANK() OVER (...) <= 2 directly. SQL raises an error because window functions are evaluated after WHERE. Dropping PARTITION BY gives only two rows for the whole company instead of two per channel.",
+  "interviewFrequency": "high",
+  "estimatedMinutes": 8,
+  "tags": [
+   "window-ranking",
+   "sql"
+  ]
+ },
+ {
+  "id": "sql-window-ranking-003",
+  "module": "sql",
+  "topic": "window-ranking",
+  "difficulty": "medium",
+  "language": "sql",
+  "question": "Regional managers want store leaderboards. Using unique sales rows (remove exact duplicates with `SELECT DISTINCT`) and ignoring rows with `net_amount_inr` of 100000 or more (data-entry errors), calculate total net sales per store. Return `region`, `store_name`, `total_sales_inr` (rounded to 0 decimals) and `region_rank` (RANK within region, highest sales first). Order by `region`, `region_rank`, `store_name`.",
+  "dataset": "retail",
+  "hint": "Aggregate per store first in a CTE, join to stores, then apply RANK() OVER (PARTITION BY region ORDER BY total DESC).",
+  "solutionSql": "WITH s AS (SELECT DISTINCT sale_id, store_id, net_amount_inr FROM sales WHERE net_amount_inr < 100000), t AS (SELECT store_id, ROUND(SUM(net_amount_inr)) AS total_sales_inr FROM s GROUP BY store_id) SELECT st.region, st.store_name, t.total_sales_inr, RANK() OVER (PARTITION BY st.region ORDER BY t.total_sales_inr DESC) AS region_rank FROM t JOIN stores st ON st.store_id = t.store_id ORDER BY st.region, region_rank, st.store_name",
+  "orderMatters": true,
+  "explanation": "We first remove duplicates and outliers so totals are honest, then aggregate to one row per store. The window function ranks those store totals inside each region. Doing the aggregation in a CTE keeps the ranking step simple, because the window works on the grouped rows.",
+  "commonMistake": "Aggregating directly from sales without DISTINCT counts the 350 duplicated sale rows twice, and leaving the 100x outliers in makes one store look like a champion because of a typing error.",
+  "interviewFrequency": "high",
+  "estimatedMinutes": 8,
+  "tags": [
+   "window-ranking",
+   "sql"
+  ]
+ },
+ {
+  "id": "sql-window-ranking-004",
+  "module": "sql",
+  "topic": "window-ranking",
+  "difficulty": "hard",
+  "language": "sql",
+  "question": "The CRM team wants to reward the best two customers of each acquisition channel. Use unique orders (remove exact duplicates) with `order_status = 'Delivered'` and `total_amount < 100000`, add up spend per customer, and use unique customer rows (`SELECT DISTINCT customer_id, acquisition_channel` from customers, ignoring rows where the channel is NULL). Return `acquisition_channel`, `customer_id`, `spend` (rounded to 2 decimals) and `pos` (ROW_NUMBER within channel by spend descending, then customer_id), keeping `pos` 1 and 2. Order by `acquisition_channel`, `pos`.",
+  "dataset": "ecommerce",
+  "hint": "Three steps: deduplicate orders and sum per customer, join to deduplicated customers, then ROW_NUMBER with PARTITION BY channel.",
+  "solutionSql": "WITH o AS (SELECT DISTINCT order_id, customer_id, total_amount FROM orders WHERE order_status = 'Delivered' AND total_amount < 100000), sp AS (SELECT customer_id, SUM(total_amount) AS spend FROM o GROUP BY customer_id), c AS (SELECT DISTINCT customer_id, acquisition_channel FROM customers WHERE acquisition_channel IS NOT NULL), r AS (SELECT c.acquisition_channel, c.customer_id, ROUND(sp.spend, 2) AS spend, ROW_NUMBER() OVER (PARTITION BY c.acquisition_channel ORDER BY sp.spend DESC, c.customer_id) AS pos FROM sp JOIN c ON c.customer_id = sp.customer_id) SELECT acquisition_channel, customer_id, spend, pos FROM r WHERE pos <= 2 ORDER BY acquisition_channel, pos",
+  "orderMatters": true,
+  "explanation": "Each table is cleaned before it is joined: orders are deduplicated and filtered, and customers are deduplicated so the join cannot double a customer's spend. ROW_NUMBER with a customer_id tie-breaker returns exactly two customers per channel every time. Because the ranking happens in a CTE, the final WHERE can keep pos 1 and 2.",
+  "commonMistake": "Joining the raw customers table (which has 20 duplicate rows) makes a duplicated customer appear twice in the ranking, so the 'top 2' can be the same person listed twice.",
+  "interviewFrequency": "high",
+  "estimatedMinutes": 12,
+  "tags": [
+   "window-ranking",
+   "sql"
+  ]
+ },
+ {
+  "id": "sql-window-ranking-005",
+  "module": "sql",
+  "topic": "window-ranking",
+  "difficulty": "hard",
+  "language": "sql",
+  "question": "Finance wants the second-highest order value for each payment mode, ignoring the 100x data-entry errors (keep `order_value` below 10000), cancelled orders, and duplicate delivery rows. Use unique `delivery_id` rows with `delivery_status = 'Delivered'`. A value shared by several orders counts once. Return `payment_mode` and `second_highest_value`, ordered by `payment_mode`. Ignore rows where `payment_mode` is NULL.",
+  "dataset": "food_delivery",
+  "hint": "DENSE_RANK over order_value DESC within each payment_mode, keep rank 2, then SELECT DISTINCT because tied orders repeat the value.",
+  "solutionSql": "WITH d AS (SELECT DISTINCT delivery_id, payment_mode, order_value FROM deliveries WHERE delivery_status = 'Delivered' AND order_value < 10000 AND payment_mode IS NOT NULL), r AS (SELECT payment_mode, order_value, DENSE_RANK() OVER (PARTITION BY payment_mode ORDER BY order_value DESC) AS rk FROM d) SELECT DISTINCT payment_mode, order_value AS second_highest_value FROM r WHERE rk = 2 ORDER BY payment_mode",
+  "orderMatters": true,
+  "explanation": "DENSE_RANK is the right tool for 'Nth highest value' because tied values share a rank and the next rank has no gap, so rank 2 is always the second distinct value. RANK would skip rank 2 if two orders tied for the maximum. DISTINCT collapses several orders that share the same second-highest value into one row.",
+  "commonMistake": "Using RANK() or ROW_NUMBER(). If two orders tie for the highest value, RANK has no rank 2 (it jumps to 3) and ROW_NUMBER returns the other top order, which gives the highest value instead of the second highest.",
+  "interviewFrequency": "high",
+  "estimatedMinutes": 12,
+  "tags": [
+   "window-ranking",
+   "sql"
+  ]
+ }
+]

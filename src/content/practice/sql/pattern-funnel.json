@@ -1,0 +1,227 @@
+[
+  {
+    "id": "sql-pattern-funnel-001",
+    "module": "sql",
+    "topic": "pattern-funnel",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "Count how many distinct users reached each stage of the journey in 2024. Return one row with `signed_up`, `trial_started` and `paid`, based on events named signup, trial_start and payment_success (case-insensitive) with `event_time` in 2024.",
+    "dataset": "subscription",
+    "hint": "Use COUNT(DISTINCT CASE WHEN ... THEN user_id END) for each step.",
+    "solutionSql": "SELECT COUNT(DISTINCT CASE WHEN LOWER(event_name) = 'signup' THEN user_id END) AS signed_up,\n       COUNT(DISTINCT CASE WHEN LOWER(event_name) = 'trial_start' THEN user_id END) AS trial_started,\n       COUNT(DISTINCT CASE WHEN LOWER(event_name) = 'payment_success' THEN user_id END) AS paid\nFROM events WHERE event_time >= '2024-01-01' AND event_time < '2025-01-01'",
+    "expectedOutput": {
+      "columns": [
+        "signed_up",
+        "trial_started",
+        "paid"
+      ],
+      "rows": [
+        [
+          3045,
+          1931,
+          706
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "Each CASE returns the user id only for rows of its step and NULL otherwise, and COUNT(DISTINCT) ignores NULLs. This gives all steps in one scan. LOWER makes the match work for rows stored in upper case, such as SIGNUP.",
+    "commonMistake": "Using COUNT(*) with an event filter counts events, not users, and without LOWER the upper-case event names are missed.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "funnel",
+      "interview-pattern",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-pattern-funnel-002",
+    "module": "sql",
+    "topic": "pattern-funnel",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Marketing wants conversion by channel. For each `acquisition_source` return `signups` (distinct users), `trial_users` (users with a `trial_start` event, case-insensitive), `paid_users` (users with a `payment_success` event) and `trial_to_paid_pct` (paid_users as a percent of trial_users, 1 decimal). Order by `trial_to_paid_pct` descending, then `acquisition_source`.",
+    "dataset": "subscription",
+    "hint": "Join users to per-user flags built with MAX(CASE ...) in a CTE.",
+    "solutionSql": "WITH f AS (SELECT user_id, MAX(LOWER(event_name) = 'trial_start') AS trial, MAX(LOWER(event_name) = 'payment_success') AS paid FROM events GROUP BY user_id),\nu AS (SELECT DISTINCT user_id, acquisition_source FROM users)\nSELECT u.acquisition_source, COUNT(*) AS signups, COALESCE(SUM(f.trial), 0) AS trial_users, COALESCE(SUM(f.paid), 0) AS paid_users,\n       ROUND(100.0 * COALESCE(SUM(f.paid), 0) / NULLIF(SUM(f.trial), 0), 1) AS trial_to_paid_pct\nFROM u LEFT JOIN f ON f.user_id = u.user_id\nGROUP BY u.acquisition_source ORDER BY trial_to_paid_pct DESC, u.acquisition_source",
+    "expectedOutput": {
+      "columns": [
+        "acquisition_source",
+        "signups",
+        "trial_users",
+        "paid_users",
+        "trial_to_paid_pct"
+      ],
+      "rows": [
+        [
+          "Referral",
+          628,
+          416,
+          196,
+          47.1
+        ],
+        [
+          "Instagram",
+          902,
+          535,
+          235,
+          43.9
+        ],
+        [
+          "Play Store Feature",
+          348,
+          207,
+          78,
+          37.7
+        ],
+        [
+          "Organic",
+          1486,
+          911,
+          340,
+          37.3
+        ],
+        [
+          "Google Ads",
+          1173,
+          703,
+          258,
+          36.7
+        ],
+        [
+          "Influencer",
+          663,
+          536,
+          86,
+          16
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The CTE reduces the event log to one row per user with 1/0 flags for reaching each step. Joining to users and summing the flags gives step counts per channel, and the conversion divides the last step by the one before it. Influencer users should stand out with a low trial-to-paid rate.",
+    "commonMistake": "Joining users directly to events and counting rows multiplies each user by their number of events, inflating every count.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 12,
+    "tags": [
+      "funnel",
+      "interview-pattern",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-pattern-funnel-003",
+    "module": "sql",
+    "topic": "pattern-funnel",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Build a strict, time-boxed funnel by signup month for 2024. A user counts as `trial_7d` if their first `trial_start` event is within 7 days after their first `signup` event (0 to 7 days), and as `paid_14d` if, in addition, their first `payment_success` is within 14 days after that trial start. Event names are case-insensitive. Return `signup_month` (YYYY-MM of the first signup), `signups`, `trial_7d`, `paid_14d` and `overall_pct` (paid_14d as a percent of signups, 1 decimal). Order by `signup_month`.",
+    "dataset": "subscription",
+    "hint": "Per user: MIN(CASE ...) for each step's first time. Then compare times with julianday differences.",
+    "solutionSql": "WITH f AS (\n  SELECT user_id,\n         MIN(CASE WHEN LOWER(event_name) = 'signup' THEN event_time END) AS t_signup,\n         MIN(CASE WHEN LOWER(event_name) = 'trial_start' THEN event_time END) AS t_trial,\n         MIN(CASE WHEN LOWER(event_name) = 'payment_success' THEN event_time END) AS t_paid\n  FROM events GROUP BY user_id\n),\nc AS (\n  SELECT strftime('%Y-%m', t_signup) AS signup_month,\n         CASE WHEN t_trial IS NOT NULL AND julianday(t_trial) - julianday(t_signup) BETWEEN 0 AND 7 THEN 1 ELSE 0 END AS is_trial,\n         CASE WHEN t_trial IS NOT NULL AND t_paid IS NOT NULL AND julianday(t_trial) - julianday(t_signup) BETWEEN 0 AND 7 AND julianday(t_paid) - julianday(t_trial) BETWEEN 0 AND 14 THEN 1 ELSE 0 END AS is_paid\n  FROM f WHERE t_signup >= '2024-01-01' AND t_signup < '2025-01-01'\n)\nSELECT signup_month, COUNT(*) AS signups, SUM(is_trial) AS trial_7d, SUM(is_paid) AS paid_14d, ROUND(100.0 * SUM(is_paid) / COUNT(*), 1) AS overall_pct\nFROM c GROUP BY signup_month ORDER BY signup_month",
+    "expectedOutput": {
+      "columns": [
+        "signup_month",
+        "signups",
+        "trial_7d",
+        "paid_14d",
+        "overall_pct"
+      ],
+      "rows": [
+        [
+          "2024-01",
+          233,
+          157,
+          55,
+          23.6
+        ],
+        [
+          "2024-02",
+          198,
+          125,
+          39,
+          19.7
+        ],
+        [
+          "2024-03",
+          244,
+          153,
+          50,
+          20.5
+        ],
+        [
+          "2024-04",
+          224,
+          136,
+          52,
+          23.2
+        ],
+        [
+          "2024-05",
+          281,
+          172,
+          72,
+          25.6
+        ],
+        [
+          "2024-06",
+          234,
+          140,
+          50,
+          21.4
+        ],
+        [
+          "2024-07",
+          266,
+          187,
+          66,
+          24.8
+        ],
+        [
+          "2024-08",
+          267,
+          162,
+          46,
+          17.2
+        ],
+        [
+          "2024-09",
+          258,
+          171,
+          60,
+          23.3
+        ],
+        [
+          "2024-10",
+          306,
+          186,
+          73,
+          23.9
+        ],
+        [
+          "2024-11",
+          263,
+          169,
+          82,
+          31.2
+        ],
+        [
+          "2024-12",
+          271,
+          173,
+          51,
+          18.8
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "MIN(CASE WHEN ... THEN event_time END) gives each user's first time at a step, or NULL if they never reached it. The funnel is strict because the payment only counts if the trial was inside its own 7-day window and the payment is within 14 days of that trial. Computing flags per user first, then summing per month, keeps each user counted once.",
+    "commonMistake": "Counting a user as paid just because a payment event exists, without checking order and time window, makes the funnel look better than it is.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 22,
+    "tags": [
+      "funnel",
+      "interview-pattern",
+      "sql"
+    ]
+  }
+]

@@ -160,7 +160,7 @@ ORDER BY platform;`} title="Strict ordered funnel by platform" />
 | Web | 863 | 502 | 199 | 39.6 |
 | iOS | 1128 | 833 | 382 | 45.9 |
 
-`MIN(CASE WHEN ... THEN event_time END)` gives each user's first time at a step, or NULL if never. Comparing the timestamps enforces the order. iOS converts trials to paid better than Android, as the product team suspected.
+`MIN(CASE WHEN ... THEN event_time END)` gives each user's first time at a step, or NULL if never. Comparing the timestamps enforces the order. iOS converts trials to paid best, Web is in the middle and Android is lowest.
 
 ### Example 4: an e-commerce funnel
 

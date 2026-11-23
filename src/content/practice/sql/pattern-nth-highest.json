@@ -1,0 +1,174 @@
+[
+  {
+    "id": "sql-pattern-nth-highest-001",
+    "module": "sql",
+    "topic": "pattern-nth-highest",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "The finance team wants the second highest order value among delivered orders, counting each distinct amount only once (the orders table has duplicate rows). Return one column `second_highest_amount`.",
+    "dataset": "ecommerce",
+    "hint": "Use DISTINCT on the amount, sort descending and skip the first row with OFFSET.",
+    "solutionSql": "SELECT DISTINCT total_amount AS second_highest_amount FROM orders WHERE order_status = 'Delivered' AND total_amount IS NOT NULL ORDER BY total_amount DESC LIMIT 1 OFFSET 1",
+    "expectedOutput": {
+      "columns": [
+        "second_highest_amount"
+      ],
+      "rows": [
+        [
+          337436.33
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "DISTINCT collapses repeated amounts (and the duplicate order rows), so the offset moves to the next different value instead of the next row. ORDER BY ... DESC puts the largest first, and OFFSET 1 skips it. The IS NOT NULL filter keeps NULLs from interfering in databases that sort NULL first. Note that a few 100x entry errors in the data can lift the top values, so a real analysis would also check them.",
+    "commonMistake": "Writing LIMIT 1 OFFSET 1 without DISTINCT: if the two largest orders have the same amount, the query returns the highest value again as the 'second highest'.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "nth-highest",
+      "interview-pattern",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-pattern-nth-highest-002",
+    "module": "sql",
+    "topic": "pattern-nth-highest",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "HR is reviewing pay bands. List every salary row (`salary_id`, `employee_id`, `annual_ctc`) whose `annual_ctc` is the 3rd highest distinct CTC, ignoring the 100x data-entry outliers (use `annual_ctc < 10000000`). Order by `salary_id`.",
+    "dataset": "hr",
+    "hint": "Rank the distinct CTC values with DENSE_RANK in a CTE, then keep rank 3.",
+    "solutionSql": "WITH clean AS (SELECT salary_id, employee_id, annual_ctc, DENSE_RANK() OVER (ORDER BY annual_ctc DESC) AS rnk FROM salaries WHERE annual_ctc < 10000000) SELECT salary_id, employee_id, annual_ctc FROM clean WHERE rnk = 3 ORDER BY salary_id",
+    "expectedOutput": {
+      "columns": [
+        "salary_id",
+        "employee_id",
+        "annual_ctc"
+      ],
+      "rows": [
+        [
+          1057,
+          367,
+          7355000
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The outliers are removed before ranking, otherwise they would take the top ranks. DENSE_RANK gives equal CTCs the same rank without gaps, so rank 3 is the third highest distinct value and every row that holds it is returned. The outer query filters because window functions cannot be used in WHERE.",
+    "commonMistake": "Using ROW_NUMBER() = 3 returns only one arbitrary row and hides other rows with the same CTC; forgetting the outlier filter returns the wrong band entirely.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "nth-highest",
+      "interview-pattern",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-pattern-nth-highest-003",
+    "module": "sql",
+    "topic": "pattern-nth-highest",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "For each department (all 8 `department_id` values from `departments`), find the second highest current CTC among its employees. Current CTC is each employee's latest salary row by `effective_date`. Ignore rows with `annual_ctc >= 10000000`. Treat ties as one value (second highest distinct value) and return NULL when a department has fewer than 2 distinct values. Return `department_id` and `second_highest_ctc`, ordered by `department_id`.",
+    "dataset": "hr",
+    "hint": "Step 1: latest salary per employee. Step 2: DENSE_RANK per department. Step 3: LEFT JOIN from departments so empty departments still appear.",
+    "solutionSql": "WITH emp AS (SELECT DISTINCT employee_id, department_id FROM employees),\nlatest AS (\n  SELECT employee_id, annual_ctc,\n         ROW_NUMBER() OVER (PARTITION BY employee_id ORDER BY effective_date DESC, salary_id DESC) AS rn\n  FROM salaries WHERE annual_ctc < 10000000\n),\ncur AS (SELECT e.department_id, l.annual_ctc FROM latest l JOIN emp e ON e.employee_id = l.employee_id WHERE l.rn = 1),\nranked AS (SELECT department_id, annual_ctc, DENSE_RANK() OVER (PARTITION BY department_id ORDER BY annual_ctc DESC) AS rnk FROM cur)\nSELECT d.department_id, (SELECT MAX(r.annual_ctc) FROM ranked r WHERE r.department_id = d.department_id AND r.rnk = 2) AS second_highest_ctc\nFROM departments d\nORDER BY d.department_id",
+    "expectedOutput": {
+      "columns": [
+        "department_id",
+        "second_highest_ctc"
+      ],
+      "rows": [
+        [
+          1,
+          7446000
+        ],
+        [
+          2,
+          5892000
+        ],
+        [
+          3,
+          5055000
+        ],
+        [
+          4,
+          3094000
+        ],
+        [
+          5,
+          4718000
+        ],
+        [
+          6,
+          3959000
+        ],
+        [
+          7,
+          4727000
+        ],
+        [
+          8,
+          6340000
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Two ranking steps are combined: ROW_NUMBER picks each employee's newest salary, then DENSE_RANK ranks CTC values inside each department. Starting from the departments table and using a scalar subquery guarantees one row per department, with NULL where no rank 2 exists. The DISTINCT on employees removes the duplicate employee rows that would otherwise double count people.",
+    "commonMistake": "Ranking all salary rows instead of only the latest per employee lets old salaries compete with current ones, and joining employees without DISTINCT counts duplicated employees twice.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 15,
+    "tags": [
+      "nth-highest",
+      "interview-pattern",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-pattern-nth-highest-004",
+    "module": "sql",
+    "topic": "pattern-nth-highest",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Real-estate planning wants the 4th largest distinct `carpet_area_sqft` in every store `region`. Return `region` and `fourth_largest_area`, with NULL for regions that have fewer than 4 distinct areas. Order by `region`.",
+    "dataset": "retail",
+    "hint": "Rank within each region, then use a scalar subquery or LEFT JOIN so regions without a rank 4 still show up.",
+    "solutionSql": "WITH ranked AS (SELECT region, carpet_area_sqft, DENSE_RANK() OVER (PARTITION BY region ORDER BY carpet_area_sqft DESC) AS rnk FROM stores)\nSELECT r.region, (SELECT MAX(x.carpet_area_sqft) FROM ranked x WHERE x.region = r.region AND x.rnk = 4) AS fourth_largest_area\nFROM (SELECT DISTINCT region FROM stores) r\nORDER BY r.region",
+    "expectedOutput": {
+      "columns": [
+        "region",
+        "fourth_largest_area"
+      ],
+      "rows": [
+        [
+          "East",
+          null
+        ],
+        [
+          "North",
+          3600
+        ],
+        [
+          "South",
+          17800
+        ],
+        [
+          "West",
+          28500
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "DENSE_RANK with PARTITION BY region ranks areas separately inside each region. A region with only 3 stores never produces rank 4, so the filter alone would drop it. Selecting from the list of all regions and looking up rank 4 with a scalar subquery returns NULL for those regions, which is the honest answer.",
+    "commonMistake": "Filtering WHERE rnk = 4 directly makes regions with fewer than 4 stores disappear from the result instead of showing NULL.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 12,
+    "tags": [
+      "nth-highest",
+      "interview-pattern",
+      "sql"
+    ]
+  }
+]

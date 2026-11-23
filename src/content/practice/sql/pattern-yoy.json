@@ -1,0 +1,234 @@
+[
+  {
+    "id": "sql-pattern-yoy-001",
+    "module": "sql",
+    "topic": "pattern-yoy",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "The CFO wants a quarterly view. For each quarter number 1 to 4 return `quarter`, `rev_2023`, `rev_2024` (delivered revenue, rounded to 0 decimals, ignoring duplicate orders) and `yoy_pct` (1 decimal). Order by `quarter`.",
+    "dataset": "ecommerce",
+    "hint": "Compute quarter as (month + 2) / 3, then pivot years with CASE.",
+    "solutionSql": "WITH o AS (SELECT DISTINCT order_id, order_date, total_amount FROM orders WHERE order_status = 'Delivered')\nSELECT (CAST(strftime('%m', order_date) AS INT) + 2) / 3 AS quarter,\n       ROUND(SUM(CASE WHEN strftime('%Y', order_date) = '2023' THEN total_amount END), 0) AS rev_2023,\n       ROUND(SUM(CASE WHEN strftime('%Y', order_date) = '2024' THEN total_amount END), 0) AS rev_2024,\n       ROUND(100.0 * (SUM(CASE WHEN strftime('%Y', order_date) = '2024' THEN total_amount END) - SUM(CASE WHEN strftime('%Y', order_date) = '2023' THEN total_amount END)) / SUM(CASE WHEN strftime('%Y', order_date) = '2023' THEN total_amount END), 1) AS yoy_pct\nFROM o GROUP BY quarter ORDER BY quarter",
+    "expectedOutput": {
+      "columns": [
+        "quarter",
+        "rev_2023",
+        "rev_2024",
+        "yoy_pct"
+      ],
+      "rows": [
+        [
+          1,
+          4933905,
+          6724268,
+          36.3
+        ],
+        [
+          2,
+          5121547,
+          6378277,
+          24.5
+        ],
+        [
+          3,
+          5828349,
+          7261130,
+          24.6
+        ],
+        [
+          4,
+          6341944,
+          7312488,
+          15.3
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Integer arithmetic (month + 2) / 3 maps months 1-3 to quarter 1, 4-6 to quarter 2 and so on. A CASE without ELSE returns NULL for the other year and SUM ignores NULLs, so each column holds one year only. YoY uses last year as the base.",
+    "commonMistake": "Dividing by the new year's revenue instead of last year's understates growth.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "yoy",
+      "interview-pattern",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-pattern-yoy-002",
+    "module": "sql",
+    "topic": "pattern-yoy",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "For each store `region`, compare units sold in 2024 with 2023. Skip sales lines with `net_amount_inr` of 100000 or more. Return `region`, `units_2023`, `units_2024` and `units_yoy_pct` (1 decimal). Order by `region`.",
+    "dataset": "retail",
+    "hint": "Join sales to stores, then pivot the two years with CASE on sale_datetime.",
+    "solutionSql": "SELECT st.region,\n       SUM(CASE WHEN s.sale_datetime < '2024-01-01' THEN s.quantity END) AS units_2023,\n       SUM(CASE WHEN s.sale_datetime >= '2024-01-01' THEN s.quantity END) AS units_2024,\n       ROUND(100.0 * (SUM(CASE WHEN s.sale_datetime >= '2024-01-01' THEN s.quantity END) - SUM(CASE WHEN s.sale_datetime < '2024-01-01' THEN s.quantity END)) / SUM(CASE WHEN s.sale_datetime < '2024-01-01' THEN s.quantity END), 1) AS units_yoy_pct\nFROM sales s JOIN stores st ON st.store_id = s.store_id\nWHERE s.net_amount_inr < 100000\nGROUP BY st.region ORDER BY st.region",
+    "expectedOutput": {
+      "columns": [
+        "region",
+        "units_2023",
+        "units_2024",
+        "units_yoy_pct"
+      ],
+      "rows": [
+        [
+          "East",
+          3208,
+          3823,
+          19.2
+        ],
+        [
+          "North",
+          5881,
+          6739,
+          14.6
+        ],
+        [
+          "South",
+          8265,
+          9678,
+          17.1
+        ],
+        [
+          "West",
+          12231,
+          13631,
+          11.4
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The join adds the region, and two CASE columns split units into the two years in one pass over the data. Using units instead of rupees removes the roughly 6% price rise from the comparison, so this is a pure volume view. The six outlier lines are excluded.",
+    "commonMistake": "Comparing revenue instead of units mixes volume growth and price increase, which overstates real demand growth.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "yoy",
+      "interview-pattern",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-pattern-yoy-003",
+    "module": "sql",
+    "topic": "pattern-yoy",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Management wants to know which months of 2024 grew more slowly than the whole year. Count successful transactions (`status = 'SUCCESS'`, distinct `txn_id`) per month. Compute each 2024 month's YoY growth against the same month of 2023, and the full-year 2024 vs 2023 growth. Return the months where monthly YoY growth is below the full-year growth: `month`, `txns`, `txns_last_year`, `yoy_pct` (1 decimal). Order by `month`.",
+    "dataset": "fintech",
+    "hint": "LAG(x, 12) for the monthly YoY, a separate CTE for the full-year growth, and a cross join to compare.",
+    "solutionSql": "WITH t AS (SELECT DISTINCT txn_id, txn_datetime FROM transactions WHERE status = 'SUCCESS'),\nm AS (SELECT strftime('%Y-%m', txn_datetime) AS month, COUNT(*) AS txns FROM t GROUP BY month),\ng AS (SELECT month, txns, LAG(txns, 12) OVER (ORDER BY month) AS last_year FROM m),\ny AS (SELECT 100.0 * (SUM(CASE WHEN month >= '2024-01' THEN txns END) - SUM(CASE WHEN month < '2024-01' THEN txns END)) / SUM(CASE WHEN month < '2024-01' THEN txns END) AS full_year FROM m)\nSELECT g.month, g.txns, g.last_year AS txns_last_year, ROUND(100.0 * (g.txns - g.last_year) / g.last_year, 1) AS yoy_pct\nFROM g CROSS JOIN y\nWHERE g.month >= '2024-01' AND 100.0 * (g.txns - g.last_year) / g.last_year < y.full_year\nORDER BY g.month",
+    "expectedOutput": {
+      "columns": [
+        "month",
+        "txns",
+        "txns_last_year",
+        "yoy_pct"
+      ],
+      "rows": [
+        [
+          "2024-01",
+          904,
+          683,
+          32.4
+        ],
+        [
+          "2024-02",
+          824,
+          644,
+          28
+        ],
+        [
+          "2024-04",
+          899,
+          693,
+          29.7
+        ],
+        [
+          "2024-06",
+          967,
+          769,
+          25.7
+        ],
+        [
+          "2024-08",
+          1016,
+          770,
+          31.9
+        ],
+        [
+          "2024-11",
+          1114,
+          924,
+          20.6
+        ],
+        [
+          "2024-12",
+          1075,
+          883,
+          21.7
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "LAG(txns, 12) reads the same month of the previous year, which is valid here because every month from 2023-01 to 2024-12 has data. The full-year growth sits in a one-row CTE and a CROSS JOIN makes it available to every month for comparison. Filtering happens after LAG has been computed, so 2024 rows keep their 2023 partners.",
+    "commonMistake": "Filtering to 2024 before applying LAG(txns, 12) leaves every row without a previous-year value.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 18,
+    "tags": [
+      "yoy",
+      "interview-pattern",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-pattern-yoy-004",
+    "module": "sql",
+    "topic": "pattern-yoy",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "The category head wants to see which product categories are growing fastest. Using delivered orders only (ignore duplicate order rows) and `order_items`, compute units sold per cleaned category (`LOWER(TRIM(category))`) in 2023 and 2024 and the YoY growth. Return the 3 categories with the highest unit growth: `category`, `units_2023`, `units_2024`, `yoy_pct` (1 decimal). Break ties by `category`. Order by growth, highest first.",
+    "dataset": "ecommerce",
+    "hint": "Join order_items to a de-duplicated orders CTE and to products, pivot the years with CASE, then ORDER BY growth with LIMIT 3.",
+    "solutionSql": "WITH o AS (SELECT DISTINCT order_id, order_date FROM orders WHERE order_status = 'Delivered')\nSELECT LOWER(TRIM(p.category)) AS category,\n       SUM(CASE WHEN o.order_date < '2024-01-01' THEN oi.quantity END) AS units_2023,\n       SUM(CASE WHEN o.order_date >= '2024-01-01' THEN oi.quantity END) AS units_2024,\n       ROUND(100.0 * (SUM(CASE WHEN o.order_date >= '2024-01-01' THEN oi.quantity END) - SUM(CASE WHEN o.order_date < '2024-01-01' THEN oi.quantity END)) / SUM(CASE WHEN o.order_date < '2024-01-01' THEN oi.quantity END), 1) AS yoy_pct\nFROM order_items oi JOIN o ON o.order_id = oi.order_id JOIN products p ON p.product_id = oi.product_id\nGROUP BY LOWER(TRIM(p.category))\nORDER BY yoy_pct DESC, category LIMIT 3",
+    "expectedOutput": {
+      "columns": [
+        "category",
+        "units_2023",
+        "units_2024",
+        "yoy_pct"
+      ],
+      "rows": [
+        [
+          "footwear",
+          311,
+          397,
+          27.7
+        ],
+        [
+          "home & kitchen",
+          1841,
+          2283,
+          24
+        ],
+        [
+          "fashion",
+          3046,
+          3675,
+          20.7
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Joining items to a de-duplicated orders CTE prevents the duplicate order rows from doubling item quantities. The category is cleaned in both SELECT and GROUP BY so variants like 'BEAUTY' and ' beauty' merge. Pivoting with CASE gives both years in one row, and ORDER BY with LIMIT 3 keeps the fastest growers.",
+    "commonMistake": "Joining items directly to the orders table counts duplicated orders twice, and grouping by raw category splits one category into several.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 18,
+    "tags": [
+      "yoy",
+      "interview-pattern",
+      "sql"
+    ]
+  }
+]

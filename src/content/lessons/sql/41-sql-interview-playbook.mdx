@@ -1,0 +1,324 @@
+---
+title: "The SQL interview playbook"
+description: "How to read a question, clarify assumptions, build the query step by step with CTEs, test edge cases, and explain your thinking, plus a cheat table of every pattern."
+module: sql
+order: 41
+estimatedMinutes: 55
+objectives:
+  - "Read an interview question and extract grain, filters and output"
+  - "Ask the right clarifying questions"
+  - "Build queries step by step with CTEs and sanity checks"
+  - "Test edge cases before you say you are done"
+  - "Match a question's cue words to the right SQL pattern"
+tags: ["sql", "interview-patterns", "playbook", "cte", "strategy"]
+---
+
+## Learning objectives
+
+- Turn a vague question into a precise spec.
+- Decide the output grain before writing any SQL.
+- Build the answer in small CTE steps and check each one.
+- Run a short edge-case checklist.
+- Use the cheat table to recognise patterns quickly.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+At work, nobody hands you a clean question. A manager says "show me return rates by category" and expects a number they can trust. The skill is the same one tested in interviews: understand the real question, build the answer in checked steps, and explain it. Candidates who know the patterns but panic still fail. Candidates with a routine pass.
+</RealWorld>
+
+## Concept
+
+### The six-step playbook
+
+1. **Read twice.** Underline the nouns (tables, entities), the verbs (count, rank, compare) and the filters (dates, status).
+2. **Clarify.** Ask 2 or 3 short questions (see below). Say your assumption if the interviewer does not answer.
+3. **Fix the output grain.** Complete the sentence: "One row per ____." This single sentence prevents most wrong answers.
+4. **Pick the pattern** from the cue words (cheat table below).
+5. **Build in CTE steps.** One idea per CTE. After each step, run it and look at a few rows and the row count.
+6. **Test and explain.** Run the edge-case checklist, then talk through the result in one or two sentences.
+
+### Step 2: the clarifying questions that matter
+
+| Ask about | Example question |
+|---|---|
+| Duplicates | "Can the table have repeated rows or repeated ids?" |
+| NULLs | "How should missing values be treated?" |
+| Definitions | "Does 'order' include cancelled ones? What is 'active'?" |
+| Ties | "If two customers tie for second place, do both appear?" |
+| Time | "Which period, and which date column?" |
+| Output | "Which columns and which order?" |
+
+If the interviewer says "your call", state your choice clearly: "I will exclude cancelled orders and count each customer once."
+
+### Step 5: the CTE habit
+
+A CTE (common table expression) is a named step defined with `WITH`. Write the query like a recipe:
+
+```sql
+WITH step1 AS (...),   -- clean and filter
+     step2 AS (...),   -- aggregate to the grain
+     step3 AS (...)    -- window or ranking
+SELECT ... FROM step3;  -- final shape
+```
+
+Why CTEs? You can run each step alone, the logic reads top to bottom, and in an interview the other person can follow you.
+
+<Tip>
+Check the row count after every step. If a join step suddenly doubles the rows, you found a fan-out bug while it is still easy to fix.
+</Tip>
+
+### Step 6: the edge-case checklist
+
+Run through these in your head (or with quick queries):
+
+- **Duplicates:** could repeated rows inflate counts or sums?
+- **NULLs:** do they break a comparison, a join, `NOT IN` or an average?
+- **Ties:** `ROW_NUMBER` vs `RANK` vs `DENSE_RANK`. Which one does the question want?
+- **Empty groups:** a customer with no orders, a day with no events. Are they supposed to appear?
+- **Division by zero:** use `NULLIF(denominator, 0)`.
+- **Integer division:** use `100.0 *`.
+- **Time boundaries:** is the end date inclusive? Are timestamps being compared to dates?
+- **Dirty text:** casing and spaces in grouping keys (`LOWER(TRIM(x))`).
+- **Join fan-out:** did a join multiply rows?
+
+### Thinking aloud: a script
+
+1. "So we want one row per ___ with ___."
+2. "I will first ___, then ___, then ___."
+3. (while typing) "This CTE gives me ___."
+4. "Let me check ___ with a quick count."
+5. "One edge case: ___. I handled it by ___."
+6. "The result says ___, which makes sense because ___."
+
+Silence is the enemy. Even a half-correct query with clear reasoning scores better than a perfect query typed in silence.
+
+### Pattern-recognition cheat table
+
+| Cue words in the question | Pattern | Key tool | Lesson |
+|---|---|---|---|
+| "second highest", "Nth highest", "3rd largest salary" | Nth highest value | `DENSE_RANK()` or `LIMIT/OFFSET` with `DISTINCT` | Nth highest value |
+| "top 3 per department", "best product in each category" | Top N per group | `ROW_NUMBER() OVER (PARTITION BY ...)` then `rn <= N` | Top N per group |
+| "running total", "cumulative sales", "balance so far" | Running total | `SUM(x) OVER (ORDER BY ...)` | Running totals |
+| "compared with last month", "growth rate", "MoM" | Month-over-month growth | `LAG(value) OVER (ORDER BY month)` | Month-over-month |
+| "same month last year", "YoY" | Year-over-year | `LAG(value, 12)` or self-join on month | Year-over-year |
+| "retained", "came back", "cohort", "week 1 retention" | Retention and cohort | First-period cohort, then join on later activity | Retention and cohorts |
+| "step 1 to step 2 to step 3", "drop-off", "conversion funnel" | Funnel analysis | Distinct users per step, conditional counts | Funnel analysis |
+| "consecutive days", "streak", "longest run" | Gaps and islands | Value minus `ROW_NUMBER()`, then group | Streaks |
+| "repeated", "more than once", "keep one" | Duplicates ([lesson 34](/sql/34-finding-and-handling-duplicates/)) | `GROUP BY ... HAVING COUNT(*) > 1`, `ROW_NUMBER` | 34 |
+| "median", "typical", "90th percentile" | Median and percentiles ([lesson 35](/sql/35-median-and-percentiles-in-sql/)) | `ROW_NUMBER` + `COUNT` | 35 |
+| "never", "no orders", "missing", "in A but not in B" | Anti-join ([lesson 36](/sql/36-customers-who-never-ordered/)) | `NOT EXISTS`, `LEFT JOIN ... IS NULL` | 36 |
+| "session", "visit", "30 minutes of inactivity" | Sessionisation ([lesson 37](/sql/37-sessionisation/)) | `LAG` + flag + running `SUM` | 37 |
+| "best customers", "segments", "recency frequency monetary" | RFM ([lesson 38](/sql/38-rfm-segmentation/)) | `NTILE` + `CASE` | 38 |
+| "percent of total", "share", "80 percent of revenue" | Percent of total and Pareto ([lesson 39](/sql/39-percent-of-total-and-contribution/)) | `SUM(...) OVER ()`, running `SUM` | 39 |
+| "control vs treatment", "lift", "variant" | A/B test summary ([lesson 40](/sql/40-ab-test-summary-queries/)) | Cleaning + conditional `AVG` | 40 |
+
+### Edge cases of the playbook itself
+
+- **The question is ambiguous and the interviewer will not help:** write your assumption as a comment in the query.
+- **You do not recognise the pattern:** break the question into the smallest query you can write, then grow it.
+- **Several patterns in one question:** that is normal for harder rounds. Use one CTE per pattern.
+
+## Worked examples
+
+### Example: "Which categories have the worst return rate?"
+
+Question as an interviewer might ask: "Among product categories with at least 1,000 items sold, which have the highest return rate?"
+
+**Step 1: read and clarify.** Entities: categories, items sold, returns. Output grain: one row per category. Assumptions I would state: return rate = returned items divided by items sold; category text may be messy, so I will clean it; every row in `returns` is one returned item.
+
+**Step 2: first CTE, items sold per category.**
+
+<SqlPlayground dataset="ecommerce" query={`SELECT LOWER(TRIM(p.category)) AS category,
+       COUNT(*) AS items_sold
+FROM order_items i
+JOIN products p ON p.product_id = i.product_id
+GROUP BY LOWER(TRIM(p.category))
+ORDER BY items_sold DESC;`} title="Step 1: items sold" />
+
+Output:
+
+| category | items_sold |
+|---|---|
+| fashion | 6436 |
+| home & kitchen | 4008 |
+| electronics | 3786 |
+| grocery | 3095 |
+| books | 1130 |
+| beauty | 1026 |
+| footwear | 676 |
+
+
+Check: six or seven rows, a sensible spread. If you had skipped the cleaning, "Fashion", "FASHION" and "fashion" would appear as separate rows. Here is the proof:
+
+<SqlPlayground dataset="ecommerce" query={`SELECT category, COUNT(*) AS products
+FROM products
+GROUP BY category
+ORDER BY LOWER(TRIM(category)), category;`} title="Why we clean the category" />
+
+Output:
+
+| category | products |
+|---|---|
+| BEAUTY | 1 |
+| Beauty | 37 |
+|  Books | 1 |
+| Books | 38 |
+| books | 2 |
+|  electronics   | 1 |
+| Electronics | 62 |
+|  fashion   | 1 |
+| FASHION | 1 |
+| Fashion | 102 |
+| Fashion  | 1 |
+| fashion | 2 |
+| Footwear | 28 |
+| GROCERY | 1 |
+| Grocery | 59 |
+| Grocery  | 1 |
+| Home & Kitchen | 82 |
+
+
+**Step 3: second CTE, items returned per category.**
+
+<SqlPlayground dataset="ecommerce" query={`SELECT LOWER(TRIM(p.category)) AS category,
+       COUNT(DISTINCT r.order_item_id) AS items_returned
+FROM returns r
+JOIN order_items i ON i.order_item_id = r.order_item_id
+JOIN products p ON p.product_id = i.product_id
+GROUP BY LOWER(TRIM(p.category))
+ORDER BY items_returned DESC;`} title="Step 2: items returned" />
+
+Output:
+
+| category | items_returned |
+|---|---|
+| fashion | 1300 |
+| electronics | 240 |
+| home & kitchen | 177 |
+| footwear | 101 |
+| grocery | 37 |
+| beauty | 35 |
+| books | 19 |
+
+
+Check: fashion leads. The `DISTINCT` guards against one item being returned twice.
+
+**Step 4: combine, filter and finish.** Use a `LEFT JOIN` so a category with sold items but zero returns is not lost, and `COALESCE` to turn the missing count into 0.
+
+<SqlPlayground dataset="ecommerce" query={`WITH sold AS (
+  SELECT LOWER(TRIM(p.category)) AS category, COUNT(*) AS items_sold
+  FROM order_items i
+  JOIN products p ON p.product_id = i.product_id
+  GROUP BY LOWER(TRIM(p.category))
+),
+ret AS (
+  SELECT LOWER(TRIM(p.category)) AS category,
+         COUNT(DISTINCT r.order_item_id) AS items_returned
+  FROM returns r
+  JOIN order_items i ON i.order_item_id = r.order_item_id
+  JOIN products p ON p.product_id = i.product_id
+  GROUP BY LOWER(TRIM(p.category))
+)
+SELECT s.category,
+       s.items_sold,
+       COALESCE(r.items_returned, 0) AS items_returned,
+       ROUND(100.0 * COALESCE(r.items_returned, 0) / s.items_sold, 1) AS return_rate_pct
+FROM sold s
+LEFT JOIN ret r ON r.category = s.category
+WHERE s.items_sold >= 1000
+ORDER BY return_rate_pct DESC, s.category;`} title="Final answer" />
+
+Output:
+
+| category | items_sold | items_returned | return_rate_pct |
+|---|---|---|---|
+| fashion | 6436 | 1300 | 20.2 |
+| electronics | 3786 | 240 | 6.3 |
+| home & kitchen | 4008 | 177 | 4.4 |
+| beauty | 1026 | 35 | 3.4 |
+| books | 1130 | 19 | 1.7 |
+| grocery | 3095 | 37 | 1.2 |
+
+
+**Step 5: edge cases and the spoken summary.** Ties: sorted by name as a tie-breaker. Division by zero: not possible, because `items_sold` comes from a group that has at least one row. Duplicates: orders may repeat, but `order_items` has no duplicate lines, so counts are safe. Summary line: "Fashion has by far the highest return rate at about 20 percent, which matches the size-and-fit story, while grocery is about 1 percent."
+
+Notice what the interviewer sees: a clear spec, small checked steps, an edge-case review and a one-line conclusion.
+
+## Common mistakes
+
+<CommonMistake>
+Starting to type before deciding the output grain. You end up grouping by the wrong thing, or joining first and aggregating later, which multiplies rows.
+</CommonMistake>
+
+<CommonMistake>
+Writing the whole query in one shot and then debugging a 40-line block. Build step by step and run each CTE.
+</CommonMistake>
+
+<CommonMistake>
+Not asking about duplicates, NULLs and definitions. Silent assumptions are how wrong numbers reach a dashboard.
+</CommonMistake>
+
+<CommonMistake>
+Going silent when stuck. Say what you are trying. The interviewer can only give hints to someone who is talking.
+</CommonMistake>
+
+<CommonMistake>
+Skipping the check after the final query. Compare the result with a simple total or a count you can verify another way (for example, do the shares add to 100?).
+</CommonMistake>
+
+<CommonMistake>
+Forcing a clever one-liner. A clear 4-CTE answer beats a compact answer you cannot explain.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="pattern-mixed" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What is the first thing to fix before writing SQL?", options: ["The ORDER BY", "The output grain: one row per what", "The index", "The LIMIT"], answer: 1, explanation: "Knowing what one output row means decides your GROUP BY and your joins." },
+  { q: "Why use CTEs in an interview?", options: ["They are faster", "Each step can be run, checked and explained separately", "They are required", "They avoid joins"], answer: 1, explanation: "CTEs make the logic readable and testable." },
+  { q: "Which cue points to a LAG-based pattern?", options: ["second highest salary", "compared with last month", "customers who never ordered", "80 percent of revenue"], answer: 1, explanation: "Comparing with the previous period is month-over-month growth, solved with LAG." },
+  { q: "A question says 'keep one row per user'. What is the likely tool?", options: ["ROW_NUMBER with PARTITION BY user", "LIMIT 1", "UNION", "CROSS JOIN"], answer: 0, explanation: "ROW_NUMBER numbers rows inside each user so you can keep number 1." },
+  { q: "You are stuck. What is the best move?", options: ["Stay silent and think", "Say what you know, write the smallest working query, and grow it", "Skip the question without telling anyone", "Guess a final answer"], answer: 1, explanation: "A small correct step plus clear thinking shows ability and lets the interviewer help." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Many interviewers decide in the first minutes. Restate the question, state the grain and say your assumptions before you type. That alone separates you from most candidates.
+</InterviewAlert>
+
+<InterviewQ q="Walk me through how you approach a new SQL problem.">
+I restate the question, ask about duplicates, NULLs, definitions and ties, and decide the output grain. I match the cue words to a pattern, build the query in CTE steps while checking row counts, test edge cases such as empty groups and division by zero, and finish by explaining what the result means in one or two sentences.
+</InterviewQ>
+
+<InterviewQ q="How do you debug a query that returns the wrong number?">
+I run each CTE separately and compare row counts. I look for join fan-out (rows multiplying), duplicates, filters in the wrong place (`WHERE` versus `ON`), NULL behaviour, and wrong grouping keys. I also reconcile with a simple total I can compute another way.
+</InterviewQ>
+
+<InterviewQ q="When do you use RANK, DENSE_RANK or ROW_NUMBER?">
+`ROW_NUMBER` gives unique numbers, so it is right when I need exactly one row per group. `RANK` leaves gaps after ties, and `DENSE_RANK` does not. For "second highest value" with ties I use `DENSE_RANK`, and for "top 3 rows" I usually use `ROW_NUMBER`. I ask the interviewer how ties should be handled.
+</InterviewQ>
+
+<InterviewQ q="What do you do when you do not recognise the question?">
+I say so calmly, then break it down: what is the final output, what is the smallest intermediate table that gets me there, and which piece I already know how to write. I write that piece first, check it and grow the query.
+</InterviewQ>
+
+<InterviewQ q="How do you make your SQL readable for others?">
+I use CTEs with meaningful names, one idea per CTE, consistent indentation, comments for assumptions, and explicit join conditions. I avoid nested subqueries more than one level deep.
+</InterviewQ>
+
+## Key takeaways
+
+- Follow the six steps: read, clarify, fix the grain, pick the pattern, build in CTEs, test and explain.
+- Always complete "one row per ___" before typing.
+- Check row counts after every step to catch fan-out and duplicates early.
+- Use the edge-case checklist: duplicates, NULLs, ties, empty groups, zero division, time boundaries, dirty text.
+- Speak your reasoning. A clear half-answer beats a silent full answer.
+
+## Further reading
+
+<FurtherReading ids={["mode-sql", "sqlbolt", "datalemur", "stratascratch", "leetcode"]} />

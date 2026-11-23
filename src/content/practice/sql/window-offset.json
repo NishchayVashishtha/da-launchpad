@@ -1,0 +1,102 @@
+[
+ {
+  "id": "sql-window-offset-001",
+  "module": "sql",
+  "topic": "window-offset",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "List every campaign with the start date of the campaign that started just before it. Order campaigns by `start_date`, then `campaign_id`. Return `campaign_id`, `start_date` and `prev_start_date` (NULL for the first campaign), ordered by `start_date`, `campaign_id`.",
+  "dataset": "marketing",
+  "hint": "LAG(start_date) with an ORDER BY that includes campaign_id as a tie-breaker.",
+  "solutionSql": "SELECT campaign_id, start_date, LAG(start_date) OVER (ORDER BY start_date, campaign_id) AS prev_start_date FROM campaigns ORDER BY start_date, campaign_id",
+  "orderMatters": true,
+  "explanation": "LAG looks one row back in the order given inside OVER. The first campaign has nothing before it, so its prev_start_date is NULL. Adding campaign_id inside OVER makes the order of campaigns that start on the same day fixed, so the answer never changes.",
+  "commonMistake": "Leaving ORDER BY out of OVER (LAG(start_date) OVER ()). The 'previous row' is then arbitrary, so the previous start dates are scrambled.",
+  "interviewFrequency": "high",
+  "estimatedMinutes": 4,
+  "tags": [
+   "window-offset",
+   "sql"
+  ]
+ },
+ {
+  "id": "sql-window-offset-002",
+  "module": "sql",
+  "topic": "window-offset",
+  "difficulty": "medium",
+  "language": "sql",
+  "question": "The finance team tracks revenue momentum. Using unique sales rows (SELECT DISTINCT) with `net_amount_inr` below 100000, calculate network-wide net revenue per month (`strftime('%Y-%m', sale_datetime)`). Return `month`, `revenue_inr` (rounded to 0 decimals), `prev_revenue_inr` and `mom_pct` (percentage change from the previous month, rounded to 1 decimal; NULL for the first month), ordered by `month`.",
+  "dataset": "retail",
+  "hint": "Aggregate to one row per month in a CTE, then LAG(revenue_inr) OVER (ORDER BY month). Use 100.0 to avoid integer division.",
+  "solutionSql": "WITH s AS (SELECT DISTINCT sale_id, sale_datetime, net_amount_inr FROM sales WHERE net_amount_inr < 100000), m AS (SELECT strftime('%Y-%m', sale_datetime) AS month, ROUND(SUM(net_amount_inr)) AS revenue_inr FROM s GROUP BY 1) SELECT month, revenue_inr, LAG(revenue_inr) OVER (ORDER BY month) AS prev_revenue_inr, ROUND(100.0 * (revenue_inr - LAG(revenue_inr) OVER (ORDER BY month)) / LAG(revenue_inr) OVER (ORDER BY month), 1) AS mom_pct FROM m ORDER BY month",
+  "orderMatters": true,
+  "explanation": "The monthly totals are built first, because LAG must work on one row per month. LAG(revenue_inr) fetches last month's number and the formula (this - last) / last gives the growth rate. The first month has no previous row, so its two comparison columns are NULL.",
+  "commonMistake": "Applying LAG directly on the raw sales rows. It then compares one sale with the previous sale instead of one month with the previous month, giving meaningless percentages.",
+  "interviewFrequency": "high",
+  "estimatedMinutes": 8,
+  "tags": [
+   "window-offset",
+   "sql"
+  ]
+ },
+ {
+  "id": "sql-window-offset-003",
+  "module": "sql",
+  "topic": "window-offset",
+  "difficulty": "medium",
+  "language": "sql",
+  "question": "Retention wants to find the most frequent repeat shoppers. Use unique orders (remove exact duplicates), and for customers with at least 2 orders compute the gap in days between each order and the customer's previous order (order by `order_date`, then `order_id`; use `julianday` to subtract dates). Return the 10 customers with the smallest average gap: `customer_id`, `orders` and `avg_gap_days` (rounded to 2 decimals), ordered by `avg_gap_days`, then `customer_id`. Only count customers with at least 5 orders.",
+  "dataset": "ecommerce",
+  "hint": "LAG(order_date) OVER (PARTITION BY customer_id ORDER BY order_date, order_id), then AVG per customer with HAVING COUNT(*) >= 5.",
+  "solutionSql": "WITH o AS (SELECT DISTINCT order_id, customer_id, order_date FROM orders), g AS (SELECT customer_id, order_id, julianday(order_date) - julianday(LAG(order_date) OVER (PARTITION BY customer_id ORDER BY order_date, order_id)) AS gap FROM o) SELECT customer_id, COUNT(*) AS orders, ROUND(AVG(gap), 2) AS avg_gap_days FROM g GROUP BY customer_id HAVING COUNT(*) >= 5 ORDER BY avg_gap_days, customer_id LIMIT 10",
+  "orderMatters": true,
+  "explanation": "PARTITION BY customer_id restarts the queue for every customer, so a customer's first order has no previous order and a NULL gap (which AVG ignores). julianday turns dates into day numbers so they can be subtracted in SQLite. HAVING keeps only customers with enough orders for the average to mean something.",
+  "commonMistake": "Forgetting PARTITION BY customer_id. The LAG then compares a customer's first order with the last order of the previous customer, giving huge or negative gaps.",
+  "interviewFrequency": "high",
+  "estimatedMinutes": 8,
+  "tags": [
+   "window-offset",
+   "sql"
+  ]
+ },
+ {
+  "id": "sql-window-offset-004",
+  "module": "sql",
+  "topic": "window-offset",
+  "difficulty": "hard",
+  "language": "sql",
+  "question": "The risk team looks for users stuck in repeated failures. Use unique transactions (SELECT DISTINCT *). For each user, order transactions by `txn_datetime`, then `txn_id`, and count the 'back-to-back failures': transactions with `status = 'FAILED'` whose immediately previous transaction of the same user was also `'FAILED'`. Return `user_id` and `repeat_failures` for users with at least one, ordered by `repeat_failures` descending then `user_id`, top 10 only.",
+  "dataset": "fintech",
+  "hint": "LAG(status) OVER (PARTITION BY user_id ORDER BY txn_datetime, txn_id), then filter where both the current and previous status are FAILED.",
+  "solutionSql": "WITH t AS (SELECT DISTINCT * FROM transactions), x AS (SELECT user_id, status, LAG(status) OVER (PARTITION BY user_id ORDER BY txn_datetime, txn_id) AS prev_status FROM t) SELECT user_id, COUNT(*) AS repeat_failures FROM x WHERE status = 'FAILED' AND prev_status = 'FAILED' GROUP BY user_id ORDER BY repeat_failures DESC, user_id LIMIT 10",
+  "orderMatters": true,
+  "explanation": "LAG brings each user's previous transaction status onto the current row, so a plain WHERE can test both at once. Since window functions cannot be filtered in the same SELECT, the LAG is computed in a CTE and the filter and COUNT happen in the outer query. DISTINCT first prevents a duplicated failed row from looking like a repeat failure.",
+  "commonMistake": "Not de-duplicating transactions. A transaction row that is duplicated and FAILED looks like two failures in a row, so the user is wrongly flagged.",
+  "interviewFrequency": "high",
+  "estimatedMinutes": 12,
+  "tags": [
+   "window-offset",
+   "sql"
+  ]
+ },
+ {
+  "id": "sql-window-offset-005",
+  "module": "sql",
+  "topic": "window-offset",
+  "difficulty": "hard",
+  "language": "sql",
+  "question": "HR wants to see big pay growth. Use each employee's salary history (`salaries`), ignoring the 100x outliers (`annual_ctc` of 10000000 or more). For employees with at least two records, compare the first and the latest `annual_ctc` using `FIRST_VALUE` and `LAST_VALUE` (ordered by `effective_date`). Return `employee_id`, `first_ctc`, `latest_ctc` and `growth_pct` (percentage growth, rounded to 1 decimal) for the 10 employees with the highest growth, ordered by `growth_pct` descending then `employee_id`.",
+  "dataset": "hr",
+  "hint": "LAST_VALUE needs the frame ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING. Use SELECT DISTINCT after the window to get one row per employee.",
+  "solutionSql": "WITH w AS (SELECT employee_id, FIRST_VALUE(annual_ctc) OVER (PARTITION BY employee_id ORDER BY effective_date) AS first_ctc, LAST_VALUE(annual_ctc) OVER (PARTITION BY employee_id ORDER BY effective_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS latest_ctc, COUNT(*) OVER (PARTITION BY employee_id) AS n FROM salaries WHERE annual_ctc < 10000000) SELECT DISTINCT employee_id, first_ctc, latest_ctc, ROUND(100.0 * (latest_ctc - first_ctc) / first_ctc, 1) AS growth_pct FROM w WHERE n >= 2 ORDER BY growth_pct DESC, employee_id LIMIT 10",
+  "orderMatters": true,
+  "explanation": "FIRST_VALUE works with the default frame, but LAST_VALUE does not: the default frame stops at the current row, so it would just return the current salary. The explicit frame to UNBOUNDED FOLLOWING makes LAST_VALUE look at the whole employee history. Every row of an employee carries the same first and latest values, so DISTINCT collapses them to one row.",
+  "commonMistake": "Using LAST_VALUE without the full frame. latest_ctc equals each row's own salary and the growth comes out as 0 for everyone except the first record's sibling rows.",
+  "interviewFrequency": "high",
+  "estimatedMinutes": 12,
+  "tags": [
+   "window-offset",
+   "sql"
+  ]
+ }
+]

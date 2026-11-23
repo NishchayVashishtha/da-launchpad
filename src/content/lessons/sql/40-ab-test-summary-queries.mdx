@@ -1,0 +1,311 @@
+---
+title: "A/B test summary queries"
+description: "Clean the experiment data, check the sample ratio, and compute conversion, lift and revenue per user by variant."
+module: sql
+order: 40
+estimatedMinutes: 50
+objectives:
+  - "Recognise an A/B test summary question"
+  - "Remove duplicates and contaminated users before analysis"
+  - "Compute conversion rate and revenue per user by variant"
+  - "Compute absolute and relative lift"
+  - "Check the sample ratio and break results down by segment"
+tags: ["sql", "interview-patterns", "ab-test", "conversion", "lift"]
+---
+
+## Learning objectives
+
+- Explain control, treatment, conversion and lift in simple words.
+- Clean assignment data before any calculation.
+- Summarise an experiment with conditional aggregation.
+- Run the sample ratio sanity check.
+- Read the result without over-claiming.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+A shopping app shows a free-shipping banner to half of its visitors. After two weeks someone asks: "Did the banner help?" The analyst writes the summary query. Product teams, marketing teams and fintech apps run experiments all the time, and analysts are the ones who turn raw assignment rows into a clear yes or no. This is also a very common take-home and interview topic.
+</RealWorld>
+
+## Concept
+
+### The words
+
+- **Control:** the group that sees the old version.
+- **Treatment:** the group that sees the new version.
+- **Conversion rate:** converted users divided by users in the group.
+- **Lift:** how much the treatment changed the metric.
+  - Absolute lift = treatment rate minus control rate, in **percentage points (pp)**.
+  - Relative lift = absolute lift divided by control rate, in **percent**.
+- **Revenue per user (RPU):** total revenue divided by all users in the group, including users who did not buy.
+
+Example: control 10 percent, treatment 11 percent. Absolute lift is 1 pp. Relative lift is 10 percent.
+
+### The recognition cue
+
+- "A/B test", "experiment", "control and treatment", "variant"
+- "did the change improve conversion?", "lift", "uplift"
+- "sample ratio", "randomisation check"
+
+### The checklist (in this order)
+
+1. **Clean:** drop exact duplicate rows. Remove users who appear in both variants (contaminated), because you cannot say which version caused their behaviour.
+2. **Sanity check:** is the split close to what was designed (for example 50/50)? A big gap is called a **sample ratio mismatch** and means the experiment is broken.
+3. **Primary metric by variant:** users, conversions, conversion rate.
+4. **Lift:** absolute and relative.
+5. **Secondary metrics:** revenue per user, average order value.
+6. **Segments:** device, city tier. Does the effect hold in each?
+7. **Significance:** is the difference bigger than random noise? SQL gives you the counts; the test itself is done with a formula or a stats tool.
+
+<FormulaCard title="Conditional aggregation for variant comparison">
+```sql
+SELECT
+  AVG(CASE WHEN variant = 'control'   THEN converted END) AS control_rate,
+  AVG(CASE WHEN variant = 'treatment' THEN converted END) AS treatment_rate
+FROM cleaned;
+```
+`CASE` returns the value for one variant and NULL for the other. `AVG` ignores NULLs, so each expression averages one variant only.
+</FormulaCard>
+
+### Variations
+
+1. **By segment:** add `GROUP BY device_type`.
+2. **By day:** daily conversion to look for novelty effects.
+3. **Revenue metrics:** RPU (all users), average order value (converters only).
+4. **Guardrail metrics:** make sure something else (such as returns) did not get worse.
+
+### Edge cases
+
+- **Duplicate rows** double count users and conversions.
+- **Contaminated users** (in both variants) must be removed.
+- **Revenue is NULL or 0 for non-converters.** Keep them in RPU, or you are computing average order value.
+- **Tiny segments:** small groups give noisy rates. Show sizes next to rates.
+- **Peeking:** stopping the test early when it looks good inflates false wins. Decide the duration in advance.
+- **Significance:** a lift of 1 pp may or may not be real. Report the sample sizes so a reader can judge.
+
+<Warning>
+SQL tells you what happened in the sample. It does not by itself tell you whether the difference is real. Mention a significance test and sample size in your answer.
+</Warning>
+
+## Worked examples
+
+### Example 1: how dirty is the assignment?
+
+<SqlPlayground dataset="marketing" query={`SELECT COUNT(*) AS rows_total,
+       COUNT(DISTINCT ab_id) AS distinct_rows,
+       COUNT(DISTINCT user_id) AS users,
+       (SELECT COUNT(*) FROM (
+          SELECT user_id FROM ab_test_results
+          GROUP BY user_id HAVING COUNT(DISTINCT variant) > 1
+        )) AS users_in_both_variants
+FROM ab_test_results;`} title="Data quality check" />
+
+Output:
+
+| rows_total | distinct_rows | users | users_in_both_variants |
+|---|---|---|---|
+| 12030 | 12010 | 12000 | 10 |
+
+
+There are repeated rows and a few users who saw both versions. Both problems must be removed before the real analysis.
+
+### Example 2: conversion by variant
+
+<SqlPlayground dataset="marketing" query={`WITH bad AS (
+  SELECT user_id FROM ab_test_results
+  GROUP BY user_id HAVING COUNT(DISTINCT variant) > 1
+),
+a AS (
+  SELECT DISTINCT ab_id, user_id, variant, device_type, converted, revenue_inr
+  FROM ab_test_results
+  WHERE user_id NOT IN (SELECT user_id FROM bad)
+)
+SELECT variant,
+       COUNT(*) AS users,
+       SUM(converted) AS conversions,
+       ROUND(100.0 * SUM(converted) / COUNT(*), 2) AS conv_rate_pct
+FROM a
+GROUP BY variant
+ORDER BY variant;`} title="Conversion by variant" />
+
+Output:
+
+| variant | users | conversions | conv_rate_pct |
+|---|---|---|---|
+| control | 6016 | 636 | 10.57 |
+| treatment | 5974 | 700 | 11.72 |
+
+
+Treatment converts at about 11.7 percent and control at about 10.6 percent, a difference of roughly 1.1 pp.
+
+### Example 3: sample ratio check
+
+The test was designed as 50/50. Is it?
+
+<SqlPlayground dataset="marketing" query={`WITH bad AS (
+  SELECT user_id FROM ab_test_results
+  GROUP BY user_id HAVING COUNT(DISTINCT variant) > 1
+),
+a AS (
+  SELECT DISTINCT ab_id, user_id, variant
+  FROM ab_test_results
+  WHERE user_id NOT IN (SELECT user_id FROM bad)
+)
+SELECT variant,
+       COUNT(*) AS users,
+       ROUND(100.0 * COUNT(*) / SUM(COUNT(*)) OVER (), 2) AS share_pct
+FROM a
+GROUP BY variant
+ORDER BY variant;`} title="Sample ratio check" />
+
+Output:
+
+| variant | users | share_pct |
+|---|---|---|
+| control | 6016 | 50.18 |
+| treatment | 5974 | 49.82 |
+
+
+The split is almost exactly 50/50, so randomisation looks healthy. A split like 55/45 on 12,000 users would be a red flag and you would stop and investigate before reporting any lift.
+
+### Example 4: lift and revenue per user in one row
+
+<SqlPlayground dataset="marketing" query={`WITH bad AS (
+  SELECT user_id FROM ab_test_results
+  GROUP BY user_id HAVING COUNT(DISTINCT variant) > 1
+),
+a AS (
+  SELECT DISTINCT ab_id, user_id, variant, converted, revenue_inr
+  FROM ab_test_results
+  WHERE user_id NOT IN (SELECT user_id FROM bad)
+),
+r AS (
+  SELECT AVG(CASE WHEN variant = 'control'   THEN converted END) AS c_rate,
+         AVG(CASE WHEN variant = 'treatment' THEN converted END) AS t_rate,
+         AVG(CASE WHEN variant = 'control'   THEN revenue_inr END) AS c_rpu,
+         AVG(CASE WHEN variant = 'treatment' THEN revenue_inr END) AS t_rpu
+  FROM a
+)
+SELECT ROUND(100 * c_rate, 2) AS control_pct,
+       ROUND(100 * t_rate, 2) AS treatment_pct,
+       ROUND(100 * (t_rate - c_rate), 2) AS abs_lift_pp,
+       ROUND(100.0 * (t_rate - c_rate) / c_rate, 1) AS rel_lift_pct,
+       ROUND(c_rpu, 2) AS control_rpu,
+       ROUND(t_rpu, 2) AS treatment_rpu,
+       ROUND(100.0 * (t_rpu - c_rpu) / c_rpu, 1) AS rpu_lift_pct
+FROM r;`} title="Lift and revenue per user" />
+
+Output:
+
+| control_pct | treatment_pct | abs_lift_pp | rel_lift_pct | control_rpu | treatment_rpu | rpu_lift_pct |
+|---|---|---|---|---|---|---|
+| 10.57 | 11.72 | 1.15 | 10.8 | 113.33 | 123.96 | 9.4 |
+
+
+Conversion lift is about 1.1 pp (roughly 10 percent relative). Revenue per user also rises, but by a different percentage. The two lifts differ because the treatment's average order is a little smaller (free shipping costs money), which is exactly why you check revenue and not only conversion.
+
+**Is it significant?** With 6,016 control users (636 converted) and 5,974 treatment users (700 converted), a two-proportion z-test gives z of about 2.0, which is a p-value of about 0.05. That is borderline: promising, but not overwhelming. A careful analyst would say so, and might ask for more data.
+
+### Example 5: segments
+
+<SqlPlayground dataset="marketing" query={`WITH bad AS (
+  SELECT user_id FROM ab_test_results
+  GROUP BY user_id HAVING COUNT(DISTINCT variant) > 1
+),
+a AS (
+  SELECT DISTINCT ab_id, user_id, variant, device_type, converted
+  FROM ab_test_results
+  WHERE user_id NOT IN (SELECT user_id FROM bad)
+)
+SELECT device_type,
+       SUM(variant = 'control') AS control_users,
+       SUM(variant = 'treatment') AS treatment_users,
+       ROUND(100.0 * AVG(CASE WHEN variant = 'control' THEN converted END), 2) AS control_pct,
+       ROUND(100.0 * AVG(CASE WHEN variant = 'treatment' THEN converted END), 2) AS treatment_pct
+FROM a
+GROUP BY device_type
+ORDER BY device_type;`} title="Result by device" />
+
+Output:
+
+| device_type | control_users | treatment_users | control_pct | treatment_pct |
+|---|---|---|---|---|
+| Desktop | 1837 | 1754 | 15.35 | 13.91 |
+| Mobile | 4179 | 4220 | 8.47 | 10.81 |
+
+
+The overall lift hides different stories per device. Always show the group sizes next to the rates, so readers know which numbers are trustworthy. A segment-level result needs its own significance check, and checking many segments increases the chance of a false finding.
+
+## Common mistakes
+
+<CommonMistake>
+Not removing duplicate rows and contaminated users. Sample sizes and rates are wrong, and a borderline result can flip.
+</CommonMistake>
+
+<CommonMistake>
+Computing revenue per user only over converters. That is average order value. RPU divides by all users in the variant.
+</CommonMistake>
+
+<CommonMistake>
+Reporting lift in percent when you mean percentage points. Moving from 10 percent to 11 percent is 1 pp absolute and 10 percent relative. Say which one.
+</CommonMistake>
+
+<CommonMistake>
+Skipping the sample ratio check. If assignment was not 50/50, the groups may differ in more than the treatment.
+</CommonMistake>
+
+<CommonMistake>
+Declaring a winner from the difference alone. Without a significance test and the sample sizes, you cannot tell signal from noise.
+</CommonMistake>
+
+<CommonMistake>
+Slicing into many segments and celebrating the best one. With enough slices, some will look good by chance.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="pattern-ab-test" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Control converts at 8 percent and treatment at 10 percent. What is the absolute lift?", options: ["2 percentage points", "25 percent", "2 percent", "0.2"], answer: 0, explanation: "10 minus 8 is 2 percentage points. The relative lift is 2 divided by 8, which is 25 percent." },
+  { q: "Why remove users who appear in both variants?", options: ["They convert more", "We cannot attribute their behaviour to one version", "They are bots", "They are duplicates"], answer: 1, explanation: "A user who saw both versions has mixed exposure, so their outcome cannot be assigned to either variant." },
+  { q: "What is revenue per user?", options: ["Revenue divided by converters", "Revenue divided by all users in the variant", "Revenue divided by orders", "Revenue divided by days"], answer: 1, explanation: "RPU includes non-converters, who have zero revenue." },
+  { q: "What does a sample ratio mismatch suggest?", options: ["The treatment worked", "The randomisation or logging is broken", "The p-value is low", "More users are needed"], answer: 1, explanation: "If the split differs from the design more than chance allows, assignment or tracking is faulty." },
+  { q: "What does AVG(CASE WHEN variant = 'control' THEN converted END) compute?", options: ["The conversion rate of control users only", "The conversion rate of all users", "The count of control users", "The sum of conversions"], answer: 0, explanation: "CASE returns NULL for other variants, and AVG ignores NULLs, so only control rows are averaged." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers do not only want the query. They want you to say "I would first check data quality and the sample ratio, then compare conversion with sample sizes and a significance test." That order shows you understand experiments.
+</InterviewAlert>
+
+<InterviewQ q="How would you summarise an A/B test in SQL?">
+I clean the data (drop duplicates, remove users in both variants), then group by variant to get users, conversions and conversion rate. I add absolute and relative lift with conditional aggregation, revenue per user, and a breakdown by key segments. I also report the sample sizes and say that I would run a significance test.
+</InterviewQ>
+
+<InterviewQ q="What is the sample ratio mismatch and why check it?">
+If the test was designed 50/50 but one group has noticeably more users than chance would allow, something is wrong with assignment or tracking, and any conclusion is unreliable. I check shares per variant first, before I compare metrics.
+</InterviewQ>
+
+<InterviewQ q="Conversion went up but revenue per user went up less. Why?">
+The treatment may attract lower-value orders, or it gives a discount such as free shipping that reduces the order value. RPU combines conversion and order value, so I look at both parts and at margin, not only at the top-line lift.
+</InterviewQ>
+
+<InterviewQ q="The overall result is positive but one segment is negative. What do you do?">
+I check the size of the segment and its significance, because small groups are noisy. If the effect is real, I might roll out the change only to segments where it helps. I would treat segment findings as hypotheses for a follow-up test, not as proof.
+</InterviewQ>
+
+## Key takeaways
+
+- Clean first: duplicates and users in both variants.
+- Check the sample ratio before any metric.
+- Conversion rate = converters / users; lift in percentage points and in percent relative.
+- RPU uses all users in the variant, not only converters.
+- SQL gives the counts; always mention sample size and a significance test.
+
+## Further reading
+
+<FurtherReading ids={["mode-sql", "sqlite-docs", "khan-stats", "stratascratch"]} />

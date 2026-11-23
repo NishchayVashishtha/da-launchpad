@@ -1,0 +1,350 @@
+[
+  {
+    "id": "sql-pattern-cohort-001",
+    "module": "sql",
+    "topic": "pattern-cohort",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Growth wants signup-to-payment conversion by cohort. For each signup month of 2023 return `cohort_month` (YYYY-MM), `signups` (distinct users), `payers` (users who have a `payment_success` event, case-insensitive) and `payer_pct` (1 decimal). Order by `cohort_month`.",
+    "dataset": "subscription",
+    "hint": "Cohort = signup month from users. LEFT JOIN a set of payer ids and count with CASE.",
+    "solutionSql": "WITH u AS (SELECT DISTINCT user_id, signup_date FROM users WHERE signup_date >= '2023-01-01' AND signup_date < '2024-01-01'),\np AS (SELECT DISTINCT user_id FROM events WHERE LOWER(event_name) = 'payment_success')\nSELECT strftime('%Y-%m', u.signup_date) AS cohort_month, COUNT(*) AS signups, COUNT(p.user_id) AS payers, ROUND(100.0 * COUNT(p.user_id) / COUNT(*), 1) AS payer_pct\nFROM u LEFT JOIN p ON p.user_id = u.user_id\nGROUP BY cohort_month ORDER BY cohort_month",
+    "expectedOutput": {
+      "columns": [
+        "cohort_month",
+        "signups",
+        "payers",
+        "payer_pct"
+      ],
+      "rows": [
+        [
+          "2023-01",
+          152,
+          22,
+          14.5
+        ],
+        [
+          "2023-02",
+          154,
+          30,
+          19.5
+        ],
+        [
+          "2023-03",
+          155,
+          26,
+          16.8
+        ],
+        [
+          "2023-04",
+          175,
+          40,
+          22.9
+        ],
+        [
+          "2023-05",
+          178,
+          42,
+          23.6
+        ],
+        [
+          "2023-06",
+          181,
+          46,
+          25.4
+        ],
+        [
+          "2023-07",
+          169,
+          45,
+          26.6
+        ],
+        [
+          "2023-08",
+          188,
+          50,
+          26.6
+        ],
+        [
+          "2023-09",
+          217,
+          53,
+          24.4
+        ],
+        [
+          "2023-10",
+          205,
+          58,
+          28.3
+        ],
+        [
+          "2023-11",
+          186,
+          51,
+          27.4
+        ],
+        [
+          "2023-12",
+          195,
+          34,
+          17.4
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Each user belongs to the cohort of their signup month. The LEFT JOIN keeps non-payers as rows with a NULL payer id, and COUNT(p.user_id) counts only the matched ones, so the same query returns both the cohort size and the payers. Both sides use DISTINCT users so duplicate rows do not inflate the counts.",
+    "commonMistake": "Using an INNER JOIN to the payers drops non-paying users, so signups equals payers and the rate looks like 100%.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 10,
+    "tags": [
+      "cohort",
+      "interview-pattern",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-pattern-cohort-002",
+    "module": "sql",
+    "topic": "pattern-cohort",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Product wants week-1 engagement by signup cohort. For each signup month of 2024 return `cohort_month`, `signups` (distinct users) and `week1_active_pct`: the percent of users who have an `app_open` or `content_view` event (case-insensitive) between 1 and 7 days after their signup date (date difference of 1 to 7, signup day itself not counted). Round to 1 decimal. Order by `cohort_month`.",
+    "dataset": "subscription",
+    "hint": "Join users to events, compute the day difference with julianday(date(event_time)) - julianday(signup_date), and count distinct matching users.",
+    "solutionSql": "WITH u AS (SELECT DISTINCT user_id, signup_date FROM users WHERE signup_date >= '2024-01-01' AND signup_date < '2025-01-01'),\na AS (\n  SELECT DISTINCT u.user_id\n  FROM u JOIN events e ON e.user_id = u.user_id\n  WHERE LOWER(e.event_name) IN ('app_open', 'content_view')\n    AND julianday(date(e.event_time)) - julianday(u.signup_date) BETWEEN 1 AND 7\n)\nSELECT strftime('%Y-%m', u.signup_date) AS cohort_month, COUNT(*) AS signups, ROUND(100.0 * COUNT(a.user_id) / COUNT(*), 1) AS week1_active_pct\nFROM u LEFT JOIN a ON a.user_id = u.user_id\nGROUP BY cohort_month ORDER BY cohort_month",
+    "expectedOutput": {
+      "columns": [
+        "cohort_month",
+        "signups",
+        "week1_active_pct"
+      ],
+      "rows": [
+        [
+          "2024-01",
+          233,
+          62.2
+        ],
+        [
+          "2024-02",
+          198,
+          58.6
+        ],
+        [
+          "2024-03",
+          244,
+          56.6
+        ],
+        [
+          "2024-04",
+          224,
+          61.6
+        ],
+        [
+          "2024-05",
+          281,
+          60.5
+        ],
+        [
+          "2024-06",
+          234,
+          64.1
+        ],
+        [
+          "2024-07",
+          266,
+          64.3
+        ],
+        [
+          "2024-08",
+          267,
+          63.7
+        ],
+        [
+          "2024-09",
+          258,
+          60.9
+        ],
+        [
+          "2024-10",
+          306,
+          58.8
+        ],
+        [
+          "2024-11",
+          263,
+          61.2
+        ],
+        [
+          "2024-12",
+          271,
+          54.2
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The activity set contains each user at most once, who has an engagement event within days 1 to 7 after signup. A LEFT JOIN back to the cohort keeps users with no activity in the denominator. Using date() on the event time strips the clock, so a late-night signup and an early-morning event are compared by calendar day.",
+    "commonMistake": "An INNER JOIN to the activity set removes inactive users, so every cohort shows 100% retention.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 18,
+    "tags": [
+      "cohort",
+      "interview-pattern",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-pattern-cohort-003",
+    "module": "sql",
+    "topic": "pattern-cohort",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Build a retention table by acquisition channel. Take users on monthly billing (`billing_cycle = 'Monthly'` in `subscriptions`) whose first paying event (`payment_success` or `renewal_success`, case-insensitive) is before 2024-07-01. For each `acquisition_source` return `payers` (users at month 0) and the percent of them still paying in month 3 (`pct_month3`, 1 decimal). Month number is the calendar-month difference between the activity month and the first paying month. Order by `acquisition_source`.",
+    "dataset": "subscription",
+    "hint": "Per user: first paying time (MIN). Then a month number for each paying event, then COUNT(DISTINCT CASE WHEN month_no = 3 ...).",
+    "solutionSql": "WITH pay AS (\n  SELECT e.user_id, e.event_time FROM events e JOIN subscriptions s ON s.user_id = e.user_id\n  WHERE LOWER(e.event_name) IN ('payment_success', 'renewal_success') AND s.billing_cycle = 'Monthly'\n),\nfirst AS (SELECT user_id, MIN(event_time) AS first_pay FROM pay GROUP BY user_id HAVING MIN(event_time) < '2024-07-01'),\nact AS (\n  SELECT DISTINCT p.user_id,\n         (CAST(strftime('%Y', p.event_time) AS INT) * 12 + CAST(strftime('%m', p.event_time) AS INT)) - (CAST(strftime('%Y', f.first_pay) AS INT) * 12 + CAST(strftime('%m', f.first_pay) AS INT)) AS month_no\n  FROM pay p JOIN first f ON f.user_id = p.user_id\n),\nsrc AS (SELECT DISTINCT user_id, acquisition_source FROM users)\nSELECT s.acquisition_source,\n       COUNT(DISTINCT CASE WHEN a.month_no = 0 THEN a.user_id END) AS payers,\n       ROUND(100.0 * COUNT(DISTINCT CASE WHEN a.month_no = 3 THEN a.user_id END) / COUNT(DISTINCT CASE WHEN a.month_no = 0 THEN a.user_id END), 1) AS pct_month3\nFROM act a JOIN src s ON s.user_id = a.user_id\nGROUP BY s.acquisition_source ORDER BY s.acquisition_source",
+    "expectedOutput": {
+      "columns": [
+        "acquisition_source",
+        "payers",
+        "pct_month3"
+      ],
+      "rows": [
+        [
+          "Google Ads",
+          142,
+          54.2
+        ],
+        [
+          "Influencer",
+          42,
+          42.9
+        ],
+        [
+          "Instagram",
+          128,
+          63.3
+        ],
+        [
+          "Organic",
+          197,
+          59.9
+        ],
+        [
+          "Play Store Feature",
+          44,
+          68.2
+        ],
+        [
+          "Referral",
+          114,
+          59.6
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The query follows the cohort template: first paying time per user, month number for each paying event, then a CASE pivot inside COUNT(DISTINCT ...). Only users whose first payment is before July 2024 are included, so every one of them has had time to reach month 3. Grouping by acquisition source instead of cohort month answers whether some channels retain better.",
+    "commonMistake": "Including recent users who cannot have a month-3 event yet counts them as churned and drags every channel's retention down.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 20,
+    "tags": [
+      "cohort",
+      "interview-pattern",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-pattern-cohort-004",
+    "module": "sql",
+    "topic": "pattern-cohort",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Churn watch: for each paid-start month from 2024-01 to 2024-09 (month of `paid_start_date` in `subscriptions`), return `cohort_month`, `paid_users`, `cancelled_90d` (users whose `cancel_date` is within 90 days of `paid_start_date`, inclusive), `cancel_rate_pct` (1 decimal) and `above_average` (1 if the cohort's rate is higher than the combined rate of all nine cohorts, else 0). Order by `cohort_month`.",
+    "dataset": "subscription",
+    "hint": "Group by paid-start month, count with CASE using julianday difference, and compute the overall rate with a window SUM or a second CTE.",
+    "solutionSql": "WITH c AS (\n  SELECT strftime('%Y-%m', paid_start_date) AS cohort_month,\n         COUNT(*) AS paid_users,\n         SUM(cancel_date IS NOT NULL AND julianday(cancel_date) - julianday(paid_start_date) <= 90) AS cancelled_90d\n  FROM subscriptions\n  WHERE paid_start_date >= '2024-01-01' AND paid_start_date < '2024-10-01'\n  GROUP BY cohort_month\n)\nSELECT cohort_month, paid_users, cancelled_90d, ROUND(100.0 * cancelled_90d / paid_users, 1) AS cancel_rate_pct,\n       CASE WHEN 1.0 * cancelled_90d / paid_users > 1.0 * SUM(cancelled_90d) OVER () / SUM(paid_users) OVER () THEN 1 ELSE 0 END AS above_average\nFROM c ORDER BY cohort_month",
+    "expectedOutput": {
+      "columns": [
+        "cohort_month",
+        "paid_users",
+        "cancelled_90d",
+        "cancel_rate_pct",
+        "above_average"
+      ],
+      "rows": [
+        [
+          "2024-01",
+          49,
+          13,
+          26.5,
+          0
+        ],
+        [
+          "2024-02",
+          38,
+          10,
+          26.3,
+          0
+        ],
+        [
+          "2024-03",
+          47,
+          24,
+          51.1,
+          1
+        ],
+        [
+          "2024-04",
+          60,
+          24,
+          40,
+          1
+        ],
+        [
+          "2024-05",
+          67,
+          20,
+          29.9,
+          0
+        ],
+        [
+          "2024-06",
+          49,
+          14,
+          28.6,
+          0
+        ],
+        [
+          "2024-07",
+          63,
+          12,
+          19,
+          0
+        ],
+        [
+          "2024-08",
+          53,
+          20,
+          37.7,
+          1
+        ],
+        [
+          "2024-09",
+          54,
+          14,
+          25.9,
+          0
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The cohort is the month of the first paid day, and the 90-day window is measured per user, so every cohort gets the same chance to churn. Cohorts that started after September are left out because they would not have a full 90 days. Window sums over () give the combined rate, so each cohort is compared with a fair overall number rather than an average of percentages.",
+    "commonMistake": "Averaging the nine cohort percentages gives a different 'overall' rate than total cancellations divided by total payers, because the cohorts have different sizes.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 18,
+    "tags": [
+      "cohort",
+      "interview-pattern",
+      "sql"
+    ]
+  }
+]

@@ -28,7 +28,7 @@ Last session: 2026-11-24. Read this first, then CLAUDE.md. The product spec is m
 Check each item with `ls`, audit and validate:
 - DONE: SQL 13–17 (joins, subqueries, CTEs, set ops): 5 lessons + 34 questions (8 easy / 16 medium / 10 hard), validated.
 - SQL 18–25 (window functions, cleaning, dedup, pivot, optimisation, DDL/DML). Practice: window-ranking, window-offset, window-frames, cleaning, dedup, pivot, optimization, ddl-dml.
-- SQL 26–33 patterns (nth-highest, top-n, running-total, mom, yoy, cohort, funnel, streaks). Lessons exist, but at handoff the practice files `pattern-{nth-highest,top-n,running-total,mom,yoy,cohort,funnel,streaks}.json` were missing.
+- DONE: SQL 26–33 patterns: 8 lessons + 30 questions (3 easy / 12 medium / 15 hard), validated.
 - SQL 34–42 patterns (duplicates, median, missing, sessions, rfm, percent-total, ab-test, playbook, screening tests). Practice files exist; verify them.
 - Targets: SQL needs 200+ questions in total (about 70 easy / 80 medium / 50 hard). Re-run `npm run audit` for the count. If any lesson or practice file above is missing or broken, relaunch a Sonnet agent for just that slice, using the same prompt pattern (read `.briefs/content-common.md`; list owned files).
 
@@ -44,6 +44,9 @@ Check each item with `ls`, audit and validate:
    - Phase 6: Projects (8), job toolkit (resume builder, tracker), cheat sheets, glossary 300+ and flashcards 500+ (Haiku).
    - Phase 7: polish, Lighthouse, README, final counts report.
    - Tool pages go at /tools/<name>/ and get registered in `src/data/tools.json` with `enabled: true`.
+
+## Lesson learned
+- Parallel agents collided in a shared /tmp dir. Tell each agent to use its own scratch dir (e.g. /tmp/<task-slug>/).
 
 ## Git
 Phase 1 is committed. Everything after it is committed as "WIP: Module 0, Excel, Power BI, SQL partial" (the build is not yet green; see item 1).

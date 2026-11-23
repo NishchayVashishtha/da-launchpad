@@ -1,0 +1,350 @@
+---
+title: "Views and basic DDL/DML: CREATE, INSERT, UPDATE, DELETE, transactions"
+description: "Create tables with data types and constraints, change data safely, save queries as views and understand transactions."
+module: sql
+order: 25
+estimatedMinutes: 55
+objectives:
+  - "Distinguish DDL (structure), DML (data) and queries (DQL)"
+  - "Create a table with data types, PRIMARY KEY, NOT NULL, UNIQUE, CHECK and DEFAULT"
+  - "Insert, update and delete rows safely, always checking with SELECT first"
+  - "Create a view to save and reuse a query"
+  - "Explain transactions: BEGIN, COMMIT, ROLLBACK and the ACID idea"
+tags: ["sql", "ddl", "dml", "views", "transactions", "constraints"]
+---
+
+## Learning objectives
+
+- Distinguish DDL (structure), DML (data) and queries (DQL)
+- Create a table with data types, PRIMARY KEY, NOT NULL, UNIQUE, CHECK and DEFAULT
+- Insert, update and delete rows safely, always checking with SELECT first
+- Create a view to save and reuse a query
+- Explain transactions: BEGIN, COMMIT, ROLLBACK and the ACID idea
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Most of your time as an analyst is spent reading data with SELECT. But you will also build small helper tables (a city-to-region mapping, a list of campaign targets), save logic as views that dashboards read, and sometimes fix rows. Interviewers ask: 'What is the difference between DELETE and TRUNCATE?', 'What is a view?', 'What is a transaction?'. And one wrong `UPDATE` without `WHERE` on a production table is a story every team tells about a junior. Learn the habits here, where the database is in memory and mistakes cost nothing.
+</RealWorld>
+
+## Concept
+
+### Three families of SQL statements
+
+| Family | Stands for | Statements | What it changes |
+|---|---|---|---|
+| DDL | Data Definition Language | `CREATE`, `ALTER`, `DROP` | the **structure** (tables, views, indexes) |
+| DML | Data Manipulation Language | `INSERT`, `UPDATE`, `DELETE` | the **rows** inside tables |
+| DQL | Data Query Language | `SELECT` | nothing, it only reads |
+
+(You may also hear TCL, transaction control: `BEGIN`, `COMMIT`, `ROLLBACK`.)
+
+Think of a table as a register. DDL is drawing the register's columns. DML is writing, correcting and striking out entries. SELECT is reading it.
+
+<Warning>
+The playground database lives in your browser's memory. Every change you make with CREATE, INSERT, UPDATE or DELETE is lost when you reload the page, and the original datasets are never modified on disk. That makes it a safe place to experiment. On a real company database changes are permanent, so you would first ask for a test environment.
+</Warning>
+
+### CREATE TABLE, data types and constraints
+
+```sql
+CREATE TABLE campaign_leads (
+    lead_id             INTEGER PRIMARY KEY,
+    full_name           TEXT NOT NULL,
+    city                TEXT DEFAULT 'Unknown',
+    expected_budget_inr REAL CHECK (expected_budget_inr >= 0),
+    email               TEXT UNIQUE,
+    created_on          DATE
+);
+```
+
+**Data types** (SQLite): `INTEGER` (whole numbers), `REAL` (decimals), `TEXT` (strings), `BLOB` (raw bytes), `NUMERIC`. SQLite is flexible and stores dates as text in ISO format, so `DATE` is only a label. Stricter databases have `VARCHAR(n)`, `DECIMAL(12,2)`, `DATE`, `TIMESTAMP`, `BOOLEAN`. Use `DECIMAL` for money in those databases, because binary decimals (`REAL`/`FLOAT`) cannot represent ₹0.10 exactly.
+
+**Constraints** are rules the database enforces so bad data cannot get in:
+
+| Constraint | Rule |
+|---|---|
+| `PRIMARY KEY` | unique, not null; identifies each row |
+| `NOT NULL` | value is required |
+| `UNIQUE` | no two rows share the value (NULLs allowed) |
+| `CHECK (cond)` | the condition must be true, for example `amount >= 0` |
+| `DEFAULT x` | used when you do not supply a value |
+| `FOREIGN KEY` | value must exist in another table (for example `orders.customer_id`) |
+
+Many of the data problems in this course (duplicate ids, impossible values) exist precisely because the source tables had no such constraints.
+
+You can also build a table from a query: `CREATE TABLE t2 AS SELECT ...`. It copies the data but not the constraints.
+
+`ALTER TABLE t ADD COLUMN c TEXT` adds a column. `DROP TABLE t` deletes the table and its data. `DROP TABLE IF EXISTS t` avoids an error when it is already gone.
+
+### INSERT, UPDATE, DELETE
+
+```sql
+INSERT INTO t (col1, col2) VALUES ('a', 1), ('b', 2);   -- add rows
+INSERT INTO t2 SELECT ... FROM t WHERE ...;               -- add rows from a query
+UPDATE t SET col1 = 'x' WHERE id = 5;                     -- change rows
+DELETE FROM t WHERE id = 5;                               -- remove rows
+```
+
+Always list the columns in `INSERT`, so a later column change does not misalign your values.
+
+**The golden rule: `UPDATE` and `DELETE` without a `WHERE` change every row.** Safe routine:
+
+1. Write `SELECT * FROM t WHERE <condition>` first, and check the rows and the count.
+2. Change `SELECT *` into `UPDATE ... SET ...` or `DELETE`, keeping the same `WHERE`.
+3. Re-run the SELECT to verify.
+4. On a real database, do it inside a transaction.
+
+`DELETE` removes chosen rows and can be rolled back. `TRUNCATE TABLE` (not in SQLite) empties the whole table very fast and usually cannot be rolled back easily. `DROP TABLE` removes the table itself.
+
+### Views
+
+A **view** is a saved SELECT with a name. It stores no data. Each time you query the view, the database runs the saved query.
+
+```sql
+CREATE VIEW v_orders_clean AS
+SELECT DISTINCT order_id, customer_id, order_date, total_amount FROM orders;
+```
+
+Why use views:
+
+- **Reuse**: put the cleaning logic (dedupe, outlier filter) in one place. Everyone, and every dashboard, reads the same definition.
+- **Simplicity**: hide complex joins behind a simple name.
+- **Security**: give a team a view without sensitive columns like phone numbers.
+
+Views are always up to date because they read the base tables live. A **materialised view** (PostgreSQL, Oracle, Snowflake) stores the result for speed and must be refreshed. SQLite has no materialised views. Use `DROP VIEW IF EXISTS v` to remove a view.
+
+### Transactions and ACID
+
+A **transaction** groups several statements into one all-or-nothing unit. Classic example: a UPI-style wallet transfer of ₹2,000 from Asha to Bilal needs two updates: debit Asha and credit Bilal. If the system crashes after the first, money has vanished.
+
+```sql
+BEGIN;
+UPDATE wallets SET balance = balance - 2000 WHERE name = 'Asha';
+UPDATE wallets SET balance = balance + 2000 WHERE name = 'Bilal';
+COMMIT;      -- make both permanent
+-- or ROLLBACK;  -- undo both
+```
+
+**ACID** is the promise of a reliable database:
+
+- **A**tomicity: all statements succeed or none do.
+- **C**onsistency: constraints are always respected.
+- **I**solation: concurrent transactions do not see each other's half-finished work.
+- **D**urability: once committed, data survives a crash.
+
+<FormulaCard title="Safe change routine">
+SELECT first, then BEGIN, then change, then SELECT to verify, then COMMIT (or ROLLBACK if anything looks wrong).
+</FormulaCard>
+
+### Dialect notes
+
+- Auto-numbering: SQLite `INTEGER PRIMARY KEY` (automatic), MySQL `AUTO_INCREMENT`, PostgreSQL `SERIAL` or `GENERATED ... AS IDENTITY`, SQL Server `IDENTITY(1,1)`.
+- Start a transaction: `BEGIN` (SQLite, PostgreSQL), `START TRANSACTION` (MySQL), `BEGIN TRANSACTION` (SQL Server).
+- Update with a join works differently in each database.
+
+## Worked examples
+
+### Example 1: creating a table with constraints and inserting rows
+
+A small table for marketing leads. Rows 1 to 3 give all values. The last row omits `city`, `email` and `created_on`: the default `'Unknown'` fills the city and the rest are NULL. The query ends with a SELECT to show the result. (The first line makes the example re-runnable.)
+
+<SqlPlayground dataset="ecommerce" query={`DROP TABLE IF EXISTS campaign_leads;
+CREATE TABLE campaign_leads (
+    lead_id             INTEGER PRIMARY KEY,
+    full_name           TEXT NOT NULL,
+    city                TEXT DEFAULT 'Unknown',
+    expected_budget_inr REAL CHECK (expected_budget_inr >= 0),
+    email               TEXT UNIQUE,
+    created_on          DATE
+);
+INSERT INTO campaign_leads (full_name, city, expected_budget_inr, email, created_on) VALUES
+    ('Anjali Verma', 'Pune',  45000,  'anjali.v@example.in', '2024-11-02'),
+    ('Karan Mehta',  NULL,   120000,  'karan.m@example.in',  '2024-11-03'),
+    ('Divya Nair',   'Kochi', 30000,  'divya.n@example.in',  '2024-11-05');
+INSERT INTO campaign_leads (full_name, expected_budget_inr) VALUES ('Imran Sheikh', 75000);
+SELECT * FROM campaign_leads ORDER BY lead_id;`} title="CREATE TABLE and INSERT" />
+
+**Output:**
+
+| lead_id | full_name | city | expected_budget_inr | email | created_on |
+|---|---|---|---|---|---|
+| 1 | Anjali Verma | Pune | 45000.0 | anjali.v@example.in | 2024-11-02 |
+| 2 | Karan Mehta | NULL | 120000.0 | karan.m@example.in | 2024-11-03 |
+| 3 | Divya Nair | Kochi | 30000.0 | divya.n@example.in | 2024-11-05 |
+| 4 | Imran Sheikh | Unknown | 75000.0 | NULL | NULL |
+
+`lead_id` was filled automatically (1 to 4) because it is an `INTEGER PRIMARY KEY`. Imran's city is `Unknown` thanks to `DEFAULT`, but Karan's city is NULL, because we explicitly inserted NULL, and a default only applies when the column is left out. Constraints reject bad rows with errors such as `CHECK constraint failed`, `UNIQUE constraint failed: campaign_leads.email` and `NOT NULL constraint failed: campaign_leads.full_name`. Try inserting a negative budget in the playground to see it.
+
+### Example 2: UPDATE and DELETE on a practice copy
+
+We copy six customers whose city text is messy into a practice table (so the real table is untouched), keep the original city in a second column, standardise the city with `UPDATE`, give Prime membership to two customers, and delete one row.
+
+<SqlPlayground dataset="ecommerce" query={`DROP TABLE IF EXISTS cust_demo;
+CREATE TABLE cust_demo AS
+SELECT customer_id, full_name, city AS city_original, city, is_prime
+FROM customers
+WHERE city IS NOT NULL
+  AND city <> UPPER(SUBSTR(TRIM(city), 1, 1)) || LOWER(SUBSTR(TRIM(city), 2))
+ORDER BY customer_id
+LIMIT 6;
+
+UPDATE cust_demo
+SET city = UPPER(SUBSTR(TRIM(city), 1, 1)) || LOWER(SUBSTR(TRIM(city), 2));
+
+UPDATE cust_demo SET is_prime = 1 WHERE customer_id IN (SELECT MIN(customer_id) FROM cust_demo);
+
+DELETE FROM cust_demo WHERE customer_id = (SELECT MAX(customer_id) FROM cust_demo);
+
+SELECT customer_id, city_original, city, is_prime FROM cust_demo ORDER BY customer_id;`} title="Fix and delete rows safely" />
+
+**Output:**
+
+| customer_id | city_original | city | is_prime |
+|---|---|---|---|
+| 16 | DELHI | Delhi | 1 |
+| 53 | mumbai | Mumbai | 0 |
+| 65 |  delhi   | Delhi | 0 |
+| 70 |  chennai   | Chennai | 0 |
+| 72 |  Kochi | Kochi | 0 |
+
+Five rows remain: the sixth was deleted. The second column shows what the raw text looked like (extra spaces and odd casing), and `city` is the repaired value. The second `UPDATE` has a `WHERE` that targets one customer. The first `UPDATE` has none on purpose, because we want every row of this practice table fixed. On a real table, a missing `WHERE` is how disasters happen.
+
+### Example 3: saving logic as a view
+
+First a view that removes duplicate orders, then a second view built on the first that gives monthly delivered revenue. Anyone can now query `v_monthly_sales` without knowing about the duplicates. A view can be built on another view.
+
+<SqlPlayground dataset="ecommerce" query={`DROP VIEW IF EXISTS v_monthly_sales;
+DROP VIEW IF EXISTS v_orders_clean;
+
+CREATE VIEW v_orders_clean AS
+SELECT DISTINCT order_id, customer_id, order_date, order_status, sales_channel, total_amount
+FROM orders;
+
+CREATE VIEW v_monthly_sales AS
+SELECT strftime('%Y-%m', order_date) AS month,
+       COUNT(*) AS orders,
+       ROUND(SUM(total_amount)) AS revenue_inr
+FROM v_orders_clean
+WHERE order_status = 'Delivered'
+GROUP BY 1;
+
+SELECT * FROM v_monthly_sales ORDER BY month LIMIT 6;`} title="CREATE VIEW" />
+
+**Output:**
+
+| month | orders | revenue_inr |
+|---|---|---|
+| 2023-01 | 332 | 1891351.0 |
+| 2023-02 | 295 | 1672373.0 |
+| 2023-03 | 284 | 1370181.0 |
+| 2023-04 | 332 | 1679260.0 |
+| 2023-05 | 330 | 1847753.0 |
+| 2023-06 | 320 | 1594534.0 |
+
+The final query is short and safe. If the cleaning rule changes (for example, exclude test orders), you edit the view in one place and every report that reads it is fixed. The view stores no data, it runs the saved query every time.
+
+### Example 4: a transaction with COMMIT and ROLLBACK
+
+A wallet table with a `CHECK` that balances can never go negative. The first transaction transfers ₹2,000 and is committed. The second debits ₹1,000 from Asha but is rolled back, as if it never happened.
+
+<SqlPlayground dataset="ecommerce" query={`DROP TABLE IF EXISTS wallets;
+CREATE TABLE wallets (
+    user_name   TEXT PRIMARY KEY,
+    balance_inr REAL NOT NULL CHECK (balance_inr >= 0)
+);
+INSERT INTO wallets VALUES ('Asha', 5000), ('Bilal', 1200);
+
+BEGIN;
+UPDATE wallets SET balance_inr = balance_inr - 2000 WHERE user_name = 'Asha';
+UPDATE wallets SET balance_inr = balance_inr + 2000 WHERE user_name = 'Bilal';
+COMMIT;
+
+BEGIN;
+UPDATE wallets SET balance_inr = balance_inr - 1000 WHERE user_name = 'Asha';
+ROLLBACK;
+
+SELECT * FROM wallets ORDER BY user_name;`} title="Wallet transfer transaction" />
+
+**Output:**
+
+| user_name | balance_inr |
+|---|---|
+| Asha | 3000.0 |
+| Bilal | 3200.0 |
+
+Asha has ₹3,000 (5,000 minus the committed 2,000) and Bilal has ₹3,200. The rolled-back ₹1,000 left no trace. Total money is unchanged at ₹6,200, which is the point of atomicity. If a statement inside the transaction had broken the `CHECK` (an overdraft), the transaction could be rolled back and no half-transfer would remain.
+
+## Common mistakes
+
+<CommonMistake>
+**UPDATE or DELETE without WHERE.** It changes every row. Always write and run the SELECT with the same WHERE first, and use a transaction on real systems.
+</CommonMistake>
+
+<CommonMistake>
+**INSERT without a column list.** `INSERT INTO t VALUES (...)` depends on column order. If a column is added or reordered later, values go to the wrong columns. Always name the columns.
+</CommonMistake>
+
+<CommonMistake>
+**Using FLOAT or REAL for money in strict databases.** Binary decimals cannot represent 0.10 exactly, so sums drift by tiny amounts. Use DECIMAL(12,2) or store paise as an integer.
+</CommonMistake>
+
+<CommonMistake>
+**Confusing a view with a table.** A view stores no data. If the base table changes, the view changes. It is also not automatically faster. It runs its query every time.
+</CommonMistake>
+
+<CommonMistake>
+**Forgetting to COMMIT, or leaving a transaction open.** Your changes may be invisible to others, and locks can block other users. Commit or roll back every time.
+</CommonMistake>
+
+<CommonMistake>
+**Treating DELETE, TRUNCATE and DROP as the same.** DELETE removes chosen rows, TRUNCATE empties all rows, DROP removes the table itself, structure included.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="ddl-dml" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Which statement changes the structure of a table?", options: ["INSERT", "UPDATE", "ALTER TABLE", "SELECT"], answer: 2, explanation: "ALTER, CREATE and DROP are DDL: they change structure. INSERT and UPDATE are DML." },
+  { q: "What does UPDATE customers SET city = 'Pune' do with no WHERE clause?", options: ["Updates nothing", "Updates only the first row", "Sets the city of every row to Pune", "Raises an error"], answer: 2, explanation: "Without WHERE the change applies to all rows." },
+  { q: "What does a view store?", options: ["A copy of the result data", "The text of a saved query", "An index", "A backup of the table"], answer: 1, explanation: "A (normal) view stores only the query definition and runs it each time." },
+  { q: "What does ROLLBACK do?", options: ["Makes changes permanent", "Undoes all changes made since BEGIN", "Deletes the table", "Starts a new transaction"], answer: 1, explanation: "ROLLBACK cancels the open transaction's changes." },
+  { q: "Which constraint ensures a column never contains a negative amount?", options: ["UNIQUE", "PRIMARY KEY", "CHECK (amount >= 0)", "DEFAULT 0"], answer: 2, explanation: "CHECK enforces a condition on every inserted or updated row." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Analyst interviews ask short definitional questions here: DELETE versus TRUNCATE versus DROP, what a view is, what constraints exist, what ACID means. Answer with one sentence of definition and one real example, and mention you would test changes in a transaction or a copy first.
+</InterviewAlert>
+
+<InterviewQ q="What is the difference between DELETE, TRUNCATE and DROP?">
+`DELETE` removes selected rows (with WHERE) and can be rolled back. `TRUNCATE` removes all rows quickly and resets the table, with no WHERE. `DROP` removes the entire table, including its structure. SQLite has no TRUNCATE; `DELETE FROM t` is used instead.
+</InterviewQ>
+
+<InterviewQ q="What is a view and why use one?">
+A view is a named, saved SELECT. It stores no data and always reflects the base tables. I use views to share one trusted definition of a metric or a cleaned dataset, to hide complexity and to expose only allowed columns. A materialised view stores results for speed but needs refreshing.
+</InterviewQ>
+
+<InterviewQ q="Explain ACID in simple words.">
+Atomicity: a transaction is all-or-nothing. Consistency: constraints always hold. Isolation: parallel transactions do not see each other's unfinished work. Durability: committed data survives crashes. The bank transfer example (debit and credit together) shows why it matters.
+</InterviewQ>
+
+<InterviewQ q="What are constraints and name a few?">
+Rules enforced by the database: PRIMARY KEY (unique and not null), NOT NULL, UNIQUE, CHECK, DEFAULT and FOREIGN KEY. They keep bad data out at the source, so analysts see fewer duplicates, orphan records and impossible values.
+</InterviewQ>
+
+## Key takeaways
+
+- DDL changes structure (CREATE, ALTER, DROP), DML changes rows (INSERT, UPDATE, DELETE), SELECT only reads.
+- Constraints (PRIMARY KEY, NOT NULL, UNIQUE, CHECK, DEFAULT, FOREIGN KEY) keep bad data out.
+- Run a SELECT with the same WHERE before every UPDATE or DELETE. No WHERE means every row.
+- A view is a saved query that stores no data. Use it to share one clean definition.
+- A transaction (BEGIN, COMMIT, ROLLBACK) makes several changes all-or-nothing. The playground database resets on reload.
+
+## Further reading
+
+<FurtherReading ids={["sqlbolt", "sqlite-docs", "postgres-docs"]} />
