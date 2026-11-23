@@ -29,7 +29,7 @@ Check each item with `ls`, audit and validate:
 - DONE: SQL 13–17 (joins, subqueries, CTEs, set ops): 5 lessons + 34 questions (8 easy / 16 medium / 10 hard), validated.
 - SQL 18–25 (window functions, cleaning, dedup, pivot, optimisation, DDL/DML). Practice: window-ranking, window-offset, window-frames, cleaning, dedup, pivot, optimization, ddl-dml.
 - DONE: SQL 26–33 patterns: 8 lessons + 30 questions (3 easy / 12 medium / 15 hard), validated.
-- SQL 34–42 patterns (duplicates, median, missing, sessions, rfm, percent-total, ab-test, playbook, screening tests). Practice files exist; verify them.
+- DONE: SQL 34–42 patterns: 9 lessons + 30 questions (3 easy / 12 medium / 15 hard), validated. TODO: lesson 41's cheat table lists the 26–33 patterns without links; add links to /sql/<slug>/.
 - Targets: SQL needs 200+ questions in total (about 70 easy / 80 medium / 50 hard). Re-run `npm run audit` for the count. If any lesson or practice file above is missing or broken, relaunch a Sonnet agent for just that slice, using the same prompt pattern (read `.briefs/content-common.md`; list owned files).
 
 ## Known issues / next actions, in order

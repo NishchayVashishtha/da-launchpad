@@ -1,0 +1,276 @@
+---
+title: "SQL screening tests: how they work and how to beat the clock"
+description: "How the timed SQL tests on this site work, a 45-minute plan for five questions, and what to do when you are stuck."
+module: sql
+order: 42
+estimatedMinutes: 40
+objectives:
+  - "Understand the format and marking of a timed SQL screening test"
+  - "Plan 45 minutes across five questions"
+  - "Use a fast routine to get oriented on each question"
+  - "Recover when stuck without losing the clock"
+  - "Avoid the mistakes that cost the most marks"
+tags: ["sql", "interview-patterns", "screening", "strategy", "timed-test"]
+---
+
+## Learning objectives
+
+- Know what a timed screening test looks like and how answers are checked.
+- Split 45 minutes across five questions with a clear plan.
+- Run a 60-second orientation on every question.
+- Use partial credit and decomposition when stuck.
+- Review quickly before you submit.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Many companies, especially service firms, fintechs and analytics consultancies in India, filter fresher applicants with an online SQL test before any interview. A typical test has about five questions and 45 to 60 minutes. Plenty of candidates who know SQL fail because they spend 25 minutes on question 2 and never see question 5. Test-taking is a separate skill from SQL, and it is easy to practise.
+</RealWorld>
+
+## Concept
+
+### How the timed tests on this site work
+
+- There are full tests of **5 questions in 45 minutes**, with the same kind of questions you practise on the lesson pages.
+- A countdown timer runs while you work. Treat it as real.
+- Your query runs against the dataset in your browser, using SQLite.
+- Marking compares your **result table** with the expected one. There is no marking of style. These rules come from the shared answer checker:
+  - The **number of columns** must match.
+  - The **column names** must match the question (upper or lower case does not matter). If your values are right but a name differs, you still fail. Use `AS` to name columns exactly as the question says.
+  - **Rows** are compared without regard to order, unless the question says to order the result. When it does, the order must match exactly, so add the tie-breakers the question mentions.
+  - **Numbers** are compared with a very small tolerance, but `ROUND` as asked. If the question says "rounded to 2 decimals", round.
+- Your progress and scores are saved only in your own browser.
+
+Real company tests differ in the details (some use MySQL or PostgreSQL, some show only pass or fail), but the skills are identical.
+
+### A 45-minute plan for five questions
+
+Questions on real tests usually go from easy to hard. Use a budget, not a feeling.
+
+| Block | Time | What to do |
+|---|---|---|
+| Scan | 0 to 3 min | Read all five questions. Mark easy, medium, hard. |
+| Q1 (easy) | 3 to 8 | Solve fast. Do not over-polish. |
+| Q2 (easy/medium) | 8 to 15 | Solve. |
+| Q3 (medium) | 15 to 25 | Solve. Stop at 10 minutes if stuck. |
+| Q4 (medium/hard) | 25 to 35 | Build with CTEs. Aim for a correct partial result. |
+| Q5 (hard) | 35 to 42 | Get as far as you can. |
+| Review | 42 to 45 | Re-read each question's output spec against your column names, order and rounding. |
+
+Rules of thumb:
+
+1. **Never spend more than 12 minutes on one question** on the first pass. Move on and return.
+2. **Easy marks first.** Every question usually weighs the same.
+3. **A submitted partial answer beats a blank one**, if the test gives partial credit or you can come back.
+
+### The 60-second orientation routine
+
+For each question, before writing the answer:
+
+1. Underline the **output columns** and their **names**, and the **ordering**.
+2. Say the grain: "one row per ___".
+3. Find the **tables** and the **join key**.
+4. Run `SELECT * FROM table LIMIT 5` for the main table.
+5. Check for duplicates and NULLs in the key column with a quick count.
+
+### What to do when stuck
+
+Work down this list, spending a minute or two on each.
+
+1. **Shrink the problem.** Solve it for one customer, one day or one category.
+2. **Build the first CTE only.** Run it. Look at rows.
+3. **Name the pattern** using the cheat table in the [playbook lesson](/sql/41-sql-interview-playbook/). Then write the template and adapt it.
+4. **Check for the usual traps:** join fan-out, duplicates, NULLs, the wrong grain.
+5. **Hardcode, then generalise.** Replace a tricky computed value with a literal to see if the rest works.
+6. **Skip and return.** Write a note of where you stopped and move on.
+
+<Tip>
+If the test shows an "expected output" size (like the number of rows), use it as a check. Seeing 6 rows when you expect 5 tells you a join has duplicated something.
+</Tip>
+
+### Variations of test formats
+
+1. **Output-matching tests** (like this site): your result must match.
+2. **MCQs on SQL output:** "What does this query return?" Practise reading queries slowly.
+3. **Live coding on a call:** you must talk. See the playbook.
+4. **Take-home SQL analysis:** a written explanation matters more than speed.
+
+### Edge cases and traps
+
+- **Column order and names** are part of the answer.
+- **Ties** in `ORDER BY` with `LIMIT`: add the tie-breaker the question asks for.
+- **Dialect:** if the test says MySQL or PostgreSQL, check date functions (`DATE_FORMAT`, `DATE_TRUNC`, `EXTRACT`) because they are different from SQLite's `strftime`.
+- **Quotation marks:** text uses single quotes.
+- **Time zones and dates stored as text:** check the format with a quick `SELECT`.
+- **Last-minute edits** can break a working query. In the final 3 minutes, only fix things you are sure about.
+
+## Worked examples
+
+### Example 1: the 60-second orientation
+
+Question: "Per sales channel, show the share of orders that were cancelled, for channels with at least 1,000 orders."
+
+Before writing, look at the table and the status values.
+
+<SqlPlayground dataset="ecommerce" query={`SELECT order_status, COUNT(*) AS rows_n, COUNT(DISTINCT order_id) AS distinct_orders
+FROM orders
+GROUP BY order_status
+ORDER BY order_status;`} title="Orientation: status values and duplicates" />
+
+Output:
+
+| order_status | rows_n | distinct_orders |
+|---|---|---|
+| Cancelled | 574 | 566 |
+| Delivered | 9357 | 9268 |
+| RTO | 169 | 166 |
+
+
+Notes you would jot: three statuses, 'Cancelled' is the exact text, and `rows_n` is a little bigger than `distinct_orders` for some statuses, so duplicate order rows exist. Grain: one row per sales channel.
+
+### Example 2: solving it with a clean first pass
+
+<SqlPlayground dataset="ecommerce" query={`WITH o AS (
+  SELECT DISTINCT order_id, sales_channel, order_status
+  FROM orders
+)
+SELECT sales_channel,
+       COUNT(*) AS orders,
+       ROUND(100.0 * SUM(order_status = 'Cancelled') / COUNT(*), 2) AS cancelled_pct
+FROM o
+GROUP BY sales_channel
+HAVING COUNT(*) >= 1000
+ORDER BY cancelled_pct DESC, sales_channel;`} title="First-pass solution" />
+
+Output:
+
+| sales_channel | orders | cancelled_pct |
+|---|---|---|
+| Android App | 4982 | 5.86 |
+| Website | 2087 | 5.61 |
+| iOS App | 1665 | 5.53 |
+| Mobile Web | 1266 | 5.13 |
+
+
+Four minutes of work: dedupe in a CTE, a conditional `SUM` for the numerator, `HAVING` for the size filter, and a full tie-breaker in the `ORDER BY`. The `100.0` avoids integer division.
+
+### Example 3: a 30-second review before submitting
+
+Re-read the spec and compare: columns `sales_channel`, `orders`, `cancelled_pct` (names match), rounding to 2 decimals (done), order by cancelled percent descending then channel (done), and a quick sanity check that the order counts add up to the deduplicated total.
+
+<SqlPlayground dataset="ecommerce" query={`SELECT COUNT(DISTINCT order_id) AS total_orders FROM orders;`} title="Sanity total" />
+
+Output:
+
+| total_orders |
+|---|
+| 10000 |
+
+
+The four channel counts from Example 2 add to this total (every channel passes the 1,000 filter), so no rows were lost. This kind of tiny check takes 20 seconds and catches many silent errors.
+
+### Example 4: when stuck, shrink
+
+Imagine you cannot start a "top customer per channel" question. Shrink it: first find just one channel's total spend per customer.
+
+<SqlPlayground dataset="ecommerce" query={`WITH o AS (
+  SELECT DISTINCT order_id, customer_id, total_amount
+  FROM orders
+  WHERE order_status = 'Delivered' AND sales_channel = 'Website'
+)
+SELECT customer_id, ROUND(SUM(total_amount), 2) AS spend
+FROM o
+GROUP BY customer_id
+ORDER BY spend DESC, customer_id
+LIMIT 3;`} title="Shrunk problem: one channel" />
+
+Output:
+
+| customer_id | spend |
+|---|---|
+| 1261 | 114649.1 |
+| 930 | 100785.58 |
+| 1871 | 96127.28 |
+
+
+This tiny query works, so the idea is sound. Now generalise: add the channel to the grouping and a `ROW_NUMBER() OVER (PARTITION BY channel ORDER BY spend DESC)` on top. Small working steps beat a big broken query.
+
+## Common mistakes
+
+<CommonMistake>
+Spending 25 minutes on one hard question. The remaining easy marks are lost. Use the 12-minute rule and return later.
+</CommonMistake>
+
+<CommonMistake>
+Returning the right numbers with the wrong column names or a different column order. The checker compares both.
+</CommonMistake>
+
+<CommonMistake>
+Forgetting `ROUND`, or rounding too early. Round only in the final `SELECT`, to the number of decimals the question states.
+</CommonMistake>
+
+<CommonMistake>
+Ignoring the ordering instruction. If the question lists tie-breakers, your `ORDER BY` must have all of them.
+</CommonMistake>
+
+<CommonMistake>
+Not reading the data. Without a quick look at a few rows and counts, duplicates, NULLs and messy text silently break the answer.
+</CommonMistake>
+
+<CommonMistake>
+Rewriting a nearly-working query from scratch in the last minutes. Fix one thing at a time and re-run.
+</CommonMistake>
+
+## Practice questions
+
+Treat this set as a self-timed mock: five questions, 45 minutes, a timer on your phone, no peeking at solutions until the timer ends.
+
+<PracticeSet ids={["sql-pattern-duplicates-001", "sql-pattern-missing-003", "sql-pattern-rfm-001", "sql-pattern-sessions-003", "sql-pattern-mixed-001"]} />
+
+For a harder second round, try the rest of the mixed set.
+
+<PracticeSet topic="pattern-mixed" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "In a 45-minute test with 5 questions, what is a sensible first-pass limit per question?", options: ["As long as needed", "About 10 to 12 minutes, then move on", "2 minutes", "20 minutes"], answer: 1, explanation: "A cap stops one hard question from eating the time you need for easier ones." },
+  { q: "Your values are correct but a column is named total instead of total_amount. What happens in an output-matching test?", options: ["Full marks", "It can fail because column names are compared", "It is ignored", "Marks are halved"], answer: 1, explanation: "The checker compares column names (case-insensitive) as well as values." },
+  { q: "When are rows compared in order?", options: ["Always", "Only when the question asks for a specific ordering", "Never", "Only for numbers"], answer: 1, explanation: "Row order is ignored unless the question requires ordering, in which case it must match exactly." },
+  { q: "You are stuck on a hard question. What is the best first action?", options: ["Panic", "Shrink the problem: solve it for one customer or one group first", "Delete everything", "Skip all remaining questions"], answer: 1, explanation: "A smaller working query shows the idea and can then be generalised." },
+  { q: "What should the last 3 minutes be used for?", options: ["Rewriting a query", "Checking column names, order, rounding and sanity totals", "Starting a new question", "Nothing"], answer: 1, explanation: "A short review of the output spec catches cheap mistakes." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Live coding rounds work like screening tests with a person watching. The same rules apply: read the spec, state the grain, build in steps, and talk. The difference is that clear speaking earns marks too.
+</InterviewAlert>
+
+<InterviewQ q="You have 45 minutes and five SQL questions. How do you approach it?">
+I scan all five first and mark the easy ones. I solve the easy ones quickly, cap each question at about 10 to 12 minutes on the first pass, and return to unfinished ones. I keep the last three minutes for checking column names, order and rounding against each question.
+</InterviewQ>
+
+<InterviewQ q="What do you do if you cannot solve a question in a timed test?">
+I shrink it to one group or one customer, write the first CTE and look at the rows, and match it to a known pattern. If I am still stuck after a few minutes, I leave my best partial query, note where I stopped, and move on so that I do not lose the easier marks.
+</InterviewQ>
+
+<InterviewQ q="How do you make sure your answer is right without seeing the expected output?">
+I check sanity totals (do shares add up, do group counts add to the total), test with one group by hand, check duplicates and NULLs in the key columns, and compare the output columns and ordering with the question text.
+</InterviewQ>
+
+<InterviewQ q="The test uses MySQL but you practised on SQLite. Any concerns?">
+Core SQL is the same. I would watch dialect differences: date functions (`DATE_FORMAT` and `TIMESTAMPDIFF` instead of `strftime` and `julianday`), string concatenation (`CONCAT` instead of `||`), and quoting. I would test small expressions first if the test lets me.
+</InterviewQ>
+
+## Key takeaways
+
+- A test is marked on your result table: column names, column count, rows, and order only if asked.
+- Scan first, solve easy questions first, cap each question at about 12 minutes.
+- Do a 60-second orientation on every question: columns, grain, tables, a quick look at data.
+- When stuck, shrink the problem, build one CTE, name the pattern, and move on if needed.
+- Use the last three minutes to check names, order, rounding and sanity totals.
+
+## Further reading
+
+<FurtherReading ids={["mode-sql", "sqlbolt", "datalemur", "stratascratch", "leetcode"]} />

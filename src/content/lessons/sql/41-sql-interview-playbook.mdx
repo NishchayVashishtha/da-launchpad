@@ -134,7 +134,7 @@ Question as an interviewer might ask: "Among product categories with at least 1,
 FROM order_items i
 JOIN products p ON p.product_id = i.product_id
 GROUP BY LOWER(TRIM(p.category))
-ORDER BY items_sold DESC;`} title="Step 1: items sold" />
+ORDER BY items_sold DESC;`} title="Step 2: items sold" />
 
 Output:
 
@@ -149,7 +149,7 @@ Output:
 | footwear | 676 |
 
 
-Check: six or seven rows, a sensible spread. If you had skipped the cleaning, "Fashion", "FASHION" and "fashion" would appear as separate rows. Here is the proof:
+Check: seven rows, a sensible spread. If you had skipped the cleaning, "Fashion", "FASHION" and "fashion" would appear as separate rows. Here is the proof:
 
 <SqlPlayground dataset="ecommerce" query={`SELECT category, COUNT(*) AS products
 FROM products
@@ -187,7 +187,7 @@ FROM returns r
 JOIN order_items i ON i.order_item_id = r.order_item_id
 JOIN products p ON p.product_id = i.product_id
 GROUP BY LOWER(TRIM(p.category))
-ORDER BY items_returned DESC;`} title="Step 2: items returned" />
+ORDER BY items_returned DESC;`} title="Step 3: items returned" />
 
 Output:
 
@@ -241,7 +241,7 @@ Output:
 | grocery | 3095 | 37 | 1.2 |
 
 
-**Step 5: edge cases and the spoken summary.** Ties: sorted by name as a tie-breaker. Division by zero: not possible, because `items_sold` comes from a group that has at least one row. Duplicates: orders may repeat, but `order_items` has no duplicate lines, so counts are safe. Summary line: "Fashion has by far the highest return rate at about 20 percent, which matches the size-and-fit story, while grocery is about 1 percent."
+**Step 5: edge cases and the spoken summary.** Ties: sorted by name as a tie-breaker. Division by zero: not possible, because `items_sold` comes from a group that has at least one row. Duplicates: orders may repeat, but `order_items` has no duplicate lines, so counts are safe. Footwear sold only 676 items, so the 1,000-item rule removes it; I would mention that out loud. Summary line: "Fashion has by far the highest return rate at about 20 percent, which matches the size-and-fit story, while grocery is about 1 percent."
 
 Notice what the interviewer sees: a clear spec, small checked steps, an edge-case review and a one-line conclusion.
 

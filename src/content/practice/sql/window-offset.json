@@ -91,7 +91,7 @@
   "solutionSql": "WITH w AS (SELECT employee_id, FIRST_VALUE(annual_ctc) OVER (PARTITION BY employee_id ORDER BY effective_date) AS first_ctc, LAST_VALUE(annual_ctc) OVER (PARTITION BY employee_id ORDER BY effective_date ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) AS latest_ctc, COUNT(*) OVER (PARTITION BY employee_id) AS n FROM salaries WHERE annual_ctc < 10000000) SELECT DISTINCT employee_id, first_ctc, latest_ctc, ROUND(100.0 * (latest_ctc - first_ctc) / first_ctc, 1) AS growth_pct FROM w WHERE n >= 2 ORDER BY growth_pct DESC, employee_id LIMIT 10",
   "orderMatters": true,
   "explanation": "FIRST_VALUE works with the default frame, but LAST_VALUE does not: the default frame stops at the current row, so it would just return the current salary. The explicit frame to UNBOUNDED FOLLOWING makes LAST_VALUE look at the whole employee history. Every row of an employee carries the same first and latest values, so DISTINCT collapses them to one row.",
-  "commonMistake": "Using LAST_VALUE without the full frame. latest_ctc equals each row's own salary and the growth comes out as 0 for everyone except the first record's sibling rows.",
+  "commonMistake": "Using LAST_VALUE without the full frame. latest_ctc just repeats each row's own salary, so DISTINCT returns several rows per employee and the earliest row shows 0 percent growth.",
   "interviewFrequency": "high",
   "estimatedMinutes": 12,
   "tags": [
