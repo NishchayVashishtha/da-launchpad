@@ -1,0 +1,315 @@
+[
+  {
+    "id": "sql-having-001",
+    "module": "sql",
+    "topic": "having",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "Which product `category` values (as stored) have more than 50 products? Return `category` and `products`, ordered by `category`.",
+    "dataset": "ecommerce",
+    "hint": "HAVING COUNT(*) > 50.",
+    "solutionSql": "SELECT category, COUNT(*) AS products FROM products GROUP BY category HAVING COUNT(*) > 50 ORDER BY category",
+    "expectedOutput": {
+      "columns": [
+        "category",
+        "products"
+      ],
+      "rows": [
+        [
+          "Electronics",
+          62
+        ],
+        [
+          "Fashion",
+          102
+        ],
+        [
+          "Grocery",
+          59
+        ],
+        [
+          "Home & Kitchen",
+          82
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "HAVING filters groups after counting.",
+    "commonMistake": "Using WHERE COUNT(*) > 50.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "having",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-having-002",
+    "module": "sql",
+    "topic": "having",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "Which cleaned cities (lower case, trimmed) have more than 2000 deliveries? Return `city` and `deliveries`, ordered by `deliveries` descending then `city`.",
+    "dataset": "food_delivery",
+    "hint": "Clean the key, then HAVING.",
+    "solutionSql": "SELECT LOWER(TRIM(city)) AS city, COUNT(*) AS deliveries FROM deliveries GROUP BY LOWER(TRIM(city)) HAVING COUNT(*) > 2000 ORDER BY deliveries DESC, city",
+    "expectedOutput": {
+      "columns": [
+        "city",
+        "deliveries"
+      ],
+      "rows": [
+        [
+          "mumbai",
+          2590
+        ],
+        [
+          "delhi",
+          2530
+        ],
+        [
+          "bengaluru",
+          2218
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Group on the cleaned key so spelling variants combine before the threshold is applied.",
+    "commonMistake": "Applying HAVING to a raw, messy key.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "having",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-having-003",
+    "module": "sql",
+    "topic": "having",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Which departments have at least 100 unique employees with `employment_status` 'Exited'? Return `department_id` and `exited`, ordered by `department_id`.",
+    "dataset": "hr",
+    "hint": "WHERE for the status, HAVING for the count.",
+    "solutionSql": "SELECT department_id, COUNT(DISTINCT employee_id) AS exited FROM employees WHERE employment_status = 'Exited' GROUP BY department_id HAVING COUNT(DISTINCT employee_id) >= 100 ORDER BY department_id",
+    "expectedOutput": {
+      "columns": [
+        "department_id",
+        "exited"
+      ],
+      "rows": [
+        [
+          1,
+          140
+        ],
+        [
+          2,
+          109
+        ],
+        [
+          4,
+          148
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Row condition in WHERE, group condition in HAVING.",
+    "commonMistake": "Putting employment_status in HAVING.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "having",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-having-004",
+    "module": "sql",
+    "topic": "having",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Which `payment_app` values have an average SUCCESS transaction `amount` above 1350? Return `payment_app` and `avg_amount` (2 decimals), ordered by `payment_app`.",
+    "dataset": "fintech",
+    "hint": "WHERE status, HAVING AVG.",
+    "solutionSql": "SELECT payment_app, ROUND(AVG(amount), 2) AS avg_amount FROM transactions WHERE status = 'SUCCESS' GROUP BY payment_app HAVING AVG(amount) > 1350 ORDER BY payment_app",
+    "expectedOutput": {
+      "columns": [
+        "payment_app",
+        "avg_amount"
+      ],
+      "rows": [
+        [
+          "PayZippy",
+          1399.36
+        ],
+        [
+          "RupeeRocket",
+          1428.01
+        ],
+        [
+          "SabPay",
+          1368.93
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The average is computed on successful rows only because WHERE ran first.",
+    "commonMistake": "Filtering the status in HAVING after averaging all rows.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 6,
+    "tags": [
+      "having",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-having-005",
+    "module": "sql",
+    "topic": "having",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Which campaign `channel` values have a total `budget_inr` above 50000? Return `channel` and `total_budget`, ordered by `total_budget` descending then `channel`.",
+    "dataset": "marketing",
+    "hint": "HAVING SUM(...) > 50000.",
+    "solutionSql": "SELECT channel, SUM(budget_inr) AS total_budget FROM campaigns GROUP BY channel HAVING SUM(budget_inr) > 50000 ORDER BY total_budget DESC, channel",
+    "expectedOutput": {
+      "columns": [
+        "channel",
+        "total_budget"
+      ],
+      "rows": [
+        [
+          "Google Search",
+          113000
+        ],
+        [
+          "Influencer",
+          52000
+        ],
+        [
+          "Meta Ads",
+          51000
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "HAVING can use any aggregate, even one not in SELECT.",
+    "commonMistake": "Using WHERE SUM(...).",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 6,
+    "tags": [
+      "having",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-having-006",
+    "module": "sql",
+    "topic": "having",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Among merchant payments (rows with a non-NULL `merchant_id`), find merchants with at least 30 transactions and a failure rate above 5 percent. Return `merchant_id`, `txns`, `failure_pct` (2 decimals), ordered by `failure_pct` descending then `merchant_id`.",
+    "dataset": "fintech",
+    "hint": "Two conditions in HAVING, both aggregates.",
+    "solutionSql": "SELECT merchant_id, COUNT(*) AS txns, ROUND(100.0 * SUM(status = 'FAILED') / COUNT(*), 2) AS failure_pct FROM transactions WHERE merchant_id IS NOT NULL GROUP BY merchant_id HAVING COUNT(*) >= 30 AND 100.0 * SUM(status = 'FAILED') / COUNT(*) > 5 ORDER BY failure_pct DESC, merchant_id",
+    "expectedOutput": {
+      "columns": [
+        "merchant_id",
+        "txns",
+        "failure_pct"
+      ],
+      "rows": [
+        [
+          236,
+          43,
+          9.3
+        ],
+        [
+          190,
+          34,
+          8.82
+        ],
+        [
+          100,
+          35,
+          8.57
+        ],
+        [
+          58,
+          36,
+          8.33
+        ],
+        [
+          225,
+          30,
+          6.67
+        ],
+        [
+          57,
+          91,
+          6.59
+        ],
+        [
+          112,
+          46,
+          6.52
+        ],
+        [
+          26,
+          31,
+          6.45
+        ],
+        [
+          28,
+          32,
+          6.25
+        ],
+        [
+          103,
+          112,
+          6.25
+        ],
+        [
+          275,
+          35,
+          5.71
+        ],
+        [
+          147,
+          54,
+          5.56
+        ],
+        [
+          160,
+          37,
+          5.41
+        ],
+        [
+          287,
+          37,
+          5.41
+        ],
+        [
+          317,
+          58,
+          5.17
+        ],
+        [
+          59,
+          39,
+          5.13
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Repeat the rate expression in HAVING because the alias is not available there in strict databases.",
+    "commonMistake": "Using the alias failure_pct inside HAVING (fails outside SQLite and MySQL).",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 10,
+    "tags": [
+      "having",
+      "sql"
+    ]
+  }
+]

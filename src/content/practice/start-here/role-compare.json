@@ -1,0 +1,97 @@
+[
+  {
+    "id": "sh-rcmp-001",
+    "module": "start-here",
+    "topic": "role-compare",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "Match each task to the role (DA, DE, DS or BA): (a) build a nightly pipeline into the warehouse, (b) write requirements for a new KPI, (c) build a dashboard of weekly orders, (d) train a model to predict loan default.",
+    "dataset": "none",
+    "hint": "Use the comparison table.",
+    "solution": "**Model answer:** (a) Data Engineer, (b) Business Analyst, (c) Data Analyst, (d) Data Scientist.",
+    "explanation": "Each role has a main output: pipelines, requirements, dashboards, models.",
+    "commonMistake": "Treating all four as the same job with different names.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "role-compare",
+      "career"
+    ]
+  },
+  {
+    "id": "sh-rcmp-002",
+    "module": "start-here",
+    "topic": "role-compare",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "Name three things that all four roles have in common.",
+    "dataset": "none",
+    "hint": "Think of tools, habits and goals.",
+    "solution": "**Model answer:** They all work with data to support business decisions; they all use SQL at least a little; they all need clear communication and care about data quality.",
+    "explanation": "Overlap is large, which is why moving between roles is possible.",
+    "commonMistake": "Saying 'nothing' because the titles look different.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "role-compare",
+      "career"
+    ]
+  },
+  {
+    "id": "sh-rcmp-003",
+    "module": "start-here",
+    "topic": "role-compare",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "You want to become a Data Engineer in about three years but need a job in the next three months. Write a short career path with a first role, a skill you add each year and a second role.",
+    "dataset": "none",
+    "hint": "Think of the analyst-to-analytics-engineer ladder.",
+    "solution": "**Model answer:**\n- **Now to 3 months:** apply for Data Analyst or Junior DA with SQL, Excel and Power BI.\n- **Year 1:** become independent in SQL and dashboards; add Python pandas.\n- **Year 2:** learn data modelling and dbt; take over the data quality checks of my team.\n- **Year 3:** learn Airflow basics and one cloud platform; move to Analytics Engineer or Data Engineer.",
+    "explanation": "The path uses a job you can get now as a base for the job you want later.",
+    "commonMistake": "Ignoring the short-term need for a first job.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "role-compare",
+      "career"
+    ]
+  },
+  {
+    "id": "sh-rcmp-004",
+    "module": "start-here",
+    "topic": "role-compare",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "A friend says: \"I will learn deep learning first so I can become a Data Analyst.\" Write a short, kind reply explaining why this order is not efficient and what to learn instead.",
+    "dataset": "none",
+    "hint": "Think about what analyst interviews test.",
+    "solution": "**Model answer:** \"Analyst interviews mostly test SQL, Excel, a BI tool and business thinking, and deep learning is rarely asked. You could spend months on it and still fail a simple SQL test. Start with SQL and Excel, build two dashboards, and then add Python. You can learn machine learning later if you want to move to data science.\"",
+    "explanation": "Matching your learning to the target role saves months.",
+    "commonMistake": "Learning what looks impressive instead of what the role needs.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "role-compare",
+      "career"
+    ]
+  },
+  {
+    "id": "sh-rcmp-005",
+    "module": "start-here",
+    "topic": "role-compare",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "Read this fictional job post and decide the real role: \"Own our data warehouse models in SQL, write tests for data quality, document metrics, support analysts with clean tables, use dbt and Git.\" Justify in three sentences and say whether a fresher analyst could grow into it.",
+    "dataset": "none",
+    "hint": "Look for modelling, testing, dbt.",
+    "solution": "**Model answer:** This is an **Analytics Engineer** role, between analyst and data engineer. It focuses on building clean, tested SQL models with dbt rather than building dashboards. A fresher analyst who becomes strong in SQL and data quality can grow into it within one to two years, although most employers want some prior experience.",
+    "explanation": "Recognising hybrid roles helps you plan a long-term path.",
+    "commonMistake": "Calling it a Data Analyst job because it uses SQL.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 8,
+    "tags": [
+      "role-compare",
+      "career"
+    ]
+  }
+]

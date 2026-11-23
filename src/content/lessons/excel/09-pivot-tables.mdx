@@ -1,0 +1,168 @@
+---
+title: "Pivot tables: summarise thousands of rows in a minute"
+description: "Build, tweak and group pivot tables on a retail sales workbook, with value field settings, percent of total and calculated fields."
+module: excel
+order: 9
+estimatedMinutes: 55
+objectives:
+  - "Build a pivot table with rows, columns, values and filters"
+  - "Change the value field setting (Sum, Count, Average) and show values as % of total"
+  - "Group dates into months, quarters and years"
+  - "Add a calculated field and know when not to"
+  - "Refresh a pivot and fix the common refresh problems"
+tags: ["excel", "pivot-table", "summarising"]
+---
+
+## Learning objectives
+
+- Build a pivot table from an Excel Table.
+- Switch between Sum, Count and Average, and show values as a percent of the total.
+- Group a date field into months, quarters and years.
+- Create a simple calculated field.
+- Refresh a pivot correctly after the data changes.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+A regional manager at a retail chain messages you at 6 pm: "Send me sales by region and category before tomorrow's review." Without a pivot table you would write many SUMIFS formulas. With one you finish in two minutes and can answer the follow-up question ("and by quarter?") by dragging one field. Almost every Excel test for Indian DA and MIS roles has at least one pivot task.
+</RealWorld>
+
+## Concept
+
+A **pivot table** is a tool that groups your rows and calculates a number for each group. Think of a big ledger book with 3,000 lines. A pivot table is the accountant who reads it once and hands you a one-page summary.
+
+A pivot has four areas:
+
+| Area | What it does | Example field |
+|---|---|---|
+| **Rows** | One row per unique value | `store_region` |
+| **Columns** | One column per unique value | `store_format` |
+| **Values** | The number we calculate | `net_amount_inr` (Sum) |
+| **Filters** | Limits the whole pivot | `payment_mode` |
+
+Before you start, make sure your data follows three rules. One header row. No blank rows or columns inside the data. Every column has one type of data. Best of all, convert the data to an **Excel Table** (Ctrl + T). A table grows by itself when you add rows, and the pivot can use its name (`tbl_sales`).
+
+<FormulaCard title="Percent of grand total">
+% of total = group value / grand total of all groups
+In the pivot: Value Field Settings > Show Values As > % of Grand Total.
+</FormulaCard>
+
+**Value field settings.** Right-click a number in the pivot and choose *Value Field Settings*. Here you pick how to summarise (Sum, Count, Average, Max, Min) and how to show it (% of Grand Total, % of Column Total, % of Row Total, Difference From, Running Total In). Excel guesses Count when a column has text or blanks, and Sum when it is all numbers. Always check.
+
+**Grouping dates.** If your data has real dates, drag `sale_date` to Rows. Excel 2016 and later groups it automatically into Years and Months. For custom grouping, right-click a date > *Group* and tick Months, Quarters, Years. You can also group numbers (for example `discount_pct` in bands of 5) the same way.
+
+**Calculated field.** *PivotTable Analyze > Fields, Items & Sets > Calculated Field* lets you write a formula using other fields, for example `=net_amount_inr / quantity`. Careful: the formula runs on the **sums** of the fields, not row by row. So an "average price" calculated field is total sales divided by total units, which is usually what you want, but a ratio of two averages is not.
+
+<Tip>
+Use Alt + N + V for Insert PivotTable. Press Alt + J + T + L to open the Field List if it disappears.
+</Tip>
+
+## Worked examples
+
+All examples use `excel-sales-analysis.xlsx`, sheet `sales` (3,000 transactions, Jan 2023 to Dec 2024).
+
+<Download href="data/excel/excel-sales-analysis.xlsx" label="excel-sales-analysis.xlsx" />
+
+**Example 1: sales by region.**
+
+1. Click any cell in the sales data. Press Ctrl + T and tick "My table has headers". Name the table `tbl_sales` in Table Design.
+2. Insert > PivotTable > New Worksheet.
+3. Drag `store_region` to Rows and `net_amount_inr` to Values.
+4. Right-click a number > Number Format > Number, 0 decimals, tick Use 1000 Separator.
+
+Expected result (Sum of net_amount_inr, grand total 37,88,533):
+
+| store_region | Sum of net_amount_inr |
+|---|---|
+| East | 430,021 |
+| North | 807,814 |
+| South | 989,044 |
+| West | 1,561,654 |
+
+**Example 2: percent of total.** Drag `net_amount_inr` to Values a second time. Right-click it > Show Values As > % of Grand Total. Rename the field "Share %".
+
+| store_region | Share % |
+|---|---|
+| East | 11.4% |
+| North | 21.3% |
+| South | 26.1% |
+| West | 41.2% |
+
+The story: West alone brings 41 of every 100 rupees. That is a one-line insight you can put in an email.
+
+**Example 3: group dates into quarters.** Clear the pivot. Drag `sale_date` to Rows. If Excel did not group it, right-click a date > Group > select Years and Quarters > OK. Put `net_amount_inr` in Values.
+
+| Year | Quarter | Sum of net_amount_inr |
+|---|---|---|
+| 2023 | Qtr1 | 374,622 |
+| 2023 | Qtr2 | 396,163 |
+| 2023 | Qtr3 | 400,697 |
+| 2023 | Qtr4 | 490,447 |
+| 2024 | Qtr1 | 436,631 |
+| 2024 | Qtr2 | 482,203 |
+| 2024 | Qtr3 | 552,232 |
+| 2024 | Qtr4 | 655,538 |
+
+Year totals are 16,61,929 for 2023 and 21,26,604 for 2024. Every quarter of 2024 beat the same quarter of 2023.
+
+**Example 4: two-way table and calculated field.** Rows = `store_region`, Columns = `store_format`, Values = Sum of `net_amount_inr`. The East row has no Hypermarket sales (a blank cell), which tells you the East region has no hypermarket stores in this sample. To replace blanks with 0: PivotTable Options > Layout & Format > "For empty cells show" = 0.
+
+Now add a calculated field named `Avg_Price_Per_Unit` with formula `=net_amount_inr / quantity`. Put it in Values. For West the sum of `quantity` is 3,253, so West shows 1,561,654 / 3,253 = about 480.1 rupees per unit.
+
+**Example 5: refresh.** Add a new row at the bottom of `tbl_sales`. The pivot does not change by itself. Right-click the pivot > Refresh, or press Alt + F5. Refresh All is Ctrl + Alt + F5. If the new row is outside the table, change the source in PivotTable Analyze > Change Data Source.
+
+## Common mistakes
+
+<CommonMistake>Building the pivot from data that has a blank header or a merged header cell. Excel stops with "PivotTable field name is not valid". Fix the header row first.</CommonMistake>
+
+<CommonMistake>Forgetting to refresh after the data changes, then sending old numbers to a manager. Make it a habit: refresh first, then check the grand total against the source (`=SUM(tbl_sales[net_amount_inr])`).</CommonMistake>
+
+<CommonMistake>Dates stored as text. The pivot cannot group them. Convert them to real dates first (Text to Columns or DATEVALUE; see the Power Query lesson for the clean way).</CommonMistake>
+
+<CommonMistake>Seeing "Count of net_amount_inr" and reporting it as sales. Always read the label on the value field. It must say Sum when you want money.</CommonMistake>
+
+<CommonMistake>Typing numbers or notes next to a pivot. When the pivot grows, it will refuse with "cannot overlap" or your notes get overwritten. Keep notes on another sheet.</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="pivots" module="excel" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "You drop a numeric column in Values and the label says 'Count of ...'. What is the most likely reason?", options: ["Excel always starts with Count", "The column has text or blank cells", "The pivot is not refreshed", "The table has no name"], answer: 1, explanation: "Excel picks Sum only when every cell in the column is a number. Text or blanks make it pick Count." },
+  { q: "Which setting shows each region as a share of the whole?", options: ["Value Field Settings > Summarize by > Average", "Show Values As > % of Grand Total", "Group", "Calculated Field"], answer: 1, explanation: "Show Values As > % of Grand Total divides each value by the total of all values." },
+  { q: "You add 50 new rows to the source table. What must you do for the pivot to include them?", options: ["Nothing, it updates live", "Refresh the pivot", "Rebuild the pivot", "Sort the table"], answer: 1, explanation: "Pivots do not update live. Refresh (Alt + F5). If the data is an Excel Table the new rows are picked up on refresh." },
+  { q: "A calculated field =Sales/Quantity gives which result in a grand total row?", options: ["Average of row-wise ratios", "Total sales divided by total quantity", "Median of ratios", "An error"], answer: 1, explanation: "Calculated fields work on the summed fields, so the grand total is total sales divided by total quantity." },
+  { q: "Why can a date field fail to group?", options: ["Too many rows", "The dates are stored as text", "The pivot has filters", "The workbook is shared"], answer: 1, explanation: "Grouping needs real date values. Text that looks like a date cannot be grouped." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers often hand you a raw sheet and say "summarise this". They watch whether you convert to a Table, check the grand total and format numbers. Speed matters.
+</InterviewAlert>
+
+<InterviewQ q="Pivot table vs SUMIFS: when do you use which?">
+A pivot is best for exploring: you want many cuts quickly and do not know the final layout. SUMIFS is best when you need a fixed layout inside a report, or the result must update without a manual refresh. Pivots need Refresh; SUMIFS recalculates by itself. For a recurring monthly report, many analysts build the pivot once and use GETPIVOTDATA or a refresh macro.
+</InterviewQ>
+
+<InterviewQ q="Your pivot total does not match the source total. What do you check?">
+First, refresh. Second, check filters on the pivot and slicers. Third, check that the source range includes all rows (use a Table). Fourth, look for text-stored numbers, which a pivot counts but does not sum. Fifth, look for blank or duplicate rows in the source.
+</InterviewQ>
+
+<InterviewQ q="What is a calculated field and what is its limit?">
+It is a custom field made from a formula over other fields in the pivot. Its limit is that it calculates on summed values, not row by row, and it cannot use cell references or lookup functions. For row-level logic, add a helper column in the source data instead.
+</InterviewQ>
+
+## Key takeaways
+
+- A pivot has four areas: Rows, Columns, Values, Filters.
+- Start from an Excel Table and always check the grand total against the source.
+- Value Field Settings control both the calculation (Sum, Count, Average) and the display (% of total).
+- Dates group into months, quarters and years only when they are real dates.
+- Pivots do not update live. Refresh after every data change.
+
+## Further reading
+
+<FurtherReading ids={["excel-support", "chandoo", "excelisfun"]} />

@@ -1,0 +1,307 @@
+---
+title: "Window functions II: LAG, LEAD, FIRST_VALUE, NTILE"
+description: "Look at the previous or next row, compare with the first or last value, and split rows into equal buckets."
+module: sql
+order: 19
+estimatedMinutes: 50
+objectives:
+  - "Use LAG and LEAD to compare a row with the previous or next row"
+  - "Calculate month-over-month change and gaps between events"
+  - "Use FIRST_VALUE and LAST_VALUE, and avoid the default-frame trap"
+  - "Split rows into equal buckets with NTILE (quartiles, deciles)"
+  - "Supply default values to LAG and LEAD so the first and last rows are not NULL"
+tags: ["sql", "window-functions", "lag", "lead", "ntile"]
+---
+
+## Learning objectives
+
+- Use LAG and LEAD to compare a row with the previous or next row
+- Calculate month-over-month change and gaps between events
+- Use FIRST_VALUE and LAST_VALUE, and avoid the default-frame trap
+- Split rows into equal buckets with NTILE (quartiles, deciles)
+- Supply default values to LAG and LEAD so the first and last rows are not NULL
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Business questions are full of "compared to before": month-over-month growth, days since the last order, salary hike versus the previous appraisal, change in the failure rate since last week. Before window functions, analysts wrote ugly self-joins for this. With `LAG` it is one line. NTILE powers customer segmentation (top 25 percent of spenders), which is the basis of RFM and decile analysis that fintech and e-commerce teams run every month.
+</RealWorld>
+
+## Concept
+
+### LAG and LEAD: look at the neighbours
+
+Imagine rows lined up in a queue. `LAG` lets each row look at the person **behind** it (the previous row in the order). `LEAD` lets it look at the person **ahead** (the next row).
+
+```sql
+LAG(column, offset, default)  OVER (PARTITION BY ... ORDER BY ...)
+LEAD(column, offset, default) OVER (PARTITION BY ... ORDER BY ...)
+```
+
+- `column`: the value you want from the neighbouring row.
+- `offset`: how many rows away. Default is 1. `LAG(x, 7)` looks seven rows back.
+- `default`: the value to use when there is no such row. If you leave it out you get `NULL` on the first row (for LAG) or the last row (for LEAD).
+- `ORDER BY` is **required in practice**. Without an order, "previous" has no meaning.
+- `PARTITION BY` restarts the queue for each group, for example for each customer. The first row of every customer then has no previous row.
+
+<FormulaCard title="Month-over-month growth">
+`growth % = (this_month - last_month) / last_month * 100`
+
+In SQL: `100.0 * (m - LAG(m) OVER (ORDER BY month)) / LAG(m) OVER (ORDER BY month)`
+</FormulaCard>
+
+The `100.0` matters. In SQLite, `5 / 2` is integer division and gives 2. Multiply by `100.0` first to force decimals.
+
+### FIRST_VALUE and LAST_VALUE
+
+`FIRST_VALUE(x)` returns the value of `x` from the first row of the window, `LAST_VALUE(x)` from the last row. Use them for "compare to the starting point": the first salary of an employee, the opening price of the month, the first purchase amount.
+
+### The frame trap with LAST_VALUE
+
+When a window has an `ORDER BY`, SQL uses a **default frame**: from the start of the partition up to the **current row**. So the "last row" of that frame is the current row itself, and `LAST_VALUE` simply returns the current row's value. Surprise.
+
+Fix it by writing the frame explicitly:
+
+```sql
+LAST_VALUE(x) OVER (
+    PARTITION BY g ORDER BY d
+    ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+)
+```
+
+Lesson 20 explains frames fully. For now remember: **LAST_VALUE needs an explicit frame**. (Alternative: use `FIRST_VALUE` with the `ORDER BY` reversed, which avoids the problem.)
+
+### NTILE: equal-sized buckets
+
+`NTILE(n)` splits the ordered rows into `n` buckets of (almost) equal row count and returns the bucket number 1 to n. `NTILE(4)` makes quartiles, `NTILE(10)` deciles, `NTILE(100)` percentile-like groups.
+
+Analogy: sorting 100 students by marks and dividing the line into four groups of 25. If the rows do not divide evenly (say 10 rows into 4 buckets), the first buckets get one extra row (3, 3, 2, 2).
+
+<Tip>
+NTILE splits by **row count**, not by value ranges. Two customers with the same spend can land in different buckets. If that matters, bucket with a CASE on the value instead.
+</Tip>
+
+### Summary of the value functions
+
+| Function | Returns | Typical use |
+|---|---|---|
+| `LAG(x, n, d)` | value n rows earlier | change versus previous period |
+| `LEAD(x, n, d)` | value n rows later | time until next event |
+| `FIRST_VALUE(x)` | first row's value in the frame | compare to the starting value |
+| `LAST_VALUE(x)` | last row's value in the frame (needs full frame) | compare to the latest value |
+| `NTILE(n)` | bucket number 1 to n | quartiles, deciles, segments |
+
+## Worked examples
+
+### Example 1: month-over-month change with LAG
+
+Count successful transactions per month (unique `txn_id`, because about 90 transactions are duplicated), then compare each month with the previous one. We aggregate in a CTE first and apply `LAG` on the monthly result, which is the usual pattern.
+
+<SqlPlayground dataset="fintech" query={`WITH monthly AS (
+    SELECT strftime('%Y-%m', txn_datetime) AS month,
+           COUNT(DISTINCT txn_id) AS txns
+    FROM transactions
+    WHERE status = 'SUCCESS'
+    GROUP BY 1
+)
+SELECT month,
+       txns,
+       LAG(txns) OVER (ORDER BY month) AS prev_month,
+       txns - LAG(txns) OVER (ORDER BY month) AS change,
+       ROUND(100.0 * (txns - LAG(txns) OVER (ORDER BY month))
+             / LAG(txns) OVER (ORDER BY month), 1) AS growth_pct
+FROM monthly
+ORDER BY month;`} title="MoM growth of successful UPI transactions" />
+
+**Output:**
+
+| month | txns | prev_month | change | growth_pct |
+|---|---|---|---|---|
+| 2023-01 | 683 | NULL | NULL | NULL |
+| 2023-02 | 644 | 683 | -39 | -5.7 |
+| 2023-03 | 672 | 644 | 28 | 4.3 |
+| 2023-04 | 693 | 672 | 21 | 3.1 |
+| 2023-05 | 724 | 693 | 31 | 4.5 |
+| 2023-06 | 769 | 724 | 45 | 6.2 |
+| 2023-07 | 776 | 769 | 7 | 0.9 |
+| 2023-08 | 770 | 776 | -6 | -0.8 |
+| 2023-09 | 747 | 770 | -23 | -3.0 |
+| 2023-10 | 871 | 747 | 124 | 16.6 |
+
+Showing the first 10 of 24 rows.
+
+The first month has `NULL` for `prev_month` because nothing comes before it. October shows the Diwali bump (about +16 percent in 2023 and +18 percent in 2024). Always check what the first row looks like and decide whether NULL is acceptable.
+
+### Example 2: days between orders with LAG and LEAD
+
+For customer 1, show the previous order date, the gap in days, and the next order date. `PARTITION BY customer_id` restarts the queue for each customer. We take `DISTINCT` orders first because the table has duplicates.
+
+<SqlPlayground dataset="ecommerce" query={`WITH o AS (
+    SELECT DISTINCT order_id, customer_id, order_date
+    FROM orders
+    WHERE customer_id = 1
+)
+SELECT order_id,
+       order_date,
+       LAG(order_date)  OVER (PARTITION BY customer_id ORDER BY order_date, order_id) AS prev_order,
+       CAST(julianday(order_date)
+            - julianday(LAG(order_date) OVER (PARTITION BY customer_id ORDER BY order_date, order_id))
+            AS INTEGER) AS gap_days,
+       LEAD(order_date) OVER (PARTITION BY customer_id ORDER BY order_date, order_id) AS next_order
+FROM o
+ORDER BY order_date, order_id
+LIMIT 8;`} title="Gap between a customer's orders" />
+
+**Output:**
+
+| order_id | order_date | prev_order | gap_days | next_order |
+|---|---|---|---|---|
+| 47 | 2023-01-05 | NULL | NULL | 2023-01-18 |
+| 173 | 2023-01-18 | 2023-01-05 | 13 | 2023-01-20 |
+| 205 | 2023-01-20 | 2023-01-18 | 2 | 2023-01-23 |
+| 258 | 2023-01-23 | 2023-01-20 | 3 | 2023-01-28 |
+| 314 | 2023-01-28 | 2023-01-23 | 5 | 2023-02-14 |
+| 504 | 2023-02-14 | 2023-01-28 | 17 | 2023-02-17 |
+| 525 | 2023-02-17 | 2023-02-14 | 3 | 2023-02-20 |
+| 560 | 2023-02-20 | 2023-02-17 | 3 | 2023-02-27 |
+
+`julianday()` converts a date to a day number so we can subtract dates in SQLite. In PostgreSQL you would write `order_date - prev_order`, and in MySQL `DATEDIFF`. Averaging `gap_days` per customer gives the purchase frequency, a classic input for churn analysis.
+
+### Example 3: FIRST_VALUE, LAST_VALUE and the frame trap
+
+Employees 3 and 5 each have three salary records. `last_default` uses `LAST_VALUE` with no frame and just repeats the current row. `last_full` uses the full frame and gives the real latest salary.
+
+<SqlPlayground dataset="hr" query={`SELECT employee_id,
+       effective_date,
+       annual_ctc,
+       FIRST_VALUE(annual_ctc) OVER (PARTITION BY employee_id ORDER BY effective_date) AS first_ctc,
+       LAST_VALUE(annual_ctc)  OVER (PARTITION BY employee_id ORDER BY effective_date) AS last_default,
+       LAST_VALUE(annual_ctc)  OVER (
+           PARTITION BY employee_id ORDER BY effective_date
+           ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+       ) AS last_full
+FROM salaries
+WHERE employee_id IN (3, 5)
+ORDER BY employee_id, effective_date;`} title="First and latest salary per employee" />
+
+**Output:**
+
+| employee_id | effective_date | annual_ctc | first_ctc | last_default | last_full |
+|---|---|---|---|---|---|
+| 3 | 2023-01-01 | 1471000.0 | 1471000.0 | 1471000.0 | 1572000.0 |
+| 3 | 2023-04-01 | 1525000.0 | 1471000.0 | 1525000.0 | 1572000.0 |
+| 3 | 2024-04-01 | 1572000.0 | 1471000.0 | 1572000.0 | 1572000.0 |
+| 5 | 2023-01-01 | 2181000.0 | 2181000.0 | 2181000.0 | 2406000.0 |
+| 5 | 2023-04-01 | 2238000.0 | 2181000.0 | 2238000.0 | 2406000.0 |
+| 5 | 2024-04-01 | 2406000.0 | 2181000.0 | 2406000.0 | 2406000.0 |
+
+Compare `annual_ctc` and `last_default`: they are identical on every row. That is the trap. Only `last_full` shows 1572000 and 2406000, the real current salaries. A quick sanity check like this should become a habit.
+
+### Example 4: NTILE for customer quartiles
+
+Split customers into four equal groups by total spend on delivered orders (ignoring the 100x outlier orders). Then see how much of the money each quartile brings.
+
+<SqlPlayground dataset="ecommerce" query={`WITH spend AS (
+    SELECT customer_id, SUM(total_amount) AS spend
+    FROM (SELECT DISTINCT order_id, customer_id, total_amount, order_status FROM orders)
+    WHERE order_status = 'Delivered' AND total_amount < 100000
+    GROUP BY customer_id
+),
+bucketed AS (
+    SELECT customer_id, spend,
+           NTILE(4) OVER (ORDER BY spend DESC, customer_id) AS quartile
+    FROM spend
+)
+SELECT quartile,
+       COUNT(*) AS customers,
+       ROUND(MIN(spend)) AS min_spend,
+       ROUND(MAX(spend)) AS max_spend,
+       ROUND(SUM(spend)) AS total_spend
+FROM bucketed
+GROUP BY quartile
+ORDER BY quartile;`} title="Customer spend quartiles" />
+
+**Output:**
+
+| quartile | customers | min_spend | max_spend | total_spend |
+|---|---|---|---|---|
+| 1 | 542 | 28464.0 | 360337.0 | 34179912.0 |
+| 2 | 542 | 10765.0 | 28430.0 | 9999091.0 |
+| 3 | 541 | 3444.0 | 10758.0 | 3633241.0 |
+| 4 | 541 | 107.0 | 3427.0 | 821510.0 |
+
+Quartile 1 (the top 25 percent of customers) brings roughly 70 percent of revenue, and the bottom half brings under 10 percent. This heavy-tailed pattern is typical for Indian e-commerce and fintech apps, and it is the reason teams build loyalty programmes for the top quartile.
+
+## Common mistakes
+
+<CommonMistake>
+**LAG without ORDER BY.** The 'previous row' is then arbitrary and results change between runs. Always order inside `OVER`, with a tie-breaker if the order column has duplicates.
+</CommonMistake>
+
+<CommonMistake>
+**Forgetting PARTITION BY.** `LAG(order_date) OVER (ORDER BY order_date)` across all customers gives the previous order of someone else. For per-customer gaps, partition by customer.
+</CommonMistake>
+
+<CommonMistake>
+**LAST_VALUE with the default frame.** It returns the current row's value, not the last in the partition. Add `ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING`, or reverse the order and use `FIRST_VALUE`.
+</CommonMistake>
+
+<CommonMistake>
+**Integer division in growth percentages.** `(b - a) / a * 100` with integers truncates to 0 for small changes. Use `100.0 *` first and `ROUND` at the end.
+</CommonMistake>
+
+<CommonMistake>
+**Dividing by a NULL or zero LAG.** The first row has no previous value, so growth is NULL. A previous value of 0 causes a divide-by-zero NULL in SQLite. Wrap with `NULLIF(prev, 0)` and say in your notes how you handle the first period.
+</CommonMistake>
+
+<CommonMistake>
+**Assuming NTILE buckets are value ranges.** NTILE splits by row count. Tied values can fall into different buckets, and when rows do not divide evenly the first buckets are one row larger.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="window-offset" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What does LAG(sales) OVER (ORDER BY month) return on the very first row?", options: ["0", "NULL", "The same row's sales", "An error"], answer: 1, explanation: "There is no previous row, so LAG returns NULL unless you pass a default as the third argument." },
+  { q: "Which expression gives the value from two rows ahead?", options: ["LAG(x, 2)", "LEAD(x, 2)", "LEAD(x) + 2", "FIRST_VALUE(x, 2)"], answer: 1, explanation: "LEAD looks forward and the second argument is the offset." },
+  { q: "Why does LAST_VALUE(x) OVER (PARTITION BY g ORDER BY d) often return the current row's value?", options: ["It is a bug in SQLite", "The default frame ends at the current row", "LAST_VALUE ignores ORDER BY", "NULLs are skipped"], answer: 1, explanation: "With ORDER BY, the default frame is 'start of partition to current row', so the last row of that frame is the current row." },
+  { q: "10 rows are split with NTILE(4). How many rows land in each bucket?", options: ["3, 3, 2, 2", "2, 2, 3, 3", "4, 2, 2, 2", "2, 2, 2, 4"], answer: 0, explanation: "The extra rows go to the earlier buckets, giving 3, 3, 2, 2." },
+  { q: "You want each customer's gap in days since their previous order. What must be in OVER?", options: ["ORDER BY order_date only", "PARTITION BY customer_id ORDER BY order_date", "PARTITION BY order_date", "Nothing"], answer: 1, explanation: "Partition restarts the queue per customer, order defines 'previous'." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+LAG/LEAD questions (month-over-month growth, days between orders, 'did the value increase?') are extremely common in analyst interviews. The follow-up trap is usually the first-row NULL and partitioning per customer. Be ready to explain LAST_VALUE's frame behaviour as a differentiator.
+</InterviewAlert>
+
+<InterviewQ q="How do you calculate month-over-month growth in SQL?">
+First aggregate to one row per month in a CTE. Then use `LAG(metric) OVER (ORDER BY month)` to bring the previous month beside the current one, and compute `100.0 * (metric - prev) / prev`. I handle the first month (NULL) explicitly and guard against a zero previous value with `NULLIF`.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between LAG and LEAD?">
+`LAG` reads a value from an earlier row in the window order, `LEAD` from a later row. Both take an offset and an optional default. Typical uses: change versus the previous period (LAG), time until the next event (LEAD).
+</InterviewQ>
+
+<InterviewQ q="Why does LAST_VALUE sometimes give wrong results and how do you fix it?">
+When the window has an ORDER BY, the default frame stops at the current row, so LAST_VALUE returns the current row. I add `ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING`, or flip the sort and use FIRST_VALUE.
+</InterviewQ>
+
+<InterviewQ q="How would you find the top 10 percent of customers by spend?">
+Aggregate spend per customer, apply `NTILE(10) OVER (ORDER BY spend DESC)` and keep bucket 1. I would mention that NTILE splits by row count, so ties may be split across buckets, and I would check the bucket boundaries with MIN and MAX.
+</InterviewQ>
+
+## Key takeaways
+
+- `LAG` looks at an earlier row, `LEAD` at a later row. Both accept an offset and a default.
+- Always ORDER BY inside OVER, and PARTITION BY the entity (customer, employee) for per-entity comparisons.
+- `LAST_VALUE` needs an explicit full frame, or use `FIRST_VALUE` with reversed order.
+- Month-over-month growth is aggregate in a CTE, then LAG, then `100.0 * (a - b) / b`.
+- `NTILE(n)` makes equal-count buckets, useful for quartile and decile segmentation.
+
+## Further reading
+
+<FurtherReading ids={["sqlbolt", "mode-sql", "sqlite-docs"]} />

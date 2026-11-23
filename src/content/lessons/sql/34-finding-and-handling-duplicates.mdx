@@ -1,0 +1,283 @@
+---
+title: "Finding and handling duplicates"
+description: "Report repeated rows, count them, and write the safe query that keeps one copy and removes the rest."
+module: sql
+order: 34
+estimatedMinutes: 45
+objectives:
+  - "Spot the interview cue for a duplicates question"
+  - "Report, count and list duplicate rows with GROUP BY and HAVING"
+  - "Number copies with ROW_NUMBER and keep the first one"
+  - "Write a safe DELETE that keeps one row per key"
+  - "Tell exact duplicates from business-key duplicates"
+tags: ["sql", "interview-patterns", "duplicates", "row-number"]
+---
+
+## Learning objectives
+
+- Recognise a duplicates question from its wording.
+- Report duplicates with `GROUP BY ... HAVING COUNT(*) > 1`.
+- Count surplus rows with `COUNT(*) - COUNT(DISTINCT ...)`.
+- Use `ROW_NUMBER()` to pick one row to keep and mark the rest.
+- Delete duplicates safely, and know why you test with `SELECT` first.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Real tables are dirty. A UPI app loads the same transaction twice after a retry. A CRM imports the same customer from two files. If you do not catch the repeats, revenue is overcounted and every dashboard is wrong. That is why "find the duplicates" is one of the most common SQL screening questions. It tests whether you check your data before you trust it.
+</RealWorld>
+
+## Concept
+
+### The recognition cue
+
+Look for these words in the question:
+
+- "repeated", "appears more than once", "same ... twice"
+- "keep only one", "remove duplicates", "deduplicate"
+- "the latest record per ...", "the first record per ..."
+
+Interviewers usually ask the same idea in three levels. Learn all three.
+
+1. **Report them.** Which keys are repeated, and how many copies?
+2. **Count them.** How many extra rows are there?
+3. **Remove them.** Keep one row per key and delete the rest.
+
+### What counts as a duplicate?
+
+Decide this first. It is the clarifying question you should always ask.
+
+- **Exact duplicate:** every column is identical. Example: the same row loaded twice.
+- **Key duplicate:** the key (such as `order_id`) repeats, but other columns may differ. Example: two customer rows with the same email but different `customer_id`.
+
+Exact duplicates can be removed with `SELECT DISTINCT`. Key duplicates need a rule: which copy do you keep? Usually the latest by date, or the one with the lowest id.
+
+### Template 1: report
+
+```sql
+SELECT key_col, COUNT(*) AS copies
+FROM some_table
+GROUP BY key_col
+HAVING COUNT(*) > 1;
+```
+
+`GROUP BY` puts all copies of a key into one group. `HAVING` keeps only groups bigger than one. Remember: `HAVING` filters groups, `WHERE` filters rows.
+
+### Template 2: count surplus rows
+
+`COUNT(*)` counts all rows. `COUNT(DISTINCT key_col)` counts each key once. The difference is the number of redundant rows.
+
+### Template 3: keep one, mark the rest
+
+```sql
+WITH numbered AS (
+  SELECT *,
+         ROW_NUMBER() OVER (PARTITION BY key_col ORDER BY tie_break) AS rn
+  FROM some_table
+)
+SELECT * FROM numbered WHERE rn > 1;   -- the rows to remove
+```
+
+`PARTITION BY` restarts the numbering for each key. `ORDER BY` decides who gets number 1, the keeper. Rows with `rn > 1` are the extras. Use `rn = 1` to get the cleaned table.
+
+<Tip>
+Always write the `SELECT` version first and look at the rows. Only then turn it into a `DELETE`. A wrong `DELETE` cannot be undone in most databases.
+</Tip>
+
+### Variations
+
+1. **Keep the latest.** Use `ORDER BY updated_at DESC` in the window so the newest row is number 1.
+2. **Duplicates across columns.** Partition by several columns, such as `(user_id, event_time, event_name)`.
+3. **Fuzzy duplicates.** Clean first with `LOWER(TRIM(email))`, then group.
+
+### Edge cases
+
+- `NULL` keys: `GROUP BY` treats all NULLs as one group, so many NULL emails look like one big duplicate. Filter `WHERE email IS NOT NULL` when NULL means "unknown".
+- Casing and spaces: `'Asha@x.com'` and `'asha@x.com '` are different strings until you clean them.
+- A table with no key: there is nothing to partition by, so you must choose the columns that define "same".
+- Ties in the `ORDER BY` of `ROW_NUMBER`: two copies with the same timestamp get an arbitrary order. Add a final tie-breaker such as `rowid`.
+
+## Worked examples
+
+### Example 1: report repeated order ids
+
+The `orders` table has about 100 order ids that appear twice.
+
+<SqlPlayground dataset="ecommerce" query={`SELECT order_id, COUNT(*) AS copies
+FROM orders
+GROUP BY order_id
+HAVING COUNT(*) > 1
+ORDER BY order_id
+LIMIT 5;`} title="Report repeated order ids" />
+
+Output:
+
+| order_id | copies |
+|---|---|
+| 79 | 2 |
+| 237 | 2 |
+| 399 | 2 |
+| 463 | 2 |
+| 466 | 2 |
+
+
+Each of these ids exists twice. Always give your answer with the count, because "there are some duplicates" is not an answer.
+
+### Example 2: how bad is it?
+
+<SqlPlayground dataset="ecommerce" query={`SELECT COUNT(*) AS total_rows,
+       COUNT(DISTINCT order_id) AS distinct_orders,
+       COUNT(*) - COUNT(DISTINCT order_id) AS extra_rows
+FROM orders;`} title="Count the surplus rows" />
+
+Output:
+
+| total_rows | distinct_orders | extra_rows |
+|---|---|---|
+| 10100 | 10000 | 100 |
+
+
+So 100 rows out of about 10,100 are surplus. Now you can say "about 1 percent of orders are repeated", which a manager understands.
+
+<CommonMistake>
+Measuring revenue with `SUM(total_amount)` on this table without deduplicating. The 100 repeated orders are added twice and revenue is inflated. Fix the data first, or sum from a deduplicated CTE.
+</CommonMistake>
+
+### Example 3: mark the rows to delete
+
+<SqlPlayground dataset="ecommerce" query={`WITH numbered AS (
+  SELECT rowid AS rid, order_id,
+         ROW_NUMBER() OVER (PARTITION BY order_id ORDER BY rowid) AS rn
+  FROM orders
+)
+SELECT rid, order_id, rn
+FROM numbered
+WHERE rn > 1
+ORDER BY order_id
+LIMIT 5;`} title="Rows that would be deleted" />
+
+Output:
+
+| rid | order_id | rn |
+|---|---|---|
+| 80 | 79 | 2 |
+| 239 | 237 | 2 |
+| 402 | 399 | 2 |
+| 467 | 463 | 2 |
+| 471 | 466 | 2 |
+
+
+`rowid` is a hidden row number in SQLite. In other databases use a primary key or a timestamp. These are the rows a cleanup would remove, and each order id keeps its first copy.
+
+Once you are happy with that list, the safe delete in SQLite is:
+
+```sql
+DELETE FROM orders
+WHERE rowid NOT IN (
+  SELECT MIN(rowid) FROM orders GROUP BY order_id
+);
+```
+
+In PostgreSQL or SQL Server you would delete by joining to the numbered CTE where `rn > 1`. Do not run a `DELETE` in the playground below; use it only to practise `SELECT`.
+
+### Example 4: same email, different customer ids
+
+Now a key duplicate. Two customer rows can carry the same email but different `customer_id` values.
+
+<SqlPlayground dataset="ecommerce" query={`SELECT LOWER(TRIM(email)) AS email,
+       COUNT(DISTINCT customer_id) AS customer_ids,
+       MIN(customer_id) AS first_id,
+       MAX(customer_id) AS last_id
+FROM customers
+WHERE email IS NOT NULL
+GROUP BY LOWER(TRIM(email))
+HAVING COUNT(DISTINCT customer_id) > 1
+ORDER BY email
+LIMIT 5;`} title="Same email, several customer ids" />
+
+Output:
+
+| email | customer_ids | first_id | last_id |
+|---|---|---|---|
+| aanya.ghosh@gmail.com | 2 | 401 | 3376 |
+| aditya.bansal@gmail.com | 2 | 1037 | 2774 |
+| aditya.iyer@gmail.com | 2 | 1291 | 4347 |
+| aditya.shetty@gmail.com | 2 | 779 | 2538 |
+| aishwarya.hegde@gmail.com | 2 | 2563 | 3853 |
+
+
+Here `DISTINCT` cannot help, because the rows are not identical. You need a business rule, for example "keep the oldest `customer_id`", and you should confirm it with the stakeholder. Also notice the `WHERE email IS NOT NULL` filter: without it, thousands of missing emails would form one fake duplicate group.
+
+## Common mistakes
+
+<CommonMistake>
+Using `WHERE COUNT(*) > 1`. Aggregates cannot be used in `WHERE`. Use `HAVING`.
+</CommonMistake>
+
+<CommonMistake>
+Using `SELECT DISTINCT *` and calling the job done when the rows are not exact copies. If one column differs (a timestamp, a status), `DISTINCT` keeps both rows and the duplicates stay.
+</CommonMistake>
+
+<CommonMistake>
+Forgetting `PARTITION BY` in the window. `ROW_NUMBER() OVER (ORDER BY id)` numbers the whole table 1, 2, 3... and the `rn > 1` filter then removes almost every row.
+</CommonMistake>
+
+<CommonMistake>
+Deleting without a `SELECT` check. Always preview the exact rows first, and keep a backup table when you work on real data.
+</CommonMistake>
+
+<CommonMistake>
+Ignoring NULLs and casing. Group on cleaned values such as `LOWER(TRIM(email))`, and decide what to do with NULL keys.
+</CommonMistake>
+
+<CommonMistake>
+Not deciding which copy to keep. "Remove duplicates" is incomplete until you say first, latest, or highest-quality row.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="pattern-duplicates" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Which clause filters out ids that appear only once?", options: ["WHERE COUNT(*) > 1", "HAVING COUNT(*) > 1", "ORDER BY COUNT(*)", "DISTINCT COUNT(*)"], answer: 1, explanation: "HAVING filters groups after aggregation. WHERE cannot use aggregate functions." },
+  { q: "A table has 1,000 rows and 960 distinct order ids. How many surplus rows are there?", options: ["960", "40", "1,000", "Cannot tell"], answer: 1, explanation: "COUNT(*) minus COUNT(DISTINCT order_id) is 1,000 minus 960, which is 40." },
+  { q: "In ROW_NUMBER() OVER (PARTITION BY id ORDER BY created_at DESC), which row gets rn = 1?", options: ["The oldest row of each id", "The newest row of each id", "A random row of the whole table", "The first row of the table"], answer: 1, explanation: "Sorting by created_at DESC puts the newest row first inside each id, so it gets number 1." },
+  { q: "Why is SELECT DISTINCT not enough for key duplicates such as the same email with two customer ids?", options: ["DISTINCT is slow", "The rows are not identical, so DISTINCT keeps both", "DISTINCT only works on numbers", "DISTINCT removes NULLs"], answer: 1, explanation: "DISTINCT compares whole rows. If any column differs the rows are different." },
+  { q: "What should you do before running a DELETE that removes duplicates?", options: ["Run it and check later", "Preview the rows with a SELECT using the same condition", "Add LIMIT 1000", "Drop the table"], answer: 1, explanation: "Preview first. A wrong DELETE is hard to undo." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+This question has three levels (report, count, delete). Say out loud which level you are answering. Then state your rule for which copy you keep. That one sentence shows maturity.
+</InterviewAlert>
+
+<InterviewQ q="How do you find duplicate rows in a table?">
+Group by the columns that define "same" and keep groups with more than one row: `SELECT key, COUNT(*) FROM t GROUP BY key HAVING COUNT(*) > 1`. I first ask what defines a duplicate: all columns, or just a key. For the count of surplus rows I use `COUNT(*) - COUNT(DISTINCT key)`.
+</InterviewQ>
+
+<InterviewQ q="How do you delete duplicates but keep one row?">
+I number the copies with `ROW_NUMBER() OVER (PARTITION BY key ORDER BY keep_rule)`, so the row to keep gets 1. Then I delete rows with `rn > 1`. In SQLite I can use `DELETE ... WHERE rowid NOT IN (SELECT MIN(rowid) ... GROUP BY key)`. I preview with `SELECT` first and tell the interviewer which row I keep and why.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between DISTINCT and GROUP BY for removing duplicates?">
+Both return unique combinations. `DISTINCT` just removes identical rows. `GROUP BY` lets me also calculate something per group, such as the number of copies or the latest date. For "keep the latest row per key" I need a window function or `GROUP BY` with `MAX`, not plain `DISTINCT`.
+</InterviewQ>
+
+<InterviewQ q="You deduplicated the data and the revenue dropped. Was it wrong?">
+Not necessarily. The old number was inflated by double counting. I would reconcile: report the old figure, the new figure, and the number of rows removed, then check a few removed rows against the source system to make sure they were real copies.
+</InterviewQ>
+
+## Key takeaways
+
+- A duplicates question has three levels: report, count, remove.
+- First decide what makes two rows "the same", and which copy to keep.
+- Report with `GROUP BY ... HAVING COUNT(*) > 1`; count with `COUNT(*) - COUNT(DISTINCT ...)`.
+- `ROW_NUMBER() OVER (PARTITION BY key ORDER BY rule)` marks the keeper as 1 and extras as more than 1.
+- Preview with `SELECT` before any `DELETE`, and watch for NULLs and casing.
+
+## Further reading
+
+<FurtherReading ids={["mode-sql", "sqlite-docs", "postgres-docs", "datalemur"]} />

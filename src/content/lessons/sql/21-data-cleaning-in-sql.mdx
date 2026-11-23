@@ -1,0 +1,301 @@
+---
+title: "Data cleaning in SQL: text, dates, CAST, outliers, NULLs"
+description: "Standardise messy text, parse inconsistent dates, convert types, flag outliers and fill NULLs, all in SQL."
+module: sql
+order: 21
+estimatedMinutes: 60
+objectives:
+  - "Profile a column to discover how messy it is before fixing it"
+  - "Standardise text with TRIM, UPPER, LOWER and a proper-case pattern"
+  - "Parse a column that mixes several date formats into one ISO date"
+  - "Use CAST and understand SQLite's flexible typing"
+  - "Flag and exclude outliers, and replace NULLs safely with COALESCE and NULLIF"
+tags: ["sql", "data-cleaning", "dates", "cast", "coalesce", "outliers"]
+---
+
+## Learning objectives
+
+- Profile a column to discover how messy it is before fixing it
+- Standardise text with TRIM, UPPER, LOWER and a proper-case pattern
+- Parse a column that mixes several date formats into one ISO date
+- Use CAST and understand SQLite's flexible typing
+- Flag and exclude outliers, and replace NULLs safely with COALESCE and NULLIF
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Analysts spend a large part of their time cleaning data, and fresher interviews reflect it: "this table has duplicate and inconsistent values, how will you clean it before analysis?" Real data from forms, Excel uploads and old systems has spaces, mixed casing, dates in four formats and the occasional wrong amount. If you do not clean first, your report shows 'Mumbai' and 'mumbai' as two cities and your average order value is inflated by one typo. A clean query is the difference between a number you can defend and one you cannot.
+</RealWorld>
+
+## Concept
+
+### Step 0: profile before you clean
+
+Never start with `UPDATE`. First look at the mess:
+
+- `SELECT DISTINCT col` (or `GROUP BY col`) to see the variants.
+- `COUNT(*)` versus `COUNT(col)` to see how many NULLs.
+- `MIN` and `MAX` to catch absurd values.
+- `COUNT(DISTINCT col)` versus a cleaned `COUNT(DISTINCT ...)` to measure how much cleaning helps.
+
+Then write a **SELECT that returns the clean value**, check it, and only then think about storing it. In analysis you usually never modify raw data. You clean inside the query (often in a CTE), so the raw table stays as evidence.
+
+### Cleaning text
+
+| Problem | Function | Example |
+|---|---|---|
+| Spaces at the start or end | `TRIM(x)` (also `LTRIM`, `RTRIM`) | `TRIM(' Pune ')` gives `Pune` |
+| Mixed casing | `UPPER(x)`, `LOWER(x)` | `LOWER('MUMBAI')` gives `mumbai` |
+| Want "Title case" | `UPPER(SUBSTR(x,1,1)) \|\| LOWER(SUBSTR(x,2))` | `mUMBAI` becomes `Mumbai` |
+| Code letters instead of words | `CASE WHEN g = 'M' THEN 'Male' ... END` | `M` becomes `Male` |
+| Replace characters | `REPLACE(x, ',', '')` | `1,234` becomes `1234` |
+| Empty string that should be NULL | `NULLIF(TRIM(x), '')` | `''` becomes `NULL` |
+
+Order matters: **TRIM first, then change case**. SQLite has no `INITCAP` (PostgreSQL has), so the `UPPER(SUBSTR) || LOWER(SUBSTR)` pattern is the portable way for single-word values like city names. For multi-word values like "navi mumbai" you would need a lookup table or a CASE mapping.
+
+### Cleaning dates
+
+Dates should be stored as `YYYY-MM-DD`. Why? Because as text they then sort correctly and SQLite's date functions (`date()`, `strftime()`, `julianday()`) understand them. A column holding `01/07/2022`, `1 Jul 2022` and `Jul 1, 2022` together cannot be sorted, compared or grouped by month.
+
+The approach:
+
+1. Detect each format with `GLOB` (a simple pattern match where `[0-9]` is one digit and `*` is anything).
+2. For each format, rebuild an ISO string with `substr`, `instr` and `printf`.
+3. Put everything in one `CASE`.
+4. Check the result against a known-good column (here `signup_date`) or count the rows left as NULL.
+
+Also decide what an ambiguous format means. `01/07/2022` is 1 July in India (DD/MM/YYYY) but 7 January in the US. Look at the data: if you ever see `13/07/2022`, the first part must be the day.
+
+### CAST and type conversion
+
+`CAST(x AS INTEGER | REAL | TEXT)` converts a value. In SQLite:
+
+- `CAST('12abc' AS INTEGER)` gives 12 (it reads the leading number and ignores the rest).
+- `CAST('abc' AS INTEGER)` gives 0, not an error. Silent zeros are dangerous, so check for them.
+- `CAST(3.99 AS INTEGER)` gives 3 (truncates, does not round).
+- Text such as `'1,234.50'` or `'₹1234'` must be cleaned with `REPLACE` first. `CAST('₹1234' AS REAL)` returns 0.0.
+
+Other databases are stricter: PostgreSQL raises an error for `'abc'::int`, which is arguably better. SQLite also lets you do `'5' + 3` and gives 8, because it converts text that looks like a number.
+
+### Outliers
+
+An **outlier** is a value far from the rest. Sometimes it is real (a big B2B order), sometimes it is a data-entry error (a price typed with two extra zeros). First **flag**, then decide.
+
+Practical checks:
+
+- Compare with a reference (unit price versus the product's MRP).
+- Compare with the typical value (more than 10 times the median or average).
+- Use a business rule (a salary above 1 crore for a fresher role).
+
+Do not silently delete. Report how many rows you excluded and why. A simple pattern is `WHERE unit_price <= mrp` or a `CASE` that sets a flag column `is_outlier`.
+
+### NULLs
+
+- `COALESCE(a, b, c)` returns the first non-NULL value. Use it for defaults: `COALESCE(city, 'Unknown')`.
+- `NULLIF(a, b)` returns NULL when `a = b`. Use it to turn `''` or `0` into NULL, and to avoid divide-by-zero: `x / NULLIF(y, 0)`.
+- A default is a **decision**, not a free fix. Replacing a missing amount with 0 changes your averages. Sometimes leaving NULL (so `AVG` skips it) is the honest choice.
+
+<Tip>
+A good cleaning habit: write the cleaning in a CTE called `clean`, then run every analysis on `clean`. When a rule changes, you change it in one place.
+</Tip>
+
+## Worked examples
+
+### Example 1: standardising a messy text key
+
+About 10 percent of `customers.city` values have odd casing or stray spaces. The query below trims, lower-cases and then capitalises the first letter. `spellings` shows how many different raw spellings collapsed into each clean city.
+
+<SqlPlayground dataset="ecommerce" query={`SELECT UPPER(SUBSTR(TRIM(city), 1, 1)) || LOWER(SUBSTR(TRIM(city), 2)) AS clean_city,
+       COUNT(*) AS customers,
+       COUNT(DISTINCT city) AS spellings
+FROM customers
+GROUP BY 1
+ORDER BY customers DESC, clean_city
+LIMIT 8;`} title="Clean the city column" />
+
+**Output:**
+
+| clean_city | customers | spellings |
+|---|---|---|
+| Delhi | 588 | 6 |
+| Mumbai | 585 | 6 |
+| Bengaluru | 524 | 6 |
+| Hyderabad | 377 | 6 |
+| Chennai | 348 | 6 |
+| Pune | 249 | 6 |
+| Kolkata | 242 | 6 |
+| Ahmedabad | 215 | 6 |
+
+Delhi has 588 customers once cleaned, instead of 524 under the plain spelling. Without cleaning, every city's count is understated and a city like Mumbai appears in several rows. The `NULL` city (140 customers) stays NULL because `TRIM(NULL)` is NULL. We have not invented a value for it.
+
+### Example 2: parsing four date formats into one
+
+`signup_date_raw` mixes `2022-07-01`, `01/07/2022` (day first), `1 Jul 2022` and `Jul 1, 2022`, plus NULLs. One CASE expression detects each format with GLOB and rebuilds an ISO date. The column `signup_date` holds the true clean value, so we can check ourselves.
+
+<SqlPlayground dataset="ecommerce" query={`SELECT customer_id,
+       signup_date_raw,
+       CASE
+         WHEN signup_date_raw GLOB '[0-9][0-9][0-9][0-9]-*' THEN signup_date_raw
+         WHEN signup_date_raw GLOB '*/*'
+              THEN substr(signup_date_raw, 7, 4) || '-' || substr(signup_date_raw, 4, 2) || '-' || substr(signup_date_raw, 1, 2)
+         WHEN signup_date_raw GLOB '[0-9]* *'
+              THEN printf('%04d-%02d-%02d',
+                          CAST(substr(signup_date_raw, -4) AS INTEGER),
+                          (instr('JanFebMarAprMayJunJulAugSepOctNovDec',
+                                 substr(signup_date_raw, instr(signup_date_raw, ' ') + 1, 3)) + 2) / 3,
+                          CAST(substr(signup_date_raw, 1, instr(signup_date_raw, ' ') - 1) AS INTEGER))
+         WHEN signup_date_raw IS NOT NULL
+              THEN printf('%04d-%02d-%02d',
+                          CAST(substr(signup_date_raw, -4) AS INTEGER),
+                          (instr('JanFebMarAprMayJunJulAugSepOctNovDec', substr(signup_date_raw, 1, 3)) + 2) / 3,
+                          CAST(substr(signup_date_raw, 5, instr(signup_date_raw, ',') - 5) AS INTEGER))
+       END AS fixed_date,
+       signup_date AS expected
+FROM customers
+ORDER BY customer_id
+LIMIT 8;`} title="Fix signup_date_raw" />
+
+**Output:**
+
+| customer_id | signup_date_raw | fixed_date | expected |
+|---|---|---|---|
+| 1 | 2022-07-01 | 2022-07-01 | 2022-07-01 |
+| 2 | 01/07/2022 | 2022-07-01 | 2022-07-01 |
+| 3 | 2022-07-01 | 2022-07-01 | 2022-07-01 |
+| 4 | Jul 1, 2022 | 2022-07-01 | 2022-07-01 |
+| 5 | 01/07/2022 | 2022-07-01 | 2022-07-01 |
+| 6 | 2022-07-01 | 2022-07-01 | 2022-07-01 |
+| 7 | 1 Jul 2022 | 2022-07-01 | 2022-07-01 |
+| 8 | 2022-07-02 | 2022-07-02 | 2022-07-02 |
+
+The month name is converted to a number with a neat trick: find its position in the string `'JanFebMar...Dec'` with `INSTR`, add 2 and divide by 3 using integer division (`Jul` is at position 19, so (19 + 2) / 3 = 7). When we compared `fixed_date` with `signup_date` over all 4,520 rows, all 4,393 rows that have a raw value matched exactly. The other 127 rows have a NULL raw date, so they stay NULL (the clean column has a value for them, but we cannot rebuild it from nothing).
+
+### Example 3: flagging 100x price outliers
+
+Twelve `order_items` have a unit price about 60 to 90 times the product's MRP (maximum retail price). That is a typing mistake, not a real sale. We compare the unit price with the MRP to flag them, then see what they do to the average.
+
+<SqlPlayground dataset="ecommerce" query={`SELECT oi.order_item_id,
+       oi.unit_price,
+       p.mrp,
+       ROUND(oi.unit_price / p.mrp, 1) AS times_mrp
+FROM order_items oi
+JOIN products p ON p.product_id = oi.product_id
+WHERE oi.unit_price > p.mrp
+ORDER BY times_mrp DESC, oi.order_item_id
+LIMIT 6;`} title="Find data-entry price errors" />
+
+**Output:**
+
+| order_item_id | unit_price | mrp | times_mrp |
+|---|---|---|---|
+| 3856 | 557051.0 | 6259.0 | 89.0 |
+| 14513 | 85351.0 | 959.0 | 89.0 |
+| 4400 | 11676.0 | 139.0 | 84.0 |
+| 15021 | 11676.0 | 139.0 | 84.0 |
+| 14189 | 38927.0 | 469.0 | 83.0 |
+| 16537 | 65487.0 | 789.0 | 83.0 |
+
+The average unit price across all lines is ₹2,400.79. Excluding only these twelve rows (`WHERE unit_price <= mrp`) it falls to ₹2,289.86. Twelve rows out of twenty thousand move the average by about ₹110, which is why you check for outliers before reporting averages.
+
+### Example 4: NULL defaults, COALESCE and CAST
+
+We give missing values a clear label for reporting, turn an empty coupon string into a real NULL, and show what CAST does to awkward text. Notice that `CAST('₹1234' AS REAL)` quietly gives 0.0.
+
+<SqlPlayground dataset="ecommerce" query={`SELECT customer_id,
+       COALESCE(email, 'not provided') AS email,
+       COALESCE(gender, 'Unknown') AS gender,
+       COALESCE(UPPER(SUBSTR(TRIM(city), 1, 1)) || LOWER(SUBSTR(TRIM(city), 2)), 'Unknown') AS city,
+       CAST('12abc' AS INTEGER) AS cast_12abc,
+       CAST('₹1234' AS REAL) AS cast_rupee_text,
+       CAST(REPLACE(REPLACE('₹1,234.50', '₹', ''), ',', '') AS REAL) AS cleaned_cast,
+       NULLIF(TRIM('   '), '') AS empty_to_null
+FROM customers
+WHERE email IS NULL
+ORDER BY customer_id
+LIMIT 5;`} title="Safe defaults and conversion" />
+
+**Output:**
+
+| customer_id | email | gender | city | cast_12abc | cast_rupee_text | cleaned_cast | empty_to_null |
+|---|---|---|---|---|---|---|---|
+| 20 | not provided | Female | Bengaluru | 12 | 0.0 | 1234.5 | NULL |
+| 41 | not provided | Female | Bengaluru | 12 | 0.0 | 1234.5 | NULL |
+| 51 | not provided | Unknown | Lucknow | 12 | 0.0 | 1234.5 | NULL |
+| 52 | not provided | Male | Chennai | 12 | 0.0 | 1234.5 | NULL |
+| 84 | not provided | Female | Hyderabad | 12 | 0.0 | 1234.5 | NULL |
+
+The last four columns are the same on every row. They are small demonstrations: a bare CAST on rupee text silently returns 0.0, while stripping `₹` and commas first gives the correct 1234.5. `NULLIF` converted a blank string to NULL.
+
+## Common mistakes
+
+<CommonMistake>
+**Cleaning without profiling first.** Without looking at `DISTINCT` values you will miss variants (a trailing space, a lowercase `m` for Male) and your 'clean' column is still wrong. Always compare the distinct count before and after.
+</CommonMistake>
+
+<CommonMistake>
+**Changing case before trimming, or forgetting to trim.** `' Pune'` and `'Pune'` are different strings even if both are lower-cased. `TRIM` first, then `LOWER` or `UPPER`.
+</CommonMistake>
+
+<CommonMistake>
+**Guessing the date format.** Treating `01/07/2022` as MM/DD/YYYY puts the signup in January instead of July and shifts whole months of your trend. Look for impossible values (a first part above 12) to prove which is which, and check against a clean column when one exists.
+</CommonMistake>
+
+<CommonMistake>
+**Trusting CAST to complain.** In SQLite `CAST('abc' AS INTEGER)` gives 0 silently, and `CAST('₹1,200' AS REAL)` gives 0.0. Your totals become too low with no error. Strip symbols and commas first, and count the zeros afterwards.
+</CommonMistake>
+
+<CommonMistake>
+**Deleting outliers silently.** If you drop 12 rows and do not say so, nobody can reproduce your number. Flag them, state the rule, and report how many rows were affected.
+</CommonMistake>
+
+<CommonMistake>
+**Filling NULL with 0 by reflex.** A missing phone number as 0 is wrong. A missing discount as 0 may be right. A missing salary as 0 destroys the average. Decide per column, and prefer leaving NULL when the value is truly unknown.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="cleaning" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Which order is correct to standardise ' MUMBAI ' into 'Mumbai'?", options: ["UPPER then TRIM then SUBSTR", "TRIM first, then UPPER(SUBSTR(...,1,1)) || LOWER(SUBSTR(...,2))", "LOWER only", "REPLACE the spaces with nothing and stop"], answer: 1, explanation: "Remove the stray spaces first, then fix the casing of the trimmed text." },
+  { q: "What does CAST('abc' AS INTEGER) return in SQLite?", options: ["An error", "NULL", "0", "'abc'"], answer: 2, explanation: "SQLite converts unreadable text to 0 without an error, so silent zeros are a risk." },
+  { q: "What does COALESCE(discount, 0) do?", options: ["Returns 0 always", "Returns discount, or 0 when discount is NULL", "Deletes NULL rows", "Converts 0 to NULL"], answer: 1, explanation: "COALESCE returns the first non-NULL argument." },
+  { q: "You see a date value '25/12/2023'. What do you conclude about the column's slash format?", options: ["It is MM/DD/YYYY", "It is DD/MM/YYYY because 25 cannot be a month", "It is invalid", "Cannot tell"], answer: 1, explanation: "A first part above 12 cannot be a month, so the format is day first." },
+  { q: "Which expression avoids a divide-by-zero error?", options: ["x / y", "x / NULLIF(y, 0)", "x / COALESCE(y, NULL)", "x / CAST(y AS TEXT)"], answer: 1, explanation: "NULLIF(y, 0) returns NULL when y is 0, and dividing by NULL gives NULL instead of an error." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+'How do you clean a messy dataset?' is asked in nearly every analyst interview. A strong answer follows a sequence: profile, define rules, apply them in a query, validate, and document what you changed. Mention specific cases (dates, casing, duplicates, outliers, NULLs) and that you keep the raw data untouched.
+</InterviewAlert>
+
+<InterviewQ q="A table has city values like 'Pune', ' pune' and 'PUNE '. How do you fix it for reporting?">
+I first profile with GROUP BY to see all variants. Then I clean in a SELECT or CTE: `LOWER(TRIM(city))` for grouping, and `UPPER(SUBSTR(TRIM(city),1,1)) || LOWER(SUBSTR(TRIM(city),2))` for display in SQLite. I keep the raw column untouched and compare distinct counts before and after to prove it worked.
+</InterviewQ>
+
+<InterviewQ q="How do you deal with outliers in SQL?">
+I first detect them: compare with a reference value (like MRP), with the median or percentiles, or with a business rule. Then I decide: exclude, cap or keep, and I document the rule and the number of rows affected. I never delete from the source table in analysis work. I filter in the query so the result is reproducible.
+</InterviewQ>
+
+<InterviewQ q="How would you convert a column holding dates in several formats to one format?">
+Identify each pattern with GLOB or LIKE, handle each with substr/instr into 'YYYY-MM-DD' inside a CASE, and verify by counting NULLs and checking a sample. I also settle ambiguity such as DD/MM versus MM/DD by looking for values where the first part is greater than 12.
+</InterviewQ>
+
+<InterviewQ q="When is COALESCE a bad idea?">
+When the default changes the meaning of the metric. Filling missing salary or amount with 0 lowers averages and hides data problems. In those cases I leave NULL so aggregates skip it, report the NULL count, or impute with a clearly documented rule.
+</InterviewQ>
+
+## Key takeaways
+
+- Profile first: DISTINCT values, NULL counts, MIN and MAX, then write a SELECT that returns the clean value.
+- TRIM before changing case. Use `UPPER(SUBSTR) || LOWER(SUBSTR)` for proper case in SQLite.
+- Parse mixed date formats with GLOB detection and a CASE that rebuilds `YYYY-MM-DD`. Verify against a known-good column.
+- SQLite's CAST fails silently with 0. Strip symbols like ₹ and commas before casting.
+- Flag outliers, state the rule and the count. Use COALESCE and NULLIF deliberately, not by reflex.
+
+## Further reading
+
+<FurtherReading ids={["sqlbolt", "mode-sql", "sqlite-docs"]} />

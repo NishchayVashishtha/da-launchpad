@@ -1,0 +1,285 @@
+---
+title: "HAVING and the logical order of execution"
+description: "Filter groups with HAVING and learn the real order in which SQL runs your query."
+module: sql
+order: 8
+estimatedMinutes: 35
+objectives:
+  - "Filter groups with HAVING"
+  - "Choose correctly between WHERE and HAVING"
+  - "Recall the logical order of execution of a SELECT query"
+  - "Explain why aliases work in ORDER BY but not in WHERE"
+tags: ["sql", "having", "execution-order", "group-by"]
+---
+
+## Learning objectives
+
+- Filter groups with `HAVING`.
+- Decide between `WHERE` and `HAVING`.
+- Recall the logical order of execution of a query.
+- Use that order to explain errors with aliases and aggregates.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+"Show me restaurants with at least 30 orders and an average rating below 3.5." "Which merchants have more than ₹5 lakh in failed payments?" You are not filtering rows here. You are filtering **groups** by their summary numbers. That is `HAVING`. And the execution order is the most-asked SQL theory question in interviews.
+</RealWorld>
+
+## Concept
+
+### HAVING
+
+`WHERE` cannot use aggregates, because it runs before groups exist. `HAVING` runs **after** `GROUP BY`, so it can.
+
+```sql
+SELECT bank, COUNT(*) AS txns
+FROM transactions
+GROUP BY bank
+HAVING COUNT(*) > 1000;
+```
+
+This keeps only the banks with more than 1,000 transactions.
+
+### WHERE or HAVING?
+
+| Question | Use |
+|---|---|
+| Is the condition about a single raw row (`status = 'FAILED'`)? | `WHERE` |
+| Is it about a group summary (`COUNT(*) > 10`, `AVG(x) < 3`)? | `HAVING` |
+
+Both can be in one query. Put row-level conditions in `WHERE`: it throws rows away early, so there is less to group.
+
+### The logical order of execution
+
+You **write** `SELECT` first, but the database **thinks** in this order:
+
+<Mermaid chart={`flowchart LR
+  A[FROM and JOIN] --> B[WHERE]
+  B --> C[GROUP BY]
+  C --> D[HAVING]
+  D --> E[SELECT]
+  E --> F[DISTINCT]
+  F --> G[ORDER BY]
+  G --> H[LIMIT]`} caption="Logical order of execution of a SELECT query." />
+
+1. `FROM` (and `JOIN`s): find the tables and combine them.
+2. `WHERE`: drop rows.
+3. `GROUP BY`: form groups.
+4. `HAVING`: drop groups.
+5. `SELECT`: compute columns, expressions and aliases.
+6. `DISTINCT`: remove duplicate result rows.
+7. `ORDER BY`: sort the result.
+8. `LIMIT` / `OFFSET`: cut the result.
+
+This is the *logical* order. The optimiser may run things in a different physical order for speed, but the result must be as if this order was followed.
+
+### What the order explains
+
+- **Aliases fail in WHERE.** `SELECT price * 2 AS p ... WHERE p > 10` fails because `WHERE` (step 2) runs before the alias exists (step 5). `ORDER BY` (step 7) can use it.
+- **Aggregates fail in WHERE.** Groups do not exist at step 2.
+- **`LIMIT` acts last.** It cuts the sorted result.
+- **`SELECT` columns need to be in `GROUP BY`** because `SELECT` runs after grouping and sees one row per group.
+
+SQLite is lenient: it lets `WHERE` and `HAVING` use aliases in some cases. MySQL allows aliases in `HAVING` too. PostgreSQL and SQL Server do not. For portable SQL, repeat the expression.
+
+<Tip>
+When a query errors or surprises you, walk through it in execution order: FROM, WHERE, GROUP BY, HAVING, SELECT, ORDER BY, LIMIT. Ask "what does the data look like after each step?"
+</Tip>
+
+## Worked examples
+
+### Example 1: HAVING on a count
+
+Restaurants with at least 60 deliveries. Only the groups passing the test appear.
+
+<SqlPlayground dataset="food_delivery" query={`SELECT restaurant_id, COUNT(*) AS deliveries
+FROM deliveries
+GROUP BY restaurant_id
+HAVING COUNT(*) >= 60
+ORDER BY deliveries DESC, restaurant_id
+LIMIT 6;`} title="Busy restaurants" />
+
+**Output:**
+
+| restaurant_id | deliveries |
+|---|---|
+| 378 | 412 |
+| 505 | 282 |
+| 573 | 256 |
+| 199 | 244 |
+| 320 | 230 |
+| 600 | 207 |
+
+
+### Example 2: WHERE and HAVING together
+
+Cities where cancelled orders are common. `WHERE` first keeps only cancelled orders (row filter), then `HAVING` keeps cities with more than 40 of them (group filter).
+
+<SqlPlayground dataset="food_delivery" query={`SELECT city, COUNT(*) AS cancelled_orders
+FROM deliveries
+WHERE delivery_status = 'Cancelled'
+GROUP BY city
+HAVING COUNT(*) > 40
+ORDER BY cancelled_orders DESC, city
+LIMIT 8;`} title="Cities with many cancellations" />
+
+**Output:**
+
+| city | cancelled_orders |
+|---|---|
+| Mumbai | 127 |
+| Bengaluru | 118 |
+| Delhi | 88 |
+| Hyderabad | 82 |
+| Kolkata | 68 |
+| Pune | 60 |
+
+Showing the first 6 of 7 rows.
+
+
+### Example 3: HAVING with an average
+
+Product categories where the average MRP is above ₹3,000.
+
+<SqlPlayground dataset="ecommerce" query={`SELECT category,
+       COUNT(*) AS products,
+       ROUND(AVG(mrp), 0) AS avg_mrp
+FROM products
+GROUP BY category
+HAVING AVG(mrp) > 3000
+ORDER BY avg_mrp DESC;`} title="Premium categories" />
+
+**Output:**
+
+| category | products | avg_mrp |
+|---|---|---|
+| Electronics | 62 | 9613.0 |
+|  electronics   | 1 | 5219.0 |
+| FASHION | 1 | 4479.0 |
+| Home & Kitchen | 82 | 3183.0 |
+
+
+See the rows with odd casing such as ` electronics  ` and `FASHION`? They are separate one-product groups because the category text is messy. Grouping on `LOWER(TRIM(category))` would merge them with the big groups.
+
+### Example 4: a moved filter gives the same answer faster
+
+These two queries return the same rows, but the second uses `WHERE` for the row condition, which is the better habit.
+
+<SqlPlayground dataset="marketing" query={`SELECT device, COUNT(*) AS clicks
+FROM clicks
+GROUP BY device
+HAVING device = 'Mobile';`} title="Filtering a group key in HAVING (works, but not ideal)" />
+
+**Output:**
+
+| device | clicks |
+|---|---|
+| Mobile | 15000 |
+
+
+<SqlPlayground dataset="marketing" query={`SELECT device, COUNT(*) AS clicks
+FROM clicks
+WHERE device = 'Mobile'
+GROUP BY device;`} title="Same result, filter in WHERE" />
+
+**Output:**
+
+| device | clicks |
+|---|---|
+| Mobile | 15000 |
+
+
+Notice there are also `mobile` and ` Mobile` rows, so both versions undercount. Messy data again. Cleaning first would give the true figure.
+
+### Example 5: walking the execution order
+
+Which marketing channels have at least 2 completed campaigns? Follow the steps: FROM campaigns, WHERE status, GROUP BY channel, HAVING count, SELECT, ORDER BY.
+
+<SqlPlayground dataset="marketing" query={`SELECT channel,
+       COUNT(*) AS completed_campaigns,
+       ROUND(SUM(budget_inr), 0) AS total_budget
+FROM campaigns
+WHERE status = 'Completed'
+GROUP BY channel
+HAVING COUNT(*) >= 2
+ORDER BY completed_campaigns DESC, channel;`} title="Channels with 2+ completed campaigns" />
+
+**Output:**
+
+| channel | completed_campaigns | total_budget |
+|---|---|---|
+| Google Search | 7 | 113000.0 |
+| Meta Ads | 6 | 51000.0 |
+| Google Display | 3 | 13000.0 |
+| Influencer | 3 | 52000.0 |
+| WhatsApp | 3 | 1000.0 |
+| Affiliate | 2 | 3000.0 |
+
+Showing the first 6 of 8 rows.
+
+
+## Common mistakes
+
+<CommonMistake>
+**Using an aggregate in WHERE.** `WHERE COUNT(*) > 5` is an error. Use `HAVING COUNT(*) > 5`.
+</CommonMistake>
+
+<CommonMistake>
+**Putting row conditions in HAVING** when `WHERE` would do. It works in some cases but is slower and confusing.
+</CommonMistake>
+
+<CommonMistake>
+**Using a SELECT alias in WHERE.** Aliases are created after WHERE runs. Repeat the expression.
+</CommonMistake>
+
+<CommonMistake>
+**Using HAVING without GROUP BY** and expecting row filtering. Without GROUP BY the whole table is one group.
+</CommonMistake>
+
+<CommonMistake>
+**Thinking LIMIT happens first.** It acts last, on the sorted final result.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="having" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Which clause can filter on COUNT(*) > 10?", options: ["WHERE", "HAVING", "FROM", "LIMIT"], answer: 1, explanation: "HAVING runs after grouping, so it can use aggregates." },
+  { q: "What is the logical order of execution?", options: ["SELECT, FROM, WHERE, GROUP BY", "FROM, WHERE, GROUP BY, HAVING, SELECT, ORDER BY, LIMIT", "WHERE, FROM, SELECT, GROUP BY", "FROM, SELECT, WHERE, HAVING"], answer: 1, explanation: "The database reads data first (FROM), filters rows, groups, filters groups, computes SELECT, sorts and finally limits." },
+  { q: "Why can ORDER BY use an alias but WHERE cannot?", options: ["ORDER BY is faster", "ORDER BY runs after SELECT created the alias", "WHERE only accepts numbers", "It is a bug in SQL"], answer: 1, explanation: "Aliases are created in the SELECT step, which comes after WHERE and before ORDER BY." },
+  { q: "Where should WHERE status = 'FAILED' go if you also group?", options: ["In HAVING", "In WHERE, before GROUP BY", "After LIMIT", "In SELECT"], answer: 1, explanation: "A row-level condition belongs in WHERE so rows are removed before grouping." },
+  { q: "HAVING with no GROUP BY treats the table as:", options: ["Many groups", "One single group", "An error", "Empty"], answer: 1, explanation: "Without GROUP BY, all rows form a single group." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+"Explain the order of execution of a SQL query" is a classic. Say the 8 steps in order, then give one consequence (aliases in WHERE, aggregates in WHERE).
+</InterviewAlert>
+
+<InterviewQ q="Explain the difference between WHERE and HAVING.">
+`WHERE` filters rows before grouping and cannot use aggregate functions. `HAVING` filters groups after `GROUP BY` and can use aggregates. Example: `WHERE status = 'FAILED'` picks failed rows, then `HAVING COUNT(*) > 100` keeps only groups with more than 100 of them. Use `WHERE` whenever possible for efficiency.
+</InterviewQ>
+
+<InterviewQ q="What is the logical order of execution of a SELECT query?">
+`FROM` (with joins), `WHERE`, `GROUP BY`, `HAVING`, `SELECT`, `DISTINCT`, `ORDER BY`, `LIMIT`. It is the logical order, not necessarily the physical one. It explains why aliases from `SELECT` are not visible in `WHERE` but are visible in `ORDER BY`.
+</InterviewQ>
+
+<InterviewQ q="Write a query for departments with more than 50 employees and average hike above 8%.">
+Group salary or employee data by department and use `HAVING COUNT(DISTINCT employee_id) > 50 AND AVG(hike_pct) > 8`. I would mention that `hike_pct` is NULL for joining rows, so AVG only covers rows with a known hike, and I would check whether that matches what the business means.
+</InterviewQ>
+
+## Key takeaways
+
+- `WHERE` filters rows before grouping. `HAVING` filters groups after.
+- Aggregates are allowed in `HAVING`, not in `WHERE`.
+- Logical order: FROM, WHERE, GROUP BY, HAVING, SELECT, DISTINCT, ORDER BY, LIMIT.
+- Aliases exist only after SELECT, so they work in ORDER BY but not in WHERE.
+- Put row conditions in `WHERE` to cut work early.
+
+## Further reading
+
+<FurtherReading ids={["sqlbolt", "mode-sql", "sqlite-docs"]} />

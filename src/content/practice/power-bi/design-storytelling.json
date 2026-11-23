@@ -1,0 +1,40 @@
+[
+  {
+    "id": "pbi-design-storytelling-001",
+    "module": "power-bi",
+    "topic": "design-storytelling",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "Rewrite this chart title so it states an insight, using the `fintech` data: 'Failure Rate by Bank'.",
+    "dataset": "fintech",
+    "hint": "Say what the reader should notice.",
+    "solution": "Example: 'Kaveri Co-op Bank fails 8% of UPI payments, about 3 times most other banks'. A good insight title names the subject, the number, and the comparison.",
+    "explanation": "Insight titles tell the reader the answer before they read the chart.",
+    "commonMistake": "Writing descriptive titles that only repeat the axis labels.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "titles",
+      "storytelling"
+    ]
+  },
+  {
+    "id": "pbi-design-storytelling-002",
+    "module": "power-bi",
+    "topic": "design-storytelling",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "Describe a one-page executive layout for the `retail` data: where do KPI cards, the main trend, and the filter slicers go, and why? Mention the reading pattern you rely on.",
+    "dataset": "retail",
+    "hint": "Z-pattern: top-left to top-right, then down diagonal, then bottom-right.",
+    "solution": "Put 4 **KPI cards** (Net Sales, YoY %, Target Attainment, Units) across the top, because readers look top-left first. Put the main **monthly trend line** directly below, large, since it carries the story. Place a **region bar** and **store ranking** in the bottom half, and slicers (Year, Region) in a narrow strip on the left or top. This follows the **Z-pattern**: eyes go left to right across the top, diagonally down, then across the bottom. Use a muted palette with one accent colour.",
+    "explanation": "Place the most important information where eyes land first and group related visuals.",
+    "commonMistake": "Putting slicers in the middle of the page or filling the page with 12 visuals.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "layout",
+      "z-pattern"
+    ]
+  }
+]

@@ -1,0 +1,281 @@
+---
+title: "ORDER BY, LIMIT and DISTINCT"
+description: "Sort results, take the top rows, and remove repeated values."
+module: sql
+order: 4
+estimatedMinutes: 30
+objectives:
+  - "Sort results with ORDER BY (ascending and descending, multiple columns)"
+  - "Return the top N rows with LIMIT and OFFSET"
+  - "Remove repeats with DISTINCT and count distinct values"
+  - "Use tie-breakers so results are repeatable"
+tags: ["sql", "order-by", "limit", "distinct"]
+---
+
+## Learning objectives
+
+- Sort rows with `ORDER BY`, ascending and descending.
+- Sort by more than one column.
+- Return the first N rows with `LIMIT`, and skip rows with `OFFSET`.
+- Remove repeats with `DISTINCT`, and count unique values.
+- Know why a tie-breaker column makes results stable.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+"Top 10 restaurants by order value", "the 5 most recent hires", "which cities do we operate in?" These are everyday asks. Top-N lists and unique lists are the most common first outputs analysts share with managers.
+</RealWorld>
+
+## Concept
+
+### ORDER BY
+
+A table has **no guaranteed order**. If you do not write `ORDER BY`, the database may return rows in any order, and it can change between runs. Use `ORDER BY` whenever order matters.
+
+```sql
+SELECT product_name, mrp
+FROM products
+ORDER BY mrp DESC;
+```
+
+- `ASC` is ascending (smallest first). It is the default.
+- `DESC` is descending (largest first).
+- Several columns: `ORDER BY category ASC, mrp DESC` sorts by category first, then by price inside each category.
+- You can sort by an alias, by a column position (`ORDER BY 2`), or by an expression. Prefer names over positions.
+
+`ORDER BY` is one of the few clauses that **can** use a column alias, because it runs after `SELECT`.
+
+### NULLs in sorting
+
+In SQLite, NULLs are treated as the smallest value: they come first in `ASC` and last in `DESC`. PostgreSQL does the opposite (NULLs are largest). Where supported, `NULLS FIRST` or `NULLS LAST` makes it explicit. SQLite supports both from version 3.30.
+
+### LIMIT and OFFSET
+
+`LIMIT n` returns at most `n` rows. `OFFSET k` skips the first `k` rows. Together they give pages: page 3 with 10 rows per page is `LIMIT 10 OFFSET 20`.
+
+`LIMIT` without `ORDER BY` gives "some n rows", not "the top n". For a top-N list, always sort first.
+
+<Tip>
+**Tie-breakers.** If two rows have the same value in the sort column, their order is undefined. Add a second sort column (usually the id) so results are the same every time: `ORDER BY order_value DESC, delivery_id`.
+</Tip>
+
+### DISTINCT
+
+`DISTINCT` removes duplicate **rows** from the result.
+
+```sql
+SELECT DISTINCT city FROM restaurants;
+```
+
+With several columns, `DISTINCT` looks at the combination: `SELECT DISTINCT city, cuisine` returns each unique pair once. It applies to the whole row, not just the first column.
+
+To count unique values, use `COUNT(DISTINCT column)`.
+
+<Warning>
+`DISTINCT` is also a quick way to discover messy data. If `SELECT DISTINCT city` shows `Mumbai`, `mumbai` and ` Mumbai`, you have found a cleaning job.
+</Warning>
+
+## Worked examples
+
+### Example 1: top 5 by value
+
+The five most expensive products by MRP, with a tie-breaker.
+
+<SqlPlayground dataset="ecommerce" query={`SELECT product_name, category, mrp
+FROM products
+ORDER BY mrp DESC, product_id
+LIMIT 5;`} title="Top 5 by MRP" />
+
+**Output:**
+
+| product_name | category | mrp |
+|---|---|---|
+| Zenix Speaker 705 | Electronics | 34339.0 |
+| Orbita Speaker 914 | Electronics | 33649.0 |
+| Gadgetry Speaker 651 | Electronics | 32069.0 |
+| Gadgetry Headphone 806 | Electronics | 28619.0 |
+| Zenix Charger 642 | Electronics | 28369.0 |
+
+
+### Example 2: multi-column sort
+
+Employees ordered by department, then by hire date (oldest first).
+
+<SqlPlayground dataset="hr" query={`SELECT department_id, full_name, hire_date
+FROM employees
+ORDER BY department_id ASC, hire_date ASC, employee_id
+LIMIT 6;`} title="Sort by department then hire date" />
+
+**Output:**
+
+| department_id | full_name | hire_date |
+|---|---|---|
+| 1 | Tarun Patil | 2014-01-08 |
+| 1 | Divya Bose | 2014-01-19 |
+| 1 | Pooja Qureshi | 2014-01-19 |
+| 1 | Tanvi Trivedi | 2014-02-06 |
+| 1 | Nikhil Thakur | 2014-02-16 |
+| 1 | Manoj Gupta | 2014-03-03 |
+
+
+### Example 3: DISTINCT exposes messy data
+
+Looking at the distinct cities in the subscription users table.
+
+<SqlPlayground dataset="subscription" query={`SELECT DISTINCT city
+FROM users
+ORDER BY city;`} title="Distinct cities" />
+
+**Output:**
+
+| city |
+|---|
+| NULL |
+|  Bengaluru |
+|  Bhopal |
+|  Chandigarh |
+|  Chennai |
+|  Coimbatore |
+|  Delhi |
+|  Guwahati |
+|  Hyderabad |
+|  Indore |
+|  Jaipur |
+|  Kochi |
+|  Kolkata |
+|  Lucknow |
+|  Mumbai |
+|  Nagpur |
+|  Patna |
+|  Pune |
+|  Surat |
+|  Visakhapatnam |
+|  ahmedabad   |
+|  bengaluru   |
+|  bhopal   |
+|  chandigarh   |
+|  chennai   |
+|  coimbatore   |
+|  delhi   |
+|  hyderabad   |
+|  indore   |
+|  jaipur   |
+|  kochi   |
+|  kolkata   |
+|  lucknow   |
+|  mumbai   |
+|  nagpur   |
+|  patna   |
+|  pune   |
+|  surat   |
+| AHMEDABAD |
+| Ahmedabad |
+
+Showing the first 40 of 114 rows.
+
+
+Look closely: NULL shows up as its own value, and variants with different capital letters or a leading space (such as ` Bengaluru`) look like separate cities. We will fix this in the string lesson.
+
+### Example 4: count unique values
+
+How many distinct customers placed an order, versus the total number of orders?
+
+<SqlPlayground dataset="ecommerce" query={`SELECT COUNT(*) AS total_orders,
+       COUNT(DISTINCT customer_id) AS unique_customers
+FROM orders;`} title="Orders versus customers" />
+
+**Output:**
+
+| total_orders | unique_customers |
+|---|---|
+| 10100 | 2222 |
+
+
+### Example 5: pagination with OFFSET
+
+Rows 6 to 10 of the highest-value deliveries (page 2 when each page has 5 rows).
+
+<SqlPlayground dataset="food_delivery" query={`SELECT delivery_id, order_value
+FROM deliveries
+WHERE order_value < 5000
+ORDER BY order_value DESC, delivery_id
+LIMIT 5 OFFSET 5;`} title="Page 2 of top deliveries" />
+
+**Output:**
+
+| delivery_id | order_value |
+|---|---|
+| 10006 | 2522.0 |
+| 3713 | 2499.0 |
+| 670 | 2385.0 |
+| 6153 | 2379.0 |
+| 4744 | 2367.0 |
+
+
+We excluded values above 5000 because a few rows are data-entry errors (100x too big). Real analysts always sanity-check the top of a sorted list for outliers.
+
+## Common mistakes
+
+<CommonMistake>
+**Using LIMIT without ORDER BY** and calling the result "top 10". It is just any 10 rows.
+</CommonMistake>
+
+<CommonMistake>
+**Forgetting DESC.** `ORDER BY amount LIMIT 5` gives the five *smallest* amounts.
+</CommonMistake>
+
+<CommonMistake>
+**No tie-breaker.** Two runs can show different rows when values tie, which confuses reviewers.
+</CommonMistake>
+
+<CommonMistake>
+**Thinking DISTINCT applies to one column.** `SELECT DISTINCT a, b` is about unique pairs of (a, b).
+</CommonMistake>
+
+<CommonMistake>
+**Using DISTINCT to hide duplicates caused by a bad join.** Fix the join instead. DISTINCT can mask a real error and slow the query.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="order-limit-distinct" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What does ORDER BY mrp DESC do?", options: ["Smallest MRP first", "Largest MRP first", "Removes duplicates", "Filters expensive rows"], answer: 1, explanation: "DESC means descending, so the largest value comes first." },
+  { q: "What is the page 3 query if each page has 10 rows?", options: ["LIMIT 10 OFFSET 30", "LIMIT 10 OFFSET 20", "LIMIT 30", "LIMIT 3 OFFSET 10"], answer: 1, explanation: "Page 3 skips the first 2 pages (20 rows) and then takes 10." },
+  { q: "SELECT DISTINCT city, cuisine returns:", options: ["Unique cities only", "Unique cuisines only", "Each unique (city, cuisine) pair once", "All rows"], answer: 2, explanation: "DISTINCT works on the whole selected row, so it removes repeated combinations." },
+  { q: "Why add a tie-breaker to ORDER BY?", options: ["To make queries faster", "To make order stable when values tie", "To remove NULLs", "It is required syntax"], answer: 1, explanation: "Without it, rows with equal sort values can appear in any order." },
+  { q: "In SQLite, where do NULLs appear with ORDER BY col ASC?", options: ["First", "Last", "They are removed", "Random"], answer: 0, explanation: "SQLite treats NULL as smaller than any value, so ascending order puts NULLs first." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+"Top N" questions are everywhere. Mention ties out loud: "should ties share a rank or should I cut off at exactly N?" It shows you think about data, not only syntax. Ranking with ties comes later with window functions.
+</InterviewAlert>
+
+<InterviewQ q="What is the difference between DISTINCT and GROUP BY?">
+For plain uniqueness they give the same rows: `SELECT DISTINCT city FROM t` equals `SELECT city FROM t GROUP BY city`. `GROUP BY` can also calculate aggregates per group (counts, sums), while `DISTINCT` only removes repeats. Use `DISTINCT` for a simple unique list.
+</InterviewQ>
+
+<InterviewQ q="Does a table have a natural order of rows?">
+No. Relational tables are unordered sets. Without `ORDER BY` the result order is not guaranteed, even if it looks sorted today. Always specify the order when it matters, and add a tie-breaker column.
+</InterviewQ>
+
+<InterviewQ q="How would you return the 3rd page of results with 20 rows per page?">
+`ORDER BY some_unique_sort LIMIT 20 OFFSET 40`. In SQL Server this is `OFFSET 40 ROWS FETCH NEXT 20 ROWS ONLY`. For very deep pages, OFFSET is slow because the database still walks past the skipped rows.
+</InterviewQ>
+
+## Key takeaways
+
+- Without `ORDER BY`, row order is not guaranteed.
+- `ORDER BY` supports several columns and `ASC`/`DESC` for each.
+- `LIMIT n OFFSET k` gives top-N and pages. Sort first, add a tie-breaker.
+- `DISTINCT` works on the full selected row. `COUNT(DISTINCT col)` counts unique values.
+- Sorted lists and DISTINCT are great ways to spot outliers and messy values.
+
+## Further reading
+
+<FurtherReading ids={["sqlbolt", "mode-sql", "sqlite-docs"]} />

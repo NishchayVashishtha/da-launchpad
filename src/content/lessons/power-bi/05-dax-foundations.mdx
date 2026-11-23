@@ -1,0 +1,267 @@
+---
+title: "DAX foundations: measures, columns and context"
+description: "Learn what DAX is, how calculated columns differ from measures, what row context and filter context mean, and write basic aggregations."
+module: power-bi
+order: 5
+estimatedMinutes: 50
+objectives:
+  - "Explain calculated columns vs measures and choose the right one"
+  - "Describe row context and filter context with examples"
+  - "Write basic aggregations: SUM, AVERAGE, COUNTROWS, DISTINCTCOUNT, MIN, MAX"
+  - "Use RELATED and DIVIDE, and build simple ratio measures"
+tags: ["power-bi", "dax", "measures", "calculated-columns", "context"]
+---
+
+## Learning objectives
+
+- Explain **calculated columns** vs **measures** and choose the right one.
+- Describe **row context** and **filter context** with examples.
+- Write basic aggregations: `SUM`, `AVERAGE`, `COUNTROWS`, `DISTINCTCOUNT`, `MIN`, `MAX`.
+- Use `RELATED` and `DIVIDE`, and build simple ratio measures.
+
+## Why this matters for a Data Analyst job
+
+**DAX** (Data Analysis Expressions) is the formula language of Power BI. Every KPI on your report is a DAX measure: total sales, average order value, failure rate, attrition rate. Interviewers for Power BI roles spend most of the time on DAX, and the first thing they check is whether you understand context. If you know context, the rest of DAX is easy to learn. If you do not, measures look like magic and break unexpectedly.
+
+<RealWorld>
+An HR analyst builds an attrition report. The CHRO selects "Customer Support" in a slicer and the attrition percentage should update instantly, then show a different value for each city in a table. One measure, written once, does all of this because DAX recalculates it in a different **filter context** for every cell of every visual.
+</RealWorld>
+
+## Concept
+
+### Measures and calculated columns
+
+| | Calculated column | Measure |
+|---|---|---|
+| Calculated | At refresh time, row by row | At query time, when a visual needs it |
+| Stored | Yes, uses memory | No, only the formula |
+| Context | Row context | Filter context |
+| Reacts to slicers | No (value fixed per row) | Yes |
+| Use for | Slicers, axes, categories, row-level labels | Totals, ratios, KPIs, anything you aggregate |
+
+Examples:
+
+```dax
+-- Calculated column on Products (one value per product row)
+Price Band =
+SWITCH ( TRUE (), Products[mrp] < 500, "Low", Products[mrp] < 5000, "Mid", "Premium" )
+
+-- Measure (one value per visual cell)
+Total Sales = SUM ( Sales[net_amount_inr] )
+```
+
+**Rule of thumb**: if you will put it on an axis, in a slicer or a row label, use a column. If you will put it in values or a card, use a measure.
+
+<Tip>
+Create a blank table called `_Measures` (Home > Enter data) and keep all measures there. Hide it from the field list if you like. Everyone knows where to look.
+</Tip>
+
+### Syntax in one minute
+
+```dax
+Measure Name = Expression
+```
+
+- Table names with spaces need single quotes: `'Order Items'[quantity]`.
+- Column references include the table: `Sales[quantity]`. Measures do not: `[Total Sales]`.
+- Functions use commas (or semicolons in some regional settings). Comments: `--` or `//`.
+- Use **Format** on the formula bar (or the DAX formatter) to keep code tidy.
+
+### Basic aggregations
+
+| Function | What it does | Notes |
+|----------|--------------|-------|
+| `SUM(table[col])` | Adds a numeric column | Numbers only |
+| `AVERAGE(table[col])` | Average of non-blank values | Blanks ignored |
+| `MIN`, `MAX` | Smallest or largest value | Works on dates too |
+| `COUNT(table[col])` | Counts non-blank values | Rarely best |
+| `COUNTROWS(table)` | Counts rows in a table | Most common count |
+| `DISTINCTCOUNT(table[col])` | Counts unique values | For ids |
+| `DIVIDE(a, b, [alt])` | a/b, safe against zero | Use instead of `/` |
+
+### Filter context
+
+**Filter context** is the set of filters that apply to a measure when it is calculated. It comes from slicers, filters, rows and columns of a table or matrix, and the axis of a chart. Each cell of a visual has its own filter context.
+
+Take the measure `Total Sales = SUM(Sales[net_amount_inr])`. In a table with `Stores[region]` on rows:
+
+- The "West" row has the filter `region = West`. DAX sums only sales rows that pass this filter (through the relationship).
+- The "Total" row has no region filter. DAX sums all rows.
+
+You write the formula once. The visual supplies the filters.
+
+### Row context
+
+**Row context** means "the current row" while DAX goes through a table one row at a time. It exists in two places:
+
+1. **Calculated columns**: the formula is evaluated for each row of that table.
+2. **Iterator functions** such as `SUMX`, `AVERAGEX`, `FILTER`: they walk through a table row by row (lesson 8).
+
+Inside row context you can refer to the columns of the current row directly. Example:
+
+```dax
+Line Cost = Order_Items[quantity] * RELATED ( Products[cost_price] )
+```
+
+For each order item row, DAX multiplies that row's `quantity` by the `cost_price` of the related product. `RELATED` follows a relationship from the many side to the one side to fetch a single value.
+
+**Important**: row context does not filter other tables on its own. `SUM(Orders[total_amount])` in a calculated column on `Customers` returns the grand total in every row. To turn the row into a filter you need `CALCULATE`, covered in the next lesson.
+
+### A quick comparison of the two contexts
+
+| | Filter context | Row context |
+|---|---|---|
+| Comes from | Slicers, visuals, CALCULATE filters | Calculated columns, iterators |
+| Works on | Whole tables (filters rows) | One row at a time |
+| Aggregators (SUM) respect it | Yes | No |
+
+### Writing ratios
+
+Ratios must divide **totals**, not average row-level ratios:
+
+```dax
+Margin % = DIVIDE ( [Revenue] - [Cost], [Revenue] )
+```
+
+and use `DIVIDE` instead of `/` to avoid errors when the denominator is zero or blank.
+
+### Naming and formatting
+
+Select the measure, then in **Measure tools** set the format: whole number, decimal, percentage or currency. Use a custom format `₹#,##0` or set the currency to English (India) so lakh style grouping is available through regional settings. Format the measure, not the text; do not wrap numbers in `FORMAT()` unless you only need a label.
+
+## Worked examples
+
+Numbers below for retail come from the cleaned retail data (duplicate rows removed and the 6 outlier rows over ₹20,000 dropped in Power Query). Totals are real from the sample.
+
+### Example 1: Total Sales and Units Sold
+
+```dax
+Total Sales = SUM ( Sales[net_amount_inr] )
+Units Sold  = SUM ( Sales[quantity] )
+Sales Lines = COUNTROWS ( Sales )
+```
+
+In a table by `Stores[region]`:
+
+| Region | Total Sales (₹) | Share of total |
+|--------|-----------------|----------------|
+| West | 1,22,24,247 | 40.7% |
+| South | 84,67,623 | 28.2% |
+| North | 59,34,551 | 19.8% |
+| East | 34,01,310 | 11.3% |
+| **Total** | **3,00,27,732** | 100% |
+
+The same measure shows a different number on each row because each row has a different filter context. The Total row has no region filter.
+
+### Example 2: By category with a ratio
+
+```dax
+Avg Sale Line = DIVIDE ( [Total Sales], [Sales Lines] )
+```
+
+| Category | Total Sales (₹) | Avg per sale line (₹) |
+|----------|-----------------|-----------------------|
+| Home & Kitchen | 82,04,736 | 2,184 |
+| Grocery & Staples | 70,01,194 | 931 |
+| Apparel | 68,11,086 | 1,781 |
+| Electronics Accessories | 32,21,962 | 1,235 |
+| Personal Care | 31,48,001 | 630 |
+| Home Decor | 16,40,752 | 1,271 |
+
+Home & Kitchen has fewer but larger lines than Grocery. Dividing totals gives the right average on every row. (Average per sale line: totals divided by the number of lines, from the cleaned data.)
+
+### Example 3: Calculated column with RELATED, and a measure on top
+
+```dax
+-- Calculated column on Order_Items
+Line Cost = Order_Items[quantity] * RELATED ( Products[cost_price] )
+
+-- Measures (ecommerce)
+Revenue  = SUM ( Order_Items[line_total] )
+Cost     = SUM ( Order_Items[Line Cost] )
+Margin % = DIVIDE ( [Revenue] - [Cost], [Revenue] )
+```
+
+Illustration of the logic with two lines (illustrative numbers, not from the file):
+
+| Line | Revenue (₹) | Cost (₹) | Row margin |
+|------|-------------|----------|-----------|
+| A | 100 | 50 | 50% |
+| B | 900 | 720 | 20% |
+| Total | 1,000 | 770 | 23% by the measure |
+
+Averaging 50% and 20% would give 35%, which is wrong. The measure divides totals and gives 23%. The values in this table are illustrative; they show why ratios must be measures.
+
+## Common mistakes
+
+<CommonMistake>
+Creating a calculated column for something that should be a measure, such as `Total Sales` per row. It wastes memory and does not react to slicers.
+</CommonMistake>
+
+<CommonMistake>
+Averaging a percentage column (`AVERAGE(Sales[discount_pct])`) when you need a weighted rate. Use sums of numerators over sums of denominators.
+</CommonMistake>
+
+<CommonMistake>
+Using `/` instead of `DIVIDE`. A zero denominator creates an error in a card or a table.
+</CommonMistake>
+
+<CommonMistake>
+Using `COUNT` or `COUNTROWS` when you need unique ids (`DISTINCTCOUNT`). Duplicated rows inflate the count.
+</CommonMistake>
+
+<CommonMistake>
+Expecting row context to filter other tables. In a calculated column, `SUM(Orders[total_amount])` ignores the current customer. You need `CALCULATE` for context transition.
+</CommonMistake>
+
+<CommonMistake>
+Writing a measure reference with a table name (`Sales[Total Sales]`). Columns have table names; measures should be written without one, so you can tell them apart at a glance.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="dax-basics" module="power-bi" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "You need Price Band as a slicer. What should you create?", options: ["A measure", "A calculated column", "A parameter", "A bookmark"], answer: 1, explanation: "Slicers, axes and categories need a column. A measure can be shown in values but not used as a slicer field." },
+  { q: "What provides the filters for each cell of a table visual?", options: ["Row context", "Filter context", "A relationship property", "The Power Query step"], answer: 1, explanation: "Row, column, slicer and page filters together form each cell's filter context." },
+  { q: "Which function follows a relationship to fetch one value from the one side in a calculated column?", options: ["RELATEDTABLE", "RELATED", "LOOKUPVALUE only", "VALUES"], answer: 1, explanation: "RELATED returns a single related value from the one side. RELATEDTABLE does the reverse and returns many rows." },
+  { q: "Why is DIVIDE preferred over the / operator?", options: ["It formats the number", "It handles division by zero without errors", "It is the only operator available", "It sorts the result"], answer: 1, explanation: "DIVIDE returns blank or an alternate result when the denominator is zero or blank." },
+  { q: "Which gives a correct overall margin percentage?", options: ["AVERAGE of a row-level margin column", "DIVIDE of total margin by total revenue", "SUM of row margins", "MAX of margin"], answer: 1, explanation: "A ratio must divide total numerator by total denominator; averaging row ratios overweights small rows." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+"Calculated column vs measure" and "explain filter context and row context" are asked in almost every Power BI interview. Give a definition, a one-line rule and a tiny example for each.
+</InterviewAlert>
+
+<InterviewQ q="What is the difference between a calculated column and a measure?">
+A calculated column is computed row by row at refresh, stored in the model and has row context; I use it for slicers, axes or categories. A measure is computed at query time in the filter context of each visual cell, takes no storage and reacts to slicers; I use it for totals, ratios and KPIs. For example, `Price Band` is a column, `Total Sales` is a measure.
+</InterviewQ>
+
+<InterviewQ q="Explain filter context and row context.">
+Filter context is the set of filters in effect when a measure is evaluated: slicers, rows and columns of a visual, page and report filters. Aggregators like SUM respect it. Row context means "the current row" inside a calculated column or an iterator such as SUMX; it lets me reference the row's columns but does not filter other tables unless I use CALCULATE, which converts a row into a filter.
+</InterviewQ>
+
+<InterviewQ q="How do you calculate average order value, and why DIVIDE?">
+I divide total order value by the number of distinct orders, `DIVIDE(SUM(Orders[total_amount]), DISTINCTCOUNT(Orders[order_id]))`. DIVIDE avoids errors when a slicer leaves no orders, and DISTINCTCOUNT protects against duplicate order rows.
+</InterviewQ>
+
+<InterviewQ q="Why shouldn't you average a percentage column?">
+Because every row gets the same weight. A 50% margin on a ₹100 line and a 20% margin on a ₹900 line average to 35%, but the true margin is 23%. I build the ratio from totals in a measure, so it is correct at row, subtotal and grand total levels.
+</InterviewQ>
+
+## Key takeaways
+
+- Use calculated columns for slicers and categories; use measures for numbers that must react to filters.
+- Filter context comes from the visual and slicers; each cell has its own.
+- Row context is the current row in a calculated column or iterator; it does not filter other tables by itself.
+- Use `DIVIDE` and `DISTINCTCOUNT`; build ratios from totals.
+- Keep measures in one table, named clearly, and format the measure instead of using `FORMAT` for numbers.
+
+## Further reading
+
+<FurtherReading ids={["dax-guide", "power-bi-docs", "pl300"]} />

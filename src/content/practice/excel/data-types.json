@@ -1,0 +1,63 @@
+[
+  {
+    "id": "excel-data-types-001",
+    "module": "excel",
+    "topic": "data-types",
+    "difficulty": "easy",
+    "language": "excel",
+    "question": "In `excel-functions.xlsx` (`orders` sheet), cell `C2` holds the first order date. Change its number format to General. What number do you see, and what does it mean?",
+    "dataset": "none",
+    "hint": "Select C2 and use Ctrl + Shift + ~ (tilde) to apply General format.",
+    "solution": "Select `C2` and press `Ctrl + Shift + ~` (Mac: `Ctrl + Shift + ~`), or use Home > Number Format > General.\n\nExpected value: **44927**.\n\nMeaning: Excel stores a date as the number of days since 30 December 1899. So 44927 is 1 January 2023. Press `Ctrl + Z` to bring the date format back.",
+    "orderMatters": false,
+    "explanation": "A date is just a serial number with a date format on top. That is why you can add and subtract dates.",
+    "commonMistake": "Thinking that the date is stored as text like '01-01-2023'. Real dates are numbers.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "dates",
+      "serial-number"
+    ]
+  },
+  {
+    "id": "excel-data-types-002",
+    "module": "excel",
+    "topic": "data-types",
+    "difficulty": "medium",
+    "language": "excel",
+    "question": "Open `excel-cleaning.xlsx` and go to `customers_messy`. Using formulas, find how many cells in `signup_date` (H2:H1273) are real numbers/dates and how many are text.",
+    "dataset": "none",
+    "hint": "ISNUMBER and ISTEXT return TRUE or FALSE. SUMPRODUCT can add up TRUE values if you turn them into 1s with --.",
+    "solution": "In any empty cell type:\n\n```\n=SUMPRODUCT(--ISNUMBER(H2:H1273))\n=SUMPRODUCT(--ISTEXT(H2:H1273))\n```\n\n| Formula | Expected |\n|---|---|\n| ISNUMBER count | 0 |\n| ISTEXT count | 1272 |\n\nEvery signup date is text, in five different layouts. You cannot sort, filter by year or subtract these until you convert them (see the cleaning topic).",
+    "orderMatters": false,
+    "explanation": "The `--` turns TRUE and FALSE into 1 and 0, so SUMPRODUCT can count them. All 1,272 cells are text, so none is a real date.",
+    "commonMistake": "Trusting how a cell looks. Text that looks like a date is left-aligned by default, but alignment can be changed, so always test with ISNUMBER.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "istext",
+      "isnumber",
+      "dates"
+    ]
+  },
+  {
+    "id": "excel-data-types-003",
+    "module": "excel",
+    "topic": "data-types",
+    "difficulty": "medium",
+    "language": "excel",
+    "question": "In `excel-functions.xlsx` (`hr_employees` sheet), the earliest hire date is the oldest employee record. How many days are there between the earliest `hire_date` and 31 December 2024? Use one formula.",
+    "dataset": "none",
+    "hint": "Dates are numbers, so subtraction works. MIN works on dates.",
+    "solution": "```\n=DATE(2024,12,31)-MIN(hr_employees!E2:E2401)\n```\n\nFormat the result cell as **General** or **Number**. If Excel shows a date, change the format.\n\nExpected result: **4014** days (earliest hire date is 4 January 2014).",
+    "orderMatters": false,
+    "explanation": "MIN finds the smallest serial number, which is the earliest date. Subtracting two dates gives days.",
+    "commonMistake": "Leaving the answer cell in Date format. Excel then shows a date in 1911 instead of 4014.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "dates",
+      "min"
+    ]
+  }
+]

@@ -1,0 +1,155 @@
+---
+title: "What-if analysis: Goal Seek, Data Tables, Scenario Manager"
+description: "Ask 'what if' questions with a loan EMI model and a pricing model: find the input for a target, tabulate many cases and compare named scenarios."
+module: excel
+order: 15
+estimatedMinutes: 50
+objectives:
+  - "Use Goal Seek to find the input that gives a target result"
+  - "Build a one-variable and a two-variable Data Table"
+  - "Save and compare cases with Scenario Manager"
+  - "Calculate an EMI with PMT and read the amortisation schedule"
+tags: ["excel", "what-if", "goal-seek", "emi", "scenario"]
+---
+
+## Learning objectives
+
+- Run Goal Seek correctly.
+- Build Data Tables.
+- Compare scenarios with Scenario Manager.
+- Explain EMI with PMT, IPMT and PPMT.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+A fintech lending team asks: "If a customer wants an EMI of at most ₹15,000 on a 3-year loan at 10.5 percent, how big a loan can we offer?" A pricing analyst asks: "How much can we cut price before profit drops below 20 lakh?" These are what-if questions. They show that you can model a business, not only summarise it.
+</RealWorld>
+
+## Concept
+
+**What-if analysis** means changing input cells and watching the result cells recalculate. It lives in Data > Forecast > What-If Analysis. Three tools:
+
+| Tool | Question it answers | Output |
+|---|---|---|
+| **Goal Seek** | "What input gives me this exact result?" | One changed cell |
+| **Data Table** | "What are the results for many inputs?" | A grid of results |
+| **Scenario Manager** | "Compare named cases (Best, Base, Worst)" | Summary sheet |
+
+**Goal Seek** has three boxes: *Set cell* (the formula cell with the result), *To value* (the target number), *By changing cell* (the input). The Set cell must contain a formula. The changing cell must be a plain input, not a formula.
+
+**Data Table** repeats a formula for many inputs. Write the input values in a column (one-variable table) or in a row and column (two-variable table). Select the block, then Data > What-If Analysis > Data Table, and give the Row input cell and/or Column input cell. Excel fills the grid with an array formula `{=TABLE(...)}`. The input cells must be on the same sheet as the table.
+
+**Scenario Manager** stores sets of input values under names. Click Show to apply one, or Summary to create a comparison sheet with all results side by side.
+
+**EMI** (equated monthly instalment) is the fixed amount paid each month on a loan.
+
+<FormulaCard title="EMI with PMT">
+EMI = -PMT(rate / 12, months, loan)
+Interest part of month n = -IPMT(rate / 12, n, months, loan)
+Principal part of month n = -PPMT(rate / 12, n, months, loan)
+Closing balance = opening balance - principal part
+</FormulaCard>
+
+In the early months most of the EMI is interest. Over time the interest share falls and principal share rises. This is why prepaying early saves much more money.
+
+<Tip>
+PMT returns a negative number (cash going out). Put a minus in front, or enter the loan as negative, so your EMI shows as positive.
+</Tip>
+
+## Worked examples
+
+Workbook: `excel-whatif.xlsx` with sheets `loan_emi` (inputs B3 loan, B4 annual rate, B5 months) and `pricing_model` (B3 price change %, B4 cost change %, B5 fixed costs, B18 net profit). Formulas calculate when you open the file.
+
+<Download href="data/excel/excel-whatif.xlsx" label="excel-whatif.xlsx" />
+
+**Example 1: the EMI.** In `loan_emi` the loan is ₹5,00,000 at 10.5% for 36 months. The monthly rate is 10.5% / 12 = 0.875%. The monthly EMI is `=-PMT(B4/12,B5,B3)` = **₹16,251.22**. Total payable is 16,251.22 x 36 = ₹5,85,044, so total interest is **₹85,044**.
+
+First rows of the schedule:
+
+| Month | Opening | EMI | Interest | Principal | Closing |
+|---|---|---|---|---|---|
+| 1 | 5,00,000.00 | 16,251.22 | 4,375.00 | 11,876.22 | 4,88,123.78 |
+| 2 | 4,88,123.78 | 16,251.22 | 4,271.08 | 11,980.14 | 4,76,143.64 |
+| 3 | 4,76,143.64 | 16,251.22 | 4,166.26 | 12,084.96 | 4,64,058.67 |
+
+Interest in month 1 is 5,00,000 x 0.875% = 4,375. The last closing balance must be 0; if it is not, a formula is wrong.
+
+**Example 2: Goal Seek on the EMI.** "What loan size gives an EMI of exactly ₹15,000?" Data > What-If Analysis > Goal Seek. Set cell: the EMI cell (B8). To value: 15000. By changing cell: B3. Result: loan of about **₹4,61,504**. You can verify with `=PV(B4/12,B5,-15000)`. Goal Seek overwrites B3, so press Ctrl + Z or retype 500000 afterwards.
+
+**Example 3: one-variable Data Table.** How does the EMI change with the rate? In a blank area, type rates 9%, 10%, 10.5%, 11%, 12% down a column. In the cell above and one to the right, enter `=B8` (the EMI). Select the block, Data Table, Column input cell = B4. Results:
+
+| Annual rate | EMI (₹) |
+|---|---|
+| 9.0% | 15,899.87 |
+| 10.0% | 16,133.59 |
+| 10.5% | 16,251.22 |
+| 11.0% | 16,369.36 |
+| 12.0% | 16,607.15 |
+
+A 3-point jump in rate adds about ₹707 per month.
+
+**Example 4: two-variable Data Table.** Put tenures (24, 36, 48 months) across a row and rates down a column, with the corner cell `=B8`. Row input cell = B5, Column input cell = B4. For 10.5 percent the grid gives ₹23,188 (24 months), ₹16,251 (36 months) and ₹12,802 (48 months). Longer tenure lowers the EMI but raises the total interest.
+
+**Example 5: pricing Goal Seek and scenarios.** In `pricing_model` the base net profit (B18) is **₹18,88,699** with fixed costs of ₹2,50,000 and 0 percent changes (revenue ₹62,92,543; variable cost ₹41,53,844). Goal Seek: Set B18 to 2000000 by changing B3. The answer is a price increase of about **1.77 percent**.
+
+Now Scenario Manager: Data > What-If > Scenario Manager > Add. Create "Base" (B3 = 0, B4 = 0), "Discount" (B3 = -5%, B4 = 0) and "Cost squeeze" (B3 = 0, B4 = 5%). Changing cells: B3:B4. Click Summary with result cell B18. Expected net profit: Base 18,88,699; Discount (-5 percent price) 15,74,072; Cost squeeze (+5 percent cost) 16,81,007.
+
+<Warning>
+Data Tables slow down big workbooks because Excel recalculates them every time. Set Formulas > Calculation Options > Automatic Except Data Tables if the file feels slow.
+</Warning>
+
+## Common mistakes
+
+<CommonMistake>Choosing a Set cell that has a typed number rather than a formula. Goal Seek says "cell must contain a formula".</CommonMistake>
+
+<CommonMistake>Forgetting that Goal Seek overwrites the input cell, and then sending the file with a strange loan amount. Note the original value first.</CommonMistake>
+
+<CommonMistake>Putting the Row and Column input cells the wrong way round in a two-variable Data Table. Row input = the values across the top row.</CommonMistake>
+
+<CommonMistake>Using the annual rate in PMT without dividing by 12, or the years where months are needed. Rate and period must be in the same unit.</CommonMistake>
+
+<CommonMistake>Trying to create a Data Table with input cells on another sheet. It must be on the same sheet.</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="what-if" module="excel" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Goal Seek needs which kind of cell to change?", options: ["A cell that contains a formula", "A cell that holds a plain input value", "A merged cell", "A pivot cell"], answer: 1, explanation: "Goal Seek changes a typed input. It cannot change a formula cell." },
+  { q: "Which formula gives the monthly EMI for B3 loan, B4 annual rate, B5 months?", options: ["=PMT(B4,B5,B3)", "=-PMT(B4/12,B5,B3)", "=-PMT(B4,B5/12,B3)", "=FV(B4,B5,B3)"], answer: 1, explanation: "Rate must be monthly (B4/12), nper in months, and the minus sign makes the EMI positive." },
+  { q: "A two-variable Data Table needs how many input cells?", options: ["One", "Two: a row input and a column input", "Three", "None"], answer: 1, explanation: "One input is substituted from the top row, the other from the left column." },
+  { q: "What does Scenario Manager Summary produce?", options: ["A chart", "A sheet that compares result cells for all scenarios", "A pivot table", "A macro"], answer: 1, explanation: "It writes a comparison table of each scenario's inputs and results." },
+  { q: "In a loan, how does the interest part of the EMI change over time?", options: ["It rises", "It falls as the balance falls", "It stays the same", "It is zero"], answer: 1, explanation: "Interest is charged on the opening balance, which shrinks every month." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Fintech and banking interviews love EMI questions. Know PMT, IPMT, PPMT and how the schedule is built, and be ready to explain why early EMIs are mostly interest.
+</InterviewAlert>
+
+<InterviewQ q="Goal Seek vs Solver vs Data Table?">
+Goal Seek finds one input for one target. Solver (an add-in) handles several inputs, constraints and maximising or minimising. A Data Table shows results for a list of inputs without searching. I use Goal Seek for quick single-target questions and Data Tables for sensitivity grids.
+</InterviewQ>
+
+<InterviewQ q="How would you calculate a loan EMI and total interest in Excel?">
+EMI = -PMT(annual rate / 12, months, loan). Total paid = EMI x months. Total interest = total paid minus the loan. For a ₹5,00,000 loan at 10.5 percent for 36 months the EMI is about ₹16,251 and total interest about ₹85,044.
+</InterviewQ>
+
+<InterviewQ q="What is a sensitivity analysis and how do you do it in Excel?">
+It checks how a result changes when inputs change. In Excel I use a one- or two-variable Data Table, for example profit against price change and cost change, then format it as a heat map with conditional formatting.
+</InterviewQ>
+
+## Key takeaways
+
+- Goal Seek: one input, one target, set cell must be a formula.
+- Data Tables show many results; input cells must be on the same sheet.
+- Scenario Manager stores named cases and summarises them.
+- EMI = -PMT(rate/12, months, loan); keep units consistent.
+- Early EMIs are mostly interest; the principal share grows with time.
+
+## Further reading
+
+<FurtherReading ids={["excel-support", "chandoo", "excelisfun"]} />

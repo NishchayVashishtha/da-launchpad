@@ -1,0 +1,308 @@
+---
+title: "Subqueries: scalar, IN, EXISTS, correlated and in FROM"
+description: "Put a query inside another query to answer two-step questions without creating tables."
+module: sql
+order: 15
+estimatedMinutes: 55
+objectives:
+  - "Write scalar, IN, EXISTS and FROM subqueries"
+  - "Explain how a correlated subquery runs once per outer row"
+  - "Choose between a subquery and a join"
+  - "Avoid scalar subquery errors and NULL traps"
+  - "Read a nested query from the inside out"
+tags: ["sql", "subqueries", "exists", "correlated"]
+---
+
+## Learning objectives
+
+- Define a subquery and say where it can appear.
+- Use a **scalar subquery** to compare each row with one number.
+- Use `IN` and `EXISTS` to filter by another table.
+- Explain a **correlated subquery** and when it is slow.
+- Use a **subquery in FROM** (a derived table) to aggregate in two steps.
+- Pick between a join, `IN` and `EXISTS`.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Many business questions have two steps. "Which orders are above the average order value?" needs the average first, then the comparison. "Which products have ever been returned for size problems?" needs the returns first, then the products. "What is the average number of orders per buyer?" needs a count per buyer, then an average of those counts. A subquery lets you do both steps in one statement. It is also a staple of interviews, because it shows you can break a problem into steps.
+</RealWorld>
+
+## Concept
+
+A **subquery** (also called an inner query or nested query) is a `SELECT` written inside another statement, wrapped in round brackets. The statement around it is the **outer query**. The database runs the inner query and the outer query uses its result.
+
+Think of asking a colleague: "Show me all orders bigger than our average order." To answer, they first work out the average on a calculator (inner step) and then scan the list (outer step). The calculator step is the subquery.
+
+A subquery can sit in four places. Each place needs a different shape of result.
+
+| Where | Inner query must return | Typical use |
+|---|---|---|
+| In `WHERE` with `>`, `=`, `<` (scalar) | exactly one value (1 row, 1 column) | compare with an average, a max, a total |
+| In `WHERE` with `IN` / `NOT IN` | one column, many rows | filter by a list built from another table |
+| In `WHERE` with `EXISTS` / `NOT EXISTS` | anything (only "does a row exist?" matters) | filter by whether a related row exists |
+| In `FROM` (derived table) | a full table, with an alias | aggregate the result of an aggregate |
+
+### Scalar subquery
+
+A **scalar** subquery returns one row and one column, so it behaves like a single number. You can use it anywhere a number fits: in `WHERE`, in `SELECT`, even in a calculation.
+
+```sql
+SELECT order_id, total_amount
+FROM orders
+WHERE total_amount > (SELECT AVG(total_amount) FROM orders);
+```
+
+If the inner query returns more than one row, most databases raise an error. SQLite does not: it silently takes the first row, which is worse. Always make sure a scalar subquery can return only one row (use an aggregate such as `AVG`, `MAX` or `COUNT`).
+
+### IN with a subquery
+
+`WHERE x IN (subquery)` keeps rows whose `x` appears in the list returned by the subquery. The list is built once. You can nest them: a list that is itself filtered by another list.
+
+### EXISTS
+
+`WHERE EXISTS (subquery)` is true when the inner query returns at least one row. The columns it selects do not matter, so by habit we write `SELECT 1`. `EXISTS` can stop searching as soon as it finds one match. `NOT EXISTS` is the safe anti-join from the previous lesson.
+
+**IN versus EXISTS versus JOIN**
+
+- All three can filter "customers who have an order".
+- A `JOIN` can repeat the left row once per match (fan-out). `IN` and `EXISTS` never repeat it: they only test "is there at least one?". That makes them perfect when you only need to filter, not to bring in columns.
+- If you need columns from the other table, use a join. If you only need to test existence, use `EXISTS`.
+
+### Correlated subquery
+
+An ordinary subquery is **independent**: it runs once and does not look at the outer row. A **correlated** subquery refers to a column of the outer query, so conceptually it runs again for every outer row.
+
+```sql
+SELECT s.*
+FROM salaries AS s
+WHERE s.effective_date = (SELECT MAX(s2.effective_date)
+                          FROM salaries AS s2
+                          WHERE s2.employee_id = s.employee_id);
+```
+
+Read it like this: "for this salary row `s`, find the latest date among rows for the same employee. Keep `s` only if it is that latest row." The link `s2.employee_id = s.employee_id` is the correlation. Note the two aliases (`s` outer, `s2` inner).
+
+Correlated subqueries are easy to read but can be slow on big tables (5,000 outer rows times 5,000 inner rows is 25 million checks without an index). When data is large, rewrite them with a join to an aggregated subquery, a CTE, or a window function (a later lesson).
+
+### Subquery in FROM (derived table)
+
+When you need an aggregate of an aggregate, put the first aggregate in `FROM` and give it an alias. The outer query treats it as an ordinary table.
+
+```sql
+SELECT AVG(n)
+FROM (SELECT customer_id, COUNT(*) AS n
+      FROM orders
+      GROUP BY customer_id) AS per_customer;
+```
+
+The alias (`per_customer`) is **mandatory** in PostgreSQL, MySQL and SQL Server. SQLite allows it to be missing, but you should always write it.
+
+<Tip>
+Read nested queries from the inside out. Run the innermost query by itself first and check it returns what you expect. Then wrap the next layer around it. This is also the best way to debug.
+</Tip>
+
+### Subquery or CTE?
+
+Both do the same job. A subquery is fine for one short inner step. When you have several steps, or you need the same step twice, a CTE (next lesson) reads far better.
+
+## Worked examples
+
+### Example 1: scalar subquery, orders above average
+
+<SqlPlayground dataset="ecommerce" query={`SELECT COUNT(*) AS orders_above_avg,
+       (SELECT ROUND(AVG(total_amount), 2) FROM orders) AS avg_order_value
+FROM orders
+WHERE total_amount > (SELECT AVG(total_amount) FROM orders);`} title="Orders above the average (scalar subquery)" />
+
+**Output:**
+
+| orders_above_avg | avg_order_value |
+|---|---|
+| 2932 | 5419.91 |
+
+
+The inner query calculates one number (the average order value, about ₹5,420). The outer query then keeps orders greater than that number. About 2,932 of 10,100 orders are above average. Notice that fewer than a third of the orders are above the average. That is a sign of a right-skewed distribution: a few very large orders pull the average up, so the average is higher than what a typical order looks like.
+
+### Example 2: IN, nested twice
+
+Which products have had a size or fit return? Returns point to order items, and order items point to products. So we build two lists, one inside the other.
+
+<SqlPlayground dataset="ecommerce" query={`SELECT p.product_id, p.product_name, p.category
+FROM products AS p
+WHERE p.product_id IN (
+        SELECT oi.product_id
+        FROM order_items AS oi
+        WHERE oi.order_item_id IN (
+                SELECT r.order_item_id
+                FROM returns AS r
+                WHERE r.return_reason = 'Size / fit issue'))
+ORDER BY p.product_id
+LIMIT 5;`} title="Products with a size or fit return (IN)" />
+
+**Output:**
+
+| product_id | product_name | category |
+|---|---|---|
+| 4 | Denim Dukaan Kurta 499 | Fashion |
+| 7 | RunMate Sandal 151 | Footwear |
+| 12 | Threadly Jean 487 | Fashion |
+| 13 | Threadly Jean 247 | Fashion |
+| 14 | Rangrez Dresse 857 | Fashion |
+
+
+<SqlPlayground dataset="ecommerce" query={`SELECT COUNT(*) AS products_with_fit_returns
+FROM products AS p
+WHERE p.product_id IN (
+        SELECT oi.product_id
+        FROM order_items AS oi
+        WHERE oi.order_item_id IN (
+                SELECT r.order_item_id
+                FROM returns AS r
+                WHERE r.return_reason = 'Size / fit issue'));`} title="How many such products" />
+
+**Output:**
+
+| products_with_fit_returns |
+|---|
+| 117 |
+
+
+117 products have at least one "Size / fit issue" return. All five shown are Fashion or Footwear, matching the known return pattern. Read it from the inside out: first the returns with that reason, then the order items for those returns, then the products for those items.
+
+### Example 3: EXISTS versus a join
+
+Which users have at least one failed transaction? We want users, so each user should appear once.
+
+<SqlPlayground dataset="fintech" query={`SELECT
+  (SELECT COUNT(*) FROM users AS u
+    WHERE EXISTS (SELECT 1 FROM transactions AS t
+                  WHERE t.user_id = u.user_id AND t.status = 'FAILED')) AS users_with_exists,
+  (SELECT COUNT(*) FROM users AS u
+    INNER JOIN transactions AS t ON t.user_id = u.user_id
+    WHERE t.status = 'FAILED') AS rows_with_join;`} title="EXISTS versus JOIN" />
+
+**Output:**
+
+| users_with_exists | rows_with_join |
+|---|---|
+| 492 | 631 |
+
+
+With `EXISTS`, 492 users are counted. The join version returns 631 rows, because a user with three failed transactions appears three times (and users with duplicate rows appear more). If you wrote `COUNT(*)` on the join you would report 631 "users". `EXISTS` is correct here because it asks only "is there at least one failed transaction?".
+
+### Example 4: correlated subquery, latest salary per employee
+
+Each employee has several salary rows (joining pay, hikes). We want only the most recent row per employee.
+
+<SqlPlayground dataset="hr" query={`SELECT COUNT(*) AS latest_rows,
+       COUNT(DISTINCT s.employee_id) AS employees,
+       ROUND(AVG(s.annual_ctc), 0) AS avg_latest_ctc
+FROM salaries AS s
+WHERE s.annual_ctc < 10000000
+  AND s.effective_date = (SELECT MAX(s2.effective_date)
+                          FROM salaries AS s2
+                          WHERE s2.employee_id = s.employee_id);`} title="Latest salary row per employee (correlated)" />
+
+**Output:**
+
+| latest_rows | employees | avg_latest_ctc |
+|---|---|---|
+| 2396 | 2396 | 1339555.0 |
+
+
+The inner query runs for each outer row, comparing against that employee's other rows. We got one latest row per employee (2,396 rows, 2,396 employees). We also excluded the 100x outlier salaries with `annual_ctc < 10000000` (₹1 crore). The average current CTC is about ₹13.4 lakh a year. If an employee had two salary rows on the same latest date, both would be returned, so check for ties in real data.
+
+### Example 5: subquery in FROM, orders per buyer
+
+First count orders per customer. Then average those counts.
+
+<SqlPlayground dataset="ecommerce" query={`SELECT COUNT(*) AS buyers,
+       ROUND(AVG(n), 2) AS avg_orders_per_buyer,
+       MAX(n) AS most_orders
+FROM (SELECT customer_id, COUNT(DISTINCT order_id) AS n
+      FROM orders
+      GROUP BY customer_id) AS per_customer;`} title="Average orders per buyer (subquery in FROM)" />
+
+**Output:**
+
+| buyers | avg_orders_per_buyer | most_orders |
+|---|---|---|
+| 2222 | 4.5 | 74 |
+
+
+2,222 customers have placed orders, averaging 4.5 orders each, and the most active has 74. We used `COUNT(DISTINCT order_id)` to ignore the duplicated order rows. You cannot write `AVG(COUNT(*))` in one level, because an aggregate cannot be nested inside another aggregate. The subquery in `FROM` is the fix.
+
+## Common mistakes
+
+<CommonMistake>
+**A scalar subquery that can return many rows.** `WHERE city = (SELECT city FROM customers)` is invalid logic. Other databases raise an error; SQLite silently uses only the first row, which gives wrong results with no warning. Use `IN`, or guarantee a single row with an aggregate.
+</CommonMistake>
+
+<CommonMistake>
+**NOT IN with a subquery column that has NULLs.** It returns zero rows. Use `NOT EXISTS` or add `WHERE col IS NOT NULL` inside the subquery.
+</CommonMistake>
+
+<CommonMistake>
+**Forgetting the alias on a subquery in FROM.** PostgreSQL and MySQL say "every derived table must have its own alias". Always write `AS name`.
+</CommonMistake>
+
+<CommonMistake>
+**Using a join when you only need to filter.** Joining customers to orders to find "customers with orders" repeats each customer once per order, so counts are inflated. `EXISTS` or `IN` gives one row per customer.
+</CommonMistake>
+
+<CommonMistake>
+**Forgetting the correlation.** In `(SELECT MAX(effective_date) FROM salaries)` with no link to the outer row, you get the single latest date in the whole table, not the latest per employee. Add `WHERE s2.employee_id = s.employee_id`.
+</CommonMistake>
+
+<CommonMistake>
+**Running a correlated subquery on a huge table.** It repeats the inner query per outer row and can take minutes. For big data, aggregate once in a derived table and join to it.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="subqueries" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Which subquery shape is required in: WHERE total_amount > (SELECT ...)?", options: ["Many rows, one column", "One row, one column", "Any number of rows and columns", "Exactly two columns"], answer: 1, explanation: "A comparison operator needs a single value, so the inner query must return one row and one column (a scalar)." },
+  { q: "What makes a subquery 'correlated'?", options: ["It uses GROUP BY", "It refers to a column of the outer query", "It appears in FROM", "It uses an aggregate"], answer: 1, explanation: "A correlated subquery depends on the current outer row, so conceptually it is re-evaluated for each outer row." },
+  { q: "Why can EXISTS be safer than JOIN for 'customers who have at least one order'?", options: ["EXISTS is always faster", "EXISTS returns each customer once, while a JOIN repeats customers for every order", "JOIN cannot filter", "EXISTS returns more columns"], answer: 1, explanation: "A JOIN produces one output row per match, so customers with many orders repeat. EXISTS only tests whether at least one match exists." },
+  { q: "How do you compute the average of per-customer order counts?", options: ["AVG(COUNT(*)) with GROUP BY customer_id", "COUNT the AVG of orders", "A subquery in FROM that counts per customer, then AVG over it", "It is impossible in SQL"], answer: 2, explanation: "An aggregate cannot be nested inside another aggregate in one level. Compute counts in a derived table, then average them in the outer query." },
+  { q: "What is the main performance risk of a correlated subquery?", options: ["It cannot use WHERE", "It may re-run the inner query for every outer row", "It always returns NULL", "It locks the table"], answer: 1, explanation: "On large tables the repeated inner query can be very slow. Pre-aggregating and joining, or using window functions, scales better." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Subquery questions test whether you can break a problem into steps. Typical prompts: employees earning above the department average (correlated), customers who have never ordered (NOT EXISTS), products never sold, and the second highest salary. Say the steps aloud: "first I need the average, then I compare."
+</InterviewAlert>
+
+<InterviewQ q="What is the difference between a correlated and a non-correlated subquery?">
+A non-correlated subquery is independent. It can be run alone and produces the same result for every outer row, so the database can compute it once. A correlated subquery uses a column from the outer query, so its result depends on the current outer row and it is conceptually re-evaluated per row. Example: `WHERE salary > (SELECT AVG(salary) FROM employees)` is non-correlated, while `WHERE salary > (SELECT AVG(salary) FROM employees e2 WHERE e2.department_id = e.department_id)` is correlated, as it computes the average for each employee's own department.
+</InterviewQ>
+
+<InterviewQ q="IN versus EXISTS: when would you use each?">
+Both filter by another table. `IN` is simple and reads well for a short list of values. `EXISTS` is better when I need to match on several columns or the inner table is large, because it can stop at the first match. For the negative forms, I prefer `NOT EXISTS`, because `NOT IN` returns nothing if the list contains a NULL. Modern optimisers often turn one into the other, so correctness and readability matter more than speed.
+</InterviewQ>
+
+<InterviewQ q="Find orders whose value is above the average order value of the same customer's city.">
+That is a correlated comparison. I would join orders to customers, and in `WHERE` compare `total_amount` to a subquery that averages `total_amount` for customers in the same city. On a large table I would instead compute the city averages once in a derived table or CTE and join to it, which avoids re-running the average for every row. I would also clean the city text with `LOWER(TRIM(city))` first.
+</InterviewQ>
+
+<InterviewQ q="Why do you need an alias for a subquery in the FROM clause?">
+The outer query treats the subquery result as a table, and every table in a query needs a name so that columns can be referred to as `alias.column`. PostgreSQL, MySQL and SQL Server enforce this with an error such as "every derived table must have its own alias". SQLite is lenient, but I always add one for portability and readability.
+</InterviewQ>
+
+## Key takeaways
+
+- A subquery is a `SELECT` inside another statement. Read it from the inside out and test the inner query alone.
+- A **scalar** subquery returns one value; `IN` returns a list; `EXISTS` returns "is there a row?"; a subquery in `FROM` returns a table that needs an alias.
+- `EXISTS` and `IN` never repeat the outer row, while a join can. Use a join when you need columns from the other table.
+- A **correlated** subquery uses the outer row and is re-run per row. It is readable but can be slow on large tables.
+- `NOT IN` plus a NULL gives an empty result. Use `NOT EXISTS`.
+
+## Further reading
+
+<FurtherReading ids={["sqlbolt", "mode-sql", "sqlite-docs", "postgres-docs"]} />

@@ -1,0 +1,393 @@
+[
+  {
+    "id": "sql-pattern-mixed-001",
+    "module": "sql",
+    "topic": "pattern-mixed",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "For each `acquisition_channel`, find the single customer with the highest delivered spend and show how much of the channel's delivered spend that one customer represents. Use delivered orders only, ignore exact duplicate rows in orders and customers. Return `acquisition_channel`, `customer_id`, `spend` (rounded to 2 decimals) and `share_pct` of the channel total (rounded to 2 decimals). Ties go to the lower `customer_id`. Order by `acquisition_channel`.",
+    "dataset": "ecommerce",
+    "hint": "Sum spend per customer, add a channel total with a partitioned window SUM, and rank with ROW_NUMBER in the same partition.",
+    "solutionSql": "WITH o AS (SELECT DISTINCT order_id, customer_id, total_amount FROM orders WHERE order_status = 'Delivered'), c AS (SELECT DISTINCT customer_id, acquisition_channel FROM customers), s AS (SELECT c.acquisition_channel, o.customer_id, SUM(o.total_amount) AS spend FROM o JOIN c ON c.customer_id = o.customer_id GROUP BY c.acquisition_channel, o.customer_id), r AS (SELECT acquisition_channel, customer_id, spend, SUM(spend) OVER (PARTITION BY acquisition_channel) AS channel_total, ROW_NUMBER() OVER (PARTITION BY acquisition_channel ORDER BY spend DESC, customer_id) AS rn FROM s) SELECT acquisition_channel, customer_id, ROUND(spend, 2) AS spend, ROUND(100.0 * spend / channel_total, 2) AS share_pct FROM r WHERE rn = 1 ORDER BY acquisition_channel",
+    "expectedOutput": {
+      "columns": [
+        "acquisition_channel",
+        "customer_id",
+        "spend",
+        "share_pct"
+      ],
+      "rows": [
+        [
+          "Direct",
+          1183,
+          448465.24,
+          7.28
+        ],
+        [
+          "Google Ads",
+          2668,
+          948870.83,
+          8.49
+        ],
+        [
+          "Influencer",
+          762,
+          184517.81,
+          4.46
+        ],
+        [
+          "Instagram Ads",
+          930,
+          226366.06,
+          2.25
+        ],
+        [
+          "Organic Search",
+          980,
+          360337.09,
+          2.9
+        ],
+        [
+          "Referral",
+          1315,
+          148715.5,
+          2.49
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "This mixes three patterns: deduplicate, top-1 per group and percent of total. The window SUM over the channel gives the denominator, and ROW_NUMBER numbers customers inside the channel so rn = 1 picks the top spender. Both windows must be computed before the WHERE rn = 1 filter, which is why a CTE is used.",
+    "commonMistake": "Filtering WHERE rn = 1 in the same SELECT that computes the channel total. The total would then be summed over the already-filtered row only, and every share would show 100 percent.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 16,
+    "tags": [
+      "top n per group",
+      "percent of total",
+      "dedupe"
+    ]
+  },
+  {
+    "id": "sql-pattern-mixed-002",
+    "module": "sql",
+    "topic": "pattern-mixed",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Product wants to know how long users take to pay. For users who have a `paid_start_date`, compute the days from `users.signup_date` to `subscriptions.paid_start_date`, and report the median per `plan`. Ignore exact duplicate users. Return `plan`, `paying_users`, `median_days` (rounded to 1 decimal), ordered by `plan`.",
+    "dataset": "subscription",
+    "hint": "Join the two tables, compute the day difference with julianday, then use the ROW_NUMBER/COUNT median method per plan.",
+    "solutionSql": "WITH u AS (SELECT DISTINCT user_id, signup_date FROM users), d AS (SELECT s.plan, s.user_id, CAST(julianday(s.paid_start_date) - julianday(u.signup_date) AS INTEGER) AS days FROM subscriptions s JOIN u ON u.user_id = s.user_id WHERE s.paid_start_date IS NOT NULL), r AS (SELECT plan, days, ROW_NUMBER() OVER (PARTITION BY plan ORDER BY days, user_id) AS rn, COUNT(*) OVER (PARTITION BY plan) AS n FROM d) SELECT plan, MAX(n) AS paying_users, ROUND(AVG(days), 1) AS median_days FROM r WHERE rn IN ((n + 1) / 2, (n + 2) / 2) GROUP BY plan ORDER BY plan",
+    "expectedOutput": {
+      "columns": [
+        "plan",
+        "paying_users",
+        "median_days"
+      ],
+      "rows": [
+        [
+          "Basic",
+          361,
+          7
+        ],
+        [
+          "Premium",
+          215,
+          7
+        ],
+        [
+          "Standard",
+          617,
+          7
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The join brings signup and payment dates together, and julianday turns the dates into a number of days. The median method is then applied inside each plan. MAX(n) is just a way to read the plan's group size, because n is the same on every row of a plan.",
+    "commonMistake": "Using AVG of the day gap. A few users who pay months later pull the mean up, so the report overstates how long a typical user takes.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 16,
+    "tags": [
+      "median",
+      "join",
+      "dates"
+    ]
+  },
+  {
+    "id": "sql-pattern-mixed-003",
+    "module": "sql",
+    "topic": "pattern-mixed",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Which users are habitual? Count the distinct users who made transactions on at least 3 consecutive calendar days (any status, ignore exact duplicate rows). Use `date(txn_datetime)` as the day. Return one column, `streak_users`.",
+    "dataset": "fintech",
+    "hint": "Gaps and islands: number the distinct days per user with ROW_NUMBER, subtract from the day number, and group by that constant.",
+    "solutionSql": "WITH d AS (SELECT DISTINCT user_id, date(txn_datetime) AS day FROM transactions), x AS (SELECT user_id, day, julianday(day) - ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY day) AS grp FROM d), isl AS (SELECT user_id, grp, COUNT(*) AS days FROM x GROUP BY user_id, grp HAVING COUNT(*) >= 3) SELECT COUNT(DISTINCT user_id) AS streak_users FROM isl",
+    "expectedOutput": {
+      "columns": [
+        "streak_users"
+      ],
+      "rows": [
+        [
+          31
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "For consecutive days, day number minus row number stays constant, so each unbroken run shares one grp value. Grouping by user and grp gives one row per streak, and HAVING keeps streaks of 3 or more days. Using DISTINCT days first stops several transactions on one day from breaking the arithmetic.",
+    "commonMistake": "Not taking DISTINCT days first. Two transactions on the same day get different row numbers, so the constant breaks and real streaks are split or missed.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 16,
+    "tags": [
+      "gaps and islands",
+      "streak",
+      "window"
+    ]
+  },
+  {
+    "id": "sql-pattern-mixed-004",
+    "module": "sql",
+    "topic": "pattern-mixed",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "The marketing head asks which campaigns burn money without ever producing a purchase. Find campaigns that have clicks but no conversion of type 'Purchase'. Ignore exact duplicate click rows. Return `campaign_name`, `channel`, `clicks` (distinct clicks) and `click_cost_inr` (sum of `cost_inr` over distinct clicks, rounded to 2 decimals), ordered by `click_cost_inr` descending, then `campaign_name`.",
+    "dataset": "marketing",
+    "hint": "Deduplicate clicks first, then anti-join to Purchase conversions with NOT EXISTS, then join to campaigns for the name.",
+    "solutionSql": "WITH k AS (SELECT DISTINCT click_id, campaign_id, cost_inr FROM clicks) SELECT c.campaign_name, c.channel, COUNT(*) AS clicks, ROUND(SUM(k.cost_inr), 2) AS click_cost_inr FROM campaigns c JOIN k ON k.campaign_id = c.campaign_id WHERE NOT EXISTS (SELECT 1 FROM conversions v WHERE v.campaign_id = c.campaign_id AND v.conversion_type = 'Purchase') GROUP BY c.campaign_id, c.campaign_name, c.channel ORDER BY click_cost_inr DESC, c.campaign_name",
+    "expectedOutput": {
+      "columns": [
+        "campaign_name",
+        "channel",
+        "clicks",
+        "click_cost_inr"
+      ],
+      "rows": [
+        [
+          "Influencer Mega Reach Oct-24",
+          "Influencer",
+          2266,
+          36239.84
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "NOT EXISTS keeps a campaign only if there is no Purchase conversion for it. The click rows are deduplicated before joining so that a repeated click does not double the count and cost. Putting conversion_type = 'Purchase' inside the subquery is essential, because a campaign with only Signup conversions should still count as having no purchases.",
+    "commonMistake": "Using NOT IN (SELECT campaign_id FROM conversions). That removes campaigns with any conversion, including Signup or Lead, so a campaign with zero purchases would wrongly be hidden.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 16,
+    "tags": [
+      "anti-join",
+      "dedupe",
+      "campaigns"
+    ]
+  },
+  {
+    "id": "sql-pattern-mixed-005",
+    "module": "sql",
+    "topic": "pattern-mixed",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "HR wants the main reasons people leave. Rank `exit_reason` values in `attrition` by number of exits and list the reasons that together account for the first 80 percent of exits. Include the reason that crosses the 80 percent line. Return `exit_reason`, `exits`, and `cum_pct` (cumulative percent of all exits, rounded to 1 decimal), ordered by `exits` descending, then `exit_reason`.",
+    "dataset": "hr",
+    "hint": "Running SUM over the grouped counts; keep rows where the running total before this row was under 80 percent.",
+    "solutionSql": "WITH g AS (SELECT exit_reason, COUNT(*) AS exits FROM attrition GROUP BY exit_reason), c AS (SELECT exit_reason, exits, SUM(exits) OVER (ORDER BY exits DESC, exit_reason) AS running, SUM(exits) OVER () AS total FROM g) SELECT exit_reason, exits, ROUND(100.0 * running / total, 1) AS cum_pct FROM c WHERE 100.0 * (running - exits) / total < 80 ORDER BY exits DESC, exit_reason",
+    "expectedOutput": {
+      "columns": [
+        "exit_reason",
+        "exits",
+        "cum_pct"
+      ],
+      "rows": [
+        [
+          "Better compensation",
+          117,
+          21.5
+        ],
+        [
+          "Career growth",
+          110,
+          41.7
+        ],
+        [
+          "Manager issues",
+          66,
+          53.9
+        ],
+        [
+          "Work-life balance / overtime",
+          54,
+          63.8
+        ],
+        [
+          "Personal reasons",
+          50,
+          73
+        ],
+        [
+          "Performance / conduct",
+          45,
+          81.3
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Count exits per reason, then keep a running total in descending order. A reason belongs to the top 80 percent if the cumulative share BEFORE adding it is still under 80, which also includes the reason that crosses the line. That is the Pareto pattern applied to a text column.",
+    "commonMistake": "Filtering WHERE cum_pct <= 80. That drops the reason that pushes the total over 80 percent, so the list covers less than the requested share of exits.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 14,
+    "tags": [
+      "pareto",
+      "running sum",
+      "attrition"
+    ]
+  },
+  {
+    "id": "sql-pattern-mixed-006",
+    "module": "sql",
+    "topic": "pattern-mixed",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Show the two best restaurants in each city for a customer-pick banner. Consider only restaurants with at least 10 ratings in `ratings`, and rank by average `overall_rating`. Use the restaurant's own city from `restaurants`, cleaned with `LOWER(TRIM(city))`, ignore restaurants whose city is NULL. Return `city`, `restaurant_name`, `ratings` (count), `avg_rating` (rounded to 2 decimals). Ties go to the higher rating count, then lower `restaurant_id`. Order by `city`, then rank.",
+    "dataset": "food_delivery",
+    "hint": "Aggregate ratings per restaurant with HAVING, then ROW_NUMBER partitioned by city, and keep rn <= 2.",
+    "solutionSql": "WITH agg AS (SELECT restaurant_id, COUNT(*) AS ratings, AVG(overall_rating) AS avg_rating FROM ratings GROUP BY restaurant_id HAVING COUNT(*) >= 10), r AS (SELECT LOWER(TRIM(rs.city)) AS city, rs.restaurant_name, a.ratings, a.avg_rating, ROW_NUMBER() OVER (PARTITION BY LOWER(TRIM(rs.city)) ORDER BY ROUND(a.avg_rating, 2) DESC, a.ratings DESC, rs.restaurant_id) AS rn FROM agg a JOIN restaurants rs ON rs.restaurant_id = a.restaurant_id WHERE rs.city IS NOT NULL) SELECT city, restaurant_name, ratings, ROUND(avg_rating, 2) AS avg_rating FROM r WHERE rn <= 2 ORDER BY city, rn",
+    "expectedOutput": {
+      "columns": [
+        "city",
+        "restaurant_name",
+        "ratings",
+        "avg_rating"
+      ],
+      "rows": [
+        [
+          "ahmedabad",
+          "Biryani Villa",
+          11,
+          4.36
+        ],
+        [
+          "ahmedabad",
+          "Zaika Point",
+          12,
+          4.33
+        ],
+        [
+          "bengaluru",
+          "Chaat Magic",
+          11,
+          4.82
+        ],
+        [
+          "bengaluru",
+          "Zaika Hub",
+          11,
+          4.82
+        ],
+        [
+          "chennai",
+          "Zaika Junction",
+          10,
+          4.6
+        ],
+        [
+          "chennai",
+          "Chaat Rasoi",
+          25,
+          4.44
+        ],
+        [
+          "delhi",
+          "Saffron Darbar",
+          11,
+          4.73
+        ],
+        [
+          "delhi",
+          "Saffron Rasoi",
+          13,
+          4.62
+        ],
+        [
+          "hyderabad",
+          "Madras Corner",
+          24,
+          4.71
+        ],
+        [
+          "hyderabad",
+          "Spice Hub",
+          27,
+          4.52
+        ],
+        [
+          "jaipur",
+          "Madras Kitchen",
+          23,
+          4.39
+        ],
+        [
+          "jaipur",
+          "Royal Darbar",
+          12,
+          4.33
+        ],
+        [
+          "kolkata",
+          "Curry Bhavan",
+          11,
+          4.73
+        ],
+        [
+          "kolkata",
+          "Punjabi Hub",
+          13,
+          4.62
+        ],
+        [
+          "lucknow",
+          "Dilli House",
+          10,
+          4.4
+        ],
+        [
+          "lucknow",
+          "Madras Rasoi",
+          10,
+          4.4
+        ],
+        [
+          "mumbai",
+          "Chaat Rasoi",
+          13,
+          4.62
+        ],
+        [
+          "mumbai",
+          "Royal Express",
+          14,
+          4.57
+        ],
+        [
+          "pune",
+          "Zaika House",
+          14,
+          4.64
+        ],
+        [
+          "pune",
+          "Zaika Bhavan",
+          15,
+          4.47
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "HAVING removes restaurants with too few ratings so a single 5-star review cannot win. ROW_NUMBER partitioned by the cleaned city ranks restaurants inside each city, and rn <= 2 keeps the top two. The window runs after grouping, so it ranks the per-restaurant averages.",
+    "commonMistake": "Using LIMIT 2 after the ranking. LIMIT cuts the whole result to two rows in total, not two per city.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 16,
+    "tags": [
+      "top n per group",
+      "having",
+      "clean"
+    ]
+  }
+]

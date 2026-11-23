@@ -1,0 +1,151 @@
+[
+  {
+    "id": "pbi-iterators-001",
+    "module": "power-bi",
+    "topic": "iterators",
+    "difficulty": "easy",
+    "language": "dax",
+    "question": "Retail: the `sales` table has `quantity` and `unit_price_inr` but we want gross sales before discount. Write `Gross Sales`.",
+    "dataset": "retail",
+    "hint": "Multiply per row, then sum: that needs an iterator.",
+    "solution": "```dax\nGross Sales = SUMX ( Sales, Sales[quantity] * Sales[unit_price_inr] )\n```\n\n`SUMX` goes row by row (row context), computes quantity x price, and adds the results. `SUM(Sales[quantity]) * SUM(Sales[unit_price_inr])` would be wrong: it multiplies two totals, not row products.",
+    "explanation": "SUMX = row calc, then add.",
+    "commonMistake": "Multiplying SUM of one column by SUM of another.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "sumx"
+    ]
+  },
+  {
+    "id": "pbi-iterators-002",
+    "module": "power-bi",
+    "topic": "iterators",
+    "difficulty": "medium",
+    "language": "dax",
+    "question": "Retail: write `Weighted Discount %` = total discount value as a share of gross sales. `discount_pct` is stored as a number such as 10 for 10%.",
+    "dataset": "retail",
+    "hint": "Weight each row's discount by its gross value.",
+    "solution": "```dax\nWeighted Discount % =\nDIVIDE (\n    SUMX ( Sales, Sales[quantity] * Sales[unit_price_inr] * Sales[discount_pct] / 100 ),\n    [Gross Sales]\n)\n```\n\n`AVERAGE(Sales[discount_pct])` treats a ₹50 item and a ₹50,000 item equally. The weighted version tells you what share of gross value was given away. Note that `discount_pct` is blank for about 4% of rows; those rows contribute zero here. Check with the business whether blank means zero.",
+    "explanation": "Weight by value.",
+    "commonMistake": "Averaging discount percentages instead of weighting by value.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "weighted",
+      "sumx"
+    ]
+  },
+  {
+    "id": "pbi-iterators-003",
+    "module": "power-bi",
+    "topic": "iterators",
+    "difficulty": "medium",
+    "language": "dax",
+    "question": "Ecommerce: write `Avg Revenue per Customer` = average of each customer's revenue, counting only customers who bought in the current filter.",
+    "dataset": "ecommerce",
+    "hint": "Iterate over customers who have a value.",
+    "solution": "```dax\nAvg Revenue per Customer =\nAVERAGEX ( VALUES ( Customers[customer_id] ), [Revenue] )\n```\n\n`VALUES(Customers[customer_id])` returns the customers visible in the current context. `AVERAGEX` calculates `[Revenue]` for each (the measure reference triggers context transition) and averages the results. Customers with blank revenue are skipped, which is usually what you want for 'average per buying customer'. Compare with `DIVIDE([Revenue], DISTINCTCOUNT(Orders[customer_id]))`, which gives the same result when each customer has orders.",
+    "explanation": "AVERAGEX over a dimension.",
+    "commonMistake": "Using AVERAGE on the order total column, which gives average per order, not per customer.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 7,
+    "tags": [
+      "averagex"
+    ]
+  },
+  {
+    "id": "pbi-iterators-004",
+    "module": "power-bi",
+    "topic": "iterators",
+    "difficulty": "medium",
+    "language": "dax",
+    "question": "Retail: write `Avg Monthly Sales` = average of the monthly totals in the selected period, using the `Calendar[Year-Month]` column.",
+    "dataset": "retail",
+    "hint": "Iterate over the distinct months.",
+    "solution": "```dax\nAvg Monthly Sales =\nAVERAGEX ( VALUES ( 'Calendar'[Year-Month] ), [Total Sales] )\n```\n\nFor 2024 the monthly totals range from ₹11.6 lakh (Feb) to ₹18.9 lakh (Oct) and the average is about ₹13.6 lakh (₹1.64 crore / 12). Averaging the daily rows instead would give an average sale line, not a monthly average.",
+    "explanation": "Iterate over the grain you want to average.",
+    "commonMistake": "Using AVERAGE on a column of line values and calling it a monthly average.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 6,
+    "tags": [
+      "averagex",
+      "months"
+    ]
+  },
+  {
+    "id": "pbi-iterators-005",
+    "module": "power-bi",
+    "topic": "iterators",
+    "difficulty": "medium",
+    "language": "dax",
+    "question": "Retail: write `Store Rank` that ranks stores by `Total Sales` (1 = best) with no gaps after ties.",
+    "dataset": "retail",
+    "hint": "RANKX needs the full list of stores to rank against.",
+    "solution": "```dax\nStore Rank =\nRANKX ( ALL ( Stores[store_name] ), [Total Sales], , DESC, DENSE )\n```\n\n`ALL(Stores[store_name])` is the list of all stores. For each store the measure is evaluated and its position found. On the cleaned data the top stores are Vasudha Hypermarket - Satellite (₹24.5 lakh), Dwarka (₹24.3 lakh), Andheri (₹24.1 lakh) and Whitefield (₹23.3 lakh), then Six Mile at ₹13.7 lakh. If a region slicer is applied, the ranking still compares against all stores (because of ALL). Use ALLSELECTED to rank only within the visible stores.",
+    "explanation": "Rank against the full list.",
+    "commonMistake": "Using VALUES instead of ALL, which makes every store rank 1 (the list has only the current store).",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 7,
+    "tags": [
+      "rankx"
+    ]
+  },
+  {
+    "id": "pbi-iterators-006",
+    "module": "power-bi",
+    "topic": "iterators",
+    "difficulty": "medium",
+    "language": "dax",
+    "question": "Retail: write `Top 5 Stores Sales` = total sales of the five best stores.",
+    "dataset": "retail",
+    "hint": "TOPN returns a table of stores that you use as a filter.",
+    "solution": "```dax\nTop 5 Stores Sales =\nCALCULATE (\n    [Total Sales],\n    TOPN ( 5, ALL ( Stores[store_name] ), [Total Sales], DESC )\n)\n```\n\n`TOPN` returns the five store names with the highest `[Total Sales]`. CALCULATE uses that table as a filter on `Stores[store_name]`. On the sample, the top 5 together are about ₹1.10 crore (roughly 37% of all sales). TOPN keeps ties, so you may get more than 5 stores if sales are equal.",
+    "explanation": "TOPN as a filter table.",
+    "commonMistake": "Using TOPN without ALL, so it only sees the current store and returns that store.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 7,
+    "tags": [
+      "topn"
+    ]
+  },
+  {
+    "id": "pbi-iterators-007",
+    "module": "power-bi",
+    "topic": "iterators",
+    "difficulty": "hard",
+    "language": "dax",
+    "question": "Retail: add `Rank in Region` that ranks each store within its own region (restart at 1 for each region). The matrix shows Region and Store name.",
+    "dataset": "retail",
+    "hint": "Rank against stores of the same region only.",
+    "solution": "```dax\nRank in Region =\nRANKX ( ALLEXCEPT ( Stores, Stores[region] ), [Total Sales], , DESC, DENSE )\n```\n\n`ALLEXCEPT(Stores, Stores[region])` returns all stores that share the current row's region. RANKX ranks the current store's sales among those. Each region starts at 1. If the matrix only shows the Region level (no store), the measure would rank the region's total among stores, which is meaningless; wrap in `IF(ISINSCOPE(Stores[store_name]), ...)` to show blanks at region rows.",
+    "explanation": "Rank in a sub-list.",
+    "commonMistake": "Not hiding the rank at subtotal rows.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 9,
+    "tags": [
+      "rankx",
+      "allexcept"
+    ]
+  },
+  {
+    "id": "pbi-iterators-008",
+    "module": "power-bi",
+    "topic": "iterators",
+    "difficulty": "hard",
+    "language": "dax",
+    "question": "Ecommerce: write `Top 3 Product Share %` = share of revenue from the 3 best-selling products (by revenue) among those visible in the filter.",
+    "dataset": "ecommerce",
+    "hint": "Use ALLSELECTED so the denominator is the visible products.",
+    "solution": "```dax\nTop 3 Product Share % =\nVAR _top3 =\n    TOPN ( 3, ALLSELECTED ( Products[product_name] ), [Revenue], DESC )\nVAR _topSales = CALCULATE ( [Revenue], _top3 )\nVAR _allSales = CALCULATE ( [Revenue], ALLSELECTED ( Products[product_name] ) )\nRETURN\n    DIVIDE ( _topSales, _allSales )\n```\n\nThe result tells how concentrated sales are: a high share means few products drive revenue. `ALLSELECTED` respects page slicers (such as a category selection) but ignores the product filter inside the visual, so the top 3 are picked among the products the user is currently looking at. The figure shown depends on slicers; the 420 products give a different answer for Electronics and for all categories.",
+    "explanation": "ALLSELECTED respects slicers.",
+    "commonMistake": "Using ALL, which ignores the category slicer so 'top 3' is always company-wide.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 9,
+    "tags": [
+      "topn",
+      "allselected",
+      "concentration"
+    ]
+  }
+]

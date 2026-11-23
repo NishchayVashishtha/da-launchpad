@@ -1,0 +1,153 @@
+---
+title: "Power Query in Excel: import, clean, reshape, refresh"
+description: "Use Get & Transform to clean messy data once and refresh it with one click: unpivot, merge, append and more."
+module: excel
+order: 13
+estimatedMinutes: 60
+objectives:
+  - "Import data from a workbook table and from CSV files"
+  - "Clean text, dates and duplicates with Power Query steps"
+  - "Unpivot a wide table into a tidy one"
+  - "Merge (join) and append (stack) queries"
+  - "Refresh a query and load the result to a sheet or the Data Model"
+tags: ["excel", "power-query", "etl", "cleaning"]
+---
+
+## Learning objectives
+
+- Load data into the Power Query editor.
+- Clean text, dates and duplicates with repeatable steps.
+- Unpivot, merge and append.
+- Refresh with one click.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Every month a finance team in Hyderabad receives sales files from five branches. Each file has extra spaces, text dates and a different column order. Cleaning by hand takes half a day. With Power Query you clean the first file once. Next month you drop the new files in a folder and click Refresh. This "clean once, refresh forever" skill is a big plus in analyst interviews, and the same engine is used inside Power BI.
+</RealWorld>
+
+## Concept
+
+**Power Query** is the data-cleaning tool built into Excel (Data > Get & Transform Data). Think of a recipe card. You cook the first dish by hand. Power Query writes down each step. Next time, you give it new ingredients and it follows the recipe.
+
+Key ideas:
+
+- A **query** is a list of **applied steps** (right panel in the editor). Each step is one change, such as "Trimmed Text" or "Removed Duplicates". You can click any step to see the data at that point, delete it, or reorder it.
+- The editor uses a language called **M**. You rarely have to write it. The buttons write it for you.
+- Steps do not touch the source file. Power Query reads, shapes and loads a **copy**.
+- **Load to**: a table on a sheet, a connection only (for use in other queries), or the Data Model.
+
+Main transforms:
+
+| Task | Where |
+|---|---|
+| Trim, clean, change case | Transform > Format |
+| Change data type | click the type icon on the column header; use *Using Locale* for text dates |
+| Remove duplicates | Home > Remove Rows > Remove Duplicates |
+| Split column | Transform > Split Column |
+| Fill down | Transform > Fill > Down |
+| Unpivot | Transform > Unpivot Columns (or Unpivot Other Columns) |
+| Merge queries | Home > Merge Queries (a join) |
+| Append queries | Home > Append Queries (stack rows) |
+
+**Unpivot** turns wide data (one column per month) into tall data (one row per month). Pivot tables and Power BI love tall data.
+
+**Merge** is like VLOOKUP, but it can bring many columns at once and it uses join kinds: Left Outer (keep all of the left table), Inner, Full Outer, Left Anti (rows with no match).
+
+**Append** stacks tables that have the same columns, like pasting one sheet under another. Using *From Folder* you can append every file in a folder in one query.
+
+<Tip>
+Rename each query to something meaningful (`Customers_Clean`) and set the last step name to "Final". You will thank yourself in three months.
+</Tip>
+
+## Worked examples
+
+Files: `excel-cleaning.xlsx`, the `retail.zip` and `hr.zip` CSV sets.
+
+<Download href="data/excel/excel-cleaning.xlsx" label="excel-cleaning.xlsx" />
+<Download href="data/zip/retail.zip" label="retail.zip (sales.csv, stores.csv ...)" />
+<Download href="data/zip/hr.zip" label="hr.zip (employees.csv, departments.csv ...)" />
+
+Unzip the zip files to a folder first (right-click > Extract All).
+
+**Example 1: import and clean customers.** Open `excel-cleaning.xlsx`. The `customers_messy` sheet is not an Excel Table. Click inside the data > Data > From Table/Range > confirm headers. The editor opens with 1,272 rows. Apply these steps:
+
+1. Select `full_name`, `email`, `city` > Transform > Format > **Trim**, then Format > **Clean**.
+2. `full_name` and `city` > Format > **Capitalize Each Word**. `email` > Format > **lowercase**.
+3. `signup_date` is text in several formats. Right-click the column > Change Type > Using Locale > Date > English (India). Check any row that shows Error and fix the format.
+4. Select `customer_id` > Home > Remove Rows > Remove Duplicates. The row count falls from **1,272 to 1,199**.
+5. Home > Close & Load.
+
+Notice that removing duplicates on all columns gives 1,200 rows, not 1,199. One customer_id appears twice with slightly different data. Removing by `customer_id` is the correct rule because the ID must be unique. In real work you would check which copy is right.
+
+**Example 2: clean product names.** Load `products_messy`. The `product_name` values contain stars, trademark signs, tabs, hidden spaces and trailing ` ##`. For example `PureNeem Skincare 312 ##` should become `PureNeem Skincare 312`. Steps: Transform > Format > Clean, Trim; then Replace Values for `*`, `™` and ` ##` with nothing (leave Replace With empty). The Applied Steps list is your documentation.
+
+**Example 3: unpivot a target table.** In `excel-functions.xlsx` the sheet `monthly_targets` has row 1 as months across columns B to M, and two metric rows. Load it. Select the first column (Metric) > Transform > **Unpivot Other Columns**. The result has columns Metric, Attribute (the month) and Value, with 24 rows (2 metrics times 12 months). Rename Attribute to Month. Now a pivot table can use it with ease.
+
+<Download href="data/excel/excel-functions.xlsx" label="excel-functions.xlsx" />
+
+**Example 4: merge sales with stores.** Data > Get Data > From File > From Text/CSV. Load `retail/sales.csv` (24,350 rows) as a connection only. Do the same for `retail/stores.csv` (24 rows). In the sales query choose Home > Merge Queries > pick `store_id` in both, Join Kind = Left Outer. Click the expand icon on the new column and tick `store_name`, `region`, `store_format`. Untick "Use original column name as prefix". Now every sale carries the store details with no VLOOKUP. If any sale has null in `store_name`, a store ID is missing from the stores file.
+
+**Example 5: append and refresh.** Imagine `sales_jan.csv` and `sales_feb.csv` with the same columns. Home > Append Queries > Two tables. The new query has all rows from both. Or use Get Data > From File > From Folder, then Combine & Transform. Next month, copy the new file to the folder and press **Data > Refresh All**. The cleaned table updates and every pivot built on it follows after one more refresh.
+
+<Warning>
+Power Query does not refresh by itself when you open a file unless you set it: Query Properties > Refresh data when opening the file. Moving the source file breaks the query; update the path in Data Source Settings.
+</Warning>
+
+## Common mistakes
+
+<CommonMistake>Cleaning by hand in the sheet, then losing the work on the next data drop. If a step will repeat, do it in Power Query.</CommonMistake>
+
+<CommonMistake>Letting Power Query auto-detect types and silently turn text dates into wrong dates (day and month swapped). Set the type with a locale and check.</CommonMistake>
+
+<CommonMistake>Merging on columns with different types (text "101" vs number 101) and finding no matches. Make both columns the same type first.</CommonMistake>
+
+<CommonMistake>Using Left Outer when you meant Inner, and then double counting or keeping unmatched rows. Check the row count before and after every merge.</CommonMistake>
+
+<CommonMistake>Unpivoting only the selected columns when new months are added later. Use Unpivot Other Columns so new columns are included on refresh.</CommonMistake>
+
+<CommonMistake>Forgetting that the query output is a copy. Editing the loaded table by hand is lost at the next refresh.</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="power-query" module="excel" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What is stored in the Applied Steps pane?", options: ["Your charts", "The ordered list of transformations in the query", "Pivot filters", "Macros"], answer: 1, explanation: "Each change you make becomes a step. Refresh replays all steps on the new data." },
+  { q: "Which command turns month columns into rows?", options: ["Transpose", "Unpivot Columns", "Merge Queries", "Split Column"], answer: 1, explanation: "Unpivot rotates columns into attribute and value rows. Transpose only flips the table." },
+  { q: "You want every row from sales, plus store details if they exist. Which join kind?", options: ["Inner", "Left Outer (sales on the left)", "Right Anti", "Cross"], answer: 1, explanation: "Left Outer keeps all rows from the first table and adds matching data." },
+  { q: "What does Append Queries do?", options: ["Joins columns by key", "Stacks rows of tables with the same columns", "Deletes duplicates", "Creates a chart"], answer: 1, explanation: "Append is like UNION ALL: rows from the second table go below the first." },
+  { q: "You received next month's file with the same layout. What is the quickest route?", options: ["Redo the cleaning by hand", "Replace the source and click Refresh All", "Write a macro", "Delete the query"], answer: 1, explanation: "Because the steps are saved, a refresh applies them to the new data." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+"How would you automate monthly cleaning without VBA?" is a frequent question. The expected answer is Power Query with a From Folder source and Refresh.
+</InterviewAlert>
+
+<InterviewQ q="What is Power Query and why use it instead of formulas?">
+Power Query is Excel's ETL tool (extract, transform, load). It records each cleaning step so the process is repeatable, handles large data better than formulas, and does not leave a trail of helper columns. Formulas recalculate in the sheet; Power Query reshapes data before it lands in the sheet.
+</InterviewQ>
+
+<InterviewQ q="Merge vs VLOOKUP?">
+Merge can pull many columns at once, supports different join kinds (inner, left, anti), works on large tables faster, and refreshes on demand. VLOOKUP is live in the cell and good for a quick single lookup. For cleaning pipelines I prefer Merge.
+</InterviewQ>
+
+<InterviewQ q="What is unpivot and when would you use it?">
+It turns columns (such as Jan, Feb, Mar) into rows with a month column and a value column. I use it when data arrives in a report layout and I need a tidy table for pivots or Power BI.
+</InterviewQ>
+
+## Key takeaways
+
+- Power Query records cleaning steps so you can refresh with one click.
+- Transform text with Trim, Clean, case and Replace Values; fix dates with locale.
+- Unpivot Other Columns makes wide data tall; Merge joins; Append stacks.
+- Always check row counts before and after Merge and Remove Duplicates.
+- The source file is untouched; the output table is a copy that refreshes.
+
+## Further reading
+
+<FurtherReading ids={["excel-support", "power-bi-docs", "chandoo"]} />

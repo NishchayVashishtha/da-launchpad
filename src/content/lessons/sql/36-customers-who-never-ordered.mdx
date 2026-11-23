@@ -1,0 +1,278 @@
+---
+title: "Customers who never ordered, and other missing-data questions"
+description: "The anti-join pattern in four forms: NOT EXISTS, LEFT JOIN with IS NULL, NOT IN, and missing dates."
+module: sql
+order: 36
+estimatedMinutes: 45
+objectives:
+  - "Recognise a 'who has no ...' question"
+  - "Write an anti-join with NOT EXISTS and with LEFT JOIN ... IS NULL"
+  - "Explain the NOT IN and NULL trap"
+  - "Answer 'in A but not in B' questions with flags"
+  - "Find missing dates with a calendar CTE"
+tags: ["sql", "interview-patterns", "anti-join", "not-exists", "left-join"]
+---
+
+## Learning objectives
+
+- Spot the cue words of a "missing" question.
+- Write an anti-join in two safe ways.
+- Avoid the `NOT IN` trap when NULLs are present.
+- Compare two periods to find people who disappeared.
+- Generate a list of dates and find the gaps.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Some of the most valuable business questions are about what is missing. Which signups never bought? Which products never sold? Which merchants have gone quiet? Which days had zero orders? A normal query finds rows that exist. These questions need rows that do not exist, so they feel harder than they are.
+</RealWorld>
+
+## Concept
+
+### The recognition cue
+
+- "never", "no ... at all", "without any"
+- "customers who have not ordered", "products with no sales"
+- "in January but not in February", "lapsed", "churned"
+- "days with no activity", "missing months"
+
+### The big idea: anti-join
+
+A normal join keeps rows that match. An **anti-join** keeps rows from the left table that have **no match** in the right table. Think of two attendance lists: the anti-join is "on the class list but not on the exam list".
+
+SQL has no `ANTI JOIN` keyword. You write it in one of three ways.
+
+### Template 1: NOT EXISTS (the safest)
+
+```sql
+SELECT c.customer_id
+FROM customers c
+WHERE NOT EXISTS (
+  SELECT 1 FROM orders o WHERE o.customer_id = c.customer_id
+);
+```
+
+For each customer, the subquery looks for any order. If it finds none, the customer is kept. The `SELECT 1` does not matter; only "found or not found" counts.
+
+### Template 2: LEFT JOIN with IS NULL
+
+```sql
+SELECT c.customer_id
+FROM customers c
+LEFT JOIN orders o ON o.customer_id = c.customer_id
+WHERE o.order_id IS NULL;
+```
+
+`LEFT JOIN` keeps every customer and fills the order columns with NULL when nothing matches. Then `IS NULL` keeps only the unmatched ones. Test a column of the **right** table that is never NULL in real rows (like its primary key).
+
+### Template 3: NOT IN (use with care)
+
+```sql
+SELECT customer_id FROM customers
+WHERE customer_id NOT IN (SELECT customer_id FROM orders);
+```
+
+Looks simple, but it has a trap. If the subquery returns even one `NULL`, `NOT IN` returns **no rows at all**. The reason: `x NOT IN (1, 2, NULL)` means `x<>1 AND x<>2 AND x<>NULL`, and the last part is unknown, so the whole test is never true. Add `WHERE col IS NOT NULL` in the subquery, or prefer `NOT EXISTS`.
+
+<Warning>
+`NOT IN` with a subquery that can contain NULL silently returns an empty result. This is a favourite interview trap. Use `NOT EXISTS` by default.
+</Warning>
+
+### Variations
+
+1. **Filtered anti-join.** "Users with no *trial_start* event" puts the event condition inside the subquery.
+2. **In A but not in B (periods).** Make one row per customer with flags such as `MAX(year = 2023)` and `MAX(year = 2024)`, then keep flag A = 1 and flag B = 0.
+3. **Missing dates.** Build a calendar with a recursive CTE and anti-join it to the data.
+
+### Edge cases
+
+- Duplicate rows on the left table: count `DISTINCT` ids.
+- A condition on the right table belongs **in the subquery or in the `ON` clause**, not in the outer `WHERE`. If you filter the right table in `WHERE`, the `LEFT JOIN` turns back into an inner join.
+- A customer with an order that was cancelled: decide whether "never ordered" includes cancelled orders. Ask.
+- NULL join keys never match anything, so rows with a NULL key always look "missing".
+
+## Worked examples
+
+### Example 1: customers who never ordered
+
+<SqlPlayground dataset="ecommerce" query={`SELECT COUNT(DISTINCT c.customer_id) AS never_ordered
+FROM customers c
+WHERE NOT EXISTS (
+  SELECT 1 FROM orders o
+  WHERE o.customer_id = c.customer_id
+);`} title="NOT EXISTS anti-join" />
+
+Output:
+
+| never_ordered |
+|---|
+| 2278 |
+
+
+About half the customer base never bought. Marketing would target these for a first-order offer.
+
+### Example 2: the same answer with LEFT JOIN
+
+<SqlPlayground dataset="ecommerce" query={`SELECT COUNT(DISTINCT c.customer_id) AS never_ordered
+FROM customers c
+LEFT JOIN orders o ON o.customer_id = c.customer_id
+WHERE o.order_id IS NULL;`} title="LEFT JOIN with IS NULL" />
+
+Output:
+
+| never_ordered |
+|---|
+| 2278 |
+
+
+Same number, different spelling. In an interview, mention both and say you prefer `NOT EXISTS` because it is clearer about intent and safe with NULLs.
+
+### Example 3: the NOT IN trap
+
+In the fintech data, `receiver_user_id` is NULL for every non-P2P transaction. "Which users never received a P2P transfer?"
+
+<SqlPlayground dataset="fintech" query={`SELECT
+  (SELECT COUNT(*) FROM users
+   WHERE user_id NOT IN (SELECT receiver_user_id FROM transactions)) AS with_not_in,
+  (SELECT COUNT(*) FROM users u
+   WHERE NOT EXISTS (SELECT 1 FROM transactions t
+                     WHERE t.receiver_user_id = u.user_id)) AS with_not_exists;`} title="NOT IN versus NOT EXISTS" />
+
+Output:
+
+| with_not_in | with_not_exists |
+|---|---|
+| 0 | 1048 |
+
+
+`NOT IN` says zero because the subquery contains NULLs. `NOT EXISTS` gives the correct answer. If you had trusted the first number you would have told the business that every user receives money.
+
+### Example 4: lapsed customers (in 2023, not in 2024)
+
+<SqlPlayground dataset="ecommerce" query={`WITH o AS (
+  SELECT DISTINCT order_id, customer_id, order_date
+  FROM orders
+  WHERE order_status = 'Delivered'
+),
+flags AS (
+  SELECT customer_id,
+         MAX(order_date LIKE '2023%') AS in_2023,
+         MAX(order_date LIKE '2024%') AS in_2024
+  FROM o
+  GROUP BY customer_id
+)
+SELECT COUNT(*) AS buyers_2023,
+       SUM(in_2024 = 0) AS lapsed,
+       ROUND(100.0 * SUM(in_2024 = 0) / COUNT(*), 1) AS lapsed_pct
+FROM flags
+WHERE in_2023 = 1;`} title="Lapsed customers" />
+
+Output:
+
+| buyers_2023 | lapsed | lapsed_pct |
+|---|---|---|
+| 1197 | 314 | 26.2 |
+
+
+Each customer gets two flags. A customer with `in_2023 = 1` and `in_2024 = 0` bought last year and then went silent. This flag trick avoids a self-join and works for "A but not B" in any pair of periods.
+
+### Example 5: days with no cancellations
+
+Missing dates need a list of all dates first. A recursive CTE can build one.
+
+<SqlPlayground dataset="ecommerce" query={`WITH RECURSIVE cal(day) AS (
+  SELECT '2023-01-01'
+  UNION ALL
+  SELECT date(day, '+1 day') FROM cal WHERE day < '2023-01-31'
+)
+SELECT cal.day
+FROM cal
+WHERE NOT EXISTS (
+  SELECT 1 FROM orders o
+  WHERE o.order_date = cal.day AND o.order_status = 'Cancelled'
+)
+ORDER BY cal.day
+LIMIT 5;`} title="Calendar anti-join" />
+
+Output:
+
+| day |
+|---|
+| 2023-01-02 |
+| 2023-01-04 |
+| 2023-01-06 |
+| 2023-01-08 |
+| 2023-01-09 |
+
+
+The calendar is the left table, so days with no matching row are not lost. Without a calendar you can only find days that exist in the data, never days that are missing.
+
+## Common mistakes
+
+<CommonMistake>
+Using `INNER JOIN` and expecting "who has no orders". An inner join returns only customers who do have orders, the opposite answer.
+</CommonMistake>
+
+<CommonMistake>
+Testing a left-table column with `IS NULL` after `LEFT JOIN`, for example `WHERE c.customer_id IS NULL`. That column is never NULL, so you get zero rows. Test the right table's key.
+</CommonMistake>
+
+<CommonMistake>
+Putting a right-table filter in the outer `WHERE` (for example `WHERE o.order_status = 'Cancelled' AND o.order_id IS NULL`). It is impossible for both parts to be true, so the result is empty. Put the filter in the `ON` clause or the subquery.
+</CommonMistake>
+
+<CommonMistake>
+Trusting `NOT IN` when the subquery column has NULLs. The query returns nothing, and nothing looks like a valid answer.
+</CommonMistake>
+
+<CommonMistake>
+Counting duplicated left rows. If the customers table has repeated rows, use `COUNT(DISTINCT customer_id)`.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="pattern-missing" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Which keeps customers with no orders?", options: ["INNER JOIN orders", "LEFT JOIN orders WHERE o.order_id IS NULL", "LEFT JOIN orders WHERE c.customer_id IS NULL", "CROSS JOIN orders"], answer: 1, explanation: "LEFT JOIN fills the right table's columns with NULL when there is no match, and IS NULL on a right-table key keeps those rows." },
+  { q: "What does x NOT IN (SELECT col ...) return if the subquery contains a NULL?", options: ["All rows", "The correct unmatched rows", "No rows", "An error"], answer: 2, explanation: "The comparison with NULL is unknown, so NOT IN can never be true and returns nothing." },
+  { q: "Which is the safest anti-join in general?", options: ["NOT IN", "NOT EXISTS", "UNION", "DISTINCT"], answer: 1, explanation: "NOT EXISTS ignores NULL problems and states the intent clearly." },
+  { q: "To find days with no sales, what do you need first?", options: ["A calendar table or recursive CTE of all dates", "An index", "A GROUP BY on the sales table", "A window function"], answer: 0, explanation: "Dates with no rows do not exist in the sales table, so you must generate them." },
+  { q: "To find customers in 2023 but not in 2024, which approach works?", options: ["WHERE year = 2023 AND year <> 2024 on order rows", "Per-customer flags for each year, then flag_2023 = 1 AND flag_2024 = 0", "SELECT DISTINCT year", "ORDER BY year"], answer: 1, explanation: "A single row has only one year, so the row-level test cannot work. Flags per customer can." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers love "customers who never ordered" because it has a clean answer and several traps. Give the `NOT EXISTS` answer, mention `LEFT JOIN ... IS NULL` as the alternative, and warn about `NOT IN` with NULLs before they ask.
+</InterviewAlert>
+
+<InterviewQ q="Find customers who have never placed an order.">
+`SELECT c.customer_id FROM customers c WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.customer_id)`. The equivalent is `LEFT JOIN orders o ... WHERE o.order_id IS NULL`. I would first ask whether cancelled orders count as an order, and whether the customer table has duplicates, in which case I count distinct ids.
+</InterviewQ>
+
+<InterviewQ q="What is wrong with NOT IN here, and how do you fix it?">
+If the subquery returns any NULL, `NOT IN` evaluates to unknown for every row and returns nothing. Fix it by filtering `WHERE col IS NOT NULL` inside the subquery, or by using `NOT EXISTS`, which does not have this problem.
+</InterviewQ>
+
+<InterviewQ q="How do you find users who were active in month 1 but not in month 2?">
+I build one row per user with `MAX(month = 1)` and `MAX(month = 2)` style flags and keep users with flag 1 equal to 1 and flag 2 equal to 0. A `NOT EXISTS` with a month-2 subquery gives the same answer.
+</InterviewQ>
+
+<InterviewQ q="How do you find dates that are missing from a table?">
+I generate a calendar with a recursive CTE for the date range, then anti-join it to the table (`NOT EXISTS` or `LEFT JOIN ... IS NULL`). In PostgreSQL `generate_series` does the same job as the recursive CTE.
+</InterviewQ>
+
+## Key takeaways
+
+- A "who has no ..." question is an anti-join: keep left rows with no match.
+- Prefer `NOT EXISTS`; `LEFT JOIN ... IS NULL` is equal; `NOT IN` breaks with NULLs.
+- Right-table filters go in the subquery or the `ON` clause, never the outer `WHERE`.
+- "In A but not in B" works well with per-key flags.
+- To find missing dates, build the full calendar first, then anti-join.
+
+## Further reading
+
+<FurtherReading ids={["mode-sql", "sqlbolt", "sqlite-docs", "datalemur"]} />

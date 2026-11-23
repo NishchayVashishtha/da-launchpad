@@ -1,0 +1,58 @@
+[
+  {
+    "id": "pbi-walkthrough-fintech-001",
+    "module": "power-bi",
+    "topic": "walkthrough-fintech",
+    "difficulty": "easy",
+    "language": "dax",
+    "question": "Write the `Failure Rate %` measure for the fintech model, where `Transactions[status]` is SUCCESS, FAILED or PENDING.",
+    "dataset": "fintech",
+    "hint": "Failed divided by all.",
+    "solution": "```dax\nTotal Txns = COUNTROWS(Transactions)\nFailed Txns = CALCULATE(COUNTROWS(Transactions), Transactions[status] = \"FAILED\")\nFailure Rate % = DIVIDE([Failed Txns], [Total Txns])\n```\nResult is about 2.85% (627 of 22,000 de-duplicated transactions).",
+    "explanation": "Define in the page footnote whether PENDING counts in the denominator.",
+    "commonMistake": "Counting duplicate txn_id rows.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "failure-rate"
+    ]
+  },
+  {
+    "id": "pbi-walkthrough-fintech-002",
+    "module": "power-bi",
+    "topic": "walkthrough-fintech",
+    "difficulty": "medium",
+    "language": "dax",
+    "question": "Write a measure that shows how many percentage points a bank's failure rate is above the overall failure rate, even when the bank slicer or axis filters the visual.",
+    "dataset": "fintech",
+    "hint": "ALL on the bank column removes the bank filter.",
+    "solution": "```dax\nOverall Failure Rate % = CALCULATE([Failure Rate %], ALL(Transactions[bank]))\nGap vs Overall (pp) = ([Failure Rate %] - [Overall Failure Rate %]) * 100\n```\nKaveri Co-op Bank is about +5.2 points above the 2.85% overall.",
+    "explanation": "ALL removes only the filters you name; here only the bank filter.",
+    "commonMistake": "Using ALL(Transactions), which also removes date and app filters.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "all",
+      "benchmark"
+    ]
+  },
+  {
+    "id": "pbi-walkthrough-fintech-003",
+    "module": "power-bi",
+    "topic": "walkthrough-fintech",
+    "difficulty": "hard",
+    "language": "dax",
+    "question": "Create a `Peak Hour Failure Rate %` measure for the 18:00 to 20:59 window using a helper column `Transactions[txn_hour]`. Explain in one sentence what you expect to see for Kaveri Co-op Bank.",
+    "dataset": "fintech",
+    "hint": "CALCULATE with a column filter.",
+    "solution": "```dax\nPeak Hour Failure Rate % =\nCALCULATE([Failure Rate %], Transactions[txn_hour] >= 18 && Transactions[txn_hour] <= 20)\n```\nFor Kaveri, the 18:00 to 20:59 window shows a failure rate of about 15.6%, against about 2.7% for the other banks in the same window, and failures there are mostly BANK_SERVER_TIMEOUT, so the bank's servers struggle under load.",
+    "explanation": "CALCULATE with a boolean filter is the core pattern for 'rate within a segment'.",
+    "commonMistake": "Writing the filter on the Date table when hour is on the fact table.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 7,
+    "tags": [
+      "calculate",
+      "peak-hour"
+    ]
+  }
+]

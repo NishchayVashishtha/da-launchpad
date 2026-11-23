@@ -1,0 +1,84 @@
+[
+  {
+    "id": "excel-cleaning-001",
+    "module": "excel",
+    "topic": "cleaning",
+    "difficulty": "easy",
+    "language": "excel",
+    "question": "Open `excel-cleaning.xlsx` and go to `customers_messy`. Use Remove Duplicates to keep one row per `customer_id`. How many data rows remain?",
+    "dataset": "none",
+    "hint": "Data tab > Remove Duplicates. Tick only the column that defines a duplicate.",
+    "solution": "Click inside the data, go to **Data > Remove Duplicates**. Untick **Select All**, tick only `customer_id`, make sure *My data has headers* is ticked, and click OK.\n\nExcel reports *73 duplicate values found and removed; 1199 unique values remain.*\n\n| Rows before | Rows after |\n|---|---|\n| 1272 | 1199 |\n\nWork on a copy of the sheet so you can compare.",
+    "orderMatters": false,
+    "explanation": "Removing duplicates on `customer_id` keeps the first row for each ID. 72 rows are exact copies and one more row shares an ID but differs in some spaces, so 73 rows go.",
+    "commonMistake": "Ticking every column. Rows that differ only by a stray space then count as different, and duplicates stay.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "remove-duplicates"
+    ]
+  },
+  {
+    "id": "excel-cleaning-002",
+    "module": "excel",
+    "topic": "cleaning",
+    "difficulty": "medium",
+    "language": "excel",
+    "question": "In `excel-cleaning.xlsx` (`customers_messy`), build a clean city column in K2 with one formula and fill it down. Then count how many rows hold the text `Nan` (a missing city that was typed as the word nan) after cleaning.",
+    "dataset": "none",
+    "hint": "TRIM fixes spaces and PROPER fixes capitals. COUNTIF is not case-sensitive.",
+    "solution": "In `K2`:\n\n```\n=PROPER(TRIM(F2))\n```\n\nDouble-click the fill handle to fill down to row 1273. Then count:\n\n```\n=COUNTIF(K2:K1273,\"Nan\")\n```\n\nExpected: **37** rows. After cleaning there are 21 distinct values: 20 real cities plus `Nan`. Treat `Nan` as missing, not as a city.",
+    "orderMatters": false,
+    "explanation": "TRIM removes extra spaces, PROPER makes `chennai` and `CHENNAI` the same. The word nan is junk from an export and must be treated as blank.",
+    "commonMistake": "Cleaning only with Find & Replace on one spelling. Variants such as `KOLKATA` and ` mumbai` get missed.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "trim",
+      "proper",
+      "countif"
+    ]
+  },
+  {
+    "id": "excel-cleaning-003",
+    "module": "excel",
+    "topic": "cleaning",
+    "difficulty": "medium",
+    "language": "excel",
+    "question": "In `excel-cleaning.xlsx` (`products_messy`), `product_name` (column C) has junk: asterisks, the trademark sign, tabs, non-breaking spaces, zero-width spaces and trailing ##. Write one formula in J2 that returns the clean name. What does it return for row 2? Then count how many rows changed.",
+    "dataset": "none",
+    "hint": "SUBSTITUTE removes one thing at a time. Use UNICHAR(8482) for the trademark sign, UNICHAR(8203) for the zero-width space, CHAR(160) for the non-breaking space, CHAR(9) for the tab.",
+    "solution": "In `J2`:\n\n```\n=TRIM(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(C2,\"*\",\"\"),UNICHAR(8482),\"\"),UNICHAR(8203),\"\"),CHAR(160),\" \"),CHAR(9),\" \"),\"##\",\"\"))\n```\n\nFill down to row 421. Row 2 returns **Masala Mandi Beverage 979**.\n\nTo count changed rows:\n\n```\n=SUMPRODUCT(--NOT(EXACT(C2:C421,J2:J421)))\n```\n\nExpected: **331** rows changed. All 420 clean names are unique.",
+    "orderMatters": false,
+    "explanation": "Each SUBSTITUTE removes one kind of junk. Non-breaking and tab characters become normal spaces so TRIM can then tidy the gaps. CLEAN alone does not remove CHAR(160) or the zero-width space.",
+    "commonMistake": "Using only TRIM. TRIM removes normal spaces but cannot touch CHAR(160), tabs or zero-width spaces.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 10,
+    "tags": [
+      "substitute",
+      "trim",
+      "unichar"
+    ]
+  },
+  {
+    "id": "excel-cleaning-004",
+    "module": "excel",
+    "topic": "cleaning",
+    "difficulty": "hard",
+    "language": "excel",
+    "question": "In `excel-cleaning.xlsx` (`customers_messy`), `signup_date` is text in five layouts: `2023-04-22`, `19/11/2024`, `15-Jun-2023`, `03.12.2022` and `Jun 20, 2024`. Slash and dot dates are day-month-year. Convert them to real dates in a helper column, remove duplicate customers, and count how many unique customers signed up in 2024.",
+    "dataset": "none",
+    "hint": "Test the 5th character and the 3rd character to find the layout. DATEVALUE can read the two month-name layouts in an English-language Excel.",
+    "solution": "Helper in `K2` (Microsoft 365 or Excel 2021; for older Excel replace LET with the repeated TRIM(H2)):\n\n```\n=LET(t,TRIM(H2),\n IF(MID(t,5,1)=\"-\",DATE(LEFT(t,4),MID(t,6,2),RIGHT(t,2)),\n IF(OR(MID(t,3,1)=\"/\",MID(t,3,1)=\".\"),DATE(RIGHT(t,4),MID(t,4,2),LEFT(t,2)),\n DATEVALUE(t))))\n```\n\nFill down and format K as Date. Then use **Data > Remove Duplicates** on `customer_id`, and in an empty cell:\n\n```\n=COUNTIFS(K2:K1200,\">=\"&DATE(2024,1,1),K2:K1200,\"<=\"&DATE(2024,12,31))\n```\n\n(Adjust the range to the rows left after de-duplication.)\n\nExpected: **501** unique customers signed up in 2024. Dates run from 2 July 2022 to 31 December 2024.",
+    "orderMatters": false,
+    "explanation": "Each layout has its own rule: ISO dates start with a four-digit year, slash and dot dates put the day first, and month-name dates are read by DATEVALUE. Remove duplicates first or you count repeat rows twice.",
+    "commonMistake": "Using DATEVALUE on everything. A date like 03.12.2022 can be read as 12 March in a US-style setup, which silently gives wrong months.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 15,
+    "tags": [
+      "dates",
+      "let",
+      "datevalue"
+    ]
+  }
+]

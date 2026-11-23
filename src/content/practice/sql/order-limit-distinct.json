@@ -1,0 +1,296 @@
+[
+ {
+  "id": "sql-order-limit-distinct-001",
+  "module": "sql",
+  "topic": "order-limit-distinct",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "Return the 5 cheapest products: `product_name` and `mrp`, ordered by `mrp` ascending then `product_id`.",
+  "dataset": "ecommerce",
+  "hint": "Sort ascending and add a tie-breaker.",
+  "solutionSql": "SELECT product_name, mrp FROM products ORDER BY mrp ASC, product_id LIMIT 5",
+  "orderMatters": true,
+  "explanation": "Ascending is the default. The tie-breaker makes the result repeatable.",
+  "commonMistake": "No tie-breaker, so ties may reorder.",
+  "interviewFrequency": "high",
+  "estimatedMinutes": 3,
+  "tags": [
+   "order",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "product_name",
+    "mrp"
+   ],
+   "rows": [
+    [
+     "Annapurna Dry Fruit 178",
+     59
+    ],
+    [
+     "Masala Mandi Dry Fruit 452",
+     69
+    ],
+    [
+     "FreshKhet Dry Fruit 944",
+     69
+    ],
+    [
+     "Annapurna Snack 398",
+     79
+    ],
+    [
+     "Desi Dhara Snack 545",
+     89
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-order-limit-distinct-002",
+  "module": "sql",
+  "topic": "order-limit-distinct",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "Return the 5 most recently hired employees: `employee_id`, `full_name`, `hire_date`. Order by `hire_date` descending, then `employee_id` descending.",
+  "dataset": "hr",
+  "hint": "DESC on both columns.",
+  "solutionSql": "SELECT employee_id, full_name, hire_date FROM employees ORDER BY hire_date DESC, employee_id DESC LIMIT 5",
+  "orderMatters": true,
+  "explanation": "DESC applies to each column it follows, so write it for both.",
+  "commonMistake": "Writing DESC once and expecting it to apply to both columns.",
+  "interviewFrequency": "high",
+  "estimatedMinutes": 3,
+  "tags": [
+   "order",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "employee_id",
+    "full_name",
+    "hire_date"
+   ],
+   "rows": [
+    [
+     2400,
+     "Prakash Tiwari",
+     "2024-11-28"
+    ],
+    [
+     2399,
+     "Riya Kulkarni",
+     "2024-11-28"
+    ],
+    [
+     2398,
+     "Sunita Jain",
+     "2024-11-28"
+    ],
+    [
+     2397,
+     "Abhishek Rathore",
+     "2024-11-28"
+    ],
+    [
+     2396,
+     "Diya Reddy",
+     "2024-11-26"
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-order-limit-distinct-003",
+  "module": "sql",
+  "topic": "order-limit-distinct",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "List the distinct `cuisine` values in `restaurants`, in alphabetical order.",
+  "dataset": "food_delivery",
+  "hint": "DISTINCT plus ORDER BY.",
+  "solutionSql": "SELECT DISTINCT cuisine FROM restaurants ORDER BY cuisine",
+  "orderMatters": true,
+  "explanation": "DISTINCT removes repeats. ORDER BY then sorts the unique list.",
+  "commonMistake": "Forgetting ORDER BY so the unique list is unordered.",
+  "interviewFrequency": "medium",
+  "estimatedMinutes": 3,
+  "tags": [
+   "order",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "cuisine"
+   ],
+   "rows": [
+    [
+     "Bengali"
+    ],
+    [
+     "Biryani"
+    ],
+    [
+     "Burgers"
+    ],
+    [
+     "Chinese"
+    ],
+    [
+     "Desserts"
+    ],
+    [
+     "Gujarati Thali"
+    ],
+    [
+     "Healthy"
+    ],
+    [
+     "Mughlai"
+    ],
+    [
+     "North Indian"
+    ],
+    [
+     "Pizza"
+    ],
+    [
+     "South Indian"
+    ],
+    [
+     "Street Food"
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-order-limit-distinct-004",
+  "module": "sql",
+  "topic": "order-limit-distinct",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "List the distinct advertising `channel` values in `campaigns`, alphabetically.",
+  "dataset": "marketing",
+  "hint": "Use DISTINCT.",
+  "solutionSql": "SELECT DISTINCT channel FROM campaigns ORDER BY channel",
+  "orderMatters": true,
+  "explanation": "Quick way to see the categories in a column.",
+  "commonMistake": "Using GROUP BY with no aggregate when DISTINCT is simpler.",
+  "interviewFrequency": "medium",
+  "estimatedMinutes": 3,
+  "tags": [
+   "order",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "channel"
+   ],
+   "rows": [
+    [
+     "Affiliate"
+    ],
+    [
+     "Email"
+    ],
+    [
+     "Google Display"
+    ],
+    [
+     "Google Search"
+    ],
+    [
+     "Influencer"
+    ],
+    [
+     "Meta Ads"
+    ],
+    [
+     "WhatsApp"
+    ],
+    [
+     "YouTube"
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-order-limit-distinct-005",
+  "module": "sql",
+  "topic": "order-limit-distinct",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "How many different banks appear in the `bank` column of `transactions`? Return `banks`.",
+  "dataset": "fintech",
+  "hint": "COUNT(DISTINCT ...).",
+  "solutionSql": "SELECT COUNT(DISTINCT bank) AS banks FROM transactions",
+  "orderMatters": false,
+  "explanation": "COUNT(DISTINCT col) counts unique non-NULL values.",
+  "commonMistake": "Using COUNT(bank), which counts all rows.",
+  "interviewFrequency": "medium",
+  "estimatedMinutes": 3,
+  "tags": [
+   "order",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "banks"
+   ],
+   "rows": [
+    [
+     8
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-order-limit-distinct-006",
+  "module": "sql",
+  "topic": "order-limit-distinct",
+  "difficulty": "medium",
+  "language": "sql",
+  "question": "Page 2 of stores when each page has 5 rows and stores are sorted by `carpet_area_sqft` descending then `store_id`: return `store_name` and `carpet_area_sqft` for rows 6 to 10.",
+  "dataset": "retail",
+  "hint": "LIMIT 5 OFFSET 5.",
+  "solutionSql": "SELECT store_name, carpet_area_sqft FROM stores ORDER BY carpet_area_sqft DESC, store_id LIMIT 5 OFFSET 5",
+  "orderMatters": true,
+  "explanation": "OFFSET skips rows. Page n with size s uses OFFSET (n-1)*s. In SQL Server use OFFSET 5 ROWS FETCH NEXT 5 ROWS ONLY.",
+  "commonMistake": "Using OFFSET 6 and skipping one row too many.",
+  "interviewFrequency": "medium",
+  "estimatedMinutes": 6,
+  "tags": [
+   "order",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "store_name",
+    "carpet_area_sqft"
+   ],
+   "rows": [
+    [
+     "Vasudha Supermarket - Malviya Nagar",
+     28700
+    ],
+    [
+     "Vasudha Supermarket - Dharampeth",
+     28500
+    ],
+    [
+     "Vasudha Supermarket - Gomti Nagar",
+     26400
+    ],
+    [
+     "Vasudha Supermarket - Vijay Nagar",
+     26100
+    ],
+    [
+     "Vasudha Supermarket - Velachery",
+     22100
+    ]
+   ]
+  }
+ }
+]

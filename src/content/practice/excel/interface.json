@@ -1,0 +1,62 @@
+[
+  {
+    "id": "excel-interface-001",
+    "module": "excel",
+    "topic": "interface",
+    "difficulty": "easy",
+    "language": "excel",
+    "question": "Open `excel-functions.xlsx` and go to the `orders` sheet. Without scrolling, use the keyboard to reach the last data row. Which row number is it, and what is the `total_amount` in that row?",
+    "dataset": "none",
+    "hint": "Click A1, then press the shortcut that jumps to the edge of the data.",
+    "solution": "Click cell `A1` and press `Ctrl + Down Arrow` (Mac: `Cmd + Down Arrow`). The cursor lands on `A2001`. Press `Ctrl + Right Arrow` along the header row first if you also want to see the last column (`M`).\n\nTo read the amount, press `Ctrl + G` (Go To, Mac: `Ctrl + G`), type `J2001` and press Enter.\n\n| Check | Expected |\n|---|---|\n| Last data row | 2001 (order_id 9999) |\n| total_amount in J2001 | 5,980.53 |",
+    "orderMatters": false,
+    "explanation": "Ctrl + Arrow jumps to the edge of a block of filled cells. 2,000 orders plus one header row means the last row is 2001.",
+    "commonMistake": "Using the scroll bar or the mouse wheel. It is slow and you can stop on the wrong row.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "shortcuts",
+      "navigation"
+    ]
+  },
+  {
+    "id": "excel-interface-002",
+    "module": "excel",
+    "topic": "interface",
+    "difficulty": "easy",
+    "language": "excel",
+    "question": "In `excel-functions.xlsx` (`orders` sheet), select the whole `total_amount` data column without typing a formula. Using only the status bar, read the count, sum and average of the column.",
+    "dataset": "none",
+    "hint": "Click the column letter, or click J2 and press Ctrl + Shift + Down Arrow. Look at the bottom-right of the window.",
+    "solution": "Click `J2`, then press `Ctrl + Shift + Down Arrow` (Mac: `Cmd + Shift + Down Arrow`). This selects `J2:J2001`. The status bar at the bottom shows the quick stats. If Sum or Count is missing, right-click the status bar and tick them.\n\n| Status bar item | Expected |\n|---|---|\n| Count | 2000 |\n| Sum | 10,886,866.45 |\n| Average | 5,443.43 |",
+    "orderMatters": false,
+    "explanation": "The status bar is a free calculator: it never changes the sheet. It is perfect for a quick sanity check before you write a formula.",
+    "commonMistake": "Selecting the whole column J (including the header). Count then still works on numbers only, but the habit is risky when the header is a number.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "status-bar",
+      "selection"
+    ]
+  },
+  {
+    "id": "excel-interface-003",
+    "module": "excel",
+    "topic": "interface",
+    "difficulty": "medium",
+    "language": "excel",
+    "question": "In `excel-functions.xlsx` (`orders` sheet), how many cells in the `coupon_code` column (data rows only) are blank? Use Go To Special, not a formula. Then confirm with a formula.",
+    "dataset": "none",
+    "hint": "Select G2:G2001, then Ctrl + G, then the Special button. The status bar will not count blanks, so think about what Count shows for non-blank cells.",
+    "solution": "Select `G2:G2001`. Press `Ctrl + G`, click **Special...**, choose **Blanks** and press OK. Excel highlights only the empty cells. To count them, check the Name Box or use the formula:\n\n```\n=COUNTBLANK(G2:G2001)\n```\n\nType it in any empty cell, for example `P1`.\n\n| Result | Expected |\n|---|---|\n| Blank coupon cells | 1647 |\n| Non-blank (status bar Count on G2:G2001) | 353 |",
+    "orderMatters": false,
+    "explanation": "2,000 orders minus 353 orders that used a coupon leaves 1,647 blanks. Go To Special is the fastest way to find blanks, formulas or errors.",
+    "commonMistake": "Selecting the whole column G. That adds over a million empty cells below the data to the blank count.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "go-to-special",
+      "blanks"
+    ]
+  }
+]

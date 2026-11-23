@@ -1,0 +1,210 @@
+[
+  {
+    "id": "sql-pattern-rfm-001",
+    "module": "sql",
+    "topic": "pattern-rfm",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "The CRM team starts an RFM project. For delivered orders (ignore exact duplicate rows) compute, per customer, `recency_days` (days from the last order date to 2024-12-31), `frequency` (number of orders), and `monetary` (sum of `total_amount`, rounded to 2 decimals). Return the 10 customers with the highest `monetary`, ordered by `monetary` descending, then `customer_id`. Columns: `customer_id`, `recency_days`, `frequency`, `monetary`.",
+    "dataset": "ecommerce",
+    "hint": "GROUP BY customer, MAX(order_date) for recency, COUNT for frequency, SUM for monetary.",
+    "solutionSql": "WITH o AS (SELECT DISTINCT order_id, customer_id, order_date, total_amount FROM orders WHERE order_status = 'Delivered'), rfm AS (SELECT customer_id, CAST(julianday('2024-12-31') - julianday(MAX(order_date)) AS INTEGER) AS recency_days, COUNT(*) AS frequency, ROUND(SUM(total_amount), 2) AS monetary FROM o GROUP BY customer_id) SELECT customer_id, recency_days, frequency, monetary FROM rfm ORDER BY monetary DESC, customer_id LIMIT 10",
+    "expectedOutput": {
+      "columns": [
+        "customer_id",
+        "recency_days",
+        "frequency",
+        "monetary"
+      ],
+      "rows": [
+        [
+          2668,
+          42,
+          6,
+          948870.83
+        ],
+        [
+          1183,
+          21,
+          26,
+          448465.24
+        ],
+        [
+          980,
+          10,
+          67,
+          360337.09
+        ],
+        [
+          614,
+          4,
+          44,
+          261324.15
+        ],
+        [
+          1327,
+          41,
+          37,
+          244046.64
+        ],
+        [
+          1261,
+          62,
+          21,
+          241157.88
+        ],
+        [
+          930,
+          11,
+          25,
+          226366.06
+        ],
+        [
+          942,
+          31,
+          32,
+          221287.83
+        ],
+        [
+          85,
+          60,
+          36,
+          218133.36
+        ],
+        [
+          475,
+          14,
+          53,
+          216256.3
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "RFM is three aggregates per customer: how recently (MAX of the date, compared with a fixed reference date), how often (COUNT) and how much (SUM). A fixed reference date, instead of today's date, keeps the result repeatable. The deduplicating CTE stops repeated order rows from inflating frequency and money.",
+    "commonMistake": "Using the current date for recency. The numbers then change every day and the answer can never be checked; an RFM report always fixes an 'as of' date.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 10,
+    "tags": [
+      "rfm",
+      "aggregation",
+      "dates"
+    ]
+  },
+  {
+    "id": "sql-pattern-rfm-002",
+    "module": "sql",
+    "topic": "pattern-rfm",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Score recency in five equal-sized groups. Using the same per-customer recency as an RFM analysis (delivered orders, ignore exact duplicate rows, reference date 2024-12-31), assign `r_score` with `NTILE(5)` so that the MOST recent customers get 5 and the least recent get 1 (break ties in recency by `customer_id`). Return `r_score`, `customers`, `min_recency`, `max_recency`, ordered by `r_score` descending.",
+    "dataset": "ecommerce",
+    "hint": "NTILE(5) OVER (ORDER BY recency_days DESC, customer_id): the biggest recency numbers (oldest) land in bucket 1.",
+    "solutionSql": "WITH o AS (SELECT DISTINCT order_id, customer_id, order_date, total_amount FROM orders WHERE order_status = 'Delivered'), rfm AS (SELECT customer_id, CAST(julianday('2024-12-31') - julianday(MAX(order_date)) AS INTEGER) AS recency_days, COUNT(*) AS frequency, ROUND(SUM(total_amount), 2) AS monetary FROM o GROUP BY customer_id) , scored AS (SELECT customer_id, recency_days, NTILE(5) OVER (ORDER BY recency_days DESC, customer_id) AS r_score FROM rfm) SELECT r_score, COUNT(*) AS customers, MIN(recency_days) AS min_recency, MAX(recency_days) AS max_recency FROM scored GROUP BY r_score ORDER BY r_score DESC",
+    "expectedOutput": {
+      "columns": [
+        "r_score",
+        "customers",
+        "min_recency",
+        "max_recency"
+      ],
+      "rows": [
+        [
+          5,
+          433,
+          0,
+          36
+        ],
+        [
+          4,
+          433,
+          36,
+          76
+        ],
+        [
+          3,
+          433,
+          76,
+          148
+        ],
+        [
+          2,
+          433,
+          148,
+          291
+        ],
+        [
+          1,
+          434,
+          291,
+          729
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "NTILE(5) splits the sorted customers into five buckets of nearly equal size. Sorting recency_days descending puts the longest-ago buyers in bucket 1 and the most recent in bucket 5, which matches the convention that a higher score is better. The min and max per bucket let you check that the buckets make sense.",
+    "commonMistake": "Sorting recency ascending. Then the most recent customers get score 1, so 'Champions' end up with the lowest score and every label you build later is upside down.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 10,
+    "tags": [
+      "rfm",
+      "ntile",
+      "scoring"
+    ]
+  },
+  {
+    "id": "sql-pattern-rfm-003",
+    "module": "sql",
+    "topic": "pattern-rfm",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Build RFM segments for delivered orders (ignore exact duplicate rows, reference date 2024-12-31). Score each of R, F and M from 1 to 3 with `NTILE(3)`, where 3 is best: recency ordered by `recency_days DESC`, frequency by `frequency`, monetary by `monetary`, each with `customer_id` as the final tie-breaker. Label customers: 'Champion' if r=3 and f=3; 'Loyal' if f=3 (and not a Champion); 'At risk' if r=1 and f>=2; 'New or promising' if r=3 and f=1; otherwise 'Others'. Use that order of rules. Return `segment`, `customers`, and `avg_monetary` (rounded to 2 decimals), ordered by `customers` descending, then `segment`.",
+    "dataset": "ecommerce",
+    "hint": "Compute three NTILE scores in one SELECT, then a CASE with the rules in the stated order, then GROUP BY segment.",
+    "solutionSql": "WITH o AS (SELECT DISTINCT order_id, customer_id, order_date, total_amount FROM orders WHERE order_status = 'Delivered'), rfm AS (SELECT customer_id, CAST(julianday('2024-12-31') - julianday(MAX(order_date)) AS INTEGER) AS recency_days, COUNT(*) AS frequency, ROUND(SUM(total_amount), 2) AS monetary FROM o GROUP BY customer_id) , sc AS (SELECT customer_id, monetary, NTILE(3) OVER (ORDER BY recency_days DESC, customer_id) AS r, NTILE(3) OVER (ORDER BY frequency, customer_id) AS f, NTILE(3) OVER (ORDER BY monetary, customer_id) AS m FROM rfm), seg AS (SELECT monetary, CASE WHEN r = 3 AND f = 3 THEN 'Champion' WHEN f = 3 THEN 'Loyal' WHEN r = 1 AND f >= 2 THEN 'At risk' WHEN r = 3 AND f = 1 THEN 'New or promising' ELSE 'Others' END AS segment FROM sc) SELECT segment, COUNT(*) AS customers, ROUND(AVG(monetary), 2) AS avg_monetary FROM seg GROUP BY segment ORDER BY customers DESC, segment",
+    "expectedOutput": {
+      "columns": [
+        "segment",
+        "customers",
+        "avg_monetary"
+      ],
+      "rows": [
+        [
+          "Others",
+          1003,
+          8477.48
+        ],
+        [
+          "Champion",
+          377,
+          60034.26
+        ],
+        [
+          "Loyal",
+          345,
+          40845.04
+        ],
+        [
+          "At risk",
+          284,
+          13265.15
+        ],
+        [
+          "New or promising",
+          157,
+          5778.62
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Each NTILE(3) gives a score from 1 to 3 on its own ordering. CASE checks conditions top to bottom and stops at the first match, so the order of the rules decides who is a Champion versus merely Loyal. Grouping by the label and averaging money shows whether the segments really differ in value, which is how you validate an RFM model.",
+    "commonMistake": "Putting WHEN f = 3 THEN 'Loyal' before the Champion rule. Every high-frequency customer then matches Loyal first and the Champion segment comes out empty.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 18,
+    "tags": [
+      "rfm",
+      "ntile",
+      "case",
+      "segments"
+    ]
+  }
+]

@@ -1,0 +1,301 @@
+---
+title: "GROUP BY: summaries per category"
+description: "Split rows into groups and calculate an aggregate for each group."
+module: sql
+order: 7
+estimatedMinutes: 40
+objectives:
+  - "Use GROUP BY with aggregate functions"
+  - "Group by more than one column"
+  - "Follow the rule: every non-aggregated column must be in GROUP BY"
+  - "Clean messy grouping keys before grouping"
+tags: ["sql", "group-by", "aggregates"]
+---
+
+## Learning objectives
+
+- Use `GROUP BY` with `COUNT`, `SUM`, `AVG`, `MIN` and `MAX`.
+- Group by several columns.
+- Know the rule for what may appear in `SELECT`.
+- Group by expressions and cleaned text.
+- Combine `WHERE`, `GROUP BY` and `ORDER BY` in one query.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+"Sales by city", "attrition by department", "failure rate by bank", "conversion by channel". These are all the same pattern: group and aggregate. Roughly half of all analyst SQL queries are a `GROUP BY` query. It is the heart of this job.
+</RealWorld>
+
+## Concept
+
+`GROUP BY` splits the rows into buckets, one per unique value of the grouping column, and then each aggregate is calculated **per bucket**.
+
+Imagine sorting a pile of payment slips into heaps by bank, then totalling each heap.
+
+```sql
+SELECT bank, COUNT(*) AS txns, SUM(amount) AS total
+FROM transactions
+GROUP BY bank;
+```
+
+You get one output row per bank.
+
+### The rule
+
+Every column in `SELECT` must be either:
+
+1. in the `GROUP BY` list, or
+2. inside an aggregate function.
+
+Why? Each output row represents a whole group. A plain column that is not grouped has many different values inside the group, so the database would not know which to show.
+
+### Several grouping columns
+
+`GROUP BY city, plan` makes one bucket per (city, plan) pair.
+
+### Grouping by an expression
+
+You can group by a calculation: `GROUP BY LOWER(TRIM(city))`, or by month with `strftime('%Y-%m', order_date)`. Repeat the expression in `SELECT`, or group by its alias (SQLite, MySQL and PostgreSQL allow alias or position in `GROUP BY`; SQL Server does not).
+
+### NULL groups
+
+NULLs form their own single group. All the NULL cities land together in one row.
+
+### Order of clauses
+
+```sql
+SELECT ...
+FROM ...
+WHERE ...        -- filters rows BEFORE grouping
+GROUP BY ...
+ORDER BY ...
+```
+
+<Tip>
+Think of two filters: `WHERE` removes rows before the heaps are made. `HAVING` (next lesson) removes whole heaps afterwards.
+</Tip>
+
+### GROUP BY versus DISTINCT
+
+Both give unique values. `GROUP BY` gives you aggregates for each unique value.
+
+## Worked examples
+
+### Example 1: orders by status
+
+<SqlPlayground dataset="ecommerce" query={`SELECT order_status,
+       COUNT(*) AS orders,
+       ROUND(AVG(total_amount), 2) AS avg_amount
+FROM orders
+GROUP BY order_status
+ORDER BY orders DESC;`} title="Orders per status" />
+
+**Output:**
+
+| order_status | orders | avg_amount |
+|---|---|---|
+| Delivered | 9357 | 5378.33 |
+| Cancelled | 574 | 6054.54 |
+| RTO | 169 | 5566.71 |
+
+
+### Example 2: two grouping columns
+
+Failure rate by payment app and transaction type.
+
+<SqlPlayground dataset="fintech" query={`SELECT payment_app,
+       txn_type,
+       COUNT(*) AS txns,
+       ROUND(100.0 * SUM(status = 'FAILED') / COUNT(*), 2) AS failure_pct
+FROM transactions
+GROUP BY payment_app, txn_type
+ORDER BY failure_pct DESC, payment_app, txn_type
+LIMIT 6;`} title="Failure rate by app and type" />
+
+**Output:**
+
+| payment_app | txn_type | txns | failure_pct |
+|---|---|---|---|
+| SabPay | Recharge | 220 | 4.09 |
+| QuickPaisa | Bill Pay | 706 | 3.82 |
+| QuickPaisa | P2M | 3015 | 3.35 |
+| NammaPay | Bill Pay | 438 | 3.2 |
+| NammaPay | Recharge | 283 | 3.18 |
+| PayZippy | P2P | 1732 | 3.18 |
+
+
+### Example 3: the messy-key problem
+
+Grouping subscription events by `event_name` should give 9 or so event types. Because some rows are in UPPERCASE, it returns more.
+
+<SqlPlayground dataset="subscription" query={`SELECT event_name, COUNT(*) AS events
+FROM events
+GROUP BY event_name
+ORDER BY event_name;`} title="Messy grouping key" />
+
+**Output:**
+
+| event_name | events |
+|---|---|
+| APP_OPEN | 96 |
+| CANCEL_SUBSCRIPTION | 10 |
+| CONTENT_VIEW | 95 |
+| PAYMENT_FAILED | 1 |
+| PAYMENT_SUCCESS | 12 |
+| RENEWAL_SUCCESS | 41 |
+| SEARCH | 29 |
+| SIGNUP | 58 |
+| TRIAL_EXPIRED | 23 |
+| TRIAL_START | 30 |
+| app_open | 9276 |
+| cancel_subscription | 679 |
+| content_view | 7773 |
+| payment_failed | 146 |
+| payment_success | 1183 |
+| renewal_success | 4092 |
+| search | 2301 |
+| signup | 5179 |
+| trial_expired | 2061 |
+| trial_start | 3298 |
+
+
+Each event appears twice (`signup` and `SIGNUP`). Now normalise the key with `LOWER`:
+
+<SqlPlayground dataset="subscription" query={`SELECT LOWER(event_name) AS event_name, COUNT(*) AS events
+FROM events
+GROUP BY LOWER(event_name)
+ORDER BY events DESC;`} title="Cleaned grouping key" />
+
+**Output:**
+
+| event_name | events |
+|---|---|
+| app_open | 9372 |
+| content_view | 7868 |
+| signup | 5237 |
+| renewal_success | 4133 |
+| trial_start | 3328 |
+| search | 2330 |
+
+Showing the first 6 of 10 rows.
+
+
+### Example 4: a full analyst-style query
+
+Which retail categories bring the most revenue, and how many units do they sell? Cleaned for the 100x outliers using a sensible cut-off.
+
+<SqlPlayground dataset="retail" query={`SELECT category,
+       COUNT(*) AS sale_lines,
+       SUM(quantity) AS units,
+       ROUND(SUM(net_amount_inr), 0) AS revenue_inr,
+       ROUND(AVG(net_amount_inr), 0) AS avg_line_inr
+FROM sales
+WHERE net_amount_inr < 100000
+GROUP BY category
+ORDER BY revenue_inr DESC;`} title="Revenue by category" />
+
+**Output:**
+
+| category | sale_lines | units | revenue_inr | avg_line_inr |
+|---|---|---|---|---|
+| Home & Kitchen | 3808 | 9946 | 8322067.0 | 2185.0 |
+| Grocery & Staples | 7635 | 19881 | 7141353.0 | 935.0 |
+| Apparel | 3869 | 10007 | 6888260.0 | 1780.0 |
+| Personal Care | 5090 | 13267 | 3429316.0 | 674.0 |
+| Electronics Accessories | 2639 | 7028 | 3259350.0 | 1235.0 |
+| Home Decor | 1307 | 3327 | 1668358.0 | 1276.0 |
+
+
+### Example 5: group by department
+
+Row counts, unique employees and exits per department id (department names come with joins later).
+
+<SqlPlayground dataset="hr" query={`SELECT department_id,
+       COUNT(*) AS rows_in_table,
+       COUNT(DISTINCT employee_id) AS unique_employees,
+       SUM(employment_status = 'Exited') AS exited
+FROM employees
+GROUP BY department_id
+ORDER BY department_id;`} title="Headcount by department" />
+
+**Output:**
+
+| department_id | rows_in_table | unique_employees | exited |
+|---|---|---|---|
+| 1 | 837 | 833 | 140 |
+| 2 | 352 | 349 | 110 |
+| 3 | 157 | 156 | 26 |
+| 4 | 441 | 440 | 148 |
+| 5 | 103 | 103 | 15 |
+| 6 | 97 | 96 | 16 |
+
+Showing the first 6 of 8 rows.
+
+
+Note `COUNT(DISTINCT employee_id)`: it protects us from the duplicate employee rows.
+
+## Common mistakes
+
+<CommonMistake>
+**Selecting a column that is not in GROUP BY** and not aggregated. Strict databases give an error. SQLite quietly picks any value, which is worse because the result looks fine and is wrong.
+</CommonMistake>
+
+<CommonMistake>
+**Grouping by messy text.** `Mumbai`, `mumbai` and ` Mumbai ` become three groups. Clean with `LOWER(TRIM(col))` first.
+</CommonMistake>
+
+<CommonMistake>
+**Putting an aggregate condition in WHERE.** Use `HAVING` (next lesson).
+</CommonMistake>
+
+<CommonMistake>
+**Forgetting ORDER BY.** The group order is not guaranteed. Sort the result to make it readable.
+</CommonMistake>
+
+<CommonMistake>
+**Counting duplicates.** If the table has repeated rows, group counts are inflated. Use `COUNT(DISTINCT id)` or dedupe first.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="group-by" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "SELECT city, COUNT(*) FROM users GROUP BY city returns:", options: ["One row total", "One row per distinct city", "One row per user", "An error"], answer: 1, explanation: "GROUP BY makes one output row per unique value of the grouping column." },
+  { q: "Which query is valid in standard SQL?", options: ["SELECT city, plan, COUNT(*) FROM t GROUP BY city", "SELECT city, plan, COUNT(*) FROM t GROUP BY city, plan", "SELECT city, COUNT(*) FROM t", "SELECT COUNT(*), city FROM t WHERE COUNT(*) > 1"], answer: 1, explanation: "Every non-aggregated column must be listed in GROUP BY." },
+  { q: "How do NULL values behave in GROUP BY?", options: ["They are dropped", "They form one group together", "Each NULL is its own group", "They cause an error"], answer: 1, explanation: "All NULLs are put in a single group." },
+  { q: "Which runs first?", options: ["GROUP BY, then WHERE", "WHERE, then GROUP BY", "ORDER BY, then WHERE", "They run together"], answer: 1, explanation: "WHERE filters rows, then the remaining rows are grouped." },
+  { q: "Why use LOWER(TRIM(city)) in GROUP BY?", options: ["It speeds up the query", "It merges variants like ' Pune' and 'pune'", "It removes NULLs", "It sorts the cities"], answer: 1, explanation: "Cleaning the key makes equal cities fall into one group." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Almost every SQL interview has a GROUP BY question. Interviewers watch for: correct grain (what does one output row mean?), NULL groups, and double counting.
+</InterviewAlert>
+
+<InterviewQ q="Why must every non-aggregated column in SELECT appear in GROUP BY?">
+Each output row stands for a whole group of input rows. A column outside GROUP BY can have different values inside that group, so the database would not know which one to show. Strict databases (PostgreSQL, SQL Server, MySQL with ONLY_FULL_GROUP_BY) raise an error. SQLite allows it and returns an arbitrary row's value, which is a trap.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between WHERE and HAVING?">
+`WHERE` filters individual rows before grouping and cannot use aggregates. `HAVING` filters groups after aggregation and can use aggregates. Use `WHERE` whenever a condition can be applied to raw rows, because it reduces the work early.
+</InterviewQ>
+
+<InterviewQ q="Your GROUP BY on city returns 40 rows but the company has 20 cities. What do you check?">
+Messy text: different casing, leading or trailing spaces, NULLs, or spelling variants. I would run `SELECT DISTINCT city` to see the variants, then group by `LOWER(TRIM(city))` or map values with a CASE expression.
+</InterviewQ>
+
+## Key takeaways
+
+- `GROUP BY` makes one output row per group and aggregates inside each group.
+- Every non-aggregated `SELECT` column must be in `GROUP BY`.
+- NULLs form one group. Messy text makes extra groups, so clean the key first.
+- `WHERE` filters rows before grouping. Add `ORDER BY` to make results readable.
+- Always ask: what does one row of my result represent?
+
+## Further reading
+
+<FurtherReading ids={["sqlbolt", "mode-sql", "sqlite-docs"]} />

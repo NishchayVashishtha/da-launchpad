@@ -1,0 +1,306 @@
+---
+title: "Window functions I: OVER, PARTITION BY, ROW_NUMBER, RANK"
+description: "Calculate across related rows without collapsing them: ranking, top-N per group and window vs GROUP BY."
+module: sql
+order: 18
+estimatedMinutes: 50
+objectives:
+  - "Explain what a window function is and how it differs from GROUP BY"
+  - "Write OVER (PARTITION BY ... ORDER BY ...) correctly"
+  - "Choose between ROW_NUMBER, RANK and DENSE_RANK when there are ties"
+  - "Pick the top N rows in each group using a window function inside a CTE"
+  - "Know why a window function cannot be used directly in WHERE"
+tags: ["sql", "window-functions", "ranking"]
+---
+
+## Learning objectives
+
+- Explain what a window function is and how it differs from GROUP BY
+- Write OVER (PARTITION BY ... ORDER BY ...) correctly
+- Choose between ROW_NUMBER, RANK and DENSE_RANK when there are ties
+- Pick the top N rows in each group using a window function inside a CTE
+- Know why a window function cannot be used directly in WHERE
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Window functions are the single biggest step-up between a "basic" and a "good" SQL candidate. "Top 3 products in each category", "rank agents by tickets closed in each city", "each customer's latest order": all of them need a window function. Almost every Indian analytics-company SQL round (product companies, fintech, consulting analytics) has at least one question of this type, and it is the first thing interviewers use to separate people who memorised SELECT from people who can think in sets.
+</RealWorld>
+
+## Concept
+
+### The problem GROUP BY cannot solve
+
+`GROUP BY` squeezes many rows into one row per group. That is perfect for "total sales per city". But what if you want **every restaurant row, and next to it the average of its city**? Or "which restaurant is the slowest in its own city"? GROUP BY has thrown away the individual rows, so you cannot show them.
+
+A **window function** calculates a value across a set of related rows (the "window") but **keeps every original row**. The result is one extra column on each row.
+
+Analogy: a class teacher has the mark sheet of 40 students. GROUP BY is writing one line, "Section A average = 62". A window function is writing, next to every student's name, "your mark, the section average, and your rank in the section". Nobody disappears from the sheet.
+
+### The syntax
+
+```sql
+function_name(...) OVER (
+    PARTITION BY column_list     -- optional: which rows belong to the same window
+    ORDER BY column_list         -- optional (needed for ranking): order inside the window
+)
+```
+
+- `OVER (...)` is what makes a function a window function. Without it, `AVG(x)` is an ordinary aggregate.
+- `PARTITION BY` splits the rows into independent groups, like GROUP BY does, but without collapsing them. Leave it out and the whole table is one window.
+- `ORDER BY` inside `OVER` sorts the rows within each partition. Ranking needs it because "first" only has meaning once there is an order. It does not sort your final output. For that you still need an outer `ORDER BY`.
+
+<FormulaCard title="Window anatomy">
+`SUM(amount) OVER (PARTITION BY city ORDER BY order_date)`
+
+function: SUM, partition: one window per city, order: oldest to newest inside each city.
+</FormulaCard>
+
+### Aggregates as window functions
+
+Every aggregate you know (`SUM`, `AVG`, `COUNT`, `MIN`, `MAX`) becomes a window function when you add `OVER`. `AVG(price) OVER (PARTITION BY category)` shows each product's category average on that product's row. That makes comparisons such as "price minus category average" a one-liner.
+
+### The three ranking functions
+
+All three number the rows of a partition according to the `ORDER BY` in `OVER`. They differ only when two rows tie.
+
+| Function | Tie behaviour | Example for scores 90, 85, 85, 70 |
+|---|---|---|
+| `ROW_NUMBER()` | Never repeats. Ties get different numbers, picked arbitrarily unless you add a tie-breaker | 1, 2, 3, 4 |
+| `RANK()` | Ties share a rank, then the next rank **skips** | 1, 2, 2, 4 |
+| `DENSE_RANK()` | Ties share a rank, the next rank does **not** skip | 1, 2, 2, 3 |
+
+Think of a race. `RANK` is what sports do: two silver medals, no bronze, next person is 4th. `DENSE_RANK` gives the next person 3rd place. `ROW_NUMBER` is just the order in which people crossed the line, a photo finish is broken arbitrarily.
+
+<Tip>
+Rule of thumb: need exactly one row per group (latest, top 1, dedupe)? Use `ROW_NUMBER`. Need "the Nth highest value" even when values repeat? Use `DENSE_RANK`. Need to mimic a leaderboard with gaps? Use `RANK`.
+</Tip>
+
+### Why you cannot filter on a window function directly
+
+The logical order of a query is: `FROM` then `WHERE` then `GROUP BY` then `HAVING` then **window functions** then `SELECT` then `ORDER BY`. Window functions are calculated after `WHERE`, so `WHERE rn = 1` does not know about `rn` yet. The standard fix: compute the rank in a subquery or CTE, and filter in the outer query.
+
+```sql
+WITH ranked AS (
+    SELECT ..., ROW_NUMBER() OVER (PARTITION BY g ORDER BY x DESC) AS rn
+    FROM t
+)
+SELECT * FROM ranked WHERE rn <= 3;
+```
+
+This "rank in a CTE, filter outside" pattern is the **top N per group** pattern. You will use it for years.
+
+### Window versus GROUP BY at a glance
+
+| | GROUP BY | Window function |
+|---|---|---|
+| Rows in the result | One per group | Same as the input |
+| Can show detail columns next to the aggregate | No | Yes |
+| Can rank, number, compare to neighbours | No | Yes |
+| Filter the result | HAVING | Wrap in a CTE, then WHERE |
+
+## Worked examples
+
+### Example 1: a window average next to every row
+
+Each Pune restaurant with the average prep time of Pune and the number of restaurants in the city. Nothing is collapsed: the same 6 restaurants are listed, each with two extra columns. (The city text in this table is a little messy, so only rows spelt exactly `Pune` match. Lesson 21 fixes that.)
+
+<SqlPlayground dataset="food_delivery" query={`SELECT restaurant_name,
+       city,
+       avg_prep_minutes,
+       ROUND(AVG(avg_prep_minutes) OVER (PARTITION BY city), 1) AS city_avg,
+       COUNT(*) OVER (PARTITION BY city) AS restaurants_in_city
+FROM restaurants
+WHERE city = 'Pune'
+ORDER BY restaurant_id
+LIMIT 6;`} title="Window average per city" />
+
+**Output:**
+
+| restaurant_name | city | avg_prep_minutes | city_avg | restaurants_in_city |
+|---|---|---|---|---|
+| Punjabi Hub | Pune | 18 | 16.8 | 43 |
+| Dilli Express | Pune | 20 | 16.8 | 43 |
+| Punjabi Magic | Pune | 14 | 16.8 | 43 |
+| Biryani Corner | Pune | 14 | 16.8 | 43 |
+| Annapoorna Rasoi | Pune | 17 | 16.8 | 43 |
+| Zaika Bhavan | Pune | 16 | 16.8 | 43 |
+
+`PARTITION BY city` made one window per city. Every row of the same city sees the same `city_avg`. A `GROUP BY city` would have returned a single row for Pune and lost the restaurant names.
+
+### Example 2: ROW_NUMBER, RANK and DENSE_RANK side by side
+
+Rank Pune restaurants from slowest to fastest kitchen. Many restaurants share the same prep time, so this is a perfect tie demo. For `ROW_NUMBER` we add `restaurant_id` as a tie-breaker so the result is repeatable.
+
+<SqlPlayground dataset="food_delivery" query={`SELECT restaurant_name,
+       avg_prep_minutes,
+       ROW_NUMBER() OVER (ORDER BY avg_prep_minutes DESC, restaurant_id) AS row_num,
+       RANK()       OVER (ORDER BY avg_prep_minutes DESC) AS rnk,
+       DENSE_RANK() OVER (ORDER BY avg_prep_minutes DESC) AS dense_rnk
+FROM restaurants
+WHERE city = 'Pune'
+ORDER BY row_num
+LIMIT 8;`} title="Ranking functions with ties" />
+
+**Output:**
+
+| restaurant_name | avg_prep_minutes | row_num | rnk | dense_rnk |
+|---|---|---|---|---|
+| Royal Magic | 26 | 1 | 1 | 1 |
+| Curry House | 24 | 2 | 2 | 2 |
+| Royal Bhavan | 23 | 3 | 3 | 3 |
+| Biryani Point | 22 | 4 | 4 | 4 |
+| Masala Corner | 22 | 5 | 4 | 4 |
+| Kolkata Junction | 21 | 6 | 6 | 5 |
+| Dilli Express | 20 | 7 | 7 | 6 |
+| Punjabi Kitchen | 20 | 8 | 7 | 6 |
+
+Look at the rows with 22 minutes. `row_num` gives 4 and 5. `rnk` gives 4 and 4, then the next row jumps to 6 (rank 5 is skipped). `dense_rnk` gives 4 and 4, then 5. Same data, three different answers, so choose deliberately.
+
+### Example 3: top 1 per group with ROW_NUMBER in a CTE
+
+The marketing head wants the single biggest-budget campaign in each channel. Rank inside a CTE, then keep rank 1. The tie-breaker `campaign_id` makes the choice deterministic if two campaigns have the same budget.
+
+<SqlPlayground dataset="marketing" query={`WITH ranked AS (
+    SELECT channel,
+           campaign_name,
+           budget_inr,
+           ROW_NUMBER() OVER (
+               PARTITION BY channel
+               ORDER BY budget_inr DESC, campaign_id
+           ) AS rn
+    FROM campaigns
+)
+SELECT channel, campaign_name, budget_inr
+FROM ranked
+WHERE rn = 1
+ORDER BY channel;`} title="Biggest budget per channel" />
+
+**Output:**
+
+| channel | campaign_name | budget_inr |
+|---|---|---|
+| Affiliate | Navratri Fashion Affiliates | 2000.0 |
+| Email | Diwali Dhamaka 2023 - Email | 0.0 |
+| Google Display | Monsoon Mania 2024 - Display | 6000.0 |
+| Google Search | IPL 2024 Search Always-On | 32000.0 |
+| Influencer | Influencer Mega Reach Oct-24 | 40000.0 |
+| Meta Ads | Summer Cooler Meta Carousel | 12000.0 |
+| WhatsApp | Summer Sale WhatsApp | 1000.0 |
+| YouTube | IPL 2024 YouTube Brand Burst | 10000.0 |
+
+To get the top 3 per channel, change `rn = 1` to `rn <= 3`. Nothing else changes.
+
+### Example 4: Nth highest per group with DENSE_RANK
+
+Find the top two distinct pay levels in each department using each employee's latest salary record. We ignore the five 100x data-entry outliers (annual CTC of one crore or more), and use `DISTINCT` to protect from duplicate employee rows. We use `DENSE_RANK` so that two people on the same pay both count as 'rank 1' and the second level is still rank 2.
+
+<SqlPlayground dataset="hr" query={`WITH latest AS (
+    SELECT employee_id, annual_ctc,
+           ROW_NUMBER() OVER (PARTITION BY employee_id ORDER BY effective_date DESC) AS rn
+    FROM salaries
+    WHERE annual_ctc < 10000000
+),
+staff AS (
+    SELECT DISTINCT employee_id, department_id, job_title FROM employees
+),
+ranked AS (
+    SELECT s.department_id, s.employee_id, s.job_title, l.annual_ctc,
+           DENSE_RANK() OVER (PARTITION BY s.department_id ORDER BY l.annual_ctc DESC) AS pay_rank
+    FROM staff s
+    JOIN latest l ON l.employee_id = s.employee_id AND l.rn = 1
+)
+SELECT *
+FROM ranked
+WHERE pay_rank <= 2
+ORDER BY department_id, pay_rank, employee_id
+LIMIT 8;`} title="Top two salary levels per department" />
+
+**Output:**
+
+| department_id | employee_id | job_title | annual_ctc | pay_rank |
+|---|---|---|---|---|
+| 1 | 144 | QA Engineer | 7751000.0 | 1 |
+| 1 | 1252 | DevOps Engineer | 7446000.0 | 2 |
+| 2 | 275 | Sales Executive | 6273000.0 | 1 |
+| 2 | 210 | Sales Executive | 5892000.0 | 2 |
+| 3 | 505 | Marketing Executive | 5330000.0 | 1 |
+| 3 | 318 | Content Specialist | 5055000.0 | 2 |
+| 4 | 1074 | Team Lead Support | 3324000.0 | 1 |
+| 4 | 1747 | Customer Success Associate | 3094000.0 | 2 |
+
+This query uses two windows: one `ROW_NUMBER` to pick each employee's latest salary row, and one `DENSE_RANK` to rank pay inside each department. Real analyst queries often stack window functions like this.
+
+## Common mistakes
+
+<CommonMistake>
+**Using a window function in WHERE.** `WHERE ROW_NUMBER() OVER (...) = 1` is an error because windows are calculated after `WHERE`. Wrap the query in a CTE or subquery and filter outside.
+</CommonMistake>
+
+<CommonMistake>
+**Using ROW_NUMBER without a tie-breaker.** If two rows tie on the `ORDER BY` column, which one gets 1 is arbitrary and can change between runs. Add a unique column (an id) at the end of the `ORDER BY` inside `OVER`.
+</CommonMistake>
+
+<CommonMistake>
+**Forgetting PARTITION BY.** Without it, the whole table is a single window, so you get one global ranking instead of a ranking per city or per category. The query runs fine and the numbers are plausible, which makes it a silent bug.
+</CommonMistake>
+
+<CommonMistake>
+**Choosing RANK when you want 'Nth highest'.** With ties, `RANK` can skip numbers, so `WHERE rnk = 2` may return nothing at all. Use `DENSE_RANK` for Nth-highest-value questions.
+</CommonMistake>
+
+<CommonMistake>
+**Expecting the OVER ORDER BY to sort the output.** It only orders rows inside each window. Add an outer `ORDER BY` to control the order of the result.
+</CommonMistake>
+
+<CommonMistake>
+**Mixing up GROUP BY and window results.** If your row count did not change after adding `OVER`, that is correct. If you need fewer rows, filter with a CTE or use GROUP BY instead.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="window-ranking" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What is the main difference between `AVG(x) OVER (PARTITION BY g)` and `AVG(x)` with `GROUP BY g`?", options: ["The window version keeps every input row; GROUP BY returns one row per group", "The window version is faster", "GROUP BY keeps every input row", "There is no difference"], answer: 0, explanation: "A window function adds a calculated column to each existing row. GROUP BY collapses the rows." },
+  { q: "Scores are 90, 85, 85, 70 in descending order. What does DENSE_RANK give?", options: ["1, 2, 3, 4", "1, 2, 2, 4", "1, 2, 2, 3", "1, 1, 2, 3"], answer: 2, explanation: "Tied rows share a rank and the next rank follows without a gap: 1, 2, 2, 3. RANK would give 1, 2, 2, 4." },
+  { q: "Which is the correct way to keep only the top-ranked row per group?", options: ["WHERE ROW_NUMBER() OVER (...) = 1", "Compute the row number in a CTE, then WHERE rn = 1 in the outer query", "HAVING ROW_NUMBER() = 1", "GROUP BY rn"], answer: 1, explanation: "Window functions are evaluated after WHERE, so filter in an outer query." },
+  { q: "What does PARTITION BY do inside OVER?", options: ["Sorts the final output", "Splits rows into independent windows without collapsing them", "Removes duplicate rows", "Limits the number of rows returned"], answer: 1, explanation: "Each partition is its own window; ranks restart and aggregates are computed per partition." },
+  { q: "You need exactly one row per customer (the biggest order). Which function is the safest?", options: ["RANK", "DENSE_RANK", "ROW_NUMBER with a tie-breaker", "NTILE"], answer: 2, explanation: "RANK and DENSE_RANK can return several rows on ties. ROW_NUMBER with a unique tie-breaker always gives exactly one." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Window functions and top-N-per-group are among the most asked SQL interview topics. Expect 'second highest salary per department' or 'top 3 per category'. Interviewers check three things: the right partition, the right ranking function for ties, and that you filter in an outer query.
+</InterviewAlert>
+
+<InterviewQ q="Explain the difference between ROW_NUMBER, RANK and DENSE_RANK.">
+All three number rows in a window according to ORDER BY. `ROW_NUMBER` gives unique numbers, breaking ties arbitrarily. `RANK` gives tied rows the same number and then skips (1, 2, 2, 4). `DENSE_RANK` gives tied rows the same number without skipping (1, 2, 2, 3). I use `ROW_NUMBER` for dedupe and top-1, and `DENSE_RANK` for the Nth highest value.
+</InterviewQ>
+
+<InterviewQ q="How do you get the top 3 products by revenue in each category?">
+Aggregate revenue per product first (GROUP BY). Then, in a CTE, apply `ROW_NUMBER()` or `DENSE_RANK()` with `PARTITION BY category ORDER BY revenue DESC`. In the outer query filter `rank <= 3`. I would choose `DENSE_RANK` if the business wants all products tied at the third place, `ROW_NUMBER` if they want exactly three rows.
+</InterviewQ>
+
+<InterviewQ q="Why can't you use a window function in the WHERE clause?">
+Logical execution order is FROM, WHERE, GROUP BY, HAVING, window functions, SELECT, ORDER BY. WHERE runs before windows exist, so it cannot see their results. Put the window in a subquery or CTE and filter in the outer query. Some databases (Snowflake, BigQuery, Databricks) offer `QUALIFY` for this, but SQLite, MySQL and PostgreSQL do not.
+</InterviewQ>
+
+<InterviewQ q="When would you choose a window function over GROUP BY?">
+When I need to keep row-level detail next to a group-level number (percent of group total, difference from group average), or when I need ranking or neighbour comparisons. If I only need one summary row per group, GROUP BY is simpler and usually cheaper.
+</InterviewQ>
+
+## Key takeaways
+
+- A window function calculates over related rows but keeps every row. GROUP BY collapses them.
+- `OVER (PARTITION BY ... ORDER BY ...)`: partition makes the windows, order sorts inside each window.
+- `ROW_NUMBER` is unique, `RANK` skips after ties, `DENSE_RANK` does not skip.
+- Top N per group means rank in a CTE, then filter `rn <= N` outside.
+- Always add a unique tie-breaker to ROW_NUMBER and a final ORDER BY to the query.
+
+## Further reading
+
+<FurtherReading ids={["sqlbolt", "mode-sql", "sqlite-docs"]} />

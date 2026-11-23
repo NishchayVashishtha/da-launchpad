@@ -1,0 +1,355 @@
+---
+title: "Joins I: INNER and LEFT JOIN"
+description: "Combine two tables on a key, understand how rows multiply, and join safely on messy data."
+module: sql
+order: 13
+estimatedMinutes: 55
+objectives:
+  - "Write INNER JOIN and LEFT JOIN with a correct ON condition"
+  - "Predict how many rows a join returns"
+  - "Spot and prevent row multiplication"
+  - "Join three or more tables in one query"
+  - "Handle NULL keys and duplicate rows when joining messy data"
+tags: ["sql", "joins", "inner-join", "left-join"]
+---
+
+## Learning objectives
+
+- Explain why data is split into several tables, and how a join puts it back together.
+- Write `INNER JOIN` and `LEFT JOIN` using table aliases.
+- Predict the row count of a join before you run it.
+- Recognise row multiplication (fan-out) and know three ways to prevent it.
+- Use `ON` versus `WHERE` correctly in a `LEFT JOIN`.
+- Join on messy data: duplicate rows, NULL keys and inconsistent text.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Real company data never sits in one table. A fintech keeps users, merchants and transactions separately. An e-commerce company keeps customers, orders, items, payments and returns separately. Almost every business question ("which city has the most returns?", "which customers never ordered?") needs two or more tables. Joins are the most tested topic in SQL interviews, and the most common source of silently wrong numbers in real reports. If you learn only one thing from this module, learn to count rows before and after a join.
+</RealWorld>
+
+## Concept
+
+### Why tables are split
+
+Imagine a Swiggy-style app that stored the customer's name, phone and city inside every order row. If one customer places 200 orders, the same name and phone are saved 200 times. When the phone number changes, you must fix 200 rows. So designers store each fact once:
+
+- `customers` holds one row per customer.
+- `orders` holds one row per order and stores only the `customer_id`.
+
+That `customer_id` in `orders` is a **foreign key**. It points to the **primary key** of `customers`. A **join** follows that pointer and glues the matching rows side by side.
+
+### The anatomy of a join
+
+```sql
+SELECT o.order_id, c.full_name
+FROM orders AS o
+INNER JOIN customers AS c ON c.customer_id = o.customer_id;
+```
+
+- `FROM orders AS o` is the left table. `AS o` gives it a short name, an **alias**.
+- `INNER JOIN customers AS c` is the right table.
+- `ON c.customer_id = o.customer_id` is the **join condition**, also called the join key match. For each order row, the database looks for customer rows where the condition is true.
+- Write `table.column` (for example `o.order_id`) so there is no confusion when both tables have a column of the same name.
+
+### INNER JOIN: only the matches
+
+Think of two guest lists at a wedding, one from the bride's side and one from the groom's side. An `INNER JOIN` keeps only the people present on both lists. A row that has no partner on the other side disappears from the result.
+
+### LEFT JOIN: keep everything from the left
+
+A `LEFT JOIN` keeps **every row of the left table**. When a left row has a match, you get the right-hand columns. When it has none, the right-hand columns are filled with `NULL`. This is the join to use when you ask "show me all customers, and their orders if any".
+
+| Join | Left row with no match | Right row with no match |
+|---|---|---|
+| `INNER JOIN` | dropped | dropped |
+| `LEFT JOIN` | kept, right columns NULL | dropped |
+
+(`INNER JOIN` can be written as just `JOIN`. They mean the same. `LEFT JOIN` is the short form of `LEFT OUTER JOIN`.)
+
+### How many rows will a join return?
+
+This is the key idea. For each left row, the database finds **all** matching right rows and produces **one output row per match**.
+
+- If a left row matches exactly 1 right row, you get 1 output row.
+- If it matches 3 right rows, you get 3 output rows. The left columns are repeated.
+- If it matches 0 rows, an `INNER JOIN` gives nothing and a `LEFT JOIN` gives 1 row with NULLs.
+
+So the relationship type decides the row count:
+
+| Relationship | Example | Join result grain |
+|---|---|---|
+| one-to-one | user and user profile | same as either table |
+| many-to-one | orders to customers | same as the "many" table (orders) |
+| one-to-many | customers to orders | one row per order, customer repeated |
+| many-to-many | students and courses | rows multiply, handle with care |
+
+**Row multiplication** (also called fan-out) happens when you join a table to a table that has several matches per key and then add up a column from the first table. Each repeat is counted again, so the total is inflated. This is the number-one join bug in analyst work.
+
+<FormulaCard title="Before-and-after rule">
+After every join, compare `COUNT(*)` (and the number of distinct keys) before and after. For a many-to-one join like orders to customers, the row count must stay the same as the orders table. If it grows, the right table has duplicate keys.
+</FormulaCard>
+
+### Join keys on messy data
+
+Our practice datasets are deliberately messy, like real ones:
+
+- **Duplicate rows.** `customers` has 20 exact duplicate rows, so `customer_id` is not unique. Joining orders to customers repeats those customers' orders.
+- **NULL keys.** `transactions.merchant_id` is NULL for person-to-person transfers. A NULL never equals anything, not even another NULL, so those rows cannot match in a join.
+- **Text keys with bad casing or spaces.** If you ever join on text like city or SKU code, `'Pune'` does not equal `' pune'`. Clean both sides with `LOWER(TRIM(...))` in the `ON`.
+
+<Tip>
+Before you join, ask three questions about the key on each side: Is it unique? Can it be NULL? Is it clean? Run `SELECT COUNT(*), COUNT(DISTINCT key), COUNT(key) FROM table` to answer all three at once.
+</Tip>
+
+### ON versus WHERE in a LEFT JOIN
+
+In a `LEFT JOIN`, a condition in `ON` decides **which right rows match**. A condition in `WHERE` is applied **after** the join and removes finished rows. If you filter on a right-table column in `WHERE`, the NULL rows (the unmatched left rows) are removed, and your `LEFT JOIN` quietly behaves like an `INNER JOIN`. Put right-table filters in `ON` when you want to keep the unmatched left rows.
+
+## Worked examples
+
+### Example 1: orders with customer details
+
+The simplest join: attach the customer's name and city to each order.
+
+<SqlPlayground dataset="ecommerce" query={`SELECT o.order_id, c.full_name, c.city, o.order_status, o.total_amount
+FROM orders AS o
+INNER JOIN customers AS c ON c.customer_id = o.customer_id
+ORDER BY o.order_id
+LIMIT 5;`} title="Orders with customer details" />
+
+**Output:**
+
+| order_id | full_name | city | order_status | total_amount |
+|---|---|---|---|---|
+| 1 | Sakshi Sen |  surat   | Cancelled | 5542.95 |
+| 2 | Aarav Agarwal | Mumbai | Delivered | 339.68 |
+| 3 | Rekha Agarwal | Lucknow  | Delivered | 2599.2 |
+| 4 | Sneha Yadav | Indore | Delivered | 5124.48 |
+| 5 | Fatima Das | Ahmedabad | Delivered | 2419.57 |
+
+
+Each order now carries its customer's details. Notice the city column: `' surat  '` has stray spaces and `Lucknow ` has a trailing space. Joining worked because the key (`customer_id`) is a clean number. The messy text is a problem for later grouping, not for the join.
+
+### Example 2: count rows before and after
+
+A good habit is to prove the join did not change the grain. Here it did.
+
+<SqlPlayground dataset="ecommerce" query={`SELECT (SELECT COUNT(*) FROM orders) AS orders_rows,
+       (SELECT COUNT(DISTINCT order_id) FROM orders) AS distinct_orders,
+       COUNT(*) AS joined_rows
+FROM orders AS o
+INNER JOIN customers AS c ON c.customer_id = o.customer_id;`} title="Row counts before and after a join" />
+
+**Output:**
+
+| orders_rows | distinct_orders | joined_rows |
+|---|---|---|
+| 10100 | 10000 | 10132 |
+
+
+`orders` has 10,100 rows but only 10,000 distinct order ids (about 100 are exact duplicates). The join returns 10,132. That is 32 more than the table itself. Why? Twenty customers appear twice in `customers`, so every order of those customers is returned twice. If you now ran `SUM(total_amount)` on this join, the total would be too high. The fix is to remove duplicates first (with `SELECT DISTINCT` in a subquery, covered in the subqueries and CTE lessons) or to count distinct ids.
+
+### Example 3: LEFT JOIN to find who is missing
+
+Which customers have never placed an order? Start from `customers`, left join `orders`, and keep rows where no order was found.
+
+<SqlPlayground dataset="ecommerce" query={`SELECT COUNT(DISTINCT c.customer_id) AS customers_without_orders,
+       (SELECT COUNT(DISTINCT customer_id) FROM customers) AS all_customers
+FROM customers AS c
+LEFT JOIN orders AS o ON o.customer_id = c.customer_id
+WHERE o.order_id IS NULL;`} title="Customers who never ordered" />
+
+**Output:**
+
+| customers_without_orders | all_customers |
+|---|---|
+| 2278 | 4500 |
+
+
+<SqlPlayground dataset="ecommerce" query={`SELECT DISTINCT c.customer_id, c.full_name, c.city, c.signup_date
+FROM customers AS c
+LEFT JOIN orders AS o ON o.customer_id = c.customer_id
+WHERE o.order_id IS NULL
+ORDER BY c.customer_id
+LIMIT 5;`} title="A few customers with no orders" />
+
+**Output:**
+
+| customer_id | full_name | city | signup_date |
+|---|---|---|---|
+| 2 | Ramesh Patel | Chennai | 2022-07-01 |
+| 8 | Kunal Thakur | Surat | 2022-07-02 |
+| 9 | Meera Kulkarni | Chennai | 2022-07-02 |
+| 10 | Radhika Menon | Hyderabad | 2022-07-02 |
+| 12 | Ravi Malhotra | Hyderabad | 2022-07-02 |
+
+
+About half of the registered customers have never ordered. That is a real marketing insight: a large pool for a first-order coupon. We tested `o.order_id IS NULL`. Never write `o.order_id = NULL`, because comparing with NULL gives "unknown", never true. We used `COUNT(DISTINCT ...)` because the duplicate customer rows would otherwise be counted twice.
+
+### Example 4: row multiplication with payments
+
+About 5 percent of online orders have an extra earlier "Failed" payment attempt, so `payments` has more than one row for some orders. What happens to revenue when we join?
+
+<SqlPlayground dataset="ecommerce" query={`SELECT COUNT(*) AS joined_rows,
+       ROUND(SUM(o.total_amount), 0) AS revenue_after_join,
+       (SELECT ROUND(SUM(total_amount), 0) FROM orders) AS revenue_in_orders
+FROM orders AS o
+INNER JOIN payments AS p ON p.order_id = o.order_id;`} title="Row multiplication with payments" />
+
+**Output:**
+
+| joined_rows | revenue_after_join | revenue_in_orders |
+|---|---|---|
+| 10504 | 56672986.0 | 54741133.0 |
+
+
+The join returns 10,504 rows. The revenue calculated after the join is about ₹5.67 crore, but the real total in `orders` is about ₹5.47 crore. The extra ₹19 lakh is the same orders counted again for each extra payment row. This is fan-out. To get revenue, sum from `orders` alone. To report payments, sum `payments.amount` and group by order.
+
+### Example 5: ON versus WHERE
+
+How many deliveries do we get if we want "all deliveries, plus the rating only when it is 2 or lower"? Compare the same filter placed in two places.
+
+<SqlPlayground dataset="food_delivery" query={`SELECT
+  (SELECT COUNT(*) FROM deliveries) AS delivery_rows,
+  (SELECT COUNT(*)
+     FROM deliveries AS d
+     LEFT JOIN ratings AS r
+       ON r.delivery_id = d.delivery_id AND r.overall_rating <= 2) AS filter_in_on,
+  (SELECT COUNT(*)
+     FROM deliveries AS d
+     LEFT JOIN ratings AS r ON r.delivery_id = d.delivery_id
+     WHERE r.overall_rating <= 2) AS filter_in_where;`} title="ON versus WHERE in a LEFT JOIN" />
+
+**Output:**
+
+| delivery_rows | filter_in_on | filter_in_where |
+|---|---|---|
+| 15120 | 15120 | 123 |
+
+
+With the filter in `ON`, all 15,120 deliveries survive. Those with no low rating just show NULL ratings. With the same filter in `WHERE`, only the 123 deliveries that have a low rating remain, so the `LEFT JOIN` has turned into an `INNER JOIN`. Same words, very different meaning.
+
+### Example 6: NULL keys silently drop rows
+
+In `transactions`, `merchant_id` is NULL for person-to-person transfers. See what each join does.
+
+<SqlPlayground dataset="fintech" query={`SELECT
+  (SELECT COUNT(*) FROM transactions) AS all_txns,
+  (SELECT COUNT(*) FROM transactions AS t
+     INNER JOIN merchants AS m ON m.merchant_id = t.merchant_id) AS inner_rows,
+  (SELECT COUNT(*) FROM transactions AS t
+     LEFT JOIN merchants AS m ON m.merchant_id = t.merchant_id) AS left_rows;`} title="NULL join keys drop rows" />
+
+**Output:**
+
+| all_txns | inner_rows | left_rows |
+|---|---|---|
+| 22088 | 16701 | 22088 |
+
+
+The `INNER JOIN` loses 5,387 rows (all the P2P transfers) because NULL cannot match anything. The `LEFT JOIN` keeps all 22,088 rows. If you want "revenue by merchant category" the inner join is right (P2P has no merchant). If you want "total transaction count", an inner join would undercount by about a quarter. Know which question you are answering.
+
+### Example 7: joining three tables
+
+Which product categories have the highest return rate? We need items, products (for the category) and returns. We use an `INNER JOIN` to products (every item has a product) and a `LEFT JOIN` to returns (most items are not returned).
+
+<SqlPlayground dataset="ecommerce" query={`SELECT LOWER(TRIM(p.category)) AS category,
+       COUNT(*) AS items_sold,
+       COUNT(r.return_id) AS items_returned,
+       ROUND(100.0 * COUNT(r.return_id) / COUNT(*), 1) AS return_pct
+FROM order_items AS oi
+INNER JOIN products AS p ON p.product_id = oi.product_id
+LEFT JOIN returns AS r ON r.order_item_id = oi.order_item_id
+GROUP BY LOWER(TRIM(p.category))
+ORDER BY return_pct DESC, category;`} title="Return rate by category (three tables)" />
+
+**Output:**
+
+| category | items_sold | items_returned | return_pct |
+|---|---|---|---|
+| fashion | 6436 | 1300 | 20.2 |
+| footwear | 676 | 101 | 14.9 |
+| electronics | 3786 | 240 | 6.3 |
+| home & kitchen | 4008 | 177 | 4.4 |
+| beauty | 1026 | 35 | 3.4 |
+| books | 1130 | 19 | 1.7 |
+
+Showing the first 6 of 7 rows.
+
+
+We used `COUNT(r.return_id)` and not `COUNT(*)` for returned items, because `COUNT(column)` skips NULLs, so it counts only items that matched a return. Fashion and footwear return the most, which matches what Indian online fashion sellers see because of size and fit issues. We also cleaned the category with `LOWER(TRIM(...))` so that casing variants group together.
+
+## Common mistakes
+
+<CommonMistake>
+**Joining without an ON condition, or with the wrong columns.** Joining on the wrong pair of columns (for example `o.order_id = c.customer_id`) still runs and returns plausible-looking nonsense. Always check that the two columns mean the same thing, usually foreign key to primary key.
+</CommonMistake>
+
+<CommonMistake>
+**Summing a column after a one-to-many join.** `SUM(o.total_amount)` after joining orders to payments or items counts each order once per matching row, so revenue comes out too high (we saw ₹5.67 crore instead of ₹5.47 crore). Aggregate each table to the right grain first, or join after aggregating.
+</CommonMistake>
+
+<CommonMistake>
+**Filtering the right table in WHERE after a LEFT JOIN.** `WHERE r.overall_rating <= 2` removes the NULL rows, so unmatched left rows vanish and the LEFT JOIN becomes an INNER JOIN. Move that condition into `ON`, or use `WHERE ... OR r.col IS NULL` when that is what you really mean.
+</CommonMistake>
+
+<CommonMistake>
+**Forgetting about NULL and duplicate keys.** An INNER JOIN on a column with NULLs silently drops those rows. A key that is not unique silently multiplies rows. Neither raises an error. Check `COUNT(*)`, `COUNT(DISTINCT key)` and `COUNT(key)` before joining.
+</CommonMistake>
+
+<CommonMistake>
+**Using `= NULL` to find unmatched rows.** `WHERE o.order_id = NULL` returns zero rows. Use `IS NULL`.
+</CommonMistake>
+
+<CommonMistake>
+**Selecting an ambiguous column.** If both tables have `city`, writing just `city` causes an "ambiguous column name" error. Always prefix with the alias: `c.city`.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="joins-basic" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "orders has 1,000 rows and every order has a valid customer_id. customers has unique customer_id. How many rows does orders INNER JOIN customers return?", options: ["Fewer than 1,000", "Exactly 1,000", "More than 1,000", "It depends on the number of customers only"], answer: 1, explanation: "Many-to-one join with unique keys on the 'one' side: each order matches exactly one customer, so the row count stays at 1,000." },
+  { q: "You want every customer in the result, including those with no orders. Which join and starting table do you use?", options: ["customers INNER JOIN orders", "orders LEFT JOIN customers", "customers LEFT JOIN orders", "orders INNER JOIN customers"], answer: 2, explanation: "A LEFT JOIN keeps every row of the left table, so customers must be on the left." },
+  { q: "After customers LEFT JOIN orders, which condition keeps only customers who never ordered?", options: ["WHERE o.order_id = NULL", "WHERE o.order_id IS NULL", "WHERE o.order_id = 0", "WHERE o.order_id IS NOT NULL"], answer: 1, explanation: "Unmatched rows have NULL in the right table's columns, and NULL can only be tested with IS NULL." },
+  { q: "Joining orders to payments inflated the revenue total. What is the most likely cause?", options: ["INNER JOIN always inflates totals", "Some orders have more than one payment row, so order rows repeat", "payments has no foreign key", "SUM ignores duplicates"], answer: 1, explanation: "One order with two payment rows produces two output rows, so its total_amount is added twice. This is row multiplication." },
+  { q: "In a LEFT JOIN, you add WHERE r.rating <= 2 on the right table. What happens to unmatched left rows?", options: ["They are kept with NULL rating", "They are removed, because NULL <= 2 is not true", "The query errors", "They are kept but rating becomes 0"], answer: 1, explanation: "NULL <= 2 evaluates to unknown, so WHERE drops those rows. The LEFT JOIN behaves like an INNER JOIN. Put the condition in ON instead." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers love joins because wrong answers look right. They check whether you ask about the grain of each table, whether you notice duplicate and NULL keys, and whether you can explain INNER versus LEFT in plain words with a row-count prediction.
+</InterviewAlert>
+
+<InterviewQ q="What is the difference between INNER JOIN and LEFT JOIN?">
+An INNER JOIN returns only rows that have a match in both tables. A LEFT JOIN returns every row from the left table; where the right table has no match, its columns are NULL. I use INNER when I only care about matched records (for example revenue by product category) and LEFT when I must not lose left rows (for example all customers with their order count, including zero). A LEFT JOIN plus `WHERE right.key IS NULL` finds the left rows that have no match.
+</InterviewQ>
+
+<InterviewQ q="Table A has 100 rows and table B has 50 rows. How many rows can A JOIN B return?">
+It depends on the keys, so there is no single answer. If B's key is unique and every A row matches, 100. If some A rows have no match, an inner join returns fewer than 100. If B has duplicate keys, it can return more than 100, up to 5,000 in the extreme case where every key is the same (a cross-product). That is why I check key uniqueness before joining.
+</InterviewQ>
+
+<InterviewQ q="Your revenue went up after you joined in another table. How do you debug it?">
+I suspect row multiplication. I compare `COUNT(*)` and `COUNT(DISTINCT order_id)` before and after the join, then look at which table has more than one row per key (for example `payments`, with failed attempts, or `order_items`). The fix is to aggregate that table to one row per key in a subquery before joining, or to sum from the table at the correct grain.
+</InterviewQ>
+
+<InterviewQ q="Does a LEFT JOIN with a WHERE filter on the right table still return all left rows?">
+No. The WHERE runs after the join and a NULL on the right side fails most comparisons, so unmatched left rows are removed. To keep them, move the right-table condition into the ON clause.
+</InterviewQ>
+
+## Key takeaways
+
+- A join follows a foreign key to a primary key and glues matching rows side by side. Use aliases and prefix every column.
+- `INNER JOIN` keeps matches only. `LEFT JOIN` keeps all left rows and fills NULLs where nothing matches.
+- A join returns one row per match, so duplicate keys multiply rows and inflate sums. Compare row counts before and after.
+- A condition on the right table belongs in `ON` for a LEFT JOIN. In `WHERE` it turns the join into an INNER JOIN.
+- NULL keys never match, and messy text keys need `LOWER(TRIM(...))`. Test keys for uniqueness, NULLs and cleanliness first.
+
+## Further reading
+
+<FurtherReading ids={["sqlbolt", "mode-sql", "sqlite-docs"]} />

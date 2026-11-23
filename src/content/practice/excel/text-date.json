@@ -1,0 +1,121 @@
+[
+  {
+    "id": "excel-text-date-001",
+    "module": "excel",
+    "topic": "text-date",
+    "difficulty": "easy",
+    "language": "excel",
+    "question": "In `excel-functions.xlsx` (`products` sheet), every `product_name` ends with a space and a three-digit number, for example `Masala Mandi Beverage 979`. Return that number as a real number for the first product.",
+    "dataset": "none",
+    "hint": "RIGHT takes characters from the end. VALUE turns text into a number.",
+    "solution": "```\n=VALUE(RIGHT(C2,3))\n```\n\nExpected: **979**.\n\nIf the length varied, use FIND and MID. For this data every name ends in exactly three digits.",
+    "orderMatters": false,
+    "explanation": "RIGHT returns text `979`; VALUE converts it to the number 979 so you can add or compare it.",
+    "commonMistake": "Forgetting VALUE. The result looks like a number but is left-aligned text and fails in SUM.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "right",
+      "value"
+    ]
+  },
+  {
+    "id": "excel-text-date-002",
+    "module": "excel",
+    "topic": "text-date",
+    "difficulty": "easy",
+    "language": "excel",
+    "question": "In `excel-functions.xlsx` (`orders` sheet), the date in C2 is 1 January 2023. Use TEXT to show it as `Jan-2023`, and then as the full weekday name.",
+    "dataset": "none",
+    "hint": "TEXT(value, format). mmm is the short month, yyyy the year, dddd the full weekday.",
+    "solution": "```\n=TEXT(C2,\"mmm-yyyy\")\n=TEXT(C2,\"dddd\")\n```\n\nExpected: **Jan-2023** and **Sunday**.\n\nTEXT returns text, so you cannot do date maths on the result. Keep the original date column.",
+    "orderMatters": false,
+    "explanation": "TEXT changes how a number is shown, as a piece of text.",
+    "commonMistake": "Using TEXT when a plain number format is enough. Text results cannot be sorted by date.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "text"
+    ]
+  },
+  {
+    "id": "excel-text-date-003",
+    "module": "excel",
+    "topic": "text-date",
+    "difficulty": "medium",
+    "language": "excel",
+    "question": "In `excel-functions.xlsx` (`orders` sheet), how many orders were placed on a Saturday or a Sunday?",
+    "dataset": "none",
+    "hint": "WEEKDAY with return type 2 gives Monday = 1 to Sunday = 7. SUMPRODUCT can count the TRUE results.",
+    "solution": "```\n=SUMPRODUCT(--(WEEKDAY(orders!C2:C2001,2)>5))\n```\n\nExpected: **662** orders.",
+    "orderMatters": false,
+    "explanation": "WEEKDAY(date,2) numbers the days Monday to Sunday, so values 6 and 7 are the weekend.",
+    "commonMistake": "Leaving out the `,2`. Default numbering starts on Sunday = 1, so `>5` would pick Friday and Saturday.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "weekday",
+      "sumproduct"
+    ]
+  },
+  {
+    "id": "excel-text-date-004",
+    "module": "excel",
+    "topic": "text-date",
+    "difficulty": "medium",
+    "language": "excel",
+    "question": "In `excel-functions.xlsx` (`orders` sheet), order 1004 (row 3) was placed on 2 April 2023 and delivered on 5 April 2023. How many calendar days did delivery take, and how many working days (Mon to Fri) does NETWORKDAYS count from order date to delivery date, both days included?",
+    "dataset": "none",
+    "hint": "Subtract two dates for calendar days. NETWORKDAYS(start,end) counts both ends.",
+    "solution": "```\n=orders!K3-orders!C3\n=NETWORKDAYS(orders!C3,orders!K3)\n```\n\nExpected: **3** calendar days and **3** working days. 2 April 2023 was a Sunday, so the working days are Monday 3, Tuesday 4 and Wednesday 5 April.",
+    "orderMatters": false,
+    "explanation": "Date subtraction counts the gap; NETWORKDAYS counts working days and includes both start and end if they are weekdays.",
+    "commonMistake": "Expecting NETWORKDAYS to skip Indian public holidays by itself. You must give a list of holidays as the third argument.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "networkdays",
+      "dates"
+    ]
+  },
+  {
+    "id": "excel-text-date-005",
+    "module": "excel",
+    "topic": "text-date",
+    "difficulty": "medium",
+    "language": "excel",
+    "question": "In `excel-functions.xlsx` (`hr_employees` sheet), employee 1 was born on 25 April 1981 and hired on 4 January 2014. Using DATEDIF, find their age in complete years and their tenure in complete months as of 31 December 2024.",
+    "dataset": "none",
+    "hint": "DATEDIF(start, end, unit) with unit \"Y\" for years and \"M\" for months.",
+    "solution": "```\n=DATEDIF(hr_employees!D2,DATE(2024,12,31),\"Y\")\n=DATEDIF(hr_employees!E2,DATE(2024,12,31),\"M\")\n```\n\nExpected: **43** years and **131** months.",
+    "orderMatters": false,
+    "explanation": "DATEDIF counts complete units only, so the age drops the extra months and days.",
+    "commonMistake": "Dividing days by 365 for age. Leap years make the result drift.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "datedif"
+    ]
+  },
+  {
+    "id": "excel-text-date-006",
+    "module": "excel",
+    "topic": "text-date",
+    "difficulty": "hard",
+    "language": "excel",
+    "question": "In `excel-functions.xlsx` (`orders` sheet), find the average number of days from order date to delivery date, using only orders that have a delivery date. How many orders is that?",
+    "dataset": "none",
+    "hint": "Blank delivery dates would turn into zero and ruin the average. Use IF inside AVERAGE and confirm with Ctrl + Shift + Enter in old Excel.",
+    "solution": "```\n=AVERAGE(IF(orders!K2:K2001<>\"\",orders!K2:K2001-orders!C2:C2001))\n=COUNT(orders!K2:K2001)\n```\n\nIn Excel 2019 and older press `Ctrl + Shift + Enter`; in Microsoft 365 plain Enter works.\n\nExpected: average **3.05** days (3.0477) across **1,825** orders.",
+    "orderMatters": false,
+    "explanation": "The IF skips rows with no delivery date, so only real deliveries enter the average.",
+    "commonMistake": "Subtracting over the whole range without IF. Blank K cells become 0 and the subtraction gives a negative date gap.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 10,
+    "tags": [
+      "dates",
+      "array-formula",
+      "average"
+    ]
+  }
+]

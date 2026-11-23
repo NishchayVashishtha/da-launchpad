@@ -1,0 +1,251 @@
+---
+title: "Time intelligence in DAX"
+description: "Use a proper date table with TOTALYTD, SAMEPERIODLASTYEAR, DATEADD and DATESINPERIOD to build YTD, last year, MoM %, YoY % and rolling 3-month measures."
+module: power-bi
+order: 7
+estimatedMinutes: 50
+objectives:
+  - "Explain why a date table is required for time intelligence"
+  - "Build YTD, MTD and fiscal-year-to-date measures"
+  - "Compare periods with SAMEPERIODLASTYEAR and DATEADD"
+  - "Compute MoM %, YoY % and a rolling 3-month total or average"
+tags: ["power-bi", "dax", "time-intelligence", "date-table", "yoy"]
+---
+
+## Learning objectives
+
+- Explain why a **date table** is required for time intelligence.
+- Build year-to-date (YTD), month-to-date (MTD) and fiscal-year-to-date measures.
+- Compare periods with `SAMEPERIODLASTYEAR` and `DATEADD`.
+- Compute MoM %, YoY % and a rolling 3-month total or average.
+
+## Why this matters for a Data Analyst job
+
+Almost every business question has a time dimension: "Are sales growing?", "How is this month versus last month?", "What is the trend over the last quarter?". Managers do not care about one total; they care about change. Interviewers often ask for YoY and rolling averages because they test both DAX and clear thinking.
+
+<RealWorld>
+During Diwali month, a retail category head asks: "How are we doing against the same month last year, and what is our year-to-date number so far?" You need three measures: this period, same period last year, and YTD, all driven by a calendar the model understands.
+</RealWorld>
+
+## Concept
+
+### The date table requirement
+
+Time intelligence functions work by **shifting dates** in the filter context. They need a column of dates that is:
+
+1. A separate table with **one row per day**, continuous with no gaps.
+2. Covering **full years** for every year you use (and the earlier year, if you want last-year comparisons).
+3. **Marked as date table** (Table tools > Mark as date table).
+4. Related one-to-many to the fact table on a **Date** column (not DateTime).
+
+(See lesson 4 for building one with `CALENDAR`.) Always pass the **Calendar's date column** to time functions, never the fact table's date column.
+
+### Why it works
+
+When a visual shows "Oct 2024", the filter context on `Calendar[Date]` is the 31 days of October 2024. `SAMEPERIODLASTYEAR` takes those dates and returns the same 31 days one year earlier. `CALCULATE` then evaluates the measure for those dates. All time intelligence works this way: **shift or widen the date filter, then evaluate the base measure.**
+
+### The base measure, then the time variants
+
+Always build one base measure, then reuse it:
+
+```dax
+Total Sales = SUM ( Sales[net_amount_inr] )
+```
+
+### YTD, QTD and MTD
+
+```dax
+Sales YTD = TOTALYTD ( [Total Sales], 'Calendar'[Date] )
+Sales QTD = TOTALQTD ( [Total Sales], 'Calendar'[Date] )
+Sales MTD = TOTALMTD ( [Total Sales], 'Calendar'[Date] )
+```
+
+They are shorthand for `CALCULATE([Total Sales], DATESYTD('Calendar'[Date]))` and similar. For a financial year ending 31 March (as in India), add a year-end:
+
+```dax
+Sales FYTD = TOTALYTD ( [Total Sales], 'Calendar'[Date], "3/31" )
+```
+
+### Previous period
+
+```dax
+Sales LY = CALCULATE ( [Total Sales], SAMEPERIODLASTYEAR ( 'Calendar'[Date] ) )
+Sales PM = CALCULATE ( [Total Sales], DATEADD ( 'Calendar'[Date], -1, MONTH ) )
+Sales PY = CALCULATE ( [Total Sales], DATEADD ( 'Calendar'[Date], -1, YEAR ) )
+```
+
+`DATEADD(dates, n, interval)` shifts by `n` days, months, quarters or years. It is flexible: `-1 MONTH` for previous month, `-1 QUARTER`, `-1 YEAR`. Use it at month level or higher. `PREVIOUSMONTH`, `PREVIOUSQUARTER` and `PREVIOUSYEAR` also exist.
+
+### Growth percentages
+
+```dax
+YoY % =
+VAR _ly = [Sales LY]
+RETURN IF ( NOT ISBLANK ( _ly ), DIVIDE ( [Total Sales] - _ly, _ly ) )
+
+MoM % =
+VAR _pm = [Sales PM]
+RETURN IF ( NOT ISBLANK ( _pm ), DIVIDE ( [Total Sales] - _pm, _pm ) )
+```
+
+The `IF` with no else branch returns blank when there is no earlier period, which is better than a misleading 100% or an error.
+
+### Rolling windows
+
+```dax
+Sales Rolling 3M =
+CALCULATE (
+    [Total Sales],
+    DATESINPERIOD ( 'Calendar'[Date], MAX ( 'Calendar'[Date] ), -3, MONTH )
+)
+
+Sales Rolling 3M Avg = DIVIDE ( [Sales Rolling 3M], 3 )
+```
+
+`DATESINPERIOD(dates, start, n, interval)` returns `n` periods counted from a start date. Here the window ends on the last date of the visible month (`MAX`) and goes 3 months back. In a monthly visual that is the current month plus the two before. Rolling averages smooth out spikes (Diwali, month-end salary day) so the trend is easier to see.
+
+A guard against partial windows at the beginning of data (months before the data starts) is shown in the practice set.
+
+### Common functions at a glance
+
+| Need | Function |
+|------|----------|
+| Year to date | `TOTALYTD`, `DATESYTD` |
+| Same period last year | `SAMEPERIODLASTYEAR` |
+| Shift by any period | `DATEADD` |
+| Window of n periods | `DATESINPERIOD` |
+| Between two dates | `DATESBETWEEN` |
+| First/last date in context | `FIRSTDATE`, `LASTDATE`, `MIN`, `MAX` |
+| Parallel period | `PARALLELPERIOD` |
+
+### Visual tips
+
+- Use `Calendar[Month]` or `Year-Month` on the axis, **not** the fact table's date.
+- Use the same Calendar for all facts, so all measures line up.
+- Format YoY % as percentage with a +/- sign and conditional colour.
+
+<Tip>
+Turn off **Auto date/time** (File > Options > Data load). Power BI otherwise creates hidden date tables for each date column, which confuses time intelligence and bloats the model.
+</Tip>
+
+## Worked examples
+
+All numbers come from the cleaned retail sales (duplicates removed, 6 outliers dropped). Calendar covers 2023 and 2024. Monthly totals are real values from the data.
+
+### Example 1: YTD and LY
+
+```dax
+Sales YTD = TOTALYTD ( [Total Sales], 'Calendar'[Date] )
+Sales LY  = CALCULATE ( [Total Sales], SAMEPERIODLASTYEAR ( 'Calendar'[Date] ) )
+```
+
+For the first three months of 2024:
+
+| Month (2024) | Total Sales (₹) | Sales YTD (₹) |
+|--------------|-----------------|----------------|
+| Jan | 14,24,834 | 14,24,834 |
+| Feb | 11,63,058 | 25,87,892 |
+| Mar | 12,58,300 | 38,46,192 |
+
+Dec 2024 YTD equals the full-year 2024 total of ₹1,63,62,135 (2023 total is ₹1,36,65,597).
+
+### Example 2: YoY %, MoM % and rolling 3 months (Jul to Dec 2024)
+
+| Month | Sales 2024 (₹) | Sales LY (₹) | YoY % | MoM % | Rolling 3M avg (₹) |
+|-------|----------------|--------------|-------|-------|--------------------|
+| Jul | 12,04,067 | 9,90,995 | +21.5% | +0.3% | 12,30,120 |
+| Aug | 14,91,777 | 12,17,150 | +22.6% | +23.9% | 12,98,678 |
+| Sep | 13,04,151 | 10,45,677 | +24.7% | -12.6% | 13,33,332 |
+| Oct | 18,90,028 | 13,94,133 | +35.6% | +44.9% | 15,61,985 |
+| Nov | 15,38,623 | 14,31,672 | +7.5% | -18.6% | 15,77,601 |
+| Dec | 13,77,483 | 13,52,024 | +1.9% | -10.5% | 16,02,045 |
+
+Reading the table: October (the Diwali and Navratri season) grows 35.6% on last year and 44.9% over September. By December, growth fades to +1.9%. The rolling 3-month average rises from ₹12.3 lakh to ₹16.0 lakh and hides the sharp October spike. July's MoM compares with June 2024 sales of ₹12,00,191.
+
+### Example 3: Fiscal YTD (India, April to March)
+
+```dax
+Revenue FYTD = TOTALYTD ( [Revenue], 'Calendar'[Date], "3/31" )
+```
+
+At 30 June 2024 the measure sums from 1 April 2024; at 15 February 2024 it sums from 1 April 2023. Show the fiscal year on visuals by adding a column to the Calendar:
+
+```dax
+FY = "FY" & IF ( MONTH ( [Date] ) >= 4, YEAR ( [Date] ) + 1, YEAR ( [Date] ) )
+```
+
+A date in October 2024 gets `FY2025`; a date in February 2025 also gets `FY2025`.
+
+## Common mistakes
+
+<CommonMistake>
+Using the fact table's date column inside `TOTALYTD` or `SAMEPERIODLASTYEAR`. Use the Calendar's `Date` column from a marked date table.
+</CommonMistake>
+
+<CommonMistake>
+A Calendar that starts at the same date as the data. The previous-year measure is blank for the first year, which looks like a bug. Start the Calendar earlier if you have earlier data, or accept blanks consciously.
+</CommonMistake>
+
+<CommonMistake>
+Showing YoY % with an error or 100% where the last year is blank. Guard with `IF(NOT ISBLANK(...))` or `DIVIDE`.
+</CommonMistake>
+
+<CommonMistake>
+Relating the Calendar to a DateTime column. Rows after midnight do not match any date. Create a Date-only column first.
+</CommonMistake>
+
+<CommonMistake>
+Using calendar-year YTD for a business that reports on an April-March year. Pass `"3/31"` as the year end.
+</CommonMistake>
+
+<CommonMistake>
+Using DATEADD on a day-level visual with partial months and expecting a whole-month comparison. Build the comparison at month level or define the window explicitly.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="time-intelligence" module="power-bi" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Which date column should you pass to TOTALYTD?", options: ["The fact table's datetime", "The Calendar table's Date column", "Any text column", "The Month name column"], answer: 1, explanation: "Time intelligence needs the date column of a continuous, marked date table." },
+  { q: "Which function returns the same dates one year earlier?", options: ["DATESYTD", "SAMEPERIODLASTYEAR", "DATESINPERIOD", "ALL"], answer: 1, explanation: "SAMEPERIODLASTYEAR shifts the current date filter back one year." },
+  { q: "How do you compute MoM %?", options: ["(This month - last month) / last month, using DATEADD(-1, MONTH)", "This month x last month", "SUM of both months", "COUNTROWS of months"], answer: 0, explanation: "Growth is the change divided by the earlier value; DATEADD with -1 MONTH gives the previous month." },
+  { q: "For a financial year ending 31 March, which is correct?", options: ["TOTALYTD([Sales], Calendar[Date])", "TOTALYTD([Sales], Calendar[Date], \"3/31\")", "SAMEPERIODLASTYEAR only", "TOTALMTD"], answer: 1, explanation: "The optional third argument sets the year-end date so YTD resets in April." },
+  { q: "What does DATESINPERIOD(Calendar[Date], MAX(Calendar[Date]), -3, MONTH) return?", options: ["The next 3 months", "The last 3 months ending at the last visible date", "Only 3 days", "All dates"], answer: 1, explanation: "It counts 3 months backwards from the last date in the current context." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+They will ask: "Why does SAMEPERIODLASTYEAR return blank?" Answer with the date table checklist: continuous dates, marked as date table, related on a Date column, covering the previous year.
+</InterviewAlert>
+
+<InterviewQ q="What is required for time intelligence functions to work?">
+A proper date table: one row per day with no gaps, covering all years used, marked as a date table and related to the fact table on a Date (not DateTime) column. I pass that table's date column to the time functions.
+</InterviewQ>
+
+<InterviewQ q="How do you calculate YoY growth percentage?">
+First a measure for last year's value, `CALCULATE([Total Sales], SAMEPERIODLASTYEAR(Calendar[Date]))`. Then `DIVIDE([Total Sales] - [Sales LY], [Sales LY])`, returning blank when there is no last-year value. I store the LY value in a variable for readability.
+</InterviewQ>
+
+<InterviewQ q="How do you create a rolling 3-month average?">
+`CALCULATE([Total Sales], DATESINPERIOD(Calendar[Date], MAX(Calendar[Date]), -3, MONTH))` divided by 3. In a monthly visual that is the current month and the two before. I also guard against the first two months of data where the window is incomplete.
+</InterviewQ>
+
+<InterviewQ q="DATEADD vs SAMEPERIODLASTYEAR: what is the difference?">
+SAMEPERIODLASTYEAR is a shortcut for shifting back exactly one year. DATEADD is general: it can shift by any number of days, months, quarters or years in either direction, so I use it for previous month or previous quarter. Both need a proper date table.
+</InterviewQ>
+
+## Key takeaways
+
+- Time intelligence needs a continuous, marked date table related on a Date column.
+- Build one base measure and shift or widen the date filter with `CALCULATE`.
+- `TOTALYTD`, `SAMEPERIODLASTYEAR`, `DATEADD` and `DATESINPERIOD` cover most needs.
+- Growth % is change divided by the earlier value; return blank when there is no earlier value.
+- Use `"3/31"` as the year-end argument for an Indian financial year.
+
+## Further reading
+
+<FurtherReading ids={["dax-guide", "power-bi-docs", "pl300"]} />

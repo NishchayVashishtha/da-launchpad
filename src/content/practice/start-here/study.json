@@ -1,0 +1,97 @@
+[
+  {
+    "id": "sh-study-001",
+    "module": "start-here",
+    "topic": "study",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "Explain the difference between recognition and recall with one example from your own studying.",
+    "dataset": "none",
+    "hint": "Recognition is 'I have seen this', recall is 'I can produce this'.",
+    "solution": "**Model answer:** Recognition is feeling you know a SQL query when you see it. Recall is writing the same query from a blank editor. In interviews you need recall.",
+    "explanation": "Recall is what is tested, so practise it.",
+    "commonMistake": "Believing familiarity means mastery.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "study",
+      "career"
+    ]
+  },
+  {
+    "id": "sh-study-002",
+    "module": "start-here",
+    "topic": "study",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "Create a spaced-review schedule for a topic you learn today (use today's date as day 0).",
+    "dataset": "none",
+    "hint": "Use the next day, 3 days, 1 week, 2 weeks, 1 month pattern.",
+    "solution": "**Model answer:** Day 0 learn; day 1 first review; day 3 second; day 7 third; day 14 fourth; day 30 fifth. Write the dates on a calendar.",
+    "explanation": "A fixed pattern removes the need to decide each time.",
+    "commonMistake": "Reviewing only before the exam.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "study",
+      "career"
+    ]
+  },
+  {
+    "id": "sh-study-003",
+    "module": "start-here",
+    "topic": "study",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "Design a one-hour study session for the topic GROUP BY using active recall. List what you do minute by minute.",
+    "dataset": "none",
+    "hint": "Close the lesson, test yourself, check, practise.",
+    "solution": "**Model answer:** 0 to 15: read and type the examples. 15 to 20: close and write the GROUP BY rule and a query from memory. 20 to 25: check and fix. 25 to 50: eight practice questions. 50 to 55: log mistakes. 55 to 60: make 3 flashcards.",
+    "explanation": "Retrieval with feedback improves memory.",
+    "commonMistake": "Spending the hour only reading.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 8,
+    "tags": [
+      "study",
+      "career"
+    ]
+  },
+  {
+    "id": "sh-study-004",
+    "module": "start-here",
+    "topic": "study",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "Describe three signs that you are in tutorial hell and three concrete rules you will follow this week to stay out.",
+    "dataset": "none",
+    "hint": "Use the signs from the lesson.",
+    "solution": "**Model answer:** Signs: I freeze with an empty file; I start new courses before finishing; I keep saving playlists. Rules: spend two hours doing for every hour watching; pause and predict before the answer; finish and push one mini project to GitHub by Sunday.",
+    "explanation": "Naming signs makes the habit easier to notice.",
+    "commonMistake": "Making rules too vague to check.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 6,
+    "tags": [
+      "study",
+      "career"
+    ]
+  },
+  {
+    "id": "sh-study-005",
+    "module": "start-here",
+    "topic": "study",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "Plan a project-first week: choose a business question on a dataset of your choice, list the skills you need to learn to answer it, and set a deliverable and a deadline.",
+    "dataset": "none",
+    "hint": "Start from the question, not from the tool.",
+    "solution": "**Model answer:** Question: which cities produce the highest late-payment rate in a fictional loans dataset? Skills: SQL filtering, GROUP BY, CASE WHEN for late flag, a bar chart. Deliverable: a one-page notebook or Excel with a chart and 3 insights, plus a README. Deadline: Friday 6 PM, push to GitHub on Friday evening.",
+    "explanation": "A clear deliverable and deadline create focus.",
+    "commonMistake": "Choosing a project that is too big to finish in a week.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 12,
+    "tags": [
+      "study",
+      "career"
+    ]
+  }
+]

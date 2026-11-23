@@ -1,0 +1,302 @@
+[
+ {
+  "id": "sql-select-001",
+  "module": "sql",
+  "topic": "select",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "Return `product_name` and `mrp` for the first 5 products by `product_id`.",
+  "dataset": "ecommerce",
+  "hint": "Pick two columns, sort by id, limit 5.",
+  "solutionSql": "SELECT product_name, mrp FROM products ORDER BY product_id LIMIT 5",
+  "orderMatters": true,
+  "explanation": "Naming columns keeps the result small and the intent clear.",
+  "commonMistake": "Using SELECT * where only two columns are needed.",
+  "interviewFrequency": "high",
+  "estimatedMinutes": 3,
+  "tags": [
+   "select",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "product_name",
+    "mrp"
+   ],
+   "rows": [
+    [
+     "Masala Mandi Beverage 979",
+     1289
+    ],
+    [
+     "Ayurmitra Skincare 761",
+     1069
+    ],
+    [
+     "Lakshmi Home Decor 542",
+     509
+    ],
+    [
+     "Denim Dukaan Kurta 499",
+     1599
+    ],
+    [
+     "Masala Mandi Dry Fruit 452",
+     69
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-select-002",
+  "module": "sql",
+  "topic": "select",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "For every department return `department_name` and its budget in crore as `budget_crore` (1 crore = 10,000,000), rounded to 2 decimals. Order by `department_id`.",
+  "dataset": "hr",
+  "hint": "Divide by 10000000.0, with a decimal point.",
+  "solutionSql": "SELECT department_name, ROUND(annual_budget_inr / 10000000.0, 2) AS budget_crore FROM departments ORDER BY department_id",
+  "orderMatters": true,
+  "explanation": "The .0 makes the division decimal. Without it SQLite would use integer division.",
+  "commonMistake": "Dividing by 10000000 (no decimal) and getting whole numbers.",
+  "interviewFrequency": "medium",
+  "estimatedMinutes": 3,
+  "tags": [
+   "select",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "department_name",
+    "budget_crore"
+   ],
+   "rows": [
+    [
+     "Engineering",
+     42
+    ],
+    [
+     "Sales",
+     18
+    ],
+    [
+     "Marketing",
+     9
+    ],
+    [
+     "Customer Support",
+     12
+    ],
+    [
+     "Finance",
+     6
+    ],
+    [
+     "Human Resources",
+     4
+    ],
+    [
+     "Operations",
+     14
+    ],
+    [
+     "Product",
+     8
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-select-003",
+  "module": "sql",
+  "topic": "select",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "Return a `label` made of `store_name`, then ' - ', then `city` for the first 5 stores by `store_id`.",
+  "dataset": "retail",
+  "hint": "Use || to join text.",
+  "solutionSql": "SELECT store_name || ' - ' || city AS label FROM stores ORDER BY store_id LIMIT 5",
+  "orderMatters": true,
+  "explanation": "|| joins text in SQLite and PostgreSQL. In MySQL use CONCAT(store_name, ' - ', city); in SQL Server use + or CONCAT.",
+  "commonMistake": "Using CONCAT or + in SQLite.",
+  "interviewFrequency": "medium",
+  "estimatedMinutes": 3,
+  "tags": [
+   "select",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "label"
+   ],
+   "rows": [
+    [
+     "Vasudha Hypermarket - Andheri - Mumbai"
+    ],
+    [
+     "Vasudha Supermarket - Thane - Mumbai"
+    ],
+    [
+     "Vasudha Hypermarket - Dwarka - Delhi"
+    ],
+    [
+     "Vasudha Express - Rohini - Delhi"
+    ],
+    [
+     "Vasudha Hypermarket - Whitefield - Bengaluru"
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-select-004",
+  "module": "sql",
+  "topic": "select",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "Return `restaurant_name`, `avg_prep_minutes` and `prep_seconds` (prep minutes times 60) for the first 5 restaurants by `restaurant_id`.",
+  "dataset": "food_delivery",
+  "hint": "Multiply a column by 60 and give it an alias.",
+  "solutionSql": "SELECT restaurant_name, avg_prep_minutes, avg_prep_minutes * 60 AS prep_seconds FROM restaurants ORDER BY restaurant_id LIMIT 5",
+  "orderMatters": true,
+  "explanation": "A calculated column is created row by row and does not change the table.",
+  "commonMistake": "Forgetting the alias, so the column header is the raw expression.",
+  "interviewFrequency": "medium",
+  "estimatedMinutes": 3,
+  "tags": [
+   "select",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "restaurant_name",
+    "avg_prep_minutes",
+    "prep_seconds"
+   ],
+   "rows": [
+    [
+     "Dosa Junction",
+     14,
+     840
+    ],
+    [
+     "Curry Express",
+     18,
+     1080
+    ],
+    [
+     "Masala Kitchen",
+     12,
+     720
+    ],
+    [
+     "Royal Magic",
+     22,
+     1320
+    ],
+    [
+     "Punjabi House",
+     21,
+     1260
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-select-005",
+  "module": "sql",
+  "topic": "select",
+  "difficulty": "medium",
+  "language": "sql",
+  "question": "For the first 5 products by `product_id`, return `product_name` and `margin_pct`, which is (mrp - cost_price) as a percentage of mrp, rounded to 1 decimal.",
+  "dataset": "ecommerce",
+  "hint": "Margin is profit divided by MRP, times 100.0.",
+  "solutionSql": "SELECT product_name, ROUND((mrp - cost_price) * 100.0 / mrp, 1) AS margin_pct FROM products ORDER BY product_id LIMIT 5",
+  "orderMatters": true,
+  "explanation": "Multiply by 100.0 (decimal) so the division is not truncated, and divide by mrp, not cost_price.",
+  "commonMistake": "Dividing by cost_price (that gives markup, not margin).",
+  "interviewFrequency": "high",
+  "estimatedMinutes": 6,
+  "tags": [
+   "select",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "product_name",
+    "margin_pct"
+   ],
+   "rows": [
+    [
+     "Masala Mandi Beverage 979",
+     28.5
+    ],
+    [
+     "Ayurmitra Skincare 761",
+     39.5
+    ],
+    [
+     "Lakshmi Home Decor 542",
+     29
+    ],
+    [
+     "Denim Dukaan Kurta 499",
+     34.9
+    ],
+    [
+     "Masala Mandi Dry Fruit 452",
+     30.9
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-select-006",
+  "module": "sql",
+  "topic": "select",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "For campaigns 1 to 5, return `campaign_name` and `budget_with_gst` (budget plus 18 percent GST, rounded to 0 decimals). Order by `campaign_id`.",
+  "dataset": "marketing",
+  "hint": "Multiply by 1.18.",
+  "solutionSql": "SELECT campaign_name, ROUND(budget_inr * 1.18, 0) AS budget_with_gst FROM campaigns WHERE campaign_id <= 5 ORDER BY campaign_id",
+  "orderMatters": true,
+  "explanation": "Adding a percentage means multiplying by 1 + rate.",
+  "commonMistake": "Multiplying by 0.18, which gives only the tax amount.",
+  "interviewFrequency": "low",
+  "estimatedMinutes": 3,
+  "tags": [
+   "select",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "campaign_name",
+    "budget_with_gst"
+   ],
+   "rows": [
+    [
+     "Republic Day Sale - Search",
+     8260
+    ],
+    [
+     "Summer Cooler Meta Carousel",
+     14160
+    ],
+    [
+     "IPL 2023 YouTube Brand Burst",
+     9440
+    ],
+    [
+     "IPL 2023 Search Always-On",
+     25960
+    ],
+    [
+     "Monsoon Mania - Meta",
+     11800
+    ]
+   ]
+  }
+ }
+]

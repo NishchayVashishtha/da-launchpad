@@ -1,0 +1,228 @@
+[
+  {
+    "id": "sql-pattern-duplicates-001",
+    "module": "sql",
+    "topic": "pattern-duplicates",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "The data team suspects the `orders` table has repeated rows. Count how many different `order_id` values appear more than once. Return one column, `dup_order_ids`.",
+    "dataset": "ecommerce",
+    "hint": "Group by the id, keep groups with more than one row, then count those groups.",
+    "solutionSql": "SELECT COUNT(*) AS dup_order_ids FROM (SELECT order_id FROM orders GROUP BY order_id HAVING COUNT(*) > 1)",
+    "expectedOutput": {
+      "columns": [
+        "dup_order_ids"
+      ],
+      "rows": [
+        [
+          100
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "The inner query makes one row per order_id and keeps only ids that occur more than once (HAVING filters groups after grouping). The outer query counts those ids. This is the standard way to report duplicates: group by the key, then HAVING COUNT(*) > 1.",
+    "commonMistake": "Writing SELECT COUNT(*) FROM orders HAVING COUNT(*) > 1, which treats the whole table as one group and returns either the total row count or nothing, instead of the number of repeated ids.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "duplicates",
+      "having",
+      "count"
+    ]
+  },
+  {
+    "id": "sql-pattern-duplicates-002",
+    "module": "sql",
+    "topic": "pattern-duplicates",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "The payments reconciliation team wants to see repeated transaction ids. List each `txn_id` that appears more than once in `transactions`, with the number of copies as `copies`. Show the 10 with the most copies; break ties by lower `txn_id`. Return `txn_id`, `copies`.",
+    "dataset": "fintech",
+    "hint": "GROUP BY txn_id, HAVING, then ORDER BY the count and the id.",
+    "solutionSql": "SELECT txn_id, COUNT(*) AS copies FROM transactions GROUP BY txn_id HAVING COUNT(*) > 1 ORDER BY copies DESC, txn_id LIMIT 10",
+    "expectedOutput": {
+      "columns": [
+        "txn_id",
+        "copies"
+      ],
+      "rows": [
+        [
+          318,
+          2
+        ],
+        [
+          337,
+          2
+        ],
+        [
+          793,
+          2
+        ],
+        [
+          1260,
+          2
+        ],
+        [
+          1522,
+          2
+        ],
+        [
+          1611,
+          2
+        ],
+        [
+          1992,
+          2
+        ],
+        [
+          2032,
+          2
+        ],
+        [
+          2572,
+          2
+        ],
+        [
+          2843,
+          2
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "GROUP BY txn_id puts all copies of one id together, and COUNT(*) measures the group size. HAVING COUNT(*) > 1 drops ids that are unique. The ORDER BY has a tie-breaker on txn_id so the top 10 is the same every time you run it.",
+    "commonMistake": "Using WHERE COUNT(*) > 1. Aggregates are not allowed in WHERE, so the query errors; and filtering with DISTINCT instead of HAVING would hide the duplicates rather than show them.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "duplicates",
+      "group by",
+      "having"
+    ]
+  },
+  {
+    "id": "sql-pattern-duplicates-003",
+    "module": "sql",
+    "topic": "pattern-duplicates",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "HR found that `employees` has the same employee loaded twice in places. For each `department_id`, count the surplus rows (total rows minus distinct `employee_id` values) as `extra_rows`. Show only departments that have at least one surplus row, ordered by `department_id`. Return `department_id`, `extra_rows`.",
+    "dataset": "hr",
+    "hint": "Surplus rows = COUNT(*) minus COUNT(DISTINCT employee_id).",
+    "solutionSql": "SELECT department_id, COUNT(*) - COUNT(DISTINCT employee_id) AS extra_rows FROM employees GROUP BY department_id HAVING COUNT(*) - COUNT(DISTINCT employee_id) > 0 ORDER BY department_id",
+    "expectedOutput": {
+      "columns": [
+        "department_id",
+        "extra_rows"
+      ],
+      "rows": [
+        [
+          1,
+          4
+        ],
+        [
+          2,
+          3
+        ],
+        [
+          3,
+          1
+        ],
+        [
+          4,
+          1
+        ],
+        [
+          6,
+          1
+        ],
+        [
+          7,
+          1
+        ],
+        [
+          8,
+          1
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "COUNT(*) counts every row, while COUNT(DISTINCT employee_id) counts each employee once. Their difference is exactly the number of redundant copies. HAVING keeps only departments where the difference is positive. This is a quick duplicate audit without any window function.",
+    "commonMistake": "Using COUNT(DISTINCT employee_id) alone. That shows the true headcount but hides how many copies exist, so you would report zero duplicates even though the table is dirty.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 6,
+    "tags": [
+      "duplicates",
+      "count distinct",
+      "audit"
+    ]
+  },
+  {
+    "id": "sql-pattern-duplicates-004",
+    "module": "sql",
+    "topic": "pattern-duplicates",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Before loading the `events` table into a warehouse, an engineer will delete every repeated row and keep the first copy of each `event_id` (the one with the lowest `rowid`). Without deleting anything, report how many rows would be removed per event type. Treat event names case-insensitively: use `LOWER(event_name)` as `event_name`. Return `event_name`, `rows_to_delete`, ordered by `rows_to_delete` descending, then `event_name`.",
+    "dataset": "subscription",
+    "hint": "Number the copies of each event_id with ROW_NUMBER() ordered by rowid; every row numbered above 1 is a deletion candidate.",
+    "solutionSql": "WITH numbered AS (SELECT event_name, ROW_NUMBER() OVER (PARTITION BY event_id ORDER BY rowid) AS rn FROM events) SELECT LOWER(event_name) AS event_name, COUNT(*) AS rows_to_delete FROM numbered WHERE rn > 1 GROUP BY LOWER(event_name) ORDER BY rows_to_delete DESC, event_name",
+    "expectedOutput": {
+      "columns": [
+        "event_name",
+        "rows_to_delete"
+      ],
+      "rows": [
+        [
+          "app_open",
+          44
+        ],
+        [
+          "signup",
+          37
+        ],
+        [
+          "content_view",
+          33
+        ],
+        [
+          "trial_start",
+          20
+        ],
+        [
+          "renewal_success",
+          17
+        ],
+        [
+          "trial_expired",
+          13
+        ],
+        [
+          "search",
+          11
+        ],
+        [
+          "cancel_subscription",
+          3
+        ],
+        [
+          "payment_success",
+          2
+        ],
+        [
+          "payment_failed",
+          1
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "PARTITION BY event_id restarts the numbering for each id, and ORDER BY rowid decides which copy is number 1 (the keeper). Rows with rn > 1 are exactly the ones a cleanup DELETE would remove. Grouping them by lower-cased name shows where the duplicates sit. In SQLite you can then run DELETE FROM events WHERE rowid NOT IN (SELECT MIN(rowid) FROM events GROUP BY event_id).",
+    "commonMistake": "Using SELECT DISTINCT event_id ... and counting the result. That returns the number of unique ids, not the number of surplus rows, so the answer would be the table size instead of the number of rows to delete.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 10,
+    "tags": [
+      "duplicates",
+      "row_number",
+      "cleanup"
+    ]
+  }
+]

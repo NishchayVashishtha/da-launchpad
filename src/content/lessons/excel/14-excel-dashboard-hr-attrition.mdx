@@ -1,0 +1,172 @@
+---
+title: "Build an Excel dashboard end to end: HR attrition"
+description: "Plan, build and finish a one-page HR attrition dashboard with KPIs, pivots, charts and slicers."
+module: excel
+order: 14
+estimatedMinutes: 75
+objectives:
+  - "Plan a dashboard from a business question and a layout sketch"
+  - "Prepare data in a Table and compute KPIs"
+  - "Build supporting pivots and charts on a calc sheet"
+  - "Assemble a one-page dashboard with slicers"
+  - "Check the dashboard with a finished-checklist"
+tags: ["excel", "dashboard", "hr", "attrition"]
+---
+
+## Learning objectives
+
+- Plan the dashboard before opening Excel.
+- Build KPI cards and supporting pivots.
+- Add charts and connect slicers.
+- Run a quality checklist before sharing.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+The HR head of a mid-sized IT company asks: "Why are people leaving, and which teams worry you most?" She will not open a pivot. She wants one page that she can read in a minute and filter by department. A good dashboard is often your best portfolio piece, because it shows data cleaning, analysis, design and communication in one file.
+</RealWorld>
+
+## Concept
+
+A **dashboard** is a one-page view of the most important numbers and charts, built to answer a specific question for a specific person. It is not a dumping ground for every chart you can make.
+
+**Attrition rate** is the share of employees who left.
+
+<FormulaCard title="Attrition rate">
+Attrition % = employees who left / total employees in the period
+Here: SUM of attrition_flag / COUNT of employee_id
+</FormulaCard>
+
+The four-sheet pattern used in professional Excel dashboards:
+
+1. **Data**: the Excel Table, untouched (`tbl_employees`).
+2. **Calc**: pivots and helper cells that feed the visuals.
+3. **Dashboard**: only KPI cards, charts, slicers. Gridlines off, columns neatly sized.
+4. **Notes**: definitions, source, refresh steps, date of data.
+
+Layout (landscape, 16:9 style): KPI cards across the top, the main chart in the left middle, a second chart on the right, a table or detail below, slicers on the left or the top edge. The eye reads top left to bottom right, so the most important number goes top left.
+
+Pick **KPIs** (key performance indicators) that answer the question:
+
+| KPI | Formula |
+|---|---|
+| Headcount | `=ROWS(tbl_employees)` or COUNTA of IDs |
+| Leavers | `=SUM(tbl_employees[attrition_flag])` |
+| Attrition % | Leavers / Headcount |
+| Regretted loss | `=SUM(tbl_employees[regretted_loss])` |
+| Average CTC (₹) | `=AVERAGE(tbl_employees[latest_annual_ctc_inr])` |
+
+<Tip>
+Use named cells for KPIs (select cell, type a name in the Name Box). Then card text can read `=Leavers` and your formulas stay readable.
+</Tip>
+
+## Worked examples
+
+Data: `excel-hr-attrition.xlsx`, sheet `employees` (2,400 employees). Data period ends 31 Dec 2024, and age and tenure are as at that date.
+
+<Download href="data/excel/excel-hr-attrition.xlsx" label="excel-hr-attrition.xlsx" />
+
+**Step 1: plan on paper.** Question: "Where and why do we lose people?" Audience: HR head. Visuals: 5 KPI cards; bar chart of attrition % by department; bar chart of exit reasons; slicers for `department_name`, `work_mode` and `job_level`.
+
+**Step 2: prepare the Table.** Ctrl + T, name it `tbl_employees`. Check `attrition_flag` has only 0 and 1. Note that `exit_date` and `exit_reason` are blank for people who stayed. This is correct, not an error.
+
+**Step 3: KPI cells on the Calc sheet.** Expected values:
+
+| KPI | Value |
+|---|---|
+| Headcount | 2,400 |
+| Leavers (`=SUM(tbl_employees[attrition_flag])`) | 544 |
+| Attrition % (`=Leavers/Headcount`) | 22.7% |
+| Regretted losses | 67 |
+| Average CTC | ₹15,98,948 (about 16.0 lakh) |
+
+**Step 4: pivot by department.** Insert a pivot on `tbl_employees`. Rows = `department_name`. Values: Count of `employee_id` (rename "Headcount"), Sum of `attrition_flag` (rename "Leavers"). Add Average of `attrition_flag` and rename it "Attrition %". The average of a 0/1 column equals the share of ones, which is the rate. Format it as a percent. (A calculated field cannot divide by a count, so the average is the simple route.)
+
+| department_name | Headcount | Leavers | Attrition % |
+|---|---|---|---|
+| Customer Support | 440 | 148 | 33.6% |
+| Sales | 349 | 109 | 31.2% |
+| Operations | 275 | 67 | 24.4% |
+| Engineering | 833 | 140 | 16.8% |
+| Human Resources | 96 | 16 | 16.7% |
+| Marketing | 156 | 26 | 16.7% |
+| Product | 148 | 23 | 15.5% |
+| Finance | 103 | 15 | 14.6% |
+
+The finding: Customer Support and Sales lose about a third of staff, twice the rate of Engineering and Finance. Engineering has the most leavers in number (140) but a lower rate, a good example of why rates beat counts.
+
+**Step 5: exit reasons.** A second pivot with Rows = `exit_reason`, Values = Count of `employee_id`, filter out blanks. Top reasons: Better compensation 117, Career growth 110, Manager issues 66, Work-life balance / overtime 54, Personal reasons 50. Compensation and growth together explain 227 of 544 exits (41.7%).
+
+**Step 6: charts.** Insert a sorted bar chart on the department pivot (attrition %), one colour, with the top two bars in an accent colour. Insert a bar chart for exit reasons. Remove legends and gridlines. Titles: "Customer Support and Sales lose about 1 in 3 people" and "Pay and growth drive 42% of exits".
+
+**Step 7: assemble.** On a new sheet named `Dashboard`: turn off gridlines (View > Gridlines). Set column widths uniform. Make KPI cards using merged-free shapes: Insert > Shapes > Rounded Rectangle, then in the formula bar type `=Calc!$B$3` to link the text to the KPI cell. Paste the two charts (copy chart, paste into Dashboard). Insert slicers: from any department pivot > Insert Slicer for `department_name`, `work_mode`, `job_level`. Right-click each slicer > Report Connections > tick all pivots.
+
+Make sure the KPI cards also react to the slicers: build them from a pivot (GETPIVOTDATA) rather than from plain formulas, or the numbers will not change when someone clicks a slicer.
+
+**Step 8: finished checklist.**
+
+- Title says what the page is and the data period (data as at 31 Dec 2024).
+- KPI numbers match the source (headcount 2,400, leavers 544).
+- Every chart has a finding-style title and units.
+- All slicers are connected to all pivots; slicers are cleared.
+- Gridlines, headers and formula bar are hidden on the Dashboard sheet; Calc sheet is hidden or placed last.
+- Fonts: one family, 2 or 3 sizes. Colours: one main, one accent.
+- A Notes sheet defines "attrition" and lists the source and refresh steps.
+- Tested on a different screen size; print area is set to one page.
+- Saved with Refresh on open if data will change.
+
+## Common mistakes
+
+<CommonMistake>Starting with charts before knowing the question. The result is ten unrelated visuals. Write the question first.</CommonMistake>
+
+<CommonMistake>Reporting counts only. 140 Engineering leavers looks worse than 109 Sales leavers, yet Sales loses a much bigger share. Use rates beside counts.</CommonMistake>
+
+<CommonMistake>KPI cards linked to formulas that ignore slicers, so the cards do not change when the user filters. Link cards to pivot cells.</CommonMistake>
+
+<CommonMistake>Mixing the data, calculations and visuals on one sheet, so nobody can find or fix anything. Use Data, Calc, Dashboard and Notes.</CommonMistake>
+
+<CommonMistake>Ignoring definitions. "Attrition" could include retirements and contract endings. State your definition on the Notes sheet. Here, attrition_flag counts all exits (including 9 retirements and 26 contract endings).</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="dashboard" module="excel" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Why use the average of a 0/1 flag column in a pivot?", options: ["It gives the share of 1s, the rate", "It gives the total", "It removes blanks", "It sorts data"], answer: 0, explanation: "Average of 0 and 1 values equals the proportion of ones, such as the attrition rate." },
+  { q: "Which sheet layout is best practice?", options: ["Everything on one sheet", "Data, Calc, Dashboard and Notes sheets", "Only a Dashboard sheet", "Charts on the data sheet"], answer: 1, explanation: "Separating data, calculations and visuals keeps the file easy to maintain." },
+  { q: "KPI cards do not change when a slicer is clicked. Why?", options: ["The slicer is broken", "The cards are linked to normal formulas, not to the filtered pivot", "The chart is missing", "Excel is out of date"], answer: 1, explanation: "Only pivots react to slicers. Link the cards to pivot cells with GETPIVOTDATA or cell references." },
+  { q: "Which headline is best for the department chart?", options: ["Attrition", "Customer Support and Sales lose about 1 in 3 people", "Dept chart", "Sum of leavers"], answer: 1, explanation: "A finding-style title tells the reader what to notice." },
+  { q: "Why is attrition rate better than leaver count for comparing departments?", options: ["Departments differ in size", "Counts are wrong", "Rates are always bigger", "Excel cannot count"], answer: 0, explanation: "A large department can have more leavers even with a lower rate." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+A take-home task may say "build a one-page dashboard for HR/sales/finance". They score the design and the insight, not the number of charts.
+</InterviewAlert>
+
+<InterviewQ q="Walk me through how you build an Excel dashboard.">
+I begin with the business question and the audience, then sketch the layout. I clean the data into an Excel Table, create KPIs and pivots on a Calc sheet, build a small set of charts with finding-style titles, assemble them on a Dashboard sheet with slicers connected to all pivots, and finally run a checklist: numbers tie to the source, titles, colours, slicers cleared, notes sheet written.
+</InterviewQ>
+
+<InterviewQ q="How would you keep the dashboard up to date?">
+Keep the data in a Table so new rows are included, or load it through Power Query, then use Refresh All. If the file is shared often I would set refresh on open and document the steps on the Notes sheet.
+</InterviewQ>
+
+<InterviewQ q="What insights would you give the HR head from this data?">
+Customer Support (33.6 percent) and Sales (31.2 percent) have attrition twice that of Engineering or Finance. The top exit reasons are compensation and career growth, so a pay review and clear promotion paths for those two teams are first steps. I would also check whether the regretted losses (67) concentrate in specific teams.
+</InterviewQ>
+
+## Key takeaways
+
+- Start with the question, audience and a layout sketch.
+- Use four sheets: Data, Calc, Dashboard, Notes.
+- Compare rates, not only counts.
+- Link KPI cards to pivots so slicers affect them.
+- Finish with a checklist; numbers must match the source.
+
+## Further reading
+
+<FurtherReading ids={["excel-support", "chandoo", "excelisfun"]} />

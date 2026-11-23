@@ -1,0 +1,307 @@
+---
+title: "Set operations: UNION, INTERSECT, EXCEPT"
+description: "Stack, overlap and subtract the results of two queries, and follow the column alignment rules."
+module: sql
+order: 17
+estimatedMinutes: 45
+objectives:
+  - "Explain the difference between UNION and UNION ALL"
+  - "Use INTERSECT and EXCEPT to compare two lists"
+  - "Follow the column count, order and type alignment rules"
+  - "Place ORDER BY and LIMIT correctly in a set operation"
+  - "Choose between set operations and joins"
+tags: ["sql", "union", "intersect", "except"]
+---
+
+## Learning objectives
+
+- Stack two result sets with `UNION` and `UNION ALL`.
+- Find rows present in both queries with `INTERSECT`.
+- Find rows in one query but not the other with `EXCEPT`.
+- Align columns by position, number and compatible type.
+- Know that `ORDER BY` goes once, at the very end.
+- Know when a join is the better tool.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Analysts constantly merge lists that live in different places: customers from the old system and the new system, payments and refunds into one ledger, this year's cohort and last year's. They also compare lists: "which customers bought and also returned?", "who signed up but never subscribed?". A join combines tables side by side by key. A set operation combines query results one on top of another, or compares them as whole rows. Choosing between them quickly is a mark of a confident SQL user.
+</RealWorld>
+
+## Concept
+
+Joins add **columns** (they make results wider). Set operations add or remove **rows** (they work on whole result sets). Picture two lists of names on paper.
+
+- `UNION`: put the lists together, cross out repeats.
+- `UNION ALL`: just staple the lists together, keep repeats.
+- `INTERSECT`: keep only names on both lists.
+- `EXCEPT`: names on the first list that are not on the second.
+
+### UNION and UNION ALL
+
+```sql
+SELECT city FROM users
+UNION
+SELECT city FROM merchants;
+```
+
+`UNION` combines the rows of both queries and **removes duplicate rows**. `UNION ALL` combines them and **keeps duplicates**.
+
+| | UNION | UNION ALL |
+|---|---|---|
+| Duplicates | removed | kept |
+| Speed | slower (must sort or hash to find duplicates) | faster |
+| Use when | you want a distinct list | you are stacking separate records (a ledger, monthly files) |
+
+Default to `UNION ALL` when you know the two parts cannot overlap, or when duplicates are real records you must keep (two separate payments of the same amount are both real). Use `UNION` when you want a unique list.
+
+### INTERSECT
+
+`A INTERSECT B` returns rows that appear in both result sets, with duplicates removed. Example: customers who ordered **and** returned something.
+
+### EXCEPT
+
+`A EXCEPT B` returns distinct rows from A that do not appear in B. **Order matters:** `A EXCEPT B` is not the same as `B EXCEPT A`. (Oracle calls this operator `MINUS`. SQL Server, PostgreSQL and SQLite say `EXCEPT`. MySQL added `EXCEPT` and `INTERSECT` only in version 8.0.31.)
+
+### Column alignment rules
+
+The two queries must be compatible, or the database refuses or, worse, returns nonsense.
+
+1. **Same number of columns.** `SELECT a, b` cannot be combined with `SELECT c`.
+2. **Matched by position, not by name.** The first column of query 1 lines up with the first column of query 2, whatever they are called. The result takes its **column names from the first query**.
+3. **Compatible types by position.** The first columns should both be text, or both numbers, and so on. Some databases refuse a mismatch (PostgreSQL and SQL Server raise errors); SQLite will happily mix them, which hides bugs.
+4. **ORDER BY once, at the end.** It sorts the combined result, so it appears after the last query. It can only use column names (or positions) from the first query.
+
+If one side has no value for a column, supply a placeholder of the right type, such as `NULL` or `0` or a label like `'Refund'`, so the shapes match.
+
+### Set operations vs joins
+
+| Question | Tool |
+|---|---|
+| "Show customer name next to order" | join |
+| "Combine the old and new customer lists" | `UNION` |
+| "Customers who did both A and B" | `INTERSECT` (or `IN` / join) |
+| "Customers who did A but not B" | `EXCEPT` (or anti-join) |
+
+`INTERSECT` and `EXCEPT` compare the **entire row**. They also treat two NULLs as equal, unlike `=`. That makes them handy when keys can be NULL. The trade-off: they only give you the columns you selected, so if you need more columns about the matched rows, use a join or `IN`.
+
+<Tip>
+Before using `UNION`, ask: do I really want to remove duplicates? If two real rows are identical (two payments of ₹500 for the same order), `UNION` silently deletes one, and your total is wrong. When in doubt, use `UNION ALL` and de-duplicate deliberately.
+</Tip>
+
+## Worked examples
+
+### Example 1: UNION versus UNION ALL
+
+Which cities do we operate in, across user cities and merchant cities? Clean the text first, so `'Mumbai '` and `'mumbai'` match.
+
+<SqlPlayground dataset="fintech" query={`SELECT LOWER(TRIM(city)) AS city FROM users WHERE city IS NOT NULL
+UNION
+SELECT LOWER(TRIM(city)) FROM merchants WHERE city IS NOT NULL
+ORDER BY city
+LIMIT 6;`} title="Distinct cities across two tables" />
+
+**Output:**
+
+| city |
+|---|
+| ahmedabad |
+| bengaluru |
+| bhopal |
+| chandigarh |
+| chennai |
+| coimbatore |
+
+
+Now see how the two operators differ in row count:
+
+<SqlPlayground dataset="fintech" query={`SELECT
+  (SELECT COUNT(*) FROM (
+      SELECT LOWER(TRIM(city)) AS city FROM users WHERE city IS NOT NULL
+      UNION
+      SELECT LOWER(TRIM(city)) FROM merchants WHERE city IS NOT NULL)) AS union_rows,
+  (SELECT COUNT(*) FROM (
+      SELECT LOWER(TRIM(city)) AS city FROM users WHERE city IS NOT NULL
+      UNION ALL
+      SELECT LOWER(TRIM(city)) FROM merchants WHERE city IS NOT NULL)) AS union_all_rows;`} title="UNION versus UNION ALL" />
+
+**Output:**
+
+| union_rows | union_all_rows |
+|---|---|
+| 20 | 4262 |
+
+
+`UNION` returns 20 unique cities. `UNION ALL` returns 4,262 rows because it keeps every user and merchant row, one per record. For a "list of cities" you want `UNION`. For "all records from both tables" you want `UNION ALL`.
+
+### Example 2: UNION ALL to build a simple ledger
+
+Payments and refunds live in different tables with different column names. We stack a summary of both with labels. The first query decides the column names; the second is lined up by position.
+
+<SqlPlayground dataset="ecommerce" query={`SELECT 'Payments received' AS entry, COUNT(*) AS rows_n, ROUND(SUM(amount), 0) AS rupees
+FROM payments
+WHERE payment_status = 'Success'
+UNION ALL
+SELECT 'Refunds given', COUNT(refund_amount), ROUND(SUM(refund_amount), 0)
+FROM returns;`} title="Stacking money in and money out (UNION ALL)" />
+
+**Output:**
+
+| entry | rows_n | rupees |
+|---|---|---|
+| Payments received | 9268 | 49901908.0 |
+| Refunds given | 1756 | 3959828.0 |
+
+
+We received about ₹4.99 crore in successful payments and gave back about ₹39.6 lakh in refunds (about 8 percent of the amount). We used `UNION ALL` because the rows are different kinds of entries and must never be merged. `COUNT(refund_amount)` counts only non-NULL refund amounts; about 150 returns have no refund amount recorded yet.
+
+### Example 3: INTERSECT, customers who ordered and returned
+
+<SqlPlayground dataset="ecommerce" query={`SELECT COUNT(*) AS customers_with_returns FROM (
+  SELECT customer_id FROM orders
+  INTERSECT
+  SELECT o.customer_id
+  FROM returns AS r
+  INNER JOIN orders AS o ON o.order_id = r.order_id
+);`} title="Customers who ordered and also returned (INTERSECT)" />
+
+**Output:**
+
+| customers_with_returns |
+|---|
+| 1005 |
+
+
+1,005 customers appear in both lists: they placed orders (first query) and also have a return (second query). Since 2,222 customers ordered, about 45 percent have made at least one return. `INTERSECT` removes duplicates automatically, so each customer counts once.
+
+### Example 4: EXCEPT, users who never subscribed
+
+Which subscription-app users never reached a subscription row?
+
+<SqlPlayground dataset="subscription" query={`SELECT user_id FROM users
+EXCEPT
+SELECT user_id FROM subscriptions
+ORDER BY user_id
+LIMIT 5;`} title="Users who never subscribed (EXCEPT)" />
+
+**Output:**
+
+| user_id |
+|---|
+| 3 |
+| 4 |
+| 6 |
+| 8 |
+| 11 |
+
+
+Order matters. Compare both directions:
+
+<SqlPlayground dataset="subscription" query={`SELECT
+  (SELECT COUNT(*) FROM (SELECT user_id FROM users
+                         EXCEPT
+                         SELECT user_id FROM subscriptions)) AS users_minus_subs,
+  (SELECT COUNT(*) FROM (SELECT user_id FROM subscriptions
+                         EXCEPT
+                         SELECT user_id FROM users)) AS subs_minus_users;`} title="EXCEPT is directional" />
+
+**Output:**
+
+| users_minus_subs | subs_minus_users |
+|---|---|
+| 1892 | 0 |
+
+
+1,892 users are in `users` but not in `subscriptions`. The reverse is zero, which is expected: every subscription belongs to a user (a good sanity check on a foreign key). An analyst can use the first list for a "finish your signup" campaign.
+
+### Example 5: what an alignment error looks like
+
+If the column counts differ, SQLite stops with an error:
+
+```text
+SELECT user_id, city FROM users UNION SELECT merchant_id FROM merchants;
+Error: SELECTs to the left and right of UNION do not have the same number of result columns
+```
+
+And if `ORDER BY` is placed before the `UNION`:
+
+```text
+SELECT user_id FROM users ORDER BY user_id UNION SELECT merchant_id FROM merchants;
+Error: ORDER BY clause should come after UNION not before
+```
+
+A subtler problem is the **silent** one: `SELECT user_id, city ... UNION ALL SELECT city, merchant_id ...` has two columns each, so it runs, but it mixes IDs and names in one column. Always check the column order of both queries.
+
+## Common mistakes
+
+<CommonMistake>
+**Using UNION when you meant UNION ALL.** `UNION` removes duplicate rows, so two real, identical records (such as two ₹500 payments) collapse into one and totals shrink. It is also slower. Use `UNION ALL` unless you truly want distinct rows.
+</CommonMistake>
+
+<CommonMistake>
+**Mismatched column order.** Set operations match by position, not by name. `SELECT name, city` stacked on `SELECT city, name` runs happily and puts cities under the name column. Write the columns in the same order in each query.
+</CommonMistake>
+
+<CommonMistake>
+**Different number of columns.** Add a `NULL` or a constant placeholder of the right type to the shorter query instead.
+</CommonMistake>
+
+<CommonMistake>
+**Putting ORDER BY inside the first query.** It must come once, at the end of the whole statement, and refer to the output column names. To sort or limit one part separately, wrap that part in a subquery.
+</CommonMistake>
+
+<CommonMistake>
+**Assuming EXCEPT is symmetrical.** `A EXCEPT B` and `B EXCEPT A` give different answers. Decide which list you want to keep rows from, and put it first.
+</CommonMistake>
+
+<CommonMistake>
+**Not cleaning text before UNION.** `'Mumbai'` and `' mumbai'` count as two different values, so the "distinct" list is longer than it should be. Apply `LOWER(TRIM(...))` in both queries first.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="set-operations" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Table A has 3 rows and table B has 2 rows, and no row is identical. How many rows does SELECT x FROM A UNION ALL SELECT x FROM B return?", options: ["2", "3", "5", "6"], answer: 2, explanation: "UNION ALL simply stacks the results: 3 + 2 = 5 rows." },
+  { q: "What is the key difference between UNION and UNION ALL?", options: ["UNION sorts, UNION ALL joins", "UNION removes duplicate rows, UNION ALL keeps them", "UNION needs the same column names", "There is no difference"], answer: 1, explanation: "UNION de-duplicates the combined result, which is slower. UNION ALL keeps every row." },
+  { q: "Set-operation columns are matched by:", options: ["Column name", "Position", "Data type only", "Alphabetical order"], answer: 1, explanation: "The first column of the first query lines up with the first column of the second, regardless of names. Output names come from the first query." },
+  { q: "Which gives customers in list A that are not in list B?", options: ["A INTERSECT B", "A UNION B", "A EXCEPT B", "B EXCEPT A"], answer: 2, explanation: "A EXCEPT B returns distinct rows of A that are absent from B. B EXCEPT A is the opposite direction." },
+  { q: "Where does ORDER BY go in a UNION query?", options: ["Inside each query", "Only at the end, after the last query", "Before the first SELECT", "It is not allowed"], answer: 1, explanation: "ORDER BY sorts the final combined result and must come once at the end." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+The classic question is "What is the difference between UNION and UNION ALL?" Interviewers want more than "one removes duplicates": mention performance, correctness when records repeat, and column alignment. "Customers in A but not in B" can be answered with EXCEPT, NOT EXISTS or a LEFT JOIN, so be ready to compare them.
+</InterviewAlert>
+
+<InterviewQ q="What is the difference between UNION and UNION ALL?">
+Both stack the result of two queries with the same number of compatible columns. `UNION` removes duplicate rows from the combined result, which needs a sort or hash step and is slower. `UNION ALL` keeps all rows and is faster. I use `UNION ALL` when stacking separate records such as monthly files or a payments-and-refunds ledger, and `UNION` only when I need a distinct list.
+</InterviewQ>
+
+<InterviewQ q="What rules must the two queries follow in a set operation?">
+The same number of columns, columns matched by position (not by name), and compatible data types in each position. The output column names come from the first query. ORDER BY goes only once at the end. If one side lacks a column, I add a `NULL` or a constant placeholder of the correct type.
+</InterviewQ>
+
+<InterviewQ q="Compare INTERSECT, IN and INNER JOIN for finding customers who did both A and B.">
+All can work. `INTERSECT` is short and compares whole rows, treats NULLs as equal and returns distinct rows. `IN` with a subquery is easy to read and also does not repeat rows. An `INNER JOIN` lets me bring in extra columns, but it can repeat rows when keys are not unique, so I need `DISTINCT`. For a simple "customers in both lists" I prefer INTERSECT or IN.
+</InterviewQ>
+
+<InterviewQ q="How would you list customers who signed up but never purchased?">
+`SELECT user_id FROM users EXCEPT SELECT user_id FROM purchases`, which is compact. If I also need other user columns, I use `NOT EXISTS` against the purchases table, which also stays safe when NULLs are possible. I would avoid `NOT IN` unless I know the subquery column has no NULLs.
+</InterviewQ>
+
+## Key takeaways
+
+- Joins add columns; set operations add or subtract rows.
+- `UNION` removes duplicates (slower); `UNION ALL` keeps every row (faster). Default to `UNION ALL` for real records.
+- `INTERSECT` keeps rows in both queries; `EXCEPT` keeps rows in the first but not the second, and order matters.
+- Columns match by position and need the same count and compatible types. Names come from the first query.
+- Put `ORDER BY` once at the end, clean text before combining, and check the column order of both queries.
+
+## Further reading
+
+<FurtherReading ids={["mode-sql", "sqlbolt", "sqlite-docs", "postgres-docs"]} />

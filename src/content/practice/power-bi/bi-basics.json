@@ -1,0 +1,60 @@
+[
+  {
+    "id": "pbi-bi-basics-001",
+    "module": "power-bi",
+    "topic": "bi-basics",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "A manager asks: \"Why do I need Power BI Desktop if I can already open reports in the browser?\" Explain the difference between Power BI Desktop and the Power BI Service, and name two tasks you would do in each.",
+    "dataset": "none",
+    "hint": "Think about where you build and where you share.",
+    "solution": "**Desktop** is a free Windows application where you build: connect to data, clean it in Power Query, create the model and DAX measures, and design report pages.\n\n**Service** (app.powerbi.com) is the cloud site where you share: publish reports, set up scheduled refresh, create dashboards, give access to colleagues, apply row-level security roles and view reports on mobile.\n\nTwo Desktop tasks: write DAX measures; shape data in Power Query. Two Service tasks: schedule a refresh; share an app with the sales team.\n\nSmall edits to visuals can be done in the browser, but the data model is built in Desktop.",
+    "explanation": "Desktop builds, Service shares.",
+    "commonMistake": "Saying Service is just 'Power BI online' and not mentioning that heavy modelling still happens in Desktop.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "desktop",
+      "service"
+    ]
+  },
+  {
+    "id": "pbi-bi-basics-002",
+    "module": "power-bi",
+    "topic": "bi-basics",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "In Power BI Service, what is the difference between a report, a dataset (semantic model) and a dashboard?",
+    "dataset": "none",
+    "hint": "A dashboard is one page of pinned tiles; a report can have many pages.",
+    "solution": "- **Dataset / semantic model**: the data plus relationships and measures. Many reports can use one dataset.\n- **Report**: one or more pages of visuals built on a dataset, interactive with slicers and drill-through.\n- **Dashboard**: a single canvas of tiles pinned from one or more reports. It is made in the Service only and is good for a quick glance at KPIs.\n\nExample: a retail semantic model feeds a 'Store Performance' report. The CEO pins three KPI cards from it to a dashboard.",
+    "explanation": "Three different objects.",
+    "commonMistake": "Using 'dashboard' for every Power BI page. In Power BI, a dashboard is a specific Service object.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "service",
+      "terminology"
+    ]
+  },
+  {
+    "id": "pbi-bi-basics-003",
+    "module": "power-bi",
+    "topic": "bi-basics",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "You are a fresher analyst in a fintech. Your team lead says: \"The weekly UPI failure report is built in Desktop. How does the regional head see it every Monday on her phone with fresh data?\" Describe the steps and the pieces involved.",
+    "dataset": "fintech",
+    "hint": "Publish, refresh, share, mobile.",
+    "solution": "1. In Desktop, finish the report and click **Publish** to a workspace.\n2. In the Service, open the semantic model settings and set the data source credentials. If the source is on-premises (for example SQL Server in the office), install an **on-premises data gateway**.\n3. Configure **scheduled refresh**, for example every Monday at 6:00 AM.\n4. Share the report or publish a workspace **app**, and give the regional head Viewer access (a Pro licence or Premium capacity is needed to view shared content).\n5. She opens the Power BI mobile app, where the report appears. Optionally set a mobile layout in Desktop.\n\nTip: add a 'Last refreshed' card so users know how fresh the data is.",
+    "explanation": "Publish, refresh, share.",
+    "commonMistake": "Forgetting the gateway. Scheduled refresh fails for on-premises sources without it.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 6,
+    "tags": [
+      "publish",
+      "refresh",
+      "gateway"
+    ]
+  }
+]

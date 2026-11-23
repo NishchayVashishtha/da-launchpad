@@ -1,0 +1,136 @@
+---
+title: "Pivot charts, slicers and timelines"
+description: "Turn pivots into interactive charts and connect one slicer to many pivots."
+module: excel
+order: 10
+estimatedMinutes: 45
+objectives:
+  - "Create a pivot chart and choose a chart type that fits the question"
+  - "Add slicers and timelines to filter a pivot with one click"
+  - "Connect one slicer to several pivot tables"
+  - "Tidy slicer settings so a report looks professional"
+tags: ["excel", "pivot-chart", "slicer", "timeline"]
+---
+
+## Learning objectives
+
+- Make a pivot chart from a pivot table.
+- Add slicers and a timeline.
+- Connect a slicer to more than one pivot.
+- Style and arrange slicers for a clean report.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Your manager wants to open the file in a meeting and click "West" or "Q3 2024" to see the numbers change live. That is a slicer. Slicers and timelines turn a static summary into a small dashboard, and every Excel dashboard task depends on them.
+</RealWorld>
+
+## Concept
+
+A **pivot chart** is a chart that is linked to a pivot table. If the pivot changes, the chart changes. If you filter the chart, the pivot filters too. Think of the pivot as the engine and the chart as the dashboard glass.
+
+A **slicer** is a set of buttons that filter a pivot. Each button is one value (for example East, North, South, West). Click a button to keep only that value. Hold Ctrl to pick several. A **timeline** is a slicer made for dates. It shows a scrollable bar, and you can switch between days, months, quarters and years.
+
+Slicers have one big advantage over the normal filter drop-down: they show the current selection at a glance, and one slicer can control **many pivots** at once through *Report Connections*.
+
+<Tip>
+Pick the chart before you pick the slicer. Ask: "What is the one question this chart answers?" A bar chart answers "which is biggest". A line chart answers "how is it changing over time".
+</Tip>
+
+Rules of thumb for pivot charts:
+
+| Question | Chart type |
+|---|---|
+| Compare categories | Clustered bar or column |
+| Trend over months | Line |
+| Share of a whole (3 to 5 parts) | Stacked bar or doughnut |
+| Two measures with different scales | Combo (see the charts lesson) |
+
+## Worked examples
+
+Use `excel-sales-analysis.xlsx`, sheet `sales`.
+
+<Download href="data/excel/excel-sales-analysis.xlsx" label="excel-sales-analysis.xlsx" />
+
+**Example 1: a pivot chart of sales by category.**
+
+1. Build a pivot: Rows = `category`, Values = Sum of `net_amount_inr`.
+2. Click inside the pivot. Choose PivotTable Analyze > PivotChart > Clustered Bar.
+3. Right-click the chart > Sort the pivot descending by sales (right-click a value > Sort > Largest to Smallest).
+4. Delete the legend (one series only), add a title "Net sales by category (INR)", and show data labels.
+
+Expected order: Home & Kitchen 10,71,888; Grocery & Staples 8,87,224; Apparel 8,55,409; Personal Care 3,88,985; Electronics Accessories 3,68,954; Home Decor 2,16,073.
+
+Right-click the field buttons on the chart > Hide All Field Buttons for a cleaner look.
+
+**Example 2: a slicer.** Click the pivot > PivotTable Analyze > Insert Slicer > tick `store_region` > OK. Click "West". The pivot and chart now show only West stores. West total is 15,61,654. Click the funnel-with-cross icon (top right of the slicer) to clear the filter.
+
+Set slicer columns to 4 in Slicer > Columns so the buttons sit side by side.
+
+**Example 3: a timeline.** Click the pivot > Insert Timeline > `sale_date` > OK. Change the drop-down on the right from Months to Quarters. Drag from Q1 2024 to Q4 2024 on the bar. Now the pivot shows only 2024, total 21,26,604.
+
+**Example 4: one slicer for two pivots.** Make a second pivot on a new sheet: Rows = `payment_mode`, Values = Count of `sale_id`. Go back to the first sheet, right-click the `store_region` slicer > Report Connections > tick both pivot tables > OK. Now click "South". Both pivots filter.
+
+With South selected, the first pivot shows 9,89,044 and the payment pivot counts only South transactions.
+
+Tip: both pivots must come from the **same data source**. If you built the second pivot with a separate Insert > PivotTable and Excel created a new cache, it will not appear in the list. Create the second pivot by copying the first one (select all, copy, paste to another sheet), or choose the same table and say Yes if Excel offers to share the cache.
+
+<Warning>
+Slicers filter only pivots in the same workbook. A slicer cannot filter a normal formula such as SUMIFS. If your dashboard has formulas, drive them from a pivot or a cell linked to GETPIVOTDATA.
+</Warning>
+
+## Common mistakes
+
+<CommonMistake>Leaving the slicer on Sheet 2 while the chart is on Sheet 1, so the user keeps jumping. Place slicers next to the visuals they control.</CommonMistake>
+
+<CommonMistake>Adding five or six slicers. The user gets lost, and some combinations return no data. Keep to 2 to 4 useful slicers.</CommonMistake>
+
+<CommonMistake>Not connecting the slicer to all pivots, so half the dashboard filters and half does not. After you add a slicer, always open Report Connections.</CommonMistake>
+
+<CommonMistake>Using a pie chart for 12 categories. Nobody can compare 12 slices. Use a sorted bar chart.</CommonMistake>
+
+<CommonMistake>Sharing a file with a slicer selection left on one region. The reader thinks the numbers are for the whole company. Clear all slicers before saving.</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="pivot-charts-slicers" module="excel" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What is the main difference between a slicer and a timeline?", options: ["A timeline works only on dates", "A slicer works only on numbers", "A timeline cannot be connected to pivots", "There is no difference"], answer: 0, explanation: "A timeline is a slicer built for date fields, with day, month, quarter and year views." },
+  { q: "Where do you connect one slicer to many pivots?", options: ["Slicer > Report Connections", "Data > Connections", "PivotChart > Format", "Page Layout"], answer: 0, explanation: "Right-click the slicer and choose Report Connections, then tick the pivots." },
+  { q: "A second pivot does not appear in Report Connections. A likely reason?", options: ["It uses a different pivot cache (data source)", "It has too many rows", "It has no chart", "The slicer is hidden"], answer: 0, explanation: "A slicer can only connect to pivots that share the same cache. Create the second pivot by copying the first." },
+  { q: "You filter a pivot chart using its field button. What happens to the pivot table?", options: ["Nothing", "It is filtered too", "It is deleted", "It is sorted"], answer: 1, explanation: "A pivot chart and its pivot are two views of the same data, so they stay in step." },
+  { q: "Which chart suits 'sales trend over 24 months'?", options: ["Pie", "Line", "Doughnut", "Radar"], answer: 1, explanation: "A line chart shows change over time clearly." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+A common live task: "Make a chart that the manager can filter by region and month." The answer they expect is a pivot chart plus a slicer and a timeline, with all connected.
+</InterviewAlert>
+
+<InterviewQ q="How do you make one slicer control multiple pivot tables?">
+Create all pivots from the same source so they share a pivot cache. Then right-click the slicer, open Report Connections, and tick every pivot that should react. If a pivot is missing from the list, rebuild it by copying an existing pivot.
+</InterviewQ>
+
+<InterviewQ q="What are the limitations of pivot charts?">
+Pivot charts cannot be made as scatter, bubble or stock charts. They always follow the pivot layout, and formatting can reset when the pivot is refreshed unless you tick Preserve cell formatting. For a custom chart, point a normal chart at cells that read from the pivot.
+</InterviewQ>
+
+<InterviewQ q="Slicer or filter drop-down: which and why?">
+A slicer is visible, clickable and can control many pivots, so it suits dashboards and non-technical users. A normal filter is fine for quick analysis because it takes no space.
+</InterviewQ>
+
+## Key takeaways
+
+- A pivot chart is always linked to its pivot table.
+- Slicers filter by value; timelines filter by date period.
+- Use Report Connections so one slicer controls many pivots.
+- All connected pivots must share the same data source.
+- Keep slicers few, placed near the visuals, and cleared before you share.
+
+## Further reading
+
+<FurtherReading ids={["excel-support", "chandoo"]} />

@@ -1,0 +1,298 @@
+---
+title: "Iterators and ranking: SUMX, AVERAGEX, RANKX and TOPN"
+description: "Use X functions to calculate row by row, then rank and pick top N with RANKX and TOPN, including ranking within a group."
+module: power-bi
+order: 8
+estimatedMinutes: 50
+objectives:
+  - "Explain how iterator (X) functions use row context"
+  - "Write SUMX and AVERAGEX measures including weighted averages"
+  - "Rank items with RANKX and rank within a group"
+  - "Return top N with TOPN and compute top-N share"
+tags: ["power-bi", "dax", "iterators", "sumx", "rankx", "topn"]
+---
+
+## Learning objectives
+
+- Explain how **iterator** (X) functions use row context.
+- Write `SUMX` and `AVERAGEX` measures including weighted averages.
+- Rank items with `RANKX` and rank within a group.
+- Return the top N with `TOPN` and compute top-N share.
+
+## Why this matters for a Data Analyst job
+
+Business questions often need a calculation on every row before adding up: gross sales is quantity times price, not "sum of quantity times sum of price". Managers also ask "who are the top 5 stores?", "what rank is this store?" and "how much do the top 3 products contribute?". These need iterators and ranking functions.
+
+<RealWorld>
+A retail head wants a store league table: rank, sales, and the share contributed by the top 5 stores. The analyst uses `RANKX` for the rank and `TOPN` inside `CALCULATE` for the top-5 total. The table helps decide where to send extra stock and which weaker stores need attention.
+</RealWorld>
+
+## Concept
+
+### Iterators: aggregators with a row-by-row step
+
+`SUM(Sales[quantity])` adds one column. `SUMX(Sales, Sales[quantity] * Sales[unit_price_inr])` goes through the `Sales` table **row by row**, calculates the expression for each row (row context), and then adds the results.
+
+```dax
+SUMX ( <table>, <expression evaluated per row> )
+```
+
+Analogy: `SUM` is the shop total on a calculator tape that already has the numbers. `SUMX` is the cashier first multiplying quantity by price on each line, then adding.
+
+Common iterators:
+
+| Function | Result |
+|----------|--------|
+| `SUMX` | Sum of row expressions |
+| `AVERAGEX` | Average of row expressions |
+| `MINX`, `MAXX` | Min or max of row expressions |
+| `COUNTX` | Counts non-blank row expressions |
+| `RANKX` | Rank of a value within a table |
+| `FILTER` | Rows that pass a test |
+| `TOPN` | Top n rows by an expression |
+
+The table argument can be a real table (`Sales`), a table of distinct values (`VALUES(Stores[store_name])`) or a table function (`FILTER`, `ALL`, `TOPN`).
+
+### Why not just SUM times SUM?
+
+```dax
+Wrong = SUM ( Sales[quantity] ) * SUM ( Sales[unit_price_inr] )   -- multiplies two totals
+Gross Sales = SUMX ( Sales, Sales[quantity] * Sales[unit_price_inr] )   -- row by row, correct
+```
+
+### AVERAGEX over a dimension
+
+To average a measure across entities, iterate over the entities:
+
+```dax
+Avg Revenue per Customer = AVERAGEX ( VALUES ( Customers[customer_id] ), [Revenue] )
+Avg Monthly Sales        = AVERAGEX ( VALUES ( 'Calendar'[Year-Month] ), [Total Sales] )
+```
+
+Each time `[Revenue]` is evaluated inside the iterator, a context transition (lesson 6) filters it to the current customer or month.
+
+### Weighted averages
+
+When rows have different sizes, weight by size:
+
+```dax
+Weighted Discount % =
+DIVIDE (
+    SUMX ( Sales, Sales[quantity] * Sales[unit_price_inr] * Sales[discount_pct] / 100 ),
+    [Gross Sales]
+)
+```
+
+A simple `AVERAGE(Sales[discount_pct])` gives each row equal weight, even a ₹50 item and a ₹50,000 item.
+
+### RANKX
+
+```dax
+RANKX ( <table>, <expression> [, <value>] [, <order>] [, <ties>] )
+```
+
+- `table`: the list of items to rank among, often `ALL(Stores[store_name])`.
+- `expression`: the number to rank, usually a measure.
+- `order`: `DESC` (largest = 1) or `ASC`.
+- `ties`: `SKIP` (default; 1,2,2,4) or `DENSE` (1,2,2,3).
+
+```dax
+Store Rank = RANKX ( ALL ( Stores[store_name] ), [Total Sales], , DESC, DENSE )
+```
+
+For each row of a table by store, `RANKX` evaluates `[Total Sales]` for every store in the list and finds the position of the current store's value. The list comes from `ALL`, so removing the current row filter is what makes ranking possible. If you passed `VALUES`, each store would be compared only against itself and every rank would be 1.
+
+**Rank within a group** (stores within a region):
+
+```dax
+Rank in Region = RANKX ( ALLEXCEPT ( Stores, Stores[region] ), [Total Sales], , DESC, DENSE )
+```
+
+`ALLEXCEPT` keeps the region filter, so the list contains only stores in the same region.
+
+**Rank among the visible items** (respecting slicers): use `ALLSELECTED(Stores[store_name])` in place of `ALL`.
+
+<Warning>
+A rank measure shows at total rows too. At the grand total it makes no sense. Use `IF(ISINSCOPE(Stores[store_name]), RANKX(...))` so the total row stays blank.
+</Warning>
+
+### TOPN
+
+```dax
+TOPN ( n, <table>, <orderBy expression>, [DESC|ASC] )
+```
+
+`TOPN` returns a **table** (the top n rows). You usually feed it to `CALCULATE` as a filter, or to an iterator:
+
+```dax
+Top 5 Stores Sales =
+CALCULATE ( [Total Sales], TOPN ( 5, ALL ( Stores[store_name] ), [Total Sales], DESC ) )
+
+Top 5 Share % = DIVIDE ( [Top 5 Stores Sales], CALCULATE ( [Total Sales], ALL ( Stores[store_name] ) ) )
+```
+
+`TOPN` keeps ties, so you can get more than n rows if the nth value is shared. Make the order deterministic by adding a second sort expression when needed.
+
+### Dynamic Top N with a parameter
+
+Create a **What-if parameter** (Modelling > New parameter) called `Top N` with values 1 to 10. Then:
+
+```dax
+Top N Sales =
+CALCULATE ( [Total Sales], TOPN ( [Top N Value], ALL ( Stores[store_name] ), [Total Sales], DESC ) )
+```
+
+where `[Top N Value]` is the measure that Power BI creates for the parameter. Users pick N with a slicer.
+
+You can also use the visual's own **Top N** filter (Filters pane > Filter type > Top N) for a simple chart. Use DAX when you need the top-N inside a measure.
+
+### Performance note
+
+Iterators are powerful but run a calculation per row. For simple cases like `SUMX(Sales, Sales[net_amount_inr])`, `SUM` is faster. Use X functions when you must compute per row (price times quantity) or per entity (per customer, per month).
+
+## Worked examples
+
+Retail numbers come from the cleaned retail data (duplicates removed, 6 outliers dropped).
+
+### Example 1: Gross sales and weighted discount
+
+```dax
+Gross Sales = SUMX ( Sales, Sales[quantity] * Sales[unit_price_inr] )
+Weighted Discount % =
+DIVIDE ( SUMX ( Sales, Sales[quantity] * Sales[unit_price_inr] * Sales[discount_pct] / 100 ), [Gross Sales] )
+Simple Avg Discount % = AVERAGE ( Sales[discount_pct] )
+```
+
+| Category | Gross Sales (₹) | Weighted Discount % | Simple Avg Discount % |
+|----------|-----------------|---------------------|-----------------------|
+| Home & Kitchen | 85,80,150 | 4.21% | 4.53% |
+| Grocery & Staples | 73,14,973 | 4.11% | 4.34% |
+| Apparel | 71,22,014 | 4.13% | 4.35% |
+| Electronics Accessories | 33,64,311 | 4.09% | 4.32% |
+| Personal Care | 32,91,122 | 4.16% | 4.36% |
+| Home Decor | 17,15,451 | 4.22% | 4.29% |
+| **All** | **3,13,88,020** | **4.15%** | **4.37%** |
+
+The simple average is slightly higher because small-value lines carry bigger discounts. The weighted version tells how much of the gross value was given away. The sample has about 4% blank discounts; they count as zero in the weighted version.
+
+### Example 2: Store rank and top 5
+
+```dax
+Store Rank = RANKX ( ALL ( Stores[store_name] ), [Total Sales], , DESC, DENSE )
+Top 5 Stores Sales =
+CALCULATE ( [Total Sales], TOPN ( 5, ALL ( Stores[store_name] ), [Total Sales], DESC ) )
+```
+
+| Rank | Store | Total Sales (₹) |
+|------|-------|-----------------|
+| 1 | Vasudha Hypermarket - Satellite | 24,47,723 |
+| 2 | Vasudha Hypermarket - Dwarka | 24,31,026 |
+| 3 | Vasudha Hypermarket - Andheri | 24,08,965 |
+| 4 | Vasudha Hypermarket - Whitefield | 23,25,389 |
+| 5 | Vasudha Supermarket - Six Mile | 13,74,128 |
+| 6 | Vasudha Supermarket - Thane | 13,48,347 |
+| 7 | Vasudha Supermarket - Salt Lake | 13,10,863 |
+
+The top 5 stores together sell ₹1,09,87,230, which is 36.6% of company sales (₹3,00,27,732). Four hypermarkets sit far ahead of the rest. A manager may ask whether the supermarket stores can learn from them.
+
+### Example 3: Rank within a region
+
+```dax
+Rank in Region =
+IF ( ISINSCOPE ( Stores[store_name] ),
+     RANKX ( ALLEXCEPT ( Stores, Stores[region] ), [Total Sales], , DESC, DENSE ) )
+```
+
+For the North region (real numbers):
+
+| Store | Total Sales (₹) | Rank in Region |
+|-------|-----------------|----------------|
+| Vasudha Hypermarket - Dwarka | 24,31,026 | 1 |
+| Vasudha Supermarket - Malviya Nagar | 13,05,347 | 2 |
+| Vasudha Supermarket - Gomti Nagar | 8,05,132 | 3 |
+| Vasudha Express - Sector 17 | 7,36,147 | 4 |
+| Vasudha Express - Rohini | 6,56,900 | 5 |
+
+In the West region the ranking restarts at 1 for its own stores. The `IF(ISINSCOPE...)` keeps the region subtotal row blank.
+
+### Example 4: Average monthly sales
+
+```dax
+Avg Monthly Sales = AVERAGEX ( VALUES ( 'Calendar'[Year-Month] ), [Total Sales] )
+```
+
+For 2024, the monthly total ranges from ₹11,63,058 (February) to ₹18,90,028 (October). The average of the 12 months is ₹13,63,511 (₹1,63,62,135 divided by 12). Averaging the rows instead of the months would answer a different question (the average sale line).
+
+## Common mistakes
+
+<CommonMistake>
+Using `SUM(a) * SUM(b)` when you need a row-by-row product. Use `SUMX`.
+</CommonMistake>
+
+<CommonMistake>
+Passing `VALUES` to `RANKX` so every item compares only with itself and gets rank 1. Use `ALL` or `ALLSELECTED` on the dimension column.
+</CommonMistake>
+
+<CommonMistake>
+Showing a rank in the grand total row. Use `ISINSCOPE` to hide it.
+</CommonMistake>
+
+<CommonMistake>
+Using `TOPN` without `ALL`; it then evaluates only the current store, and returns that store.
+</CommonMistake>
+
+<CommonMistake>
+Averaging a column of line values and calling it an "average monthly" or "average per customer" number. Iterate over the entity you want to average.
+</CommonMistake>
+
+<CommonMistake>
+Using an iterator where a simple aggregator would do, making a big model slow for no benefit.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="iterators" module="power-bi" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What does SUMX(Sales, Sales[quantity] * Sales[unit_price_inr]) do?", options: ["Multiplies the two column totals", "Computes the product row by row and then sums", "Counts rows", "Averages prices"], answer: 1, explanation: "SUMX evaluates the expression for each row (row context) and adds the results." },
+  { q: "Which table should RANKX usually iterate to rank stores by sales?", options: ["VALUES(Stores[store_name])", "ALL(Stores[store_name])", "Sales", "Calendar"], answer: 1, explanation: "ALL gives the full list of stores to rank against. VALUES would give only the current store in a table row." },
+  { q: "RANKX with DENSE ties and two stores sharing rank 2: what is the next rank?", options: ["3", "4", "5", "2"], answer: 0, explanation: "DENSE does not skip numbers after ties (1,2,2,3). The default SKIP gives 1,2,2,4." },
+  { q: "TOPN returns...", options: ["A single number", "A table of the top n rows", "A rank column", "A text"], answer: 1, explanation: "TOPN returns a table. You usually use it as a filter inside CALCULATE or as the table of an iterator." },
+  { q: "How do you ensure a store's rank restarts within each region?", options: ["RANKX over ALL(Stores)", "RANKX over ALLEXCEPT(Stores, Stores[region])", "RANKX over VALUES", "SUMX"], answer: 1, explanation: "ALLEXCEPT keeps the region filter so only stores of the same region are ranked together." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Typical live tasks: "rank products by revenue", "show top 5 customers", "average revenue per customer". Name the table you iterate over (customers, months, stores) and say what happens at the total row.
+</InterviewAlert>
+
+<InterviewQ q="What is the difference between SUM and SUMX?">
+SUM adds up a single column. SUMX is an iterator: it evaluates an expression for each row of a table and then adds the results, so I can compute things like quantity times price per row. SUM is faster for a single column; SUMX is needed when the calculation is row-level.
+</InterviewQ>
+
+<InterviewQ q="How do you rank stores by sales, and how do you rank within a region?">
+`RANKX(ALL(Stores[store_name]), [Total Sales], , DESC, DENSE)` ranks across all stores. For a rank within a region I replace `ALL` by `ALLEXCEPT(Stores, Stores[region])`, which keeps the region filter. I wrap it in an `IF(ISINSCOPE(...))` so totals stay blank.
+</InterviewQ>
+
+<InterviewQ q="How would you compute the share of sales from the top 5 products?">
+`CALCULATE([Revenue], TOPN(5, ALL(Products[product_name]), [Revenue], DESC))` divided by `CALCULATE([Revenue], ALL(Products[product_name]))`. If I want the top 5 within the user's selection I use `ALLSELECTED` instead of `ALL`.
+</InterviewQ>
+
+<InterviewQ q="Why does AVERAGEX over VALUES(customer) give a different answer than AVERAGE of the order total?">
+AVERAGE of the order column is the average per order. AVERAGEX over customers calculates revenue for each customer first, then averages those customer totals, so it is the average revenue per customer. They answer different questions.
+</InterviewQ>
+
+## Key takeaways
+
+- Iterators (`SUMX`, `AVERAGEX`) calculate row by row and then aggregate.
+- Weighted averages come from sum of numerators divided by sum of denominators.
+- `RANKX` needs the full list to rank against, usually `ALL(column)`; use `ALLEXCEPT` for rank within a group.
+- `TOPN` returns a table; use it inside `CALCULATE` to get top-N totals and shares.
+- Hide rank at total rows with `ISINSCOPE`, and choose the entity you average over carefully.
+
+## Further reading
+
+<FurtherReading ids={["dax-guide", "power-bi-docs", "pl300"]} />

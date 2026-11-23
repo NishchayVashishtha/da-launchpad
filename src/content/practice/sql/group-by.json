@@ -1,0 +1,433 @@
+[
+ {
+  "id": "sql-group-by-001",
+  "module": "sql",
+  "topic": "group-by",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "Count orders per `sales_channel`. Return `sales_channel` and `orders`, ordered by `orders` descending then `sales_channel`.",
+  "dataset": "ecommerce",
+  "hint": "GROUP BY the channel.",
+  "solutionSql": "SELECT sales_channel, COUNT(*) AS orders FROM orders GROUP BY sales_channel ORDER BY orders DESC, sales_channel",
+  "orderMatters": true,
+  "explanation": "One output row per channel. Always sort the result.",
+  "commonMistake": "Selecting sales_channel but forgetting GROUP BY.",
+  "interviewFrequency": "high",
+  "estimatedMinutes": 3,
+  "tags": [
+   "group",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "sales_channel",
+    "orders"
+   ],
+   "rows": [
+    [
+     "Android App",
+     5028
+    ],
+    [
+     "Website",
+     2112
+    ],
+    [
+     "iOS App",
+     1680
+    ],
+    [
+     "Mobile Web",
+     1280
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-group-by-002",
+  "module": "sql",
+  "topic": "group-by",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "Count unique employees per `department_id`. Return `department_id` and `employees`, ordered by `department_id`.",
+  "dataset": "hr",
+  "hint": "COUNT(DISTINCT ...) protects from duplicate rows.",
+  "solutionSql": "SELECT department_id, COUNT(DISTINCT employee_id) AS employees FROM employees GROUP BY department_id ORDER BY department_id",
+  "orderMatters": true,
+  "explanation": "The table holds a few duplicate employee rows, so DISTINCT gives the true headcount.",
+  "commonMistake": "Using COUNT(*) and counting duplicates.",
+  "interviewFrequency": "high",
+  "estimatedMinutes": 3,
+  "tags": [
+   "group",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "department_id",
+    "employees"
+   ],
+   "rows": [
+    [
+     1,
+     833
+    ],
+    [
+     2,
+     349
+    ],
+    [
+     3,
+     156
+    ],
+    [
+     4,
+     440
+    ],
+    [
+     5,
+     103
+    ],
+    [
+     6,
+     96
+    ],
+    [
+     7,
+     275
+    ],
+    [
+     8,
+     148
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-group-by-003",
+  "module": "sql",
+  "topic": "group-by",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "Total units sold per `category`. Return `category` and `units`, ordered by `units` descending then `category`.",
+  "dataset": "retail",
+  "hint": "SUM with GROUP BY.",
+  "solutionSql": "SELECT category, SUM(quantity) AS units FROM sales GROUP BY category ORDER BY units DESC, category",
+  "orderMatters": true,
+  "explanation": "Each category becomes one group and quantity is summed inside it.",
+  "commonMistake": "Selecting extra non-grouped columns.",
+  "interviewFrequency": "high",
+  "estimatedMinutes": 3,
+  "tags": [
+   "group",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "category",
+    "units"
+   ],
+   "rows": [
+    [
+     "Grocery & Staples",
+     19881
+    ],
+    [
+     "Personal Care",
+     13267
+    ],
+    [
+     "Apparel",
+     10007
+    ],
+    [
+     "Home & Kitchen",
+     9949
+    ],
+    [
+     "Electronics Accessories",
+     7028
+    ],
+    [
+     "Home Decor",
+     3330
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-group-by-004",
+  "module": "sql",
+  "topic": "group-by",
+  "difficulty": "medium",
+  "language": "sql",
+  "question": "Failure rate per `bank` (status 'FAILED' as a percent of all that bank's transactions). Return `bank`, `txns`, `failure_pct` (2 decimals), ordered by `failure_pct` descending then `bank`.",
+  "dataset": "fintech",
+  "hint": "Conditional sum over count, grouped by bank.",
+  "solutionSql": "SELECT bank, COUNT(*) AS txns, ROUND(100.0 * SUM(status = 'FAILED') / COUNT(*), 2) AS failure_pct FROM transactions GROUP BY bank ORDER BY failure_pct DESC, bank",
+  "orderMatters": true,
+  "explanation": "The rate is failed divided by all rows in the group, not by all failed rows.",
+  "commonMistake": "Dividing by the overall total instead of the group's total.",
+  "interviewFrequency": "high",
+  "estimatedMinutes": 6,
+  "tags": [
+   "group",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "bank",
+    "txns",
+    "failure_pct"
+   ],
+   "rows": [
+    [
+     "Kaveri Co-op Bank",
+     1779,
+     8.09
+    ],
+    [
+     "PayNova Small Finance Bank",
+     760,
+     4.08
+    ],
+    [
+     "Coromandel Bank",
+     1973,
+     2.84
+    ],
+    [
+     "Bharat Union Bank",
+     5188,
+     2.41
+    ],
+    [
+     "Himalaya Trust Bank",
+     3002,
+     2.3
+    ],
+    [
+     "Sundaram Bank",
+     4532,
+     2.23
+    ],
+    [
+     "Rajdhani National Bank",
+     3547,
+     2.2
+    ],
+    [
+     "Malabar Savings Bank",
+     1307,
+     1.91
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-group-by-005",
+  "module": "sql",
+  "topic": "group-by",
+  "difficulty": "medium",
+  "language": "sql",
+  "question": "Count events per event type, ignoring case differences. Return `event_name` (lower case) and `events`, ordered by `events` descending then `event_name`.",
+  "dataset": "subscription",
+  "hint": "Group by LOWER(event_name).",
+  "solutionSql": "SELECT LOWER(event_name) AS event_name, COUNT(*) AS events FROM events GROUP BY LOWER(event_name) ORDER BY events DESC, event_name",
+  "orderMatters": true,
+  "explanation": "Cleaning the grouping key merges 'SIGNUP' and 'signup' into one group.",
+  "commonMistake": "Grouping on the raw text and getting twice as many groups.",
+  "interviewFrequency": "high",
+  "estimatedMinutes": 6,
+  "tags": [
+   "group",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "event_name",
+    "events"
+   ],
+   "rows": [
+    [
+     "app_open",
+     9372
+    ],
+    [
+     "content_view",
+     7868
+    ],
+    [
+     "signup",
+     5237
+    ],
+    [
+     "renewal_success",
+     4133
+    ],
+    [
+     "trial_start",
+     3328
+    ],
+    [
+     "search",
+     2330
+    ],
+    [
+     "trial_expired",
+     2084
+    ],
+    [
+     "payment_success",
+     1195
+    ],
+    [
+     "cancel_subscription",
+     689
+    ],
+    [
+     "payment_failed",
+     147
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-group-by-006",
+  "module": "sql",
+  "topic": "group-by",
+  "difficulty": "medium",
+  "language": "sql",
+  "question": "Average `delay_minutes` of Delivered orders per `weather`. Return `weather` and `avg_delay` (2 decimals), ordered by `avg_delay` descending then `weather`.",
+  "dataset": "food_delivery",
+  "hint": "WHERE first, then GROUP BY.",
+  "solutionSql": "SELECT weather, ROUND(AVG(delay_minutes), 2) AS avg_delay FROM deliveries WHERE delivery_status = 'Delivered' GROUP BY weather ORDER BY avg_delay DESC, weather",
+  "orderMatters": true,
+  "explanation": "Filtering to Delivered first removes cancelled rows, which have NULL delay anyway.",
+  "commonMistake": "Putting delivery_status in HAVING.",
+  "interviewFrequency": "medium",
+  "estimatedMinutes": 6,
+  "tags": [
+   "group",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "weather",
+    "avg_delay"
+   ],
+   "rows": [
+    [
+     "Heavy Rain",
+     11.75
+    ],
+    [
+     "Rain",
+     6.93
+    ],
+    [
+     "Clear",
+     1.97
+    ],
+    [
+     "Cloudy",
+     1.88
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-group-by-007",
+  "module": "sql",
+  "topic": "group-by",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "Count clicks per cleaned `device` (lower case, spaces trimmed). Return `device` and `clicks`, ordered by `clicks` descending then `device`.",
+  "dataset": "marketing",
+  "hint": "Group by LOWER(TRIM(device)).",
+  "solutionSql": "SELECT LOWER(TRIM(device)) AS device, COUNT(*) AS clicks FROM clicks GROUP BY LOWER(TRIM(device)) ORDER BY clicks DESC, device",
+  "orderMatters": true,
+  "explanation": "The raw column has variants such as ' Mobile' and 'DESKTOP'. Cleaning merges them.",
+  "commonMistake": "Grouping by the raw column.",
+  "interviewFrequency": "medium",
+  "estimatedMinutes": 3,
+  "tags": [
+   "group",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "device",
+    "clicks"
+   ],
+   "rows": [
+    [
+     "mobile",
+     15278
+    ],
+    [
+     "desktop",
+     5366
+    ],
+    [
+     "tablet",
+     870
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-group-by-008",
+  "module": "sql",
+  "topic": "group-by",
+  "difficulty": "hard",
+  "language": "sql",
+  "question": "For Delivered orders with `order_value` below 5000 (removing data-entry outliers), show per cleaned city (lower case, trimmed) the number of `orders` and `fee_pct` = total `delivery_fee` as a percent of total `order_value`, rounded to 2 decimals. Return `city`, `orders`, `fee_pct`, top 5 by `fee_pct` descending then `city`.",
+  "dataset": "food_delivery",
+  "hint": "Ratio of sums, not average of ratios.",
+  "solutionSql": "SELECT LOWER(TRIM(city)) AS city, COUNT(*) AS orders, ROUND(100.0 * SUM(delivery_fee) / SUM(order_value), 2) AS fee_pct FROM deliveries WHERE delivery_status = 'Delivered' AND order_value < 5000 GROUP BY LOWER(TRIM(city)) ORDER BY fee_pct DESC, city LIMIT 5",
+  "orderMatters": true,
+  "explanation": "Dividing total fee by total value weights big orders properly. An average of per-order percentages would be different.",
+  "commonMistake": "Using AVG(delivery_fee / order_value), which is a different metric.",
+  "interviewFrequency": "medium",
+  "estimatedMinutes": 10,
+  "tags": [
+   "group",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "city",
+    "orders",
+    "fee_pct"
+   ],
+   "rows": [
+    [
+     "lucknow",
+     607,
+     6.91
+    ],
+    [
+     "pune",
+     1076,
+     6.76
+    ],
+    [
+     "kolkata",
+     1219,
+     6.42
+    ],
+    [
+     "delhi",
+     2439,
+     6.26
+    ],
+    [
+     "chennai",
+     1370,
+     5.86
+    ]
+   ]
+  }
+ }
+]

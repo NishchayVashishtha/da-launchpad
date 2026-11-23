@@ -1,0 +1,40 @@
+[
+  {
+    "id": "excel-charts-001",
+    "module": "excel",
+    "topic": "charts",
+    "difficulty": "easy",
+    "language": "excel",
+    "question": "Pick the best chart for each case and give a reason: (a) delivery distance vs delay for 2,000 orders, (b) delivery count per weekday, (c) share of orders by payment mode with 4 modes.",
+    "dataset": "none",
+    "hint": "Think relationship, comparison, part of whole.",
+    "solution": "**Model answer:** (a) **Scatter plot**: both are numbers and you want to see if they move together. (b) **Column or bar chart**: compares seven categories; keep weekday order natural (Mon to Sun). (c) **Stacked bar or a simple pie/doughnut**: only 4 parts of a whole, label each part directly.",
+    "explanation": "The chart type should match the question.",
+    "commonMistake": "Using a pie chart for seven weekdays or more.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "charts",
+      "chart-choice"
+    ]
+  },
+  {
+    "id": "excel-charts-002",
+    "module": "excel",
+    "topic": "charts",
+    "difficulty": "medium",
+    "language": "excel",
+    "question": "Using `excel-test-practice.xlsx` (sheet `food_orders`), build a combo chart by `weather`: columns for the number of orders and a line for the average `delay_minutes` of Delivered orders. Why is a secondary axis needed? Give the table values.",
+    "dataset": "none",
+    "hint": "Count and minutes have different scales. Use COUNTIFS and AVERAGEIFS in a small table, then Insert > Combo.",
+    "solution": "**Table (from formulas):** Clear: 1,388 orders, 1.31 min; Cloudy: 360 orders, 1.81 min; Rain: 154 orders, 6.56 min; Heavy Rain: 98 orders, 12.71 min.\n\n**Steps:** Select the table, Insert > Combo, set orders to Clustered Column and average delay to Line with Secondary Axis ticked. Title: 'Heavy rain doubles the delay, though few orders are affected'.\n\n**Why secondary axis:** orders reach 1,388 while delay is below 13. On one axis the line would look flat.",
+    "explanation": "Different units and magnitudes need separate axes.",
+    "commonMistake": "Leaving both on the same axis so the line looks flat.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 8,
+    "tags": [
+      "combo-chart",
+      "secondary-axis"
+    ]
+  }
+]

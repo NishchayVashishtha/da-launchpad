@@ -1,0 +1,171 @@
+[
+  {
+    "id": "pbi-dax-basics-001",
+    "module": "power-bi",
+    "topic": "dax-basics",
+    "difficulty": "easy",
+    "language": "dax",
+    "question": "Retail model: `Sales[net_amount_inr]` holds the sale value after discount. Write a measure `Total Sales` and a measure `Units Sold`.",
+    "dataset": "retail",
+    "hint": "SUM adds a single column.",
+    "solution": "```dax\nTotal Sales = SUM ( Sales[net_amount_inr] )\nUnits Sold  = SUM ( Sales[quantity] )\n```\n\nBoth are **measures**: they are calculated at report time, in the filter context of each visual cell. Put `Total Sales` in a card with no filter and you get the grand total (about ₹3.0 crore on the cleaned sample). Put it in a table by region and each row shows only that region's sales.",
+    "explanation": "SUM gives a measure that follows filters.",
+    "commonMistake": "Creating these as calculated columns, which adds storage and cannot respond to slicers properly.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "sum",
+      "measure"
+    ]
+  },
+  {
+    "id": "pbi-dax-basics-002",
+    "module": "power-bi",
+    "topic": "dax-basics",
+    "difficulty": "easy",
+    "language": "dax",
+    "question": "Ecommerce: write a measure for the number of distinct orders, using `Orders[order_id]`. Why not use COUNT or COUNTROWS?",
+    "dataset": "ecommerce",
+    "hint": "A column can repeat the same id.",
+    "solution": "```dax\nOrders Count = DISTINCTCOUNT ( Orders[order_id] )\n```\n\n`DISTINCTCOUNT` counts unique ids, so the 100 duplicated rows in the raw file count once. `COUNTROWS(Orders)` counts rows (10,100 raw, 10,000 after dedupe). If you cleaned duplicates in Power Query, both agree, but DISTINCTCOUNT is a safe habit. Avoid `COUNT`; it counts non-blank values of a column, not unique ones.",
+    "explanation": "Unique count of ids.",
+    "commonMistake": "Using COUNT(Orders[order_id]), which counts duplicates too.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "distinctcount"
+    ]
+  },
+  {
+    "id": "pbi-dax-basics-003",
+    "module": "power-bi",
+    "topic": "dax-basics",
+    "difficulty": "easy",
+    "language": "dax",
+    "question": "Ecommerce: add a **calculated column** on `Order_Items` called `Line Cost` = quantity x the product's `cost_price` (which lives in `Products`).",
+    "dataset": "ecommerce",
+    "hint": "Pull a value from the one side with RELATED.",
+    "solution": "```dax\nLine Cost = Order_Items[quantity] * RELATED ( Products[cost_price] )\n```\n\nA calculated column runs once per row (**row context**). `RELATED` follows the many-to-one relationship from `Order_Items` to `Products` and fetches the cost for that row's product. The result is stored in the model, so use it only when you need it as a column (for slicing or grouping). For totals, a measure with SUMX is usually better.",
+    "explanation": "RELATED goes many -> one.",
+    "commonMistake": "Using RELATED in the wrong direction (from Products to Order_Items). That needs RELATEDTABLE.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "calculated-column",
+      "related"
+    ]
+  },
+  {
+    "id": "pbi-dax-basics-004",
+    "module": "power-bi",
+    "topic": "dax-basics",
+    "difficulty": "easy",
+    "language": "dax",
+    "question": "Fintech: write a measure for the average transaction amount using `Transactions[amount]`. Then say whether it is correct to show it in a table by `txn_type` and also as a card.",
+    "dataset": "fintech",
+    "hint": "AVERAGE respects filter context too.",
+    "solution": "```dax\nAvg Txn Amount = AVERAGE ( Transactions[amount] )\n```\n\nIn a table by `txn_type` each row averages only its own transactions (for example P2P versus Bill Pay). In a card it averages all rows. It is correct in both because the measure recalculates in each context. Watch out for the 100x outliers (6 rows) in the raw data: clean them in Power Query or the average will be inflated.",
+    "explanation": "Same measure, different contexts.",
+    "commonMistake": "Averaging a column that still has outliers or text-converted nulls.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "average"
+    ]
+  },
+  {
+    "id": "pbi-dax-basics-005",
+    "module": "power-bi",
+    "topic": "dax-basics",
+    "difficulty": "medium",
+    "language": "dax",
+    "question": "HR: write `Exit Rate %` = number of rows in `Attrition` divided by the number of rows in `Employees` (all employees ever on record). Handle division by zero.",
+    "dataset": "hr",
+    "hint": "COUNTROWS counts rows of a table; DIVIDE is safe.",
+    "solution": "```dax\nExit Rate % =\nDIVIDE ( COUNTROWS ( Attrition ), COUNTROWS ( Employees ) )\n```\n\nWith the cleaned data this gives 544 / 2,400 = 22.7%. Format the measure as percentage. When a slicer picks a department, both the numerator and denominator filter by that department (if `Attrition` is related to `Employees` and `Employees` to `Departments`), so you get the department's exit rate. `DIVIDE` returns blank instead of an error when the denominator is zero.",
+    "explanation": "DIVIDE guards against zero.",
+    "commonMistake": "Writing `/` directly, which shows an error or infinity when a slicer selects nothing.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "divide",
+      "countrows",
+      "ratio"
+    ]
+  },
+  {
+    "id": "pbi-dax-basics-006",
+    "module": "power-bi",
+    "topic": "dax-basics",
+    "difficulty": "medium",
+    "language": "dax",
+    "question": "Ecommerce: write measures `Revenue`, `Cost` and `Margin %` where margin % = (revenue - cost) / revenue. Cost uses `Order_Items[Line Cost]` from the previous question. Explain why `Margin %` must be a measure of totals, not an average of row margins.",
+    "dataset": "ecommerce",
+    "hint": "Ratio of sums, not average of ratios.",
+    "solution": "```dax\nRevenue  = SUM ( Order_Items[line_total] )\nCost     = SUM ( Order_Items[Line Cost] )\nMargin % = DIVIDE ( [Revenue] - [Cost], [Revenue] )\n```\n\nExample (illustrative): two lines, one of ₹100 revenue with ₹50 cost (50%) and one of ₹900 revenue with ₹720 cost (20%). Average of row margins = 35%. True margin = (1,000 - 770) / 1,000 = 23%. Because the measure divides totals in whatever context the visual has, it is correct at row level, subtotal and grand total.",
+    "explanation": "Ratio of sums.",
+    "commonMistake": "Averaging a calculated column of row-level margin %, which overweights small lines.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "ratio",
+      "margin"
+    ]
+  },
+  {
+    "id": "pbi-dax-basics-007",
+    "module": "power-bi",
+    "topic": "dax-basics",
+    "difficulty": "medium",
+    "language": "dax",
+    "question": "Ecommerce: write `Avg Order Value` = revenue per order using `Orders[total_amount]` and `Orders[order_id]`.",
+    "dataset": "ecommerce",
+    "hint": "Total divided by number of distinct orders.",
+    "solution": "```dax\nAvg Order Value =\nDIVIDE ( SUM ( Orders[total_amount] ), DISTINCTCOUNT ( Orders[order_id] ) )\n```\n\nOn the deduplicated data this is about ₹5,430 per order for all statuses (₹5,384 for Delivered only). A few 100x entry errors (the largest order total is over ₹9 lakh) inflate it, so clean them first. Do not use `AVERAGE(Orders[total_amount])` if the table still has duplicate order rows, as they would be double counted in both ways. Decide and document whether cancelled and RTO orders are included.",
+    "explanation": "Revenue / distinct orders.",
+    "commonMistake": "Dividing by COUNTROWS of order items instead of distinct orders (that gives average line value).",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "aov"
+    ]
+  },
+  {
+    "id": "pbi-dax-basics-008",
+    "module": "power-bi",
+    "topic": "dax-basics",
+    "difficulty": "medium",
+    "language": "dax",
+    "question": "Ecommerce: create a calculated column `Price Band` on `Products` using `mrp`: under 500 is 'Low', 500 to 4,999 is 'Mid', 5,000 and above is 'Premium'.",
+    "dataset": "ecommerce",
+    "hint": "SWITCH(TRUE(), ...) checks conditions in order.",
+    "solution": "```dax\nPrice Band =\nSWITCH (\n    TRUE (),\n    Products[mrp] < 500, \"Low\",\n    Products[mrp] < 5000, \"Mid\",\n    \"Premium\"\n)\n```\n\nSWITCH(TRUE(), ...) returns the first matching branch, so the second test only runs for mrp of 500 or more. This is a calculated column because you want to put `Price Band` on an axis or slicer. A measure cannot be used as a slicer field.",
+    "explanation": "Order conditions from narrow to wide.",
+    "commonMistake": "Writing conditions out of order (for example `< 5000` first), so everything below 5,000 becomes 'Mid'.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "switch",
+      "calculated-column"
+    ]
+  },
+  {
+    "id": "pbi-dax-basics-009",
+    "module": "power-bi",
+    "topic": "dax-basics",
+    "difficulty": "hard",
+    "language": "dax",
+    "question": "Retail: you want each row of `Stores` to show its total sales. A colleague tried `Stores[Store Sales] = Sales[net_amount_inr]` and got an error. Explain why and write a working calculated column and the equivalent measure approach.",
+    "dataset": "retail",
+    "hint": "Each store has many sales rows. Which function returns the related rows?",
+    "solution": "```dax\n-- Calculated column on Stores (row context on Stores)\nStore Sales =\nSUMX ( RELATEDTABLE ( Sales ), Sales[net_amount_inr] )\n\n-- Often better: just use the measure in a visual\nTotal Sales = SUM ( Sales[net_amount_inr] )\n```\n\n`Sales[net_amount_inr]` is a column of many rows; in a Stores row context DAX does not know which one you mean. `RELATEDTABLE(Sales)` returns all `Sales` rows linked to the current store (one-to-many direction) and `SUMX` adds them. A shorter alternative is `CALCULATE(SUM(Sales[net_amount_inr]))`, using context transition (lesson 6). In practice use a measure; a stored column does not respond to a date slicer.",
+    "explanation": "RELATEDTABLE + iterator.",
+    "commonMistake": "Referencing a many-side column from the one side without an aggregator.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 8,
+    "tags": [
+      "relatedtable",
+      "row-context"
+    ]
+  }
+]

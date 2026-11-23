@@ -1,0 +1,97 @@
+[
+ {
+  "id": "sql-dialects-001",
+  "module": "sql",
+  "topic": "dialects",
+  "difficulty": "easy",
+  "language": "text",
+  "question": "Rewrite this SQLite query for SQL Server: `SELECT name FROM products ORDER BY mrp DESC LIMIT 10;`",
+  "dataset": "none",
+  "hint": "Which keyword replaces LIMIT in SQL Server?",
+  "solution": "```sql\nSELECT TOP 10 name\nFROM products\nORDER BY mrp DESC;\n```\n\nSQL Server has no `LIMIT`. It uses `TOP n` right after `SELECT`, or the standard `ORDER BY mrp DESC OFFSET 0 ROWS FETCH NEXT 10 ROWS ONLY`.",
+  "explanation": "SQLite, MySQL and PostgreSQL use LIMIT at the end. SQL Server uses TOP after SELECT.",
+  "commonMistake": "Putting LIMIT in a SQL Server query.",
+  "interviewFrequency": "high",
+  "estimatedMinutes": 4,
+  "tags": [
+   "dialects",
+   "sql"
+  ]
+ },
+ {
+  "id": "sql-dialects-002",
+  "module": "sql",
+  "topic": "dialects",
+  "difficulty": "easy",
+  "language": "text",
+  "question": "Which of these do NOT work in the SQLite playground: `ILIKE`, `||`, `LEN()`, `COALESCE()`, `DATEDIFF()`, `strftime()`? Name the SQLite alternative for each failing one.",
+  "dataset": "none",
+  "hint": "Think PostgreSQL, SQL Server, MySQL for the failing ones.",
+  "solution": "Do not work: `ILIKE` (use `LOWER(col) LIKE ...` or just `LIKE`, which is case-insensitive for ASCII), `LEN()` (use `LENGTH()`), `DATEDIFF()` (use `julianday(b) - julianday(a)`).\n\nWork: `||`, `COALESCE()` and `strftime()`.",
+  "explanation": "ILIKE belongs to PostgreSQL, LEN to SQL Server, DATEDIFF to MySQL and SQL Server.",
+  "commonMistake": "Copying a function from another database into SQLite.",
+  "interviewFrequency": "medium",
+  "estimatedMinutes": 4,
+  "tags": [
+   "dialects",
+   "sql"
+  ]
+ },
+ {
+  "id": "sql-dialects-003",
+  "module": "sql",
+  "topic": "dialects",
+  "difficulty": "easy",
+  "language": "text",
+  "question": "Write the expression that joins `first_name`, a space and `last_name` in (a) SQLite, (b) MySQL, (c) SQL Server. Which of them returns NULL if `last_name` is NULL?",
+  "dataset": "none",
+  "hint": "Check the NULL rule for each operator.",
+  "solution": "(a) SQLite: `first_name || ' ' || last_name`\n\n(b) MySQL: `CONCAT(first_name, ' ', last_name)`\n\n(c) SQL Server: `first_name + ' ' + last_name` or `CONCAT(first_name, ' ', last_name)`\n\nThe `||` in SQLite and the `+` in SQL Server return NULL if any part is NULL. MySQL's `CONCAT` returns NULL too, while SQL Server's `CONCAT` treats NULL as an empty string. Use `COALESCE(last_name, '')` to be safe everywhere.",
+  "explanation": "Joining text differs by database and so does NULL handling.",
+  "commonMistake": "Assuming CONCAT treats NULL the same everywhere.",
+  "interviewFrequency": "medium",
+  "estimatedMinutes": 4,
+  "tags": [
+   "dialects",
+   "sql"
+  ]
+ },
+ {
+  "id": "sql-dialects-004",
+  "module": "sql",
+  "topic": "dialects",
+  "difficulty": "medium",
+  "language": "text",
+  "question": "MySQL has no `FULL OUTER JOIN`. Explain how to get all rows of tables `a` and `b` matched on `id`, using a LEFT JOIN and a UNION.",
+  "dataset": "none",
+  "hint": "Two LEFT JOINs in opposite directions.",
+  "solution": "```sql\nSELECT a.id, a.x, b.y\nFROM a\nLEFT JOIN b ON a.id = b.id\nUNION\nSELECT b.id, a.x, b.y\nFROM b\nLEFT JOIN a ON a.id = b.id;\n```\n\nThe first query keeps every row of `a` (matched with `b` where possible). The second keeps every row of `b`. `UNION` combines them and removes the duplicate matched rows. Use `UNION ALL` with `WHERE a.id IS NULL` on the second query if you prefer to avoid the dedupe step.",
+  "explanation": "FULL JOIN equals LEFT JOIN plus RIGHT JOIN without duplicates.",
+  "commonMistake": "Using UNION ALL without a filter and double counting matched rows.",
+  "interviewFrequency": "medium",
+  "estimatedMinutes": 4,
+  "tags": [
+   "dialects",
+   "sql"
+  ]
+ },
+ {
+  "id": "sql-dialects-005",
+  "module": "sql",
+  "topic": "dialects",
+  "difficulty": "medium",
+  "language": "text",
+  "question": "Give the expression for the number of days between `start_date` and `end_date` in SQLite, MySQL, PostgreSQL and SQL Server.",
+  "dataset": "none",
+  "hint": "Four different shapes.",
+  "solution": "- SQLite: `julianday(end_date) - julianday(start_date)`\n- MySQL: `DATEDIFF(end_date, start_date)`\n- PostgreSQL: `end_date - start_date` (for DATE columns; gives an integer)\n- SQL Server: `DATEDIFF(day, start_date, end_date)`\n\nWatch the argument order: MySQL puts the end date first, SQL Server puts the unit first and then start, end.",
+  "explanation": "Date arithmetic is one of the least portable areas of SQL.",
+  "commonMistake": "Swapping the argument order and getting a negative number.",
+  "interviewFrequency": "high",
+  "estimatedMinutes": 4,
+  "tags": [
+   "dialects",
+   "sql"
+  ]
+ }
+]

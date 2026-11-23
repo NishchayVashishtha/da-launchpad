@@ -1,0 +1,193 @@
+---
+title: "Lookups: VLOOKUP, HLOOKUP, XLOOKUP, INDEX-MATCH and two-way lookup"
+description: "Pull data from another table with VLOOKUP, HLOOKUP, XLOOKUP and INDEX-MATCH, and avoid the classic lookup traps."
+module: excel
+order: 5
+estimatedMinutes: 55
+objectives: ["Use VLOOKUP with exact match", "Know the traps of VLOOKUP", "Use HLOOKUP for horizontal tables", "Use XLOOKUP and INDEX-MATCH", "Build a two-way lookup"]
+tags: ["excel", "vlookup", "xlookup", "index-match", "hlookup"]
+---
+
+## Learning objectives
+
+- Fetch a value from another table with `VLOOKUP`, `HLOOKUP`, `XLOOKUP` and `INDEX` with `MATCH`.
+- Explain the VLOOKUP traps: approximate match, left-most key, column numbers and duplicates.
+- Build a two-way lookup that finds the cell where a row and a column meet.
+- Choose the right lookup for the Excel version you have.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+An orders file has only a customer_id. The sales head wants revenue by city. The analyst looks up each customer's city from the customer list, then summarises. That one step, a lookup, is the Excel version of a SQL JOIN.
+</RealWorld>
+
+Lookup questions appear in almost every Excel interview, usually "VLOOKUP versus INDEX-MATCH versus XLOOKUP".
+
+## Concept
+
+A **lookup** finds a key in one place and returns a related value from the same row (or column). Think of a phone book: you search by name (the **key**) and read off the number.
+
+**VLOOKUP(lookup_value, table_array, col_index_num, [range_lookup])**
+
+- `lookup_value`: the key you search for.
+- `table_array`: the table. The key must be in its first (left-most) column.
+- `col_index_num`: which column to return, counted from the first column of the table.
+- `range_lookup`: `FALSE` for exact match, `TRUE` (the default) for approximate match.
+
+Always write `FALSE` unless you are doing a band lookup like a tax slab or grade table.
+
+**VLOOKUP traps**
+
+1. Forgetting `FALSE` gives an approximate match and a wrong answer on unsorted keys.
+2. The key must be the left-most column; VLOOKUP cannot look left.
+3. A hard-coded column number breaks when someone inserts a column.
+4. It returns the first match only. Duplicate keys hide data.
+5. Numbers stored as text do not match real numbers (`"111"` is not `111`).
+6. A source blank comes back as `0`, not as an empty cell.
+7. A lookup value with a stray space finds nothing: use TRIM.
+
+**HLOOKUP** is VLOOKUP turned sideways. It searches the top row and returns a value from a row below.
+
+**XLOOKUP(lookup_value, lookup_array, return_array, [if_not_found], [match_mode], [search_mode])** (Microsoft 365 and Excel 2021). It defaults to exact match, can look left, takes separate lookup and return columns, and has a built-in "not found" message.
+
+**INDEX and MATCH** work in every version:
+
+- `MATCH(value, range, 0)` returns the position of the value in the range.
+- `INDEX(range, position)` returns the item at that position.
+- Together: `=INDEX(return_col, MATCH(key, key_col, 0))`.
+
+It can look left, is not broken by inserted columns, and is the fallback when XLOOKUP is missing.
+
+**Two-way lookup.** `=INDEX(table, MATCH(row_label, row_labels, 0), MATCH(col_label, col_labels, 0))`. One MATCH picks the row, the other picks the column.
+
+<FormulaCard title="Quick chooser">
+Microsoft 365 or Excel 2021: XLOOKUP. Any version, key not on the left or columns may move: INDEX-MATCH. Quick job on a left-keyed table: VLOOKUP with FALSE. Months or labels across the top: HLOOKUP or a two-way INDEX-MATCH.
+</FormulaCard>
+
+<Tip>
+Use an Excel Table (`Ctrl + T`) and refer to columns by name, such as `tbl_customers[city]`. Ranges then grow with the data.
+</Tip>
+
+## Worked examples
+
+<Download href="data/excel/excel-functions.xlsx" label="Download excel-functions.xlsx" />
+
+The workbook joins `orders.customer_id` to `customers.customer_id` and `orders.main_product_id` to `products.product_id`.
+
+**Example 1: VLOOKUP.** Order 1004 (row 3 of `orders`) belongs to customer 111.
+
+```
+=VLOOKUP(orders!B3,customers!A:H,3,FALSE)
+```
+
+Result: **Indore**. Customer 111 is Anjali Verma from Madhya Pradesh.
+
+**Example 2: XLOOKUP with a not-found message.**
+
+```
+=XLOOKUP(orders!M3,products!A:A,products!C:C,"No product")
+```
+
+Result: **GharSaaj Storage 803** (product 228). Change the return column to `products!F:F` to get the brand, **GharSaaj**.
+
+**Example 3: INDEX-MATCH.** Employee 1 has `manager_id` 2388.
+
+```
+=INDEX(hr_employees!B:B,MATCH(hr_employees!J2,hr_employees!A:A,0))
+```
+
+Result: **Karan Gupta** (Account Manager).
+
+**Example 4: HLOOKUP.** Sheet `monthly_targets` has dates across row 1 (B1:M1), target orders in row 2 and target revenue in row 3.
+
+```
+=HLOOKUP(DATE(2023,3,1),monthly_targets!A1:M3,3,FALSE)
+```
+
+Result: **1,544,300** INR.
+
+**Example 5: two-way lookup.**
+
+```
+=INDEX(monthly_targets!B2:M3,MATCH("Target orders",monthly_targets!A2:A3,0),MATCH(DATE(2023,10,1),monthly_targets!B1:M1,0))
+```
+
+Result: **462** target orders for October 2023. Change the label to `"Target revenue (INR)"` and you get **2,661,800**.
+
+**Example 6: a trap in real data.** 38 customers have a blank city, and 74 orders belong to them. A plain `VLOOKUP` shows `0` for these. Force text and test:
+
+```
+=IF(XLOOKUP(B2,customers!A:A,customers!C:C,"")&""="","Not on file",XLOOKUP(B2,customers!A:A,customers!C:C))
+```
+
+`=COUNTIF(N2:N2001,"Not on file")` gives **74**. Also note that 5 customer rows are exact duplicates in `customers`. Lookups use the first match, so values stay correct here, but duplicate keys with different values would be a risk.
+
+## Common mistakes
+
+<CommonMistake>
+Leaving out `FALSE` in VLOOKUP. It uses approximate match, which works only on sorted data, and gives a wrong row without any error.
+</CommonMistake>
+
+<CommonMistake>
+Choosing a table that starts after the key column. VLOOKUP needs the key in the first column of `table_array`. Start the range at the key column.
+</CommonMistake>
+
+<CommonMistake>
+Not locking the table range. Copying `=VLOOKUP(A2,customers!A:H,3,FALSE)` down is fine for full columns, but with `A2:H100` you must use `$A$2:$H$100` or the table slips down.
+</CommonMistake>
+
+<CommonMistake>
+Mixing text and number keys. An order file may hold `111` as text while the customer list holds a real number. Test with ISNUMBER and convert with VALUE.
+</CommonMistake>
+
+<CommonMistake>
+Forgetting `,0` in MATCH. Without it MATCH does an approximate search and returns the wrong position on unsorted data.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="lookups" module="excel" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What does the fourth argument FALSE in VLOOKUP mean?", options: ["Return the last match", "Exact match only", "Ignore case", "Search upward"], answer: 1, explanation: "FALSE asks for an exact match. The default TRUE does an approximate match on sorted data." },
+  { q: "Which lookup can find a key that sits to the right of the value you want returned?", options: ["VLOOKUP", "HLOOKUP", "XLOOKUP or INDEX-MATCH", "None of them"], answer: 2, explanation: "VLOOKUP only returns columns to the right of the key. XLOOKUP and INDEX-MATCH have no such limit." },
+  { q: "In INDEX(B:B, MATCH(x, A:A, 0)), what does MATCH return?", options: ["The value in column B", "The row position of x in column A", "TRUE or FALSE", "The column letter"], answer: 1, explanation: "MATCH returns a position. INDEX uses that position to return the value from column B." },
+  { q: "A VLOOKUP returns 0 when the source cell is blank. How can you show text instead?", options: ["Use SUM", "Add &\"\" to turn it into text and test for empty text", "Format as General", "Use HLOOKUP"], answer: 1, explanation: "A blank source cell comes back as 0. Joining with an empty string makes it text so you can test for it." },
+  { q: "Which Excel versions support XLOOKUP?", options: ["All versions", "Excel 2010 and later", "Microsoft 365 and Excel 2021", "Only Excel for Mac 2011"], answer: 2, explanation: "XLOOKUP needs Microsoft 365 or Excel 2021. For older versions use INDEX-MATCH." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Expect: "What are the limits of VLOOKUP and what do you use instead?" Name the left-most key rule, the column number, approximate match, and answer with XLOOKUP or INDEX-MATCH.
+</InterviewAlert>
+
+<InterviewQ q="Why do many analysts prefer INDEX-MATCH or XLOOKUP over VLOOKUP?">
+VLOOKUP cannot look left, uses a fixed column number that breaks when columns are inserted, and defaults to approximate match. INDEX-MATCH and XLOOKUP name the lookup and return columns separately, so they survive column changes and can return values from the left of the key. XLOOKUP also has a built-in not-found argument.
+</InterviewQ>
+
+<InterviewQ q="Your VLOOKUP returns #N/A even though the key looks present. What do you check?">
+I check for extra spaces (use TRIM), numbers stored as text versus real numbers, a table range that does not start at the key column, and whether I wrote FALSE. I compare with `=A2=B2` or `LEN()` of both keys to see the difference.
+</InterviewQ>
+
+<InterviewQ q="How do you look up using two criteria?">
+In older Excel, build a helper key column such as `=A2&"|"&B2` and look up the joined key. In Microsoft 365 use XLOOKUP with `A2:A100&B2:B100` as the lookup array, or use FILTER.
+</InterviewQ>
+
+<InterviewQ q="What is a two-way lookup?">
+It returns the value at the crossing of a row label and a column label, using `INDEX(table, MATCH(row), MATCH(column))`. For example, the target orders for Oct-2023 from a table with metrics in rows and months in columns.
+</InterviewQ>
+
+## Key takeaways
+
+- The key must be in the first column for VLOOKUP, and you should nearly always write `FALSE`.
+- XLOOKUP is the modern choice (Microsoft 365 or Excel 2021); INDEX-MATCH works everywhere.
+- HLOOKUP is for tables that run left to right across the top.
+- A two-way lookup uses two MATCH functions inside INDEX.
+- Blank source cells return 0, text and number keys do not match, and duplicates return only the first match.
+
+## Further reading
+
+<FurtherReading ids={["excel-support", "chandoo", "excelisfun"]} />

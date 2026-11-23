@@ -1,0 +1,318 @@
+---
+title: "Power Query: cleaning and shaping data"
+description: "Clean messy CSV data with Power Query, understand the M steps it writes, and finish a guided exercise on the ecommerce dataset."
+module: power-bi
+order: 3
+estimatedMinutes: 55
+objectives:
+  - "Use the Power Query Editor: Applied Steps, Column quality and Column profile"
+  - "Fix data types, text case, dates in mixed formats and rupee-text numbers"
+  - "Remove duplicates, handle nulls and flag outliers"
+  - "Merge and append queries and read the M code that Power Query generates"
+tags: ["power-bi", "power-query", "m-language", "data-cleaning"]
+---
+
+## Learning objectives
+
+- Use the Power Query Editor: **Applied Steps**, **Column quality** and **Column profile**.
+- Fix data types, text case, dates in mixed formats and numbers stored as rupee text.
+- Remove duplicates, handle nulls and flag outliers.
+- Merge and append queries, and read the **M** code that Power Query writes for you.
+
+## Why this matters for a Data Analyst job
+
+Analysts spend a large share of their time cleaning data. In an interview or a practical test the dataset will be messy on purpose: duplicate rows, dates written two ways, numbers like `₹1,23,456.00`. Power Query lets you fix these once and re-use the steps every refresh. If you clean by hand in Excel you must repeat the work each time.
+
+<RealWorld>
+An ecommerce team exports orders every day. The raw file has about 1% duplicate orders, 18% of dates in DD-MM-YYYY and 12% of totals typed as text. One analyst cleans in Excel for an hour each morning. Another saves the steps in Power Query. Tomorrow's file is clean in one click, and the manager gets the same numbers each day.
+</RealWorld>
+
+## Concept
+
+### The Power Query Editor
+
+Open it with **Home > Transform data**. The main areas:
+
+- **Queries pane** (left): one entry per table.
+- **Data preview** (centre): a sample of rows.
+- **Applied Steps** (right): the recipe. Each click you make becomes a step. You can rename, reorder and delete steps.
+- **Formula bar**: shows the M code of the selected step.
+
+Turn on **View > Column quality, Column distribution and Column profile**. They show, per column, how many values are valid, errors and empty, and how many distinct values exist. This is your first health check.
+
+<Tip>
+Rename steps to say what they do (for example `Removed duplicate orders`). A person who opens your file in six months will thank you.
+</Tip>
+
+### M, the language behind the clicks
+
+Every query is a `let ... in` expression. Each line is a step, and each step takes the previous step's table as input:
+
+```m
+let
+    Source = Csv.Document(File.Contents("C:\DA\ecommerce\orders.csv"), [Delimiter=",", Encoding=65001]),
+    Promoted = Table.PromoteHeaders(Source),
+    Typed = Table.TransformColumnTypes(Promoted, {{"order_id", Int64.Type}})
+in
+    Typed
+```
+
+You rarely type M from scratch, but you must be able to read it and make small edits. The most useful functions are `Table.TransformColumns`, `Table.TransformColumnTypes`, `Table.SelectRows`, `Table.Distinct`, `Table.AddColumn`, `Table.NestedJoin` and `Table.Combine`.
+
+### The cleaning toolbox
+
+| Problem | Fix | M function |
+|---------|-----|------------|
+| Wrong data type | Change Type (use a locale when parsing dates) | `Table.TransformColumnTypes` |
+| Extra spaces, odd case (`mumbai`, ` DELHI `) | Trim, Clean, Capitalize Each Word | `Text.Trim`, `Text.Proper` |
+| Numbers stored as text with symbols | Replace values, then change type | `Text.Replace` |
+| Mixed date formats | Parse each format explicitly | `Date.FromText` with `Format` |
+| Duplicate rows | Remove duplicates | `Table.Distinct` |
+| Missing values | Replace values, fill down or filter | `Table.ReplaceValue`, `Table.FillDown` |
+| Unwanted columns | Remove or choose columns | `Table.RemoveColumns` |
+| Combine tables | Append (add rows) or Merge (add columns) | `Table.Combine`, `Table.NestedJoin` |
+
+**Merge vs Append**: Merge is like a SQL JOIN (matching keys, adding columns). Append is like UNION ALL (stacking rows). Merge needs a key; Append needs the same column names.
+
+### Order of steps matters
+
+A safe order: (1) promote headers, (2) set base types that cannot fail (such as integer ids), (3) fix text and symbols, (4) parse dates and amounts, (5) remove duplicates, (6) handle nulls and outliers, (7) keep only needed columns.
+
+Why? A date written as `01-01-2023` and the same date as `2023-01-01` are different texts. Remove duplicates before fixing formats and near-duplicates survive.
+
+### Locale and day-month confusion
+
+`05-03-2023` is 5 March in India but 3 May in the US. If Power Query guesses with the wrong locale it silently swaps days and months. Always say the format or the culture (`en-IN`) when you convert text to dates.
+
+## Worked examples
+
+### Example 1: Standardise city names
+
+Raw values: `mumbai`, ` Mumbai`, `DELHI `, `Pune`.
+
+UI: select `city`, **Transform > Format > Trim**, then **Capitalize Each Word**. M generated:
+
+```m
+#"Trimmed Text" = Table.TransformColumns(Typed, {{"city", Text.Trim, type text}}),
+#"Capitalized Each Word" = Table.TransformColumns(#"Trimmed Text", {{"city", Text.Proper, type text}})
+```
+
+Result of the `Group By city` count after cleaning, which now shows one row per city rather than variants. Without Trim and Proper, `Mumbai` would be split into 3 rows.
+
+| city (before) | city (after) |
+|---------------|--------------|
+| mumbai | Mumbai |
+| ` Mumbai` | Mumbai |
+| `DELHI ` | Delhi |
+| Pune | Pune |
+
+### Example 2: Rupee text to numbers
+
+`total_amount` has `5542.95` and `₹1,234.50`. Column quality shows the column as text. Steps:
+
+```m
+#"Cleaned Amount" = Table.TransformColumns(#"Previous Step",
+    {{"total_amount", each Text.Replace(Text.Replace(Text.From(_), "₹", ""), ",", ""), type text}}),
+#"Amount Number" = Table.TransformColumnTypes(#"Cleaned Amount", {{"total_amount", type number}})
+```
+
+Before and after:
+
+| total_amount (raw text) | total_amount (number) |
+|-------------------------|-----------------------|
+| 5542.95 | 5542.95 |
+| ₹1,234.50 | 1234.5 |
+| ₹1,23,456.00 | 123456 |
+
+Indian digit grouping uses the same comma character, so one replace handles lakh style numbers too.
+
+### Example 3: Mixed date formats
+
+```m
+#"Fixed Date" = Table.TransformColumns(#"Previous Step", {{"order_date", each
+    try Date.FromText(_, [Format="yyyy-MM-dd", Culture="en-IN"])
+    otherwise Date.FromText(_, [Format="dd-MM-yyyy", Culture="en-IN"]), type date}})
+```
+
+| order_date (raw) | order_date (date) |
+|------------------|-------------------|
+| 2023-01-02 | 2 Jan 2023 |
+| 01-01-2023 | 1 Jan 2023 |
+| 12-03-2023 | 12 Mar 2023 |
+
+`try ... otherwise` tries the ISO format first. If that fails it tries DD-MM-YYYY.
+
+### Guided exercise: clean the ecommerce files
+
+<Download href="/data/zip/ecommerce.zip" label="Download ecommerce.zip (customers, products, orders, order_items, payments, returns)" />
+
+Unzip the file to a folder such as `C:\DA\ecommerce\`. The files contain deliberate quality problems, listed in the table below (counts are approximate and come from the dataset notes).
+
+| File | Problem |
+|------|---------|
+| `customers.csv` | 20 exact duplicate rows; city casing and spaces; email, phone, gender, city blanks |
+| `products.csv` | `category` has inconsistent case (`FASHION`, `books`, ` Books`) |
+| `orders.csv` | about 100 duplicate orders; about 18% of `order_date` as DD-MM-YYYY; about 12% of `total_amount` as `₹` text |
+| `order_items.csv` | 12 rows where `unit_price` is 100 times too high |
+| `returns.csv` | about half of `refund_amount` as text like `₹1,23,456.00` |
+
+#### Step 0: Create a parameter for the folder
+
+**Home > Manage parameters > New parameter**: Name `DataFolder`, type Text, value `C:\DA\ecommerce\`. Every query then uses `DataFolder & "orders.csv"`. When a colleague opens the file they change one value.
+
+#### Step 1: Load customers and clean
+
+1. **Get data > Text/CSV** > `customers.csv` > **Transform Data**.
+2. Rename the query to `Customers`.
+3. Check **Column quality**: `email`, `phone`, `gender`, `city` have empty values. Leave nulls for now.
+4. Trim and Capitalize Each Word on `city`.
+5. Delete column `signup_date_raw` (messy free text; `signup_date` holds the clean date). Set `signup_date` to **Date**.
+6. **Home > Remove rows > Remove duplicates** with all columns selected (this is `Table.Distinct`).
+
+```m
+let
+    Source = Csv.Document(File.Contents(DataFolder & "customers.csv"), [Delimiter=",", Encoding=65001, QuoteStyle=QuoteStyle.Csv]),
+    Promoted = Table.PromoteHeaders(Source, [PromoteAllScalars=true]),
+    Typed = Table.TransformColumnTypes(Promoted, {{"customer_id", Int64.Type}, {"signup_date", type date}, {"is_prime", Int64.Type}}),
+    CleanCity = Table.TransformColumns(Typed, {{"city", each Text.Proper(Text.Trim(_)), type text}}),
+    DropRaw = Table.RemoveColumns(CleanCity, {"signup_date_raw"}),
+    Deduped = Table.Distinct(DropRaw)
+in
+    Deduped
+```
+
+Check: row count goes from 4,520 to 4,500, since 20 duplicates are removed. (These counts come from the dataset documentation.)
+
+#### Step 2: Products
+
+Load `products.csv`, then trim and capitalise `category`. Before: values `Fashion`, `FASHION`, ` fashion`. After: `Fashion` only. Check the distinct count in Column profile; there should be 7 categories (Electronics, Home & Kitchen, Fashion, Grocery, Footwear, Beauty, Books).
+
+```m
+CleanCategory = Table.TransformColumns(Typed, {{"category", each Text.Proper(Text.Trim(_)), type text}})
+```
+
+Note `Text.Proper("Home & Kitchen")` returns `Home & Kitchen` (the `&` is preserved).
+
+#### Step 3: Orders
+
+1. Load `orders.csv`. In the first step, set all text columns as text; do not let the auto "Changed Type" convert dates and amounts.
+2. Clean `total_amount` as in Example 2.
+3. Fix `order_date` as in Example 3.
+4. Remove exact duplicates: `Table.Distinct(PreviousStep)`.
+5. Keep one row per order: select `order_id`, **Remove duplicates** (this keeps the first row for each id).
+6. Add a custom column that flags suspicious totals:
+
+```m
+FlagSuspect = Table.AddColumn(OneRow, "is_suspect_total", each [total_amount] > 100000, type logical)
+```
+
+Result checks: 10,100 rows before, 10,000 after. Order status counts should read Delivered 9,268, Cancelled 566, RTO 166.
+
+#### Step 4: Order items
+
+Load `order_items.csv`. Add a flag for the 100x errors: any `unit_price` above, say, ₹50,000 (the largest legitimate price is about ₹39,000).
+
+```m
+FlagPrice = Table.AddColumn(Typed, "is_price_outlier", each [unit_price] > 50000, type logical)
+```
+
+Do not delete silently. Keep the flag and decide in the model: either exclude the 12 rows in measures or fix at source. Document the decision.
+
+#### Step 5: Returns
+
+Clean `refund_amount` exactly like `total_amount`. Many `refund_amount` values are blank for rows with status Rejected; leave them null (a null is not zero; refund was not paid).
+
+```m
+#"Refund Number" = Table.TransformColumnTypes(
+    Table.TransformColumns(Typed, {{"refund_amount", each if _ = null then null else Text.Replace(Text.Replace(Text.From(_), "₹", ""), ",", ""), type text}}),
+    {{"refund_amount", type number}})
+```
+
+#### Step 6: Add a flag with Merge
+
+Merge `Order_Items` with `Products` on `product_id` (**Home > Merge queries**, Left Outer). Expand `category` and `cost_price`. Then:
+
+```m
+Merged = Table.NestedJoin(OrderItems, {"product_id"}, Products, {"product_id"}, "Products", JoinKind.LeftOuter),
+Expanded = Table.ExpandTableColumn(Merged, "Products", {"category", "cost_price"})
+```
+
+In the next lesson you will use relationships instead of merges for most things. Merge is useful when you need a column physically in one table.
+
+#### Step 7: Load and verify
+
+**Close and Apply**. In the Data view, check row counts: Customers 4,500; Products 420; Orders 10,000. Compare with the original SQLite or Excel counts. Verification is part of the job.
+
+## Common mistakes
+
+<CommonMistake>
+Letting Power Query auto-detect types on the first load. A column that mixes `5542.95` and `₹1,234.50` becomes errors or silently loses values. Set types yourself after cleaning.
+</CommonMistake>
+
+<CommonMistake>
+Removing duplicates before standardising formats. Rows that differ only by text case or date style are not duplicates until they are cleaned.
+</CommonMistake>
+
+<CommonMistake>
+Replacing errors with 0 or deleting error rows without looking at why they happened. You may be hiding a data problem that changes totals.
+</CommonMistake>
+
+<CommonMistake>
+Parsing dates with the wrong locale so that 05-03-2023 becomes 3 May. Always specify the format or `en-IN` culture and check a few ambiguous values.
+</CommonMistake>
+
+<CommonMistake>
+Editing the data in the source CSV by hand "just once". The next refresh brings the problem back. Fix it in Power Query so the fix repeats.
+</CommonMistake>
+
+<CommonMistake>
+Hard-coding file paths in many queries instead of using a parameter, so moving the folder breaks everything.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="power-query" module="power-bi" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What does the Applied Steps pane represent?", options: ["Only the final table", "A recorded recipe where each step uses the previous result", "A list of relationships", "DAX measures"], answer: 1, explanation: "Every transformation becomes a step in an M let expression, and later steps build on earlier ones." },
+  { q: "Which M function removes exact duplicate rows?", options: ["Table.Distinct", "Table.Combine", "Table.Pivot", "Text.Trim"], answer: 0, explanation: "Table.Distinct removes duplicate rows. Without column names it compares whole rows." },
+  { q: "A column mixes `5542.95` and `₹1,234.50`. What is the best order?", options: ["Change type to number first", "Remove the symbol and commas, then change type to number", "Delete the column", "Convert to date"], answer: 1, explanation: "Changing the type first turns the rupee-text values into errors. Clean text, then convert." },
+  { q: "What is the difference between Merge and Append?", options: ["Merge adds columns by matching keys; Append stacks rows", "Merge stacks rows; Append adds columns", "They are the same", "Merge works only on Excel"], answer: 0, explanation: "Merge is like a SQL JOIN and Append is like UNION ALL." },
+  { q: "Why specify a culture such as en-IN when converting text to dates?", options: ["To make the report colourful", "To avoid swapping day and month on ambiguous dates", "To compress the file", "It is required for numbers only"], answer: 1, explanation: "A US locale reads 05-03-2023 as May 3. Specifying the format or Indian culture keeps it 5 March." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Practical rounds often give you a dirty CSV and ask for clean totals. Tell the interviewer your cleaning order out loud: types, text, dates, duplicates, nulls, outliers, then verification against row counts.
+</InterviewAlert>
+
+<InterviewQ q="What is Power Query and what is M?">
+Power Query is the data preparation tool inside Power BI and Excel. It records each cleaning action as a step. The steps are written in a functional language called M, a `let ... in` expression where each step uses the previous step's table. The benefit is repeatability: when new data arrives, all steps run again automatically.
+</InterviewQ>
+
+<InterviewQ q="How do you handle a column with mixed date formats?">
+I load the column as text, then parse it with `Date.FromText` using explicit formats: first ISO `yyyy-MM-dd`, then `dd-MM-yyyy`, using `try ... otherwise`. I set culture `en-IN` and spot-check ambiguous values such as 05-03-2023 so day and month are not swapped. Then I check Column quality for errors.
+</InterviewQ>
+
+<InterviewQ q="Calculate in Power Query or in DAX: how do you decide?">
+I do row-level cleaning and shaping in Power Query so the model is clean and small. I use DAX measures for aggregations that must react to filters, such as totals and ratios. A column that is needed only for display or slicing can be either, but computing it in Power Query (especially when the source can fold it) is usually faster than a calculated column in DAX.
+</InterviewQ>
+
+<InterviewQ q="You found 12 order lines whose price is 100 times the normal. What do you do?">
+I do not delete them silently. I flag them in Power Query, count how much they inflate the totals, check the source for the true value, and tell the business owner. In the report I either exclude flagged rows with a visible note or use the corrected value, and I document the rule.
+</InterviewQ>
+
+## Key takeaways
+
+- Power Query records each action as an M step that repeats on every refresh.
+- Clean in a sensible order: types, text, dates and amounts, duplicates, nulls and outliers.
+- Specify formats and culture to avoid day-month mix-ups; clean rupee text before changing type.
+- Flag outliers, do not hide them, and verify row counts after cleaning.
+- Merge adds columns by key; Append stacks rows.
+
+## Further reading
+
+<FurtherReading ids={["power-bi-docs", "pl300"]} />

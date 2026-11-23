@@ -1,0 +1,163 @@
+---
+title: "Data Analyst vs Data Engineer vs Data Scientist vs Business Analyst"
+description: "Four data roles compared side by side, with a clear idea of which one to aim for first."
+module: start-here
+order: 2
+estimatedMinutes: 25
+objectives:
+  - "Compare the four roles by purpose, tools, output and fresher entry"
+  - "Explain the overlap between the roles"
+  - "Choose a sensible first role and a long-term path"
+tags: ["career", "roles", "comparison"]
+---
+
+## Learning objectives
+
+- Say in one sentence what each of the four roles does.
+- Use a table to compare tools, outputs and entry difficulty.
+- Explain why Data Analyst is a strong first step toward Data Engineering or Analytics Engineering.
+- Avoid learning tools that belong to the wrong role.
+
+## Why this matters for a Data Analyst job
+
+Job posts and YouTube thumbnails mix these roles up. If you study Spark and deep learning when you need SQL and Power BI, you lose months. Interviewers also test whether you know the difference. "How is your role different from a Data Scientist?" is a common question.
+
+<RealWorld>
+Think of a busy restaurant. The **Data Engineer** builds the kitchen pipeline so ingredients arrive clean and on time. The **Data Analyst** cooks the daily dishes and tells the owner which ones sell. The **Data Scientist** invents new recipes by experiments and predictions. The **Business Analyst** talks with customers and the owner to decide what the menu should solve. Real companies blur these lines, but the picture helps.
+</RealWorld>
+
+## Concept
+
+### What each role does
+
+- **Data Analyst (DA)**: explains what happened and why, using SQL, Excel, BI tools and some Python. Output: reports, dashboards, insights.
+- **Data Engineer (DE)**: builds and maintains the systems that collect, move and store data (pipelines, warehouses). Output: reliable, clean, fast data tables.
+- **Data Scientist (DS)**: builds models that predict or classify (will this customer default? which offer will they accept?) and runs experiments. Output: models, predictions, experiment results.
+- **Business Analyst (BA)**: understands business needs, writes requirements, defines processes and metrics, and uses data to support decisions. Output: requirement documents, process maps, analysis, recommendations.
+
+### Comparison table
+
+| Aspect | Data Analyst | Data Engineer | Data Scientist | Business Analyst |
+|---|---|---|---|---|
+| Main question | What happened, and why? | Is the data available, correct, on time? | What will happen? What should we predict? | What does the business need, and is it working? |
+| Core tools | SQL, Excel, Power BI or Tableau, Python basics | SQL, Python, Airflow, Spark, cloud, dbt | Python, statistics, machine learning libraries, SQL | Excel, SQL basics, documentation, process tools |
+| Typical output | Dashboard, report, insight deck | Pipelines, data warehouse tables | Models, forecasts, experiments | Requirements, process flows, KPIs, recommendations |
+| Coding level | Light to medium | Medium to heavy | Medium to heavy | Light |
+| Statistics level | Basic to medium | Low | High | Basic |
+| Works closely with | Business teams, managers | Software and data teams | Product and engineering teams | Business owners, tech teams |
+| Fresher entry | Easiest of the three technical roles | Possible but harder; many start as analysts or in software | Hardest; often needs a master's degree or strong projects | Moderate; communication-heavy interviews |
+| Growth path | Senior Analyst, Analytics Manager, Analytics Engineer | Senior DE, Architect | Senior DS, ML Engineer | Senior BA, Product Manager |
+
+### Similarities
+
+All four roles:
+
+- Work with **data** to help a business make better choices.
+- Use **SQL** at least a little. SQL is the shared language of the data world.
+- Need **clear communication**, because results are for people, not for computers.
+- Need a habit of **checking data quality** before trusting numbers.
+
+### Differences that matter
+
+- **Distance from the data pipeline.** Engineers build it, analysts consume it.
+- **Prediction versus explanation.** Scientists predict the future, analysts explain the past and present.
+- **Code versus documents.** Engineers write lots of code; business analysts write lots of documents.
+- **Hiring bar for freshers.** Analyst and business analyst roles are the most open to freshers.
+
+<Tip>
+Your long-term goal can be Data Engineering or Analytics Engineering. Starting as an analyst is a smart route: you learn what business users need, you write a lot of SQL, and you see data quality problems first-hand. Both help later when you build pipelines.
+</Tip>
+
+### Analytics Engineer: a role in the middle
+
+An **Analytics Engineer** sits between analyst and engineer. They write clean SQL models (often with a tool called dbt), test them, and give analysts reliable tables. It is a natural next step from Data Analyst when you like SQL and structure.
+
+## Worked examples
+
+### Example 1: One problem, four roles
+
+Problem: "Many UPI payments fail between 8 PM and 10 PM."
+
+- The **Data Engineer** makes sure payment logs from all banks arrive in the warehouse within minutes and without duplicates.
+- The **Data Analyst** queries the logs, finds that failures spike for two banks on weekends, and builds a dashboard.
+- The **Data Scientist** builds a model that predicts which payments are likely to fail so the app can retry smartly.
+- The **Business Analyst** talks with the partnerships team, defines "failure rate" as a metric everyone agrees on, and writes the requirement for a bank-wise alert.
+
+### Example 2: Reading job descriptions
+
+Look at these phrases and guess the role.
+
+- "Build and maintain ETL pipelines using Airflow and Spark." This is a **Data Engineer**.
+- "Create dashboards in Power BI and write SQL to answer ad hoc questions." This is a **Data Analyst**.
+- "Train and tune gradient boosting models for credit risk." This is a **Data Scientist**.
+- "Gather requirements, write BRDs, work with stakeholders to define KPIs." This is a **Business Analyst**.
+
+### Example 3: Choosing a first role
+
+Maya, a 2027 B.Tech CSE student, likes coding but wants a job soon. She reads the table and decides: first target is **Data Analyst or Junior DA** at fintech or e-commerce companies. At the end of one year she will add Python depth, learn dbt and Airflow basics, and aim at **Analytics Engineer or Data Engineer**. This is a realistic ladder, and every step pays.
+
+## Common mistakes
+
+<CommonMistake>
+Starting with machine learning because it sounds exciting. Without SQL and statistics fundamentals, ML study does not turn into a job quickly.
+</CommonMistake>
+
+<CommonMistake>
+Believing the titles are fixed. In small companies one person may do the work of analyst, engineer and scientist together.
+</CommonMistake>
+
+<CommonMistake>
+Assuming Business Analyst means "no technical skills needed". Good BAs still read data, write SQL and build Excel models.
+</CommonMistake>
+
+<CommonMistake>
+Jumping to Data Engineering tools like Spark before you are good at SQL. Strong SQL is the base for all four roles.
+</CommonMistake>
+
+<CommonMistake>
+Comparing salaries across roles from random posts online. Pay depends on company, city and skills much more than on the title alone.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="role-compare" module="start-here" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Which role is mainly responsible for building and maintaining data pipelines?", options: ["Data Analyst", "Data Engineer", "Business Analyst", "Data Scientist"], answer: 1, explanation: "Data Engineers build the systems that move and store data." },
+  { q: "Which skill is common to all four roles?", options: ["Deep learning research", "SQL", "Kubernetes administration", "Mobile app design"], answer: 1, explanation: "SQL is the shared language across data roles, even if the depth differs." },
+  { q: "Which role usually has the highest statistics and modelling requirement?", options: ["Data Scientist", "MIS Executive", "Business Analyst", "Data Engineer"], answer: 0, explanation: "Data Scientists build and evaluate predictive models, which needs stronger statistics." },
+  { q: "Why is Data Analyst a good first step toward Data Engineering?", options: ["It is unrelated, so you can switch easily", "You learn SQL deeply, see business needs and notice data quality issues", "Analysts never use databases", "Engineers only hire analysts"], answer: 1, explanation: "SQL, business context and awareness of data quality all help when you later build pipelines." },
+  { q: "A job post says: 'Gather requirements, write BRDs, define KPIs.' Which role is it?", options: ["Data Engineer", "Data Scientist", "Business Analyst", "DBA"], answer: 2, explanation: "Requirements documents and KPI definitions are core Business Analyst work." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers ask this to see whether you understand the data team and where you fit. Keep your answer short, and finish by saying what you want to grow into.
+</InterviewAlert>
+
+<InterviewQ q="How is a Data Analyst different from a Data Scientist?">
+A Data Analyst mostly explains what happened and why, using SQL, Excel and dashboards, and helps managers decide. A Data Scientist mostly builds models that predict future outcomes, which needs deeper statistics and machine learning. They overlap in SQL, Python and data cleaning. I am starting with analytics because it builds the base that both paths need.
+</InterviewQ>
+
+<InterviewQ q="What does a Data Engineer do, and how would you work with one?">
+A Data Engineer builds the pipelines and warehouse tables that analysts use. As an analyst I would tell them about data quality problems, such as duplicate rows or late loads, and ask for new columns or tables when the business needs them. In return, I would document the logic of my reports so they can reproduce it.
+</InterviewQ>
+
+<InterviewQ q="Where do you see yourself in three years?">
+In the first year I want to become fully independent in SQL, dashboards and stakeholder communication as an analyst. After that I want to deepen Python and data modelling, and move toward analytics engineering or data engineering, where I can build the data foundations that analysts depend on.
+</InterviewQ>
+
+## Key takeaways
+
+- Analysts explain, engineers build, scientists predict, business analysts define needs.
+- SQL is the common thread across all four roles.
+- Analyst roles are the most accessible to freshers among the technical data roles.
+- Analytics Engineer is a natural bridge from analyst to engineer.
+- Read job descriptions for actual tools and tasks, not just titles.
+
+## Further reading
+
+<FurtherReading ids={["dbt-docs", "airflow-docs", "kaggle-learn"]} />

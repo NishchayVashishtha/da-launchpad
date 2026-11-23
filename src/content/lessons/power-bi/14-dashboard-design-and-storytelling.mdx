@@ -1,0 +1,215 @@
+---
+title: "Dashboard design principles and data storytelling"
+description: "Layout, Z-pattern, KPI cards, colour, decluttering and titles that state the insight."
+module: power-bi
+order: 14
+estimatedMinutes: 40
+objectives:
+  - "Lay out a dashboard with the Z-pattern"
+  - "Design KPI cards that carry context"
+  - "Use colour with meaning and declutter pages"
+  - "Write titles that state the insight"
+  - "Turn a dashboard into a short story"
+tags: ["power-bi", "design", "storytelling", "dashboard"]
+---
+
+## Learning objectives
+
+- Place visuals where readers look first.
+- Design a KPI card that shows value, comparison and trend.
+- Remove clutter and use colour sparingly.
+- Write insight titles and a three-line summary.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Two analysts in a Hyderabad company build dashboards from the same data. One makes 14 charts in rainbow colours. The other makes one page with four numbers, one trend and a title: "Support attrition is 34%, double the company average". The second analyst gets promoted. The skill is not technical; it is clarity.
+</RealWorld>
+
+Hiring managers look at your portfolio screenshots for about 15 seconds. Design decides whether they keep looking.
+
+## Concept
+
+### Know the audience and the decision
+
+Before you place a single visual, answer three questions:
+
+1. **Who** will read this? (CEO, store manager, analyst)
+2. **What decision** will they make? (cut influencer budget, hire more support staff)
+3. **How often** will they look? (daily glance or monthly deep dive)
+
+An executive dashboard is short: 4 to 6 numbers and 2 to 3 charts. An analyst page can be denser, with filters and tables.
+
+### Layout and the Z-pattern
+
+People in left-to-right languages scan a page in a **Z shape**: top-left, across to top-right, diagonally down to bottom-left, then across to bottom-right.
+
+<Mermaid chart={`flowchart LR
+  A["1 Top-left: title and filters"] --> B["2 Top-right: KPI cards"]
+  B --> C["3 Middle: main trend or chart"]
+  C --> D["4 Bottom: detail and ranking"]`} caption="Place the most important item where the eye lands first and move from summary to detail." />
+
+Practical layout:
+
+- Top strip: title, one-line subtitle, date filter.
+- Row 1: 4 to 6 KPI cards.
+- Row 2: the main chart (usually a trend) taking the largest area.
+- Row 3: supporting charts (breakdown, ranking) and a table if needed.
+- Left or top strip: slicers, always in the same place on every page.
+- Leave white space. It is not wasted; it groups things.
+
+### KPI cards
+
+A good KPI card is more than a number. It answers: how much, compared to what, and which way is it going.
+
+| Card element | Example |
+|---|---|
+| Label | Net Sales |
+| Value | ₹3.00 crore |
+| Comparison | +19.7% vs last year |
+| Trend | tiny sparkline |
+| Colour | green if good, red if bad, grey for neutral |
+
+Use the **Card (new)** visual or the **KPI** visual, which has a target and trend axis. Format large numbers in lakh or crore when your audience is Indian, using custom formats or DAX `FORMAT`.
+
+### Colour with meaning
+
+- Use **grey** as the base and **one accent** for what matters.
+- Use **red/green** only for good/bad, and add a symbol or label for colour-blind readers.
+- Use sequential colour (light to dark of one hue) for magnitude.
+- Keep a **consistent meaning**: if red means "bad" on page 1, it must not mean "Region North" on page 2.
+- Check contrast: dark text on light background, minimum font size 10 to 12 pt.
+
+### Declutter
+
+Remove everything that does not help the reader:
+
+- gridlines and heavy borders,
+- redundant axis titles when the chart title says it,
+- legends if you can label lines directly,
+- decimals nobody needs (₹30.03 crore not ₹300,277,320.00),
+- 3D effects, shadows, background images.
+
+Ask of each element: "If I remove this, does the reader lose anything?" If not, delete it.
+
+### Titles that state the insight
+
+| Weak title | Strong title |
+|---|---|
+| Sales by Region | West brings in 41% of sales; East only 11% |
+| Attrition by Department | Customer Support and Sales lose about 1 in 3 employees |
+| Failure Rate by Bank | Kaveri Co-op Bank fails 8% of UPI payments, about 3 times most banks |
+| Monthly Sales | Sales peak every Oct and Nov and grew 19.7% in 2024 |
+
+Formula: **subject + number + comparison (+ so what)**. Use Power BI's dynamic titles (conditional formatting with a DAX measure) if the number changes with filters.
+
+### Data storytelling
+
+A dashboard becomes a story when you structure it like one:
+
+1. **Context** (what is happening): the headline KPIs.
+2. **Conflict** (what is the problem): the chart that shows the gap.
+3. **Cause** (why): the driver breakdown.
+4. **Action** (what to do): a short recommendation box or text.
+
+Write an executive summary of three lines: **What**, **So what**, **Now what**. Place it on a "Summary" page or as a text box at the top.
+
+## Worked examples
+
+### Example 1: Rebuilding a messy retail page
+
+Before: 12 visuals, rainbow colours, title "Dashboard". After:
+
+1. Title: "Retail 2023 to 2024: sales up 19.7%, four stores held back by stockouts".
+2. Row of 4 cards: Net Sales, YoY %, Target attainment, Stockout rate.
+3. One line chart of monthly Net Sales, 2023 vs 2024.
+4. One bar of net sales by store with the 4 stockout stores in red.
+5. Slicers: Year, Region at the left.
+
+Visuals dropped from 12 to 7 and every one answers a question.
+
+### Example 2: Writing an insight title for HR
+
+Chart: attrition rate by department. Draft: "Attrition by Department". Better: "Support and Sales lose about 1 in 3 employees; Finance loses 1 in 7". Check the numbers against the data: Customer Support 33.6%, Sales 31.2%, Finance 14.6%. The title is truthful and useful.
+
+### Example 3: A KPI card with context in DAX
+
+```dax
+YoY Label =
+VAR g = [YoY %]
+RETURN IF(g >= 0, "▲ ", "▼ ") & FORMAT(ABS(g), "0.0%") & " vs last year"
+```
+
+Use this measure in the card's "reference label" so the card says "▲ 19.7% vs last year".
+
+### Example 4: A three-line summary for fintech
+
+- **What:** UPI failure rate is 2.9%, but Kaveri Co-op Bank is at 8.1%.
+- **So what:** Its failures are concentrated at peak hours and are mostly server timeouts, so customers there face repeated failures when they need payments most.
+- **Now what:** Escalate to the bank, show customers a retry message, and track its failure rate weekly.
+
+## Common mistakes
+
+<CommonMistake>
+Starting with visuals instead of the decision. Without a decision in mind you will fill the page with whatever is easy to chart.
+</CommonMistake>
+
+<CommonMistake>
+Using red and green only. About 1 in 12 men are colour-blind. Add arrows, labels or patterns.
+</CommonMistake>
+
+<CommonMistake>
+Showing too many digits. ₹3,00,27,732 is harder to read than ₹3.0 crore. Round for humans.
+</CommonMistake>
+
+<CommonMistake>
+Descriptive titles such as "Chart 1". A title should say what to notice.
+</CommonMistake>
+
+<CommonMistake>
+Changing the position of slicers and colours between pages. Consistency lets readers trust the layout.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="design-storytelling" module="power-bi" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What is the Z-pattern?", options: ["A chart type", "How readers scan a page: top-left, across, diagonal, across the bottom", "A DAX function", "A colour palette"], answer: 1, explanation: "Place the most important items along the Z path." },
+  { q: "Which is the best dashboard title?", options: ["Sales by Region", "Region chart", "West brings in 41% of sales; East only 11%", "Dashboard 1"], answer: 2, explanation: "It states the insight with numbers and a comparison." },
+  { q: "What should a good KPI card include?", options: ["Only a number", "Value, comparison and trend", "A pie chart", "Five decimals"], answer: 1, explanation: "Context makes a number meaningful." },
+  { q: "How should you use colour?", options: ["A different colour for every series", "Grey base and one accent for what matters", "Only red", "Gradients everywhere"], answer: 1, explanation: "Selective colour directs attention." },
+  { q: "What is the storytelling order recommended in this lesson?", options: ["Action, cause, context", "Context, conflict, cause, action", "Only charts", "Random"], answer: 1, explanation: "Set the scene, show the gap, explain why, recommend action." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+A typical question: "Walk me through a dashboard you built. Why did you design it that way?" Talk about the audience, the decision, and what you removed.
+</InterviewAlert>
+
+<InterviewQ q="What are your principles for designing a dashboard?">
+I start with the audience and the decision. I put the main KPIs at the top-left following the Z-pattern, one main chart in the middle, and details at the bottom. I use grey with one accent colour, remove clutter, label with insight titles, and keep the page to 5 to 8 visuals.
+</InterviewQ>
+
+<InterviewQ q="How do you write a good chart title?">
+I state the finding: subject, number and comparison. For example "Kaveri Co-op Bank fails 8% of UPI payments, about 3 times most banks" instead of "Failure rate by bank".
+</InterviewQ>
+
+<InterviewQ q="How do you present a dashboard to a non-technical executive?">
+I start with the headline and recommendation, then show the one or two charts that prove it, and keep technical details for questions. I use plain words and rupees or percentages, not jargon.
+</InterviewQ>
+
+## Key takeaways
+
+- Start with the audience and decision, not the charts.
+- Use the Z-pattern: summary at the top, detail below.
+- A KPI card needs value, comparison and trend.
+- Use grey plus one accent colour and remove clutter.
+- Titles should state the insight; end with a recommendation.
+
+## Further reading
+
+<FurtherReading ids={["power-bi-docs", "pl300"]} />

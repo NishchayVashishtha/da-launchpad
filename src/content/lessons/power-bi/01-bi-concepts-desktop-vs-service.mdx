@@ -1,0 +1,201 @@
+---
+title: "BI concepts and Power BI: Desktop vs Service"
+description: "What business intelligence is, how Power BI Desktop and the Power BI Service work together, and where Power BI sits in a Data Analyst's day."
+module: power-bi
+order: 1
+estimatedMinutes: 35
+objectives:
+  - "Explain business intelligence, a report, a dashboard and a semantic model in plain words"
+  - "Describe the Power BI workflow: Get data, Transform, Model, Visualise, Publish, Share"
+  - "Say what you do in Power BI Desktop and what you do in the Power BI Service"
+  - "Place Power BI in a Data Analyst's job next to SQL, Excel and Python"
+tags: ["power-bi", "bi", "desktop", "service"]
+---
+
+## Learning objectives
+
+- Explain **business intelligence (BI)**, a report, a dashboard and a semantic model in plain words.
+- Describe the Power BI workflow: get data, transform, model, visualise, publish, share.
+- Say what you do in **Power BI Desktop** and what you do in the **Power BI Service**.
+- Place Power BI in a Data Analyst's job next to SQL, Excel and Python.
+
+## Why this matters for a Data Analyst job
+
+Almost every Data Analyst job post in India lists "Power BI" next to "SQL" and "Excel". A manager at a fintech or a hospital chain does not want to read a SQL result. They want a page with a few numbers and charts that they can click and filter. Power BI is the tool most companies use to build that page.
+
+<RealWorld>
+A payments company wants to know every Monday: how many UPI transactions failed last week, which bank caused most failures, and whether the rate is going up. The analyst writes SQL to pull the data, cleans it in Power Query, builds a report in Power BI Desktop and publishes it to the Service. The regional head opens it on her phone. The analyst does not send a single Excel file again.
+</RealWorld>
+
+In interviews you will be asked to explain the workflow, not just click buttons. This lesson gives you the map for the rest of the module.
+
+## Concept
+
+### What is business intelligence?
+
+**Business intelligence (BI)** means turning raw data into information that helps people decide. A BI tool connects to data, cleans it, calculates numbers (called **measures**, such as total sales) and shows them in visuals such as bar charts and cards.
+
+An analogy: think of a restaurant kitchen. The raw vegetables are your data. The chef (you) cleans and cuts them (Power Query), plans the menu (the data model), cooks (DAX measures) and plates the food (visuals). The Service is the waiter who carries the plate to the customer's table.
+
+### The four building blocks
+
+| Term | Plain meaning | Where it lives |
+|------|---------------|----------------|
+| **Semantic model** (also called dataset) | The data tables, relationships and measures | Built in Desktop, stored in the Service |
+| **Report** | One or more pages of visuals on top of a model | Built in Desktop, viewed in Service |
+| **Dashboard** | One page of tiles pinned from reports, for a quick glance | Service only |
+| **App** | A packaged set of reports and dashboards for a group of users | Service |
+
+### Power BI Desktop and Power BI Service
+
+**Power BI Desktop** is a free Windows application. You build in it.
+
+**Power BI Service** is the website `app.powerbi.com` (also called Power BI online). You share in it.
+
+| Task | Desktop | Service |
+|------|---------|---------|
+| Connect to data and clean it (Power Query) | Yes | Limited (dataflows) |
+| Build relationships and DAX measures | Yes | No (small edits only) |
+| Design report pages | Yes | Yes, limited editing |
+| Publish and share with colleagues | Starts here (Publish button) | Yes |
+| Scheduled refresh | No | Yes |
+| Row-level security roles | Define | Assign members |
+| Dashboards | No | Yes |
+| Mobile viewing | Mobile layout | Power BI mobile app |
+
+There is also **Power BI Mobile** (phone and tablet app) for viewing, and **Power BI Report Builder** for paginated reports. As a fresher, focus on Desktop and Service.
+
+<Tip>
+Power BI Desktop is free to download from Microsoft. Sharing reports with other people usually needs a Pro licence (or Premium capacity). For learning and your portfolio, Desktop alone is enough. You can export to PDF or publish to the web for a public portfolio (only with data that is safe to be public).
+</Tip>
+
+### The Power BI workflow
+
+```text
+Get data -> Transform (Power Query) -> Model (relationships) -> Measures (DAX) -> Visualise -> Publish -> Share and refresh
+```
+
+Mermaid view of the same idea:
+
+<Mermaid chart={`flowchart LR
+  A[Get data] --> B[Power Query: clean and shape]
+  B --> C[Data model: tables and relationships]
+  C --> D[DAX measures]
+  D --> E[Report visuals]
+  E --> F[Publish to Service]
+  F --> G[Schedule refresh and share]`} caption="The Power BI workflow from raw data to a shared report." />
+
+### Where Power BI fits in a Data Analyst's day
+
+- **SQL** gets and reshapes data from databases. (Often you connect Power BI to a SQL view that you wrote.)
+- **Excel** is for quick ad-hoc checks and small files.
+- **Python** is for deeper cleaning, statistics and automation.
+- **Power BI** is for repeatable, interactive reporting that business users open themselves.
+
+A typical week: Monday you answer a one-off question with SQL. Tuesday you tidy a messy file in Power Query. Wednesday you add a new measure to the sales report. Thursday you check why the refresh failed. Friday you present the dashboard.
+
+Power BI is also an alternative to Tableau. Tableau is stronger in some visual design areas; Power BI is cheaper, fits well with Excel and Microsoft 365, and is more commonly asked for in Indian job posts. The skills (data modelling, measures, good chart choice) transfer between both.
+
+### Three terms you will hear in interviews
+
+- **Import mode**: data is loaded into the Power BI model. It is fast. Needs refresh to update.
+- **DirectQuery**: Power BI sends a query to the source each time. It is live, but slower and the source must handle the load.
+- **Gateway**: a small program on a company computer that lets the cloud Service reach on-premises data for refresh.
+
+## Worked examples
+
+These are walkthroughs of decisions, not code.
+
+### Example 1: Which Power BI piece do I use?
+
+A store manager wants to see yesterday's sales on her phone and click on a region. Which pieces?
+
+1. Model: `Sales`, `Stores`, `Calendar` tables with relationships (Desktop).
+2. Report: a page with a card for total sales, a bar chart by region and a slicer (Desktop).
+3. Publish to a workspace (Desktop to Service).
+4. Scheduled refresh each morning at 6:00 AM (Service).
+5. Share via an app (Service). She opens it in the mobile app.
+
+### Example 2: Report or dashboard?
+
+The CEO wants one screen with five KPI numbers that opens in a second. You build the report with all details first. Then in the Service you pin the five KPI visuals to a **dashboard**. Clicking a tile opens the report page behind it. Reports are for exploring; dashboards are for monitoring.
+
+### Example 3: Choosing the mode
+
+| Case | Choice | Reason |
+|------|--------|--------|
+| Monthly HR headcount (about 2,400 rows) | Import | Small data, fast, monthly refresh is enough |
+| Live view over a very large transactions table | DirectQuery or composite model | Data too big to import, freshness matters |
+| Ten Excel files on a shared drive | Folder connector, Import | Same-shape files, refresh when new ones arrive |
+
+No numbers appear in these examples because they show how to decide, not what to calculate. In the next lessons you will build real measures on the retail, ecommerce, HR and fintech sample data.
+
+## Common mistakes
+
+<CommonMistake>
+Calling every Power BI page a "dashboard". In Power BI, a dashboard is a special Service object made of pinned tiles. A multi-page file you build in Desktop is a report. Using the right word in an interview shows you know the tool.
+</CommonMistake>
+
+<CommonMistake>
+Treating Power BI as only a chart tool. The real work is data cleaning and modelling. A pretty report on a bad model gives wrong numbers faster.
+</CommonMistake>
+
+<CommonMistake>
+Building everything in one huge flat table copied from Excel. This makes DAX harder and files slow. The next lessons teach the star schema, which avoids this.
+</CommonMistake>
+
+<CommonMistake>
+Publishing a report with a data source on your own laptop and then wondering why the scheduled refresh fails. The Service needs a path it can reach (OneDrive, SharePoint, a cloud database, or a gateway).
+</CommonMistake>
+
+<CommonMistake>
+Sharing a report that includes sensitive data (salaries, customer phone numbers) with everyone. Use row-level security and share only the columns needed.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="bi-basics" module="power-bi" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Where do you usually write DAX measures and build relationships?", options: ["Power BI Service", "Power BI Desktop", "Power BI Mobile", "Excel only"], answer: 1, explanation: "Modelling and DAX are done in Desktop. The Service is mainly for sharing, refresh and access control." },
+  { q: "Which Power BI object is made only in the Service and consists of pinned tiles?", options: ["Report", "Semantic model", "Dashboard", "Query"], answer: 2, explanation: "Dashboards are created in the Service by pinning visuals from reports." },
+  { q: "A report imports an Excel file from your laptop's D: drive. After publishing, scheduled refresh fails. What is the likely fix?", options: ["Rename the report", "Move the file to OneDrive/SharePoint or install a gateway", "Switch to a bar chart", "Delete the dashboard"], answer: 1, explanation: "The cloud cannot see your local drive. A reachable location or an on-premises gateway is needed." },
+  { q: "Which storage mode loads data into the model and gives the fastest visuals?", options: ["DirectQuery", "Import", "Live connection to Excel", "Paginated"], answer: 1, explanation: "Import compresses data in memory (VertiPaq), so visuals are fast. It needs refresh to update." },
+  { q: "Which statement best describes Power BI's role next to SQL?", options: ["Power BI replaces SQL completely", "SQL gets and shapes data; Power BI builds interactive, repeatable reports on it", "Power BI is only for printing", "SQL is used only to colour charts"], answer: 1, explanation: "Analysts commonly write SQL to prepare data and then use Power BI for the interactive reporting layer." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+The first Power BI question is almost always "Explain the difference between Desktop and Service" or "Walk me through how you build a report end to end". Answer with the workflow, name the tools at each step and give one example.
+</InterviewAlert>
+
+<InterviewQ q="Explain the Power BI workflow from raw data to a shared report.">
+I follow six steps. **Get data** from files or databases. **Transform** it in Power Query: fix types, remove duplicates, standardise text. **Model** it: split into fact and dimension tables and create relationships. Write **DAX measures** for KPIs. **Visualise** with cards, charts and slicers. Finally **publish** to the Service, set up scheduled refresh and share through an app. I test numbers against a SQL query or Excel total before sharing.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between a report and a dashboard in Power BI?">
+A **report** is a multi-page, interactive view built on one semantic model, usually authored in Desktop. A **dashboard** is a single page of tiles pinned from one or more reports, created in the Service. Reports are for exploration; dashboards are for monitoring KPIs at a glance.
+</InterviewQ>
+
+<InterviewQ q="When would you use Import mode and when DirectQuery?">
+I use **Import** by default, because it is fast and supports all features. I choose **DirectQuery** when the data is too large to import or when users need near real-time numbers, and I accept slower visuals and some DAX or Power Query limits. A composite model, with small dimensions imported and big facts in DirectQuery, is a common compromise.
+</InterviewQ>
+
+<InterviewQ q="Why is Power BI a good fit for a Data Analyst compared with only using Excel?">
+Excel is great for small, one-off analysis, but reports built by copy and paste break and are hard to refresh. Power BI keeps the steps (Power Query), the model (relationships) and the measures (DAX) so refreshing is one click, and many people can filter the same report without changing the file. It also handles millions of rows.
+</InterviewQ>
+
+## Key takeaways
+
+- BI means turning raw data into information that supports decisions.
+- You **build** in Power BI Desktop and **share and refresh** in the Power BI Service.
+- Semantic model, report, dashboard and app are different things; use the right word.
+- Import is the default mode; DirectQuery is for very large or live data; gateways let the cloud reach on-premises data.
+- Power BI sits next to SQL, Excel and Python in a Data Analyst's toolkit; knowing the full workflow matters more than knowing buttons.
+
+## Further reading
+
+<FurtherReading ids={["power-bi-docs", "power-bi-download", "pl300"]} />

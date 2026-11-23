@@ -1,0 +1,195 @@
+---
+title: "Formatting, themes, slicers, drill-down, drill-through, tooltips and bookmarks"
+description: "Make a report look professional and let users explore it: themes, slicers, drill-down vs drill-through, report page tooltips, bookmarks and buttons."
+module: power-bi
+order: 11
+estimatedMinutes: 45
+objectives:
+  - "Apply a theme and consistent formatting"
+  - "Add and sync slicers across pages"
+  - "Explain and build drill-down and drill-through"
+  - "Create a report page tooltip"
+  - "Use bookmarks and buttons for navigation and view switching"
+tags: ["power-bi", "formatting", "slicers", "drill-through", "bookmarks"]
+---
+
+## Learning objectives
+
+- Set a theme, fonts and colours once for the whole report.
+- Use slicers, and sync them across pages.
+- Tell drill-down and drill-through apart, and build both.
+- Build a report page tooltip with a mini chart.
+- Create bookmarks and buttons for a clean, app-like experience.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+A regional manager at a retail chain says: "I only care about my region. Let me click once and see just my stores, and let me click a store and see the detail." Slicers and drill-through are how you give her exactly that, without making a new report for each person.
+</RealWorld>
+
+Good formatting makes a report look trustworthy. Good interactivity makes it useful. Both are visible in a portfolio screenshot, and both are common interview topics.
+
+## Concept
+
+### Formatting and themes
+
+Every visual has a **Format** pane. Doing this for 10 visuals by hand is slow and inconsistent. Use a **theme**.
+
+- A **theme** is a small JSON file (or a built-in choice) that sets default colours, fonts and visual styles for the whole report.
+- In Power BI Desktop: View, Themes. Pick a built-in theme or Browse for themes to import a JSON file.
+- Set the **page background** to a very light grey and visuals to white cards with a thin border or soft shadow. This separates visuals without heavy lines.
+- Use at most **two fonts** and **two or three sizes**: title, label, annotation.
+- Align visuals with the grid. Use Format, Align and Distribute so spacing is even.
+
+<Tip>
+Pick one accent colour for "important" (for example red for bad, teal for good) and use greys for everything else. Check contrast so the report is readable for people with colour blindness.
+</Tip>
+
+### Slicers
+
+A **slicer** is an on-page filter. Clicking a value filters the other visuals on the page.
+
+- Slicer styles: list, dropdown, tile/buttons, between (numeric range), relative date (last 30 days), and hierarchy.
+- Use a **date range** slicer for time and a **dropdown** for long lists (cities).
+- **Sync slicers** (View, Sync slicers) makes a slicer on page 1 also filter page 2.
+- **Edit interactions** (Format, Edit interactions) lets you stop one visual from filtering another. For instance, a KPI card for "All-India sales" can be set to ignore the Region slicer.
+- Keep slicers together in one strip so the reader knows where to look.
+
+### Drill-down vs drill-through
+
+These two get confused all the time.
+
+| | Drill-down | Drill-through |
+|---|---|---|
+| What it does | Moves down a hierarchy inside the same visual | Jumps to another page filtered to the selected item |
+| Needs | A hierarchy on the axis (Year, Quarter, Month) | A target page with a drill-through field |
+| User action | Click the drill arrows or double-arrow icon | Right-click a data point, Drill through, page name |
+| Example | Region to State to Store | Right-click "Velachery" and open the Store Detail page |
+| Filter scope | Only that visual | The whole target page |
+
+**Drill-down** setup: drag several fields (Region, City, Store) into one axis well in this order. Then turn on drill mode with the down arrow in the visual's top-right.
+
+**Drill-through** setup:
+
+1. Create a page named `Store Detail`.
+2. In the Visualizations pane, under Drill through, drag `Stores[store_name]` into "Add drill-through fields here".
+3. Power BI adds a back button automatically.
+4. Build visuals on that page as normal. They show only the chosen store.
+
+### Tooltips (report page tooltips)
+
+A **tooltip** is the box that appears when you hover over a data point. The default shows values. A **report page tooltip** shows a whole mini page.
+
+1. Add a page, rename it `Tooltip - Store`.
+2. In Format page, Page information, turn on **Allow use as tooltip**.
+3. Set Canvas settings, Type, to **Tooltip** so the page is small.
+4. Add a small line chart with a few fields.
+5. Add the same field you hover over (for example store name) to the Tooltip drill-through well; Power BI will filter the tooltip by the hovered item.
+6. On the main visual: Format, General, Tooltips, Type = Report page, Page = `Tooltip - Store`.
+
+Hide the tooltip page from the page tabs (right-click the tab and Hide page).
+
+### Bookmarks and buttons
+
+A **bookmark** saves the current state of a page: filters, slicer selections, visible and hidden visuals. A **button** can trigger a bookmark, jump to a page, go back, or open a link.
+
+Uses:
+
+- **Reset filters** button: a bookmark with every slicer cleared.
+- **View toggle**: two bookmarks that show a chart or a table in the same spot. Use the Selection pane to show or hide objects.
+- **Navigation bar**: buttons that go to pages with page navigation action.
+- **Story mode**: bookmarks in order, then View, Bookmarks pane, Play.
+
+Name objects in the **Selection pane** before creating bookmarks, or you will not know what you hid.
+
+## Worked examples
+
+### Example 1: Theme and clean layout for the retail report
+
+1. View, Themes, choose a clean built-in theme. Then Customize current theme and set text to one font, with a single accent colour.
+2. Set the page background to light grey (#F3F4F6) with 0% transparency.
+3. Select all cards and set background white, border 1px grey, rounded corners 4px.
+4. Use Align, Distribute horizontally for the 4 KPI cards.
+
+Outcome: each page looks consistent and you changed colours in one place.
+
+### Example 2: Slicers for the HR report
+
+Add a `Department` dropdown slicer and a `Hire year` between slicer. Sync them to the second page ("Drivers of attrition"). On page 2, add the overall attrition card and use Edit interactions to make the card ignore the slicer, so it still shows the company-wide 22.7% as a benchmark.
+
+### Example 3: Drill-through from store to store detail (retail)
+
+On page 2 ("Store performance") there is a bar chart of net sales by store. On the `Store Detail` page, you add `store_name` to drill-through, plus a line chart of monthly sales, a card for stockout rate and a table of categories. In the report, right-click the Velachery bar and choose Drill through, Store Detail. The page shows only Velachery.
+
+### Example 4: Reset button with a bookmark
+
+1. Clear all slicers on the page.
+2. View, Bookmarks, Add, rename to `Reset`.
+3. Insert, Buttons, Blank. Set Format, Action, Type = Bookmark and choose `Reset`.
+4. Give the button text "Reset filters" and an icon.
+
+## Common mistakes
+
+<CommonMistake>
+Formatting each visual by hand. When the client asks for new brand colours, you must redo everything. Use a theme.
+</CommonMistake>
+
+<CommonMistake>
+Creating bookmarks before naming objects in the Selection pane. Later you cannot tell which visual is "Group 12".
+</CommonMistake>
+
+<CommonMistake>
+Using too many slicers. Five slicers take half the page and confuse readers. Keep to two or three.
+</CommonMistake>
+
+<CommonMistake>
+Forgetting that drill-through needs the drill-through field on the target page, or leaving the tooltip page as a full-size page so the hover box is huge.
+</CommonMistake>
+
+<CommonMistake>
+Leaving bookmark "Data" on when you only want to change visibility. The bookmark will then also reset or reapply the slicer values and surprise the reader.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="interactivity" module="power-bi" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What is a theme in Power BI?", options: ["A data source", "A set of default formatting (colours, fonts) for the whole report", "A DAX function", "A type of slicer"], answer: 1, explanation: "A theme is a JSON or built-in style that sets default formatting across the report." },
+  { q: "Which feature takes a user to another page filtered to the item they right-clicked?", options: ["Drill-down", "Drill-through", "Sync slicers", "Edit interactions"], answer: 1, explanation: "Drill-through opens a target page filtered by the selected data point." },
+  { q: "What do you turn on to use a report page as a tooltip?", options: ["Allow use as tooltip", "Mark as date table", "Row-level security", "Q&A"], answer: 0, explanation: "Page information has the Allow use as tooltip option; then the visual's Tooltips setting uses the page." },
+  { q: "What does a bookmark store?", options: ["Only the page name", "State: filters, slicers and visibility", "The dataset", "The user's password"], answer: 1, explanation: "Bookmarks capture slicer and filter state and what is visible or hidden." },
+  { q: "How can you stop a KPI card from being filtered by a slicer?", options: ["Delete the slicer", "Use Edit interactions", "Change the theme", "Use a bookmark"], answer: 1, explanation: "Edit interactions controls which visuals filter which." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+"Difference between drill-down and drill-through" appears in almost every Power BI interview. Give the one-line definition, then a business example.
+</InterviewAlert>
+
+<InterviewQ q="What is the difference between drill-down and drill-through?">
+**Drill-down** moves through levels of a hierarchy inside the same visual, such as Year to Quarter to Month. **Drill-through** opens another page filtered to the selected item. Example: right-click a store and open a Store Detail page. Drill-down changes the grain of one visual; drill-through changes the page and carries the filter context.
+</InterviewQ>
+
+<InterviewQ q="What is a report page tooltip and why use one?">
+It is a small hidden report page shown when a user hovers over a data point. It lets me show extra context, such as a mini trend line for a store, without cluttering the main page. I enable Allow use as tooltip, size the page as a tooltip, and set the visual's tooltip type to Report page.
+</InterviewQ>
+
+<InterviewQ q="How do you give business users a Reset filters button?">
+Clear all slicers and save a bookmark named Reset. Then add a button, set its action to Bookmark and choose that bookmark. I make sure the bookmark updates Data (filters and slicers) but not unrelated objects.
+</InterviewQ>
+
+## Key takeaways
+
+- Use a theme for consistent colours and fonts.
+- Slicers filter a page; sync them and use Edit interactions to control scope.
+- Drill-down changes level in a visual; drill-through opens a filtered page.
+- Report page tooltips show a mini page on hover.
+- Bookmarks plus buttons create reset buttons, view toggles and navigation.
+
+## Further reading
+
+<FurtherReading ids={["power-bi-docs", "pl300"]} />

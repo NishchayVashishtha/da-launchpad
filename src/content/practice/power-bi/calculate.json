@@ -1,0 +1,170 @@
+[
+  {
+    "id": "pbi-calculate-001",
+    "module": "power-bi",
+    "topic": "calculate",
+    "difficulty": "easy",
+    "language": "dax",
+    "question": "Retail: write `West Sales` that always shows sales of the West region, using `Stores[region]`.",
+    "dataset": "retail",
+    "hint": "CALCULATE with a column filter.",
+    "solution": "```dax\nWest Sales =\nCALCULATE ( [Total Sales], Stores[region] = \"West\" )\n```\n\n`CALCULATE` evaluates `[Total Sales]` after replacing any existing filter on `Stores[region]` with `region = \"West\"`. On the cleaned data West is about ₹1.22 crore of ₹3.0 crore (roughly 41%). If a slicer selects South, this measure still shows West because the CALCULATE filter overrides the slicer on the same column.",
+    "explanation": "CALCULATE changes the context.",
+    "commonMistake": "Expecting the slicer and the filter to combine. A filter on the same column replaces the slicer.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "calculate"
+    ]
+  },
+  {
+    "id": "pbi-calculate-002",
+    "module": "power-bi",
+    "topic": "calculate",
+    "difficulty": "easy",
+    "language": "dax",
+    "question": "Ecommerce: write `Delivered Orders` = distinct orders with `order_status` = \"Delivered\".",
+    "dataset": "ecommerce",
+    "hint": "Wrap DISTINCTCOUNT in CALCULATE.",
+    "solution": "```dax\nDelivered Orders =\nCALCULATE ( DISTINCTCOUNT ( Orders[order_id] ), Orders[order_status] = \"Delivered\" )\n```\n\nOn the cleaned data about 9,268 of 10,000 orders are Delivered (92.7%); 566 are Cancelled and 166 are RTO (return to origin). The filter argument `Orders[order_status] = \"Delivered\"` is shorthand for `FILTER(ALL(Orders[order_status]), Orders[order_status] = \"Delivered\")`.",
+    "explanation": "Boolean filter shorthand.",
+    "commonMistake": "Spelling or casing of the text value not matching the data.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "calculate",
+      "filter"
+    ]
+  },
+  {
+    "id": "pbi-calculate-003",
+    "module": "power-bi",
+    "topic": "calculate",
+    "difficulty": "medium",
+    "language": "dax",
+    "question": "Fintech: write `Failed Txns` and `Failure Rate %`. The `status` column has values SUCCESS, FAILED and PENDING.",
+    "dataset": "fintech",
+    "hint": "Count rows where status is FAILED, then divide by all rows.",
+    "solution": "```dax\nFailed Txns =\nCALCULATE ( COUNTROWS ( Transactions ), Transactions[status] = \"FAILED\" )\n\nFailure Rate % =\nDIVIDE ( [Failed Txns], COUNTROWS ( Transactions ) )\n```\n\nCleaned data: 627 FAILED out of 22,088 unique transactions is 2.8% overall. By bank, Kaveri Co-op Bank is 8.1% (143 of 1,770) while most banks sit near 2%. Put `bank` on the rows of a table and the measure shows each bank's rate because both numerator and denominator are filtered by bank.",
+    "explanation": "Numerator via CALCULATE.",
+    "commonMistake": "Using a calculated column flag (1/0) and averaging it, which cannot be reused for other filters.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "failure-rate",
+      "calculate"
+    ]
+  },
+  {
+    "id": "pbi-calculate-004",
+    "module": "power-bi",
+    "topic": "calculate",
+    "difficulty": "medium",
+    "language": "dax",
+    "question": "Retail: write `Category Share %` that shows each category's share of total sales, even when the visual lists categories and a region slicer is applied (the share should be of all categories in the selected region).",
+    "dataset": "retail",
+    "hint": "Remove the category filter only.",
+    "solution": "```dax\nCategory Share % =\nDIVIDE (\n    [Total Sales],\n    CALCULATE ( [Total Sales], ALL ( Sales[category] ) )\n)\n```\n\n`ALL(Sales[category])` removes only the category filter, so the denominator is sales of all categories but still respects the region slicer. Illustrative result for all regions: Home & Kitchen 27.3%, Grocery & Staples 23.3%, Apparel 22.7%, Electronics Accessories 10.7%, Personal Care 10.5%, Home Decor 5.5%. Shares add up to 100%.",
+    "explanation": "ALL on one column keeps other filters.",
+    "commonMistake": "Using ALL(Sales) which also wipes the region slicer, so shares are of the whole company.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "all",
+      "share"
+    ]
+  },
+  {
+    "id": "pbi-calculate-005",
+    "module": "power-bi",
+    "topic": "calculate",
+    "difficulty": "medium",
+    "language": "dax",
+    "question": "Retail: in a matrix with Region and Store name, write `Share of Region %` showing each store's share of its own region.",
+    "dataset": "retail",
+    "hint": "Keep the region filter, remove the store filter.",
+    "solution": "```dax\nShare of Region % =\nDIVIDE (\n    [Total Sales],\n    CALCULATE ( [Total Sales], ALLEXCEPT ( Stores, Stores[region] ) )\n)\n```\n\n`ALLEXCEPT(Stores, Stores[region])` clears all filters on the `Stores` table except region. For a store row the denominator becomes the total for that store's region. A region row (no store filter) shows 100%. Alternative in newer DAX: `REMOVEFILTERS(Stores[store_name])`, which says exactly which column to clear.",
+    "explanation": "ALLEXCEPT keeps the named column.",
+    "commonMistake": "Using ALL(Stores[store_name]) in a matrix whose rows come from another Stores column, leaving wrong denominators.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 7,
+    "tags": [
+      "allexcept",
+      "share"
+    ]
+  },
+  {
+    "id": "pbi-calculate-006",
+    "module": "power-bi",
+    "topic": "calculate",
+    "difficulty": "medium",
+    "language": "dax",
+    "question": "Retail: write `Home Sales` = sales of the categories 'Home & Kitchen' and 'Home Decor' together.",
+    "dataset": "retail",
+    "hint": "Use IN with a list in braces.",
+    "solution": "```dax\nHome Sales =\nCALCULATE (\n    [Total Sales],\n    Sales[category] IN { \"Home & Kitchen\", \"Home Decor\" }\n)\n```\n\n`IN { ... }` is the same as writing two conditions joined by OR. A boolean filter with two separate `=` conditions on the same column inside one filter (`a = x || a = y`) also works, but IN is easier to read. Illustrative: about ₹98.5 lakh, from ₹82.0 lakh (Home & Kitchen) and ₹16.4 lakh (Home Decor).",
+    "explanation": "IN lists values.",
+    "commonMistake": "Passing two filter arguments on the same column and expecting OR; separate arguments are combined with AND, giving blank.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "in",
+      "calculate"
+    ]
+  },
+  {
+    "id": "pbi-calculate-007",
+    "module": "power-bi",
+    "topic": "calculate",
+    "difficulty": "medium",
+    "language": "dax",
+    "question": "Ecommerce: write `Big Order Revenue` = revenue from orders with `total_amount` above ₹5,000. Use FILTER and explain when you need it instead of a simple boolean.",
+    "dataset": "ecommerce",
+    "hint": "FILTER evaluates a condition row by row over a table.",
+    "solution": "```dax\nBig Order Revenue =\nCALCULATE (\n    SUM ( Orders[total_amount] ),\n    FILTER ( Orders, Orders[total_amount] > 5000 )\n)\n```\n\nA simple boolean on one column (`Orders[total_amount] > 5000`) is also allowed in modern DAX and is faster. Use `FILTER` when the condition involves more than one column or a measure, for example `FILTER(Orders, Orders[total_amount] > 5000 && Orders[sales_channel] = \"Website\")`. Note that this measure ignores any filter on `total_amount` coming from visuals, since the new filter replaces it.",
+    "explanation": "FILTER for multi-column rules.",
+    "commonMistake": "Using FILTER(ALL(Orders), ...) and unintentionally wiping slicers on other Orders columns.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "filter"
+    ]
+  },
+  {
+    "id": "pbi-calculate-008",
+    "module": "power-bi",
+    "topic": "calculate",
+    "difficulty": "hard",
+    "language": "dax",
+    "question": "A page has a slicer on Stores[region] set to South. Measure A is `CALCULATE([Total Sales], Stores[region]=\"West\")`. Measure B is `CALCULATE([Total Sales], KEEPFILTERS(Stores[region]=\"West\"))`. What do A and B show, and why?",
+    "dataset": "retail",
+    "hint": "One replaces the filter. The other intersects with it.",
+    "solution": "```dax\n-- A (replaces the slicer): shows West sales (about ₹1.22 crore)\nA = CALCULATE ( [Total Sales], Stores[region] = \"West\" )\n\n-- B (keeps the slicer): South AND West = nothing, shows BLANK\nB = CALCULATE ( [Total Sales], KEEPFILTERS ( Stores[region] = \"West\" ) )\n```\n\nA overrides the South selection, so it shows West. B uses KEEPFILTERS, which combines the new filter with the existing one (intersection). No store is both South and West, so B is blank. Use KEEPFILTERS when you want to narrow what the user selected rather than ignore it.",
+    "explanation": "CALCULATE overrides, KEEPFILTERS intersects.",
+    "commonMistake": "Assuming a CALCULATE filter always narrows the current selection.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 7,
+    "tags": [
+      "keepfilters",
+      "filter-context"
+    ]
+  },
+  {
+    "id": "pbi-calculate-009",
+    "module": "power-bi",
+    "topic": "calculate",
+    "difficulty": "hard",
+    "language": "dax",
+    "question": "Ecommerce: on `Customers` add a calculated column `Lifetime Spend` (sum of that customer's order totals). Why does `SUM(Orders[total_amount])` alone give the same number in every row, and how does CALCULATE fix it?",
+    "dataset": "ecommerce",
+    "hint": "A row context does not filter other tables by itself.",
+    "solution": "```dax\n-- Wrong: same grand total in every customer row\nLifetime Spend (wrong) = SUM ( Orders[total_amount] )\n\n-- Right: context transition turns the row into a filter\nLifetime Spend = CALCULATE ( SUM ( Orders[total_amount] ) )\n```\n\nIn a calculated column there is only a **row context** on `Customers`, and aggregate functions like SUM ignore row context. `CALCULATE` performs **context transition**: it converts the current row's values into filters, which flow through the relationship to `Orders`, so only that customer's orders are summed. This works only because the customer table has a unique key. The same trick makes `SUMX(Customers, [Total Sales])` work: the measure reference carries an implicit CALCULATE.",
+    "explanation": "CALCULATE converts rows into filters.",
+    "commonMistake": "Thinking row context automatically filters related tables.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "context-transition"
+    ]
+  }
+]

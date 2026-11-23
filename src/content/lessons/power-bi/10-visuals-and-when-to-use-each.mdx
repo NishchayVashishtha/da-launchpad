@@ -1,0 +1,213 @@
+---
+title: "Visuals in Power BI and when to use each"
+description: "Pick the right chart for the question: bars, lines, tables, cards, maps and the charts you should avoid."
+module: power-bi
+order: 10
+estimatedMinutes: 40
+objectives:
+  - "Choose a visual by the question it answers"
+  - "Use a chart-choice table for common business questions"
+  - "Spot and fix bad charts"
+  - "Build 5 core visuals in Power BI Desktop"
+tags: ["power-bi", "visuals", "charts"]
+---
+
+## Learning objectives
+
+- Match each business question to one chart type.
+- Explain why pie charts, 3D charts and dual axes often mislead.
+- Build a bar, line, card, table and scatter chart in Power BI Desktop.
+- Fix a bad chart by changing its type, order, colour and title.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+A manager at a Bengaluru fintech opens your dashboard for 20 seconds before a meeting. If she cannot tell in those seconds which bank is failing, she will ask you to "just send an Excel". The right visual answers the question before she asks it. Hiring managers also check your portfolio for chart choices: a pie chart with 15 slices is a quick way to look like a beginner.
+</RealWorld>
+
+Almost every interview for a BI role includes "which chart would you use for this?" It is an easy round to win if you have a simple rule.
+
+## Concept
+
+A **visual** is any chart, table or card on a report page. Power BI has more than 30 built-in visuals and many more in the marketplace. You only need about eight of them to build 90% of real dashboards.
+
+The rule: **start from the question, not the chart.** Ask what the reader wants to know.
+
+- "How much?" -> a single number (card).
+- "Which is bigger?" -> compare categories (bar).
+- "How did it change?" -> over time (line or column).
+- "What share?" -> part of a whole (stacked bar, or a pie for 2 to 4 parts).
+- "Are two things related?" -> scatter.
+- "Where?" -> map, but only when location truly matters.
+- "What are the exact values?" -> table or matrix.
+
+### The chart-choice table
+
+| Business question | Best visual | Example (our datasets) | Avoid |
+|---|---|---|---|
+| One headline number | Card or KPI | Net Sales ₹3.0 crore (retail) | A chart with one bar |
+| Compare categories | Bar chart (horizontal if long names) | Attrition rate by department (hr) | Pie with many slices |
+| Trend over time | Line chart | Monthly UPI transactions (fintech) | Bar chart with 100+ bars |
+| Few time periods, compare sizes | Column chart | Sales 2023 vs 2024 | 3D columns |
+| Part of a whole (2 to 4 parts) | Stacked bar, 100% stacked bar, donut | Payment mode share | Pie with 10 slices |
+| Ranking | Sorted bar | Top 10 stores by sales | Unsorted bars |
+| Relationship of two measures | Scatter | Units sold vs stockout rate per store | Two separate bar charts |
+| Contribution to a total change | Waterfall | Net sales change 2023 to 2024 by region | Table of differences |
+| Funnel stages | Funnel | Signup, trial, paid (subscription) | Pie |
+| Exact numbers for lookup | Table, matrix | Store name, sales, target | Hiding values in a chart |
+| Geographic pattern | Filled map or bubble map | Sales by state | Map when only 3 regions exist |
+| Target vs actual | Gauge (sparingly), bullet-style bar, KPI visual | Attainment vs 100% | A gauge for every metric |
+
+<Tip>
+If you cannot say in one sentence what the chart tells the reader, you have the wrong chart or too many series on it.
+</Tip>
+
+### The core visuals
+
+**Card.** Shows one big number. Use for KPIs: Net Sales, Failure Rate, Headcount. Keep at most 4 to 6 on a page.
+
+**Bar and column charts.** The workhorse. Bars compare categories. Use **clustered** to compare series side by side, **stacked** to show composition. Always start the value axis at zero for bars, because bar length is the message.
+
+**Line chart.** Shows change over time. Time goes on the x-axis, left to right. Use 1 to 3 lines. More than 5 lines becomes spaghetti.
+
+**Table and matrix.** A **table** lists rows. A **matrix** is a pivot table with row and column headers and subtotals. Add conditional formatting (colour scales, data bars) so numbers are easier to scan.
+
+**Scatter chart.** Each dot is one item, with x and y both measures. Good for finding outliers. Example: each store is a dot, x = units sold, y = stockout rate.
+
+**Waterfall.** Starts with a value, adds ups and downs, ends with a total. Good for "why did it change?".
+
+**Donut or pie.** Allowed only for 2 to 4 parts that add up to 100%. Humans cannot compare angles well.
+
+**Map.** Choose it only if location is the story. A bar chart of "sales by state" is often easier to read than a map because areas of big states dominate.
+
+**Slicer.** Not a chart. It is a filter the reader clicks. Covered in the next lesson.
+
+### Bad chart examples
+
+| Bad chart | What goes wrong | Fix |
+|---|---|---|
+| Pie with 12 city slices | Cannot compare similar slices; labels overlap | Sorted horizontal bar |
+| 3D column chart | Depth distorts heights | Flat column chart |
+| Bar axis starting at 90% | Small difference looks huge | Start at zero, or use a line |
+| Dual-axis line and column with two unrelated scales | Reader thinks lines cross for a reason | Two small charts one above the other |
+| Rainbow colours for 8 categories | No meaning to colour, hard for colour-blind users | One colour plus one highlight |
+| Gauge for each of 10 KPIs | Takes space, shows one number | Cards with a small trend |
+| Line chart for unordered categories (cities) | Line implies order | Bar chart |
+| Chart with no title or unit | Reader has to guess | Clear title with the unit (₹, %) |
+
+## Worked examples
+
+### Example 1: Which bank is failing? (fintech)
+
+Question: "Which bank has the worst UPI failure rate?" The answer type is "compare categories", so use a sorted bar chart.
+
+Steps in Power BI Desktop:
+
+1. Load `transactions` (see the guided walkthrough later for cleaning).
+2. Create a measure: `Failure Rate % = DIVIDE(CALCULATE(COUNTROWS(Transactions), Transactions[status]="FAILED"), COUNTROWS(Transactions))`.
+3. Insert a **Clustered bar chart**. Put `bank` on the Y-axis and `Failure Rate %` on the X-axis.
+4. Use the three dots on the visual, Sort axis, by `Failure Rate %` descending.
+5. Turn on data labels and format as percent.
+
+Result on the cleaned data:
+
+| bank | Failure rate |
+|---|---|
+| Kaveri Co-op Bank | 8.1% |
+| PayNova Small Finance Bank | 4.1% |
+| Coromandel Bank | 2.9% |
+| Bharat Union Bank | 2.4% |
+| Sundaram Bank | 2.2% |
+
+The title "Kaveri Co-op Bank fails 8% of payments, about 3 times most banks" is now obvious from the chart. Colour the Kaveri bar red and the rest grey.
+
+### Example 2: Is sales growing? (retail)
+
+Question: "How are monthly net sales trending across 2023 and 2024?" That is a time question.
+
+1. Make sure you have a Date table. Use `Date[Month]` on the X-axis.
+2. Add `Net Sales` to the Y-axis of a **Line chart**.
+3. Add `Date[Year]` to the Legend to draw one line per year, so months overlap and you can compare same months.
+
+You will see two lines with a bump in October and November (Diwali season), and 2024 above 2023. For context, 2024 net sales were about 19.7% higher than 2023.
+
+### Example 3: Do stockouts hurt sales? (retail)
+
+Question: "Are stores with more stockouts selling less?" That is a relationship question, so use a scatter chart.
+
+1. Insert a **Scatter chart**.
+2. `Stores[store_name]` into Values (each dot is a store).
+3. `Units` into X-axis, `Stockout Rate %` into Y-axis.
+4. Add `Stores[store_format]` into Legend so you compare like with like.
+
+Four stores (Velachery, Adajan, Gomti Nagar and Kharadi) sit apart from their peers with high stockouts and about 30% lower units. Note that this shows a pattern; it does not prove stockouts caused the low sales.
+
+### Example 4: Fixing a bad chart
+
+A learner built a pie chart of sales by 24 stores. Fix in three steps: (1) change to a horizontal bar; (2) sort descending and show only top 10 plus an "Others" group; (3) title it "Four hypermarkets bring in a third of sales". Same data, but the reader now gets an answer.
+
+## Common mistakes
+
+<CommonMistake>
+Picking the chart first. Newcomers click the shiny visual instead of writing down the question. Write the question above the chart and check the chart answers it.
+</CommonMistake>
+
+<CommonMistake>
+Using too many colours. Colour should mean something: highlight one item, or show one category family. Eight random colours say nothing.
+</CommonMistake>
+
+<CommonMistake>
+Not sorting bars. Unsorted bars force the reader to rank items in their head. Sort descending unless the order is natural (months, age bands).
+</CommonMistake>
+
+<CommonMistake>
+Truncating the axis of a bar chart so a small gap looks like a big one. This is a classic way to mislead people, and interviewers notice.
+</CommonMistake>
+
+<CommonMistake>
+Putting 15 visuals on a page. More visuals means less attention for each. Aim for 5 to 8 including cards.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="visuals" module="power-bi" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "You want to show how monthly sales changed over 24 months. Which visual is best?", options: ["Line chart", "Pie chart", "Map", "Gauge"], answer: 0, explanation: "A line chart shows change over ordered time." },
+  { q: "Which statement about pie charts is true?", options: ["They are best for 15 categories", "They work only for a few parts of one whole", "They always beat bar charts", "They should show trends"], answer: 1, explanation: "Humans compare lengths better than angles, so pies suit only 2 to 4 parts." },
+  { q: "What should a bar chart's value axis usually start at?", options: ["The minimum value in the data", "Zero", "The average", "Any number"], answer: 1, explanation: "Bar length encodes value, so truncating the axis exaggerates differences." },
+  { q: "Which visual best shows the relationship between two measures for many stores?", options: ["Card", "Scatter chart", "Funnel", "Donut"], answer: 1, explanation: "A scatter chart plots one dot per item with an x and y measure." },
+  { q: "What is a matrix visual?", options: ["A 3D chart", "A pivot-table style visual with row and column headers", "A map", "A slicer"], answer: 1, explanation: "A matrix is like a pivot table with row and column groupings and subtotals." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers rarely ask you to name every chart. They ask: "Which chart would you use to show X, and why?" Answer with the question type, then the chart, then one chart you would avoid.
+</InterviewAlert>
+
+<InterviewQ q="When would you use a bar chart instead of a line chart?">
+Use a **bar chart** to compare separate categories (departments, banks, products). Use a **line chart** when the x-axis is ordered time and the story is the trend. A line implies the points are connected in order, which is wrong for unordered categories like cities.
+</InterviewQ>
+
+<InterviewQ q="What is wrong with a pie chart that has ten slices?">
+People compare lengths and positions more accurately than angles. With ten slices, similar values are hard to tell apart and labels collide. A sorted bar chart with data labels shows the same data clearly.
+</InterviewQ>
+
+<InterviewQ q="How do you decide how many visuals go on one report page?">
+Each page should answer one main question. I keep about 5 to 8 visuals, one or two key cards, and use drill-through or a second page for detail. If I need more, the page has more than one story and should be split.
+</InterviewQ>
+
+## Key takeaways
+
+- Start from the question, then pick the chart.
+- Bars compare categories, lines show time, scatter shows relationships, cards show one number.
+- Avoid 3D, many-slice pies, truncated bar axes and rainbow colours.
+- Sort bars and keep titles descriptive with units.
+- Fewer, clearer visuals beat a crowded page.
+
+## Further reading
+
+<FurtherReading ids={["power-bi-docs", "pl300"]} />

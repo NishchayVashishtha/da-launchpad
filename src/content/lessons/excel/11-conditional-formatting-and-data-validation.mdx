@@ -1,0 +1,146 @@
+---
+title: "Conditional formatting and data validation"
+description: "Highlight what matters with rules, formulas, data bars and icon sets, and stop bad data with dropdowns and dependent lists."
+module: excel
+order: 11
+estimatedMinutes: 50
+objectives:
+  - "Apply built-in conditional formatting rules, data bars, colour scales and icon sets"
+  - "Write a formula-based rule that formats a whole row"
+  - "Create dropdown lists with data validation"
+  - "Build a dependent (cascading) dropdown with INDIRECT or dynamic arrays"
+  - "Add input messages and error alerts"
+tags: ["excel", "conditional-formatting", "data-validation"]
+---
+
+## Learning objectives
+
+- Highlight cells automatically with rules.
+- Use data bars, colour scales and icon sets with care.
+- Write formula rules for whole rows.
+- Control what users can type with data validation.
+- Build dependent dropdowns.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+A MIS executive in a logistics company sends a daily delivery sheet to branch heads. Late deliveries must jump out in red. The branch heads also fill in a status column, and the free-text entries ("done", "Done ", "DONE!") break every report. Conditional formatting fixes the first problem and data validation fixes the second.
+</RealWorld>
+
+## Concept
+
+**Conditional formatting** (CF) changes how a cell looks based on its value or on a formula. Think of a traffic light: the cell does not change, only the colour does. It is found in Home > Conditional Formatting.
+
+Main types:
+
+| Type | Use it for |
+|---|---|
+| Highlight Cells Rules | greater than, between, text contains, duplicates |
+| Top/Bottom Rules | top 10, above average |
+| Data Bars | a quick bar inside the cell, length is the size |
+| Colour Scales | heat map, low to high |
+| Icon Sets | arrows, traffic lights, ticks |
+| Formula rule | anything else, such as "colour the whole row if status is Cancelled" |
+
+**Formula rules.** Choose *New Rule > Use a formula to determine which cells to format*. Write a formula that returns TRUE or FALSE for the **first cell** of the range. Use `$` to lock the column when you want the entire row coloured:
+
+`=$O2="Cancelled"` applied to `A2:P2001` colours the row when column O says Cancelled. The `$O` locks the column and the open `2` lets the row move.
+
+<FormulaCard title="Row-highlight rule pattern">
+Select the whole data range first (starting at row 2).
+Formula: =$ColumnLetterRow = "value"
+Example: =AND($J2>15, $O2="Delivered")
+</FormulaCard>
+
+**Data validation** controls what a user may type in a cell. Found in Data > Data Validation. Options: Whole number, Decimal, List, Date, Time, Text length, Custom. Three tabs matter:
+
+1. **Settings**: the rule (for example List, source `Delivered,Cancelled`).
+2. **Input Message**: a small yellow note that appears when the cell is selected ("Pick a status").
+3. **Error Alert**: what happens on a wrong entry. Stop blocks it. Warning and Information only warn.
+
+**Dropdown list sources.** Type items separated by commas, point to a range, or point to a named range or table column. A list that must grow should use a Table column or a dynamic array: `=$H$2#` (a spill reference).
+
+**Dependent dropdown.** The second list changes based on the first. Classic method: make a named range for each parent value (for example a range named `Karnataka` with its cities). Then, for the child cell, use List with source `=INDIRECT(B2)`, where B2 holds the parent. In Excel 365 you can instead spill the children with `=FILTER(CityList, StateList=B2)` in a helper cell and point validation at it with `=$F$2#`.
+
+<Tip>
+Name ranges with no spaces (use `Tamil_Nadu`, not `Tamil Nadu`) because INDIRECT cannot read names with spaces.
+</Tip>
+
+## Worked examples
+
+Use `excel-test-practice.xlsx` (sheet `food_orders`) for formatting and `excel-sales-analysis.xlsx` for the colour scale.
+
+<Download href="data/excel/excel-test-practice.xlsx" label="excel-test-practice.xlsx" />
+<Download href="data/excel/excel-sales-analysis.xlsx" label="excel-sales-analysis.xlsx" />
+
+**Example 1: highlight late deliveries.** In `food_orders`, select column J (`delay_minutes`) data. Home > Conditional Formatting > Highlight Cells Rules > Greater Than > 15 > Light Red Fill. A quick check: `=COUNTIF(J2:J2001,">15")` gives **141** late orders, and exactly 141 cells are red.
+
+**Example 2: colour a whole row.** Select `A2:P2001`. New Rule > Use a formula > `=$O2="Cancelled"` > Format: light grey fill and strikethrough. There are 84 cancelled orders, so 84 rows turn grey. Try `=AND($J2>15,$O2="Delivered")` for late delivered orders only.
+
+**Example 3: data bars and icon sets on a pivot.** In the sales workbook build a pivot with Rows = `store_region`, Values = Sum of `net_amount_inr`. Select the value cells > Data Bars > Solid Fill. Then try Icon Sets > 3 Arrows with a rule: green arrow if the percent is at least 33, yellow if at least 15, red below (set Type to Number, not Percent). Because West (15,61,654) is 41.2 percent of sales, it gets the longest bar.
+
+Always tick "Show Bar Only" only if the number is not needed.
+
+**Example 4: a status dropdown.** In a blank column select 200 cells. Data > Data Validation > Allow: List > Source: `Open,In Progress,Closed`. On the Input Message tab write "Pick a status". On Error Alert choose Stop with the text "Use the list only." Typing "done" now fails.
+
+To clean up existing bad entries, use Data > Data Validation > Circle Invalid Data.
+
+**Example 5: dependent dropdown.** On a sheet `Lists` type states in A1:C1 (Maharashtra, Karnataka, Tamil_Nadu) and cities below each. Select A1:C5 > Formulas > Create from Selection > Top row. In cell F2 apply a list with source `=Lists!$A$1:$C$1`. In G2 apply a list with source `=INDIRECT(F2)`. Pick Karnataka in F2 and G2 offers only the Karnataka cities.
+
+## Common mistakes
+
+<CommonMistake>Writing a formula rule for the wrong first cell. If your range starts at A2 the formula must refer to row 2. Using row 1 shifts the colours down by one row.</CommonMistake>
+
+<CommonMistake>Forgetting the `$` before the column letter, so only one column of the row is coloured and the rest follow shifted references.</CommonMistake>
+
+<CommonMistake>Using a colour scale or icon set on text or on mixed units. Colours need comparable numbers.</CommonMistake>
+
+<CommonMistake>Setting validation after people have pasted data. Pasting overwrites validation. Protect the sheet or use paste values only.</CommonMistake>
+
+<CommonMistake>Using red and green only. About 1 in 12 men cannot tell them apart. Use icons or shades of one colour along with text.</CommonMistake>
+
+<CommonMistake>Stacking many overlapping rules, then not knowing why a cell is coloured. Open Manage Rules, show "This Worksheet" and delete clutter.</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="formatting-validation" module="excel" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "A rule applied to A2:P2001 must colour the entire row when column O is Cancelled. Which formula?", options: ["=O2=\"Cancelled\"", "=$O2=\"Cancelled\"", "=O$2=\"Cancelled\"", "=$O$2=\"Cancelled\""], answer: 1, explanation: "$O locks the column. The row number stays relative so each row checks its own column O." },
+  { q: "Which Error Alert style actually blocks a wrong entry?", options: ["Stop", "Warning", "Information", "None of them"], answer: 0, explanation: "Stop refuses the entry. Warning and Information let the user continue." },
+  { q: "What does =INDIRECT(F2) do in a dependent dropdown?", options: ["Sums F2", "Reads the text in F2 as the name of a range", "Deletes F2", "Sorts F2"], answer: 1, explanation: "INDIRECT turns the text in F2 into a reference, so the list shows the range with that name." },
+  { q: "How can you find cells that already break a validation rule?", options: ["Circle Invalid Data", "Find & Select > Comments", "Remove Duplicates", "Go To Special > Blanks"], answer: 0, explanation: "Data Validation > Circle Invalid Data draws red circles around existing wrong values." },
+  { q: "Which is best to show top performers in a long list?", options: ["Top 10 Items rule", "Merge cells", "Freeze panes", "Text to Columns"], answer: 0, explanation: "Top/Bottom Rules highlight the highest or lowest values automatically." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Expect "highlight duplicates", "highlight rows where X", and "create a dropdown". The dependent dropdown is the favourite follow-up for MIS roles.
+</InterviewAlert>
+
+<InterviewQ q="How do you highlight an entire row based on one column's value?">
+Select the whole data range from the first data row, add a formula rule, and write a formula that locks the column with `$` but not the row, for example `=$O2="Cancelled"`. The formula is written for the first selected cell and Excel adjusts it for the rest.
+</InterviewQ>
+
+<InterviewQ q="How do you build a dependent dropdown?">
+Keep each child list in its own named range, named exactly like the parent value. Apply a List validation to the parent cell. For the child cell use a List validation with source `=INDIRECT(parent_cell)`. In Excel 365 you can use FILTER to build the child list and point validation to the spill range with the `#` operator.
+</InterviewQ>
+
+<InterviewQ q="Does data validation stop copy-paste of wrong values?">
+No. Pasting from another cell replaces the validation rule. To protect data, lock the sheet, allow users to edit only the input cells, and train people to use Paste Special > Values only if validation must stay.
+</InterviewQ>
+
+## Key takeaways
+
+- Conditional formatting changes appearance only; the cell value stays the same.
+- Formula rules use `$` to lock the column and let the row move.
+- Data bars and icon sets are for numbers that can be compared.
+- Data validation with a list gives clean, consistent categories.
+- Dependent dropdowns use INDIRECT with named ranges, or FILTER in Excel 365.
+
+## Further reading
+
+<FurtherReading ids={["excel-support", "chandoo", "excelisfun"]} />

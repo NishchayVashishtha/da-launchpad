@@ -1,0 +1,59 @@
+[
+  {
+    "id": "pbi-walkthrough-hr-001",
+    "module": "power-bi",
+    "topic": "walkthrough-hr",
+    "difficulty": "easy",
+    "language": "dax",
+    "question": "Write measures for `Headcount`, `Exits` and `Attrition %` for the hr model, where `Employees` has one row per employee and `Employees[employment_status]` is Active or Exited.",
+    "dataset": "hr",
+    "hint": "DISTINCTCOUNT and CALCULATE.",
+    "solution": "```dax\nHeadcount = DISTINCTCOUNT(Employees[employee_id])\nExits = CALCULATE(DISTINCTCOUNT(Employees[employee_id]), Employees[employment_status] = \"Exited\")\nAttrition % = DIVIDE([Exits], [Headcount])\n```\nOn the cleaned data this gives 544 exits out of 2,400 people, about 22.7%.",
+    "explanation": "Remove duplicate employees in Power Query first; otherwise headcount is inflated.",
+    "commonMistake": "Counting rows instead of distinct employees when duplicates exist.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "attrition",
+      "dax"
+    ]
+  },
+  {
+    "id": "pbi-walkthrough-hr-002",
+    "module": "power-bi",
+    "topic": "walkthrough-hr",
+    "difficulty": "medium",
+    "language": "dax",
+    "question": "Create a calculated column `Risk Flags` on `Employees` that counts how many of these three conditions are true: average manager rating below 3, average monthly overtime above 10 hours, average hike below 4 percent. Assume helper columns `Avg Rating`, `Avg Overtime`, `Avg Hike` exist.",
+    "dataset": "hr",
+    "hint": "Booleans can be added with IF or by converting to numbers.",
+    "solution": "```dax\nRisk Flags =\n( IF(Employees[Avg Rating] < 3, 1, 0) )\n+ ( IF(Employees[Avg Overtime] > 10, 1, 0) )\n+ ( IF(Employees[Avg Hike] < 4, 1, 0) )\n```\nOn this data attrition rises from about 4.5% with 0 flags to 41% with 3 flags.",
+    "explanation": "A calculated column is right here because the flag is a fixed property of each employee, used to slice.",
+    "commonMistake": "Using a measure and then trying to put it on an axis.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 6,
+    "tags": [
+      "calculated-column",
+      "risk"
+    ]
+  },
+  {
+    "id": "pbi-walkthrough-hr-003",
+    "module": "power-bi",
+    "topic": "walkthrough-hr",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "You find in the hr report that Customer Support has the highest attrition (about 34%) and the lowest average CTC. Write the three-sentence insight you would put on the page, with one recommended action. Do not claim causation.",
+    "dataset": "hr",
+    "hint": "Say what you see, then suggest a test.",
+    "solution": "Example: 'Customer Support loses about 1 in 3 employees (34%), the highest of any department, and also has the lowest average CTC (about 7.9 lakh) and the highest overtime. We recommend a pilot of overtime caps and a pay review for this team, and tracking attrition for six months to see if it falls.' The wording is 'also has', not 'because'.",
+    "explanation": "Correlation is not causation; recommend a test rather than claiming a cause.",
+    "commonMistake": "Writing 'low pay causes attrition' as a fact.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "insight",
+      "storytelling"
+    ]
+  }
+]

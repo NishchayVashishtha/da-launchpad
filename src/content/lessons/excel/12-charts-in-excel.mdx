@@ -1,0 +1,138 @@
+---
+title: "Charts in Excel: choose, build and clean"
+description: "Pick the right chart for the question, build combo charts and sparklines, and remove clutter."
+module: excel
+order: 12
+estimatedMinutes: 45
+objectives:
+  - "Choose a chart type from the question you want to answer"
+  - "Build a combo chart with a secondary axis"
+  - "Add sparklines to a table"
+  - "Apply chart hygiene: titles, axes, colour, labels"
+tags: ["excel", "charts", "visualisation"]
+---
+
+## Learning objectives
+
+- Match a business question to a chart type.
+- Create a combo chart.
+- Insert sparklines.
+- Clean a chart so it reads in five seconds.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+A senior manager spends about ten seconds on each slide. A chart with a clear title ("West stores earn 41% of sales") gets read. A chart with 3D bars, five colours and no title gets ignored. Hiring managers also judge freshers by their chart choices in take-home assignments.
+</RealWorld>
+
+## Concept
+
+A chart is an answer to a question. Decide the question first, then the chart.
+
+| Question | Best chart |
+|---|---|
+| Which category is biggest? | Sorted bar or column |
+| How does it change over time? | Line (or column for few periods) |
+| How are two numbers related? | Scatter |
+| What is the share of a whole? | Stacked bar, or pie/doughnut with 2 to 4 slices |
+| How do actual and target compare? | Clustered column with a target line (combo) |
+| What is the spread of values? | Histogram or box plot |
+| Which steps lose people? | Funnel or bar in order |
+
+**Combo chart.** A combo chart mixes two chart types, for example columns for sales and a line for profit margin percent. When the two series have very different scales (rupees vs percent) put one on a **secondary axis**. Right-click the series > Format Data Series > Secondary Axis.
+
+**Sparklines.** A sparkline is a tiny chart inside one cell. It shows the shape of a trend next to the number. Insert > Sparklines > Line, Column or Win/Loss. They use almost no space, so a table of 20 stores can each have a trend line.
+
+**Chart hygiene** means removing everything that does not help the reader:
+
+1. Write a title that states the finding.
+2. Sort bars from large to small, unless the order is natural (months).
+3. Remove gridlines, borders and the legend if there is one series.
+4. Label the data directly, not through the legend.
+5. Use one colour, plus one accent colour for the point you want noticed.
+6. Start bar-chart axes at zero. A truncated bar axis exaggerates small gaps.
+7. Add the unit (INR, %) in the axis title or the chart title.
+
+<FormulaCard title="Chart choice in one line">
+Compare = bar. Trend = line. Relationship = scatter. Part of whole = stacked bar or small pie. Distribution = histogram.
+</FormulaCard>
+
+<Tip>
+Select the data and press Alt + F1 to insert a chart instantly. F11 creates it on its own sheet.
+</Tip>
+
+## Worked examples
+
+Data: `excel-sales-analysis.xlsx` (sheet `sales`).
+
+<Download href="data/excel/excel-sales-analysis.xlsx" label="excel-sales-analysis.xlsx" />
+
+**Example 1: a clean bar chart.** Make a pivot with Rows = `category` and Values = Sum of `net_amount_inr`. Sort descending. Insert a clustered bar. Reverse the category order (Format Axis > Categories in reverse order) so the biggest bar is at the top. Remove gridlines and legend. Title: "Home & Kitchen leads with 10.7 lakh net sales". Home & Kitchen is 10,71,888 out of 37,88,533, which is 28.3 percent.
+
+**Example 2: line chart by quarter.** Pivot with Rows = Years and Quarters of `sale_date`, Values = Sum of net sales. The quarterly values rise from 3,74,622 (Q1 2023) to 6,55,538 (Q4 2024). A line chart makes the Q4 peak in both years obvious (4,90,447 in 2023 and 6,55,538 in 2024). Title: "Net sales climb every Q4 and grow year on year".
+
+**Example 3: combo chart.** Build a table with each store region: net sales (Sum) and average discount percent (`discount_pct`, Average). Select it > Insert > Combo > Clustered Column for sales and Line for discount, tick Secondary Axis for the line. Label the left axis "Sales (INR)" and the right axis "Avg discount %". The two axes are needed because sales are in lakhs while discount is a small percent.
+
+**Example 4: sparklines.** In a new range list the eight quarters across columns for each category (use a pivot with Quarters in Columns). In a cell at the right choose Insert > Sparklines > Line, Data Range = the eight cells in that row. Fill down. Tick High Point to mark the best quarter in red.
+
+**Example 5: spotting a bad chart.** Imagine a 3D pie of six categories with a rainbow palette. Problems: 3D distorts size, six slices are hard to compare, colours carry no meaning. Fix: a sorted bar chart, one colour, the top bar in an accent colour, direct labels.
+
+<Warning>
+A pie chart with more than five slices, or a truncated axis on a bar chart, is a classic way to mislead. Hiring managers notice.
+</Warning>
+
+## Common mistakes
+
+<CommonMistake>Using a chart type because it looks fancy (radar, 3D, doughnut with 8 slices). Pick the simplest chart that answers the question.</CommonMistake>
+
+<CommonMistake>Putting two series with different scales on one axis, so the small series looks flat. Use a secondary axis, or two charts.</CommonMistake>
+
+<CommonMistake>Leaving the default title "Chart Title" or "Sum of net_amount_inr". Write a title that states the finding and unit.</CommonMistake>
+
+<CommonMistake>Sorting months alphabetically (Apr, Aug, Dec...). Keep time in order.</CommonMistake>
+
+<CommonMistake>Starting a bar chart axis at a high value so a 2 percent difference looks like a 10x difference.</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="charts" module="excel" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "You want to show monthly revenue (INR) and margin (%) together. Which is best?", options: ["Combo chart with margin on a secondary axis", "Two pie charts", "A 3D bar chart", "A radar chart"], answer: 0, explanation: "Different units need a secondary axis, with columns for revenue and a line for margin." },
+  { q: "What is a sparkline?", options: ["A chart inside a single cell", "A chart that sparkles", "A dashboard theme", "A pivot filter"], answer: 0, explanation: "Sparklines are tiny charts that show a trend in one cell." },
+  { q: "Which chart suits the relationship between delivery distance and delay?", options: ["Pie", "Scatter", "Doughnut", "Stacked bar"], answer: 1, explanation: "A scatter plot shows how two numeric variables move together." },
+  { q: "Why should a bar chart axis start at zero?", options: ["It looks nicer", "Bar length stands for value, so a cut axis exaggerates differences", "Excel needs it", "Gridlines need it"], answer: 1, explanation: "People read bar length as size. Cutting the axis makes small gaps look huge." },
+  { q: "Which title is best?", options: ["Chart 1", "Sales by region", "West earns 41% of net sales (2023-24)", "Sum of net_amount_inr"], answer: 2, explanation: "A good title states the finding in plain words with the period." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+They may show a poor chart and ask "what would you change?". Answer in order: title, chart type, sorting, colour, labels.
+</InterviewAlert>
+
+<InterviewQ q="How do you choose a chart type?">
+I start with the question. Comparison uses bars, trend uses lines, relationship uses scatter, share of a whole uses a stacked bar or a small pie, distribution uses a histogram. Then I check the audience and keep it as simple as possible.
+</InterviewQ>
+
+<InterviewQ q="When do you use a secondary axis?">
+When two series have different units or very different sizes, such as revenue in rupees and margin in percent. I use it sparingly and label both axes, because dual axes can mislead if the scales are chosen to force a correlation.
+</InterviewQ>
+
+<InterviewQ q="What are sparklines good for?">
+They show the shape of a trend inside a table, one per row, with no extra space. They are good for dashboards where many items must be scanned quickly. They do not show exact values, so keep the number beside them.
+</InterviewQ>
+
+## Key takeaways
+
+- Start with the question, then choose the chart.
+- Combo charts need a secondary axis when units differ.
+- Sparklines add trend shape next to numbers.
+- Good titles state the finding; sort bars; remove clutter.
+- Bar charts start at zero; pie charts have few slices.
+
+## Further reading
+
+<FurtherReading ids={["excel-support", "chandoo", "excelisfun"]} />

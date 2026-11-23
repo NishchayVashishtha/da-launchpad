@@ -1,0 +1,135 @@
+[
+  {
+    "id": "sql-pattern-median-001",
+    "module": "sql",
+    "topic": "pattern-median",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Finance wants the typical ticket size of successful payments, and the mean is distorted by a few huge entries. Using only rows with `status = 'SUCCESS'` and ignoring exact duplicate rows, compute the median `amount`. Return one column `median_amount`, rounded to 2 decimals.",
+    "dataset": "fintech",
+    "hint": "Number the sorted amounts with ROW_NUMBER, count them, and average the middle one or two rows.",
+    "solutionSql": "WITH ok AS (SELECT DISTINCT txn_id, amount FROM transactions WHERE status = 'SUCCESS'), ranked AS (SELECT amount, ROW_NUMBER() OVER (ORDER BY amount, txn_id) AS rn, COUNT(*) OVER () AS n FROM ok) SELECT ROUND(AVG(amount), 2) AS median_amount FROM ranked WHERE rn IN ((n + 1) / 2, (n + 2) / 2)",
+    "expectedOutput": {
+      "columns": [
+        "median_amount"
+      ],
+      "rows": [
+        [
+          565.08
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "ROW_NUMBER sorts the amounts and COUNT(*) OVER () gives the total n. For odd n, (n+1)/2 and (n+2)/2 (integer division) are the same row, so AVG returns that row. For even n they are the two middle rows and AVG returns their average. SQLite has no MEDIAN, so this method works everywhere.",
+    "commonMistake": "Using AVG(amount) and calling it the median. The mean is pulled up by the very large payments, so the number is far above what a typical customer pays.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "median",
+      "row_number",
+      "window"
+    ]
+  },
+  {
+    "id": "sql-pattern-median-002",
+    "module": "sql",
+    "topic": "pattern-median",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Operations says delivery times look fine on average but customers still complain. For delivered orders (ignore exact duplicate rows) show the median and the average of `actual_minutes` side by side. Return `median_minutes` and `avg_minutes`, both rounded to 1 decimal.",
+    "dataset": "food_delivery",
+    "hint": "Build the median with ROW_NUMBER and COUNT in one CTE, and the average in another, then CROSS JOIN them.",
+    "solutionSql": "WITH d AS (SELECT DISTINCT delivery_id, actual_minutes FROM deliveries WHERE delivery_status = 'Delivered'), r AS (SELECT actual_minutes, ROW_NUMBER() OVER (ORDER BY actual_minutes, delivery_id) AS rn, COUNT(*) OVER () AS n FROM d), m AS (SELECT AVG(actual_minutes) AS med FROM r WHERE rn IN ((n + 1) / 2, (n + 2) / 2)) SELECT ROUND(m.med, 1) AS median_minutes, ROUND((SELECT AVG(actual_minutes) FROM d), 1) AS avg_minutes FROM m",
+    "expectedOutput": {
+      "columns": [
+        "median_minutes",
+        "avg_minutes"
+      ],
+      "rows": [
+        [
+          44,
+          44.9
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "The median comes from the middle rows of the sorted list. The average comes from a plain AVG over the same deduplicated rows. When the average is higher than the median, a few very slow deliveries are pulling it up, which is why analysts report both.",
+    "commonMistake": "Forgetting to filter delivery_status = 'Delivered'. Cancelled orders have NULL actual_minutes, and the window functions would count them in n while the sorted list puts NULLs first, which shifts the middle position.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 10,
+    "tags": [
+      "median",
+      "average",
+      "skew"
+    ]
+  },
+  {
+    "id": "sql-pattern-median-003",
+    "module": "sql",
+    "topic": "pattern-median",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "The city heads want a fair delivery-time comparison. For delivered orders (ignore exact duplicate rows), compute the median `actual_minutes` for each city. Clean the city with `LOWER(TRIM(city))`. Return `city` (the cleaned value) and `median_minutes` rounded to 1 decimal, ordered by `median_minutes` descending, then `city`.",
+    "dataset": "food_delivery",
+    "hint": "Use PARTITION BY the cleaned city in both ROW_NUMBER and COUNT, then average the middle rows per city.",
+    "solutionSql": "WITH d AS (SELECT DISTINCT delivery_id, LOWER(TRIM(city)) AS city, actual_minutes FROM deliveries WHERE delivery_status = 'Delivered'), r AS (SELECT city, actual_minutes, ROW_NUMBER() OVER (PARTITION BY city ORDER BY actual_minutes, delivery_id) AS rn, COUNT(*) OVER (PARTITION BY city) AS n FROM d) SELECT city, ROUND(AVG(actual_minutes), 1) AS median_minutes FROM r WHERE rn IN ((n + 1) / 2, (n + 2) / 2) GROUP BY city ORDER BY median_minutes DESC, city",
+    "expectedOutput": {
+      "columns": [
+        "city",
+        "median_minutes"
+      ],
+      "rows": [
+        [
+          "ahmedabad",
+          45
+        ],
+        [
+          "bengaluru",
+          45
+        ],
+        [
+          "chennai",
+          44
+        ],
+        [
+          "kolkata",
+          44
+        ],
+        [
+          "mumbai",
+          44
+        ],
+        [
+          "pune",
+          44
+        ],
+        [
+          "delhi",
+          43
+        ],
+        [
+          "hyderabad",
+          43
+        ],
+        [
+          "jaipur",
+          43
+        ],
+        [
+          "lucknow",
+          43
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Adding PARTITION BY city restarts both the row numbering and the count inside every city, so each city gets its own middle position. The final GROUP BY averages one or two middle rows per city. Cleaning the city first matters: 'mumbai' and ' Mumbai' would otherwise form separate groups.",
+    "commonMistake": "Using a global ROW_NUMBER without PARTITION BY and then filtering the middle rows. You get one row from the whole table, not a median for each city.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 14,
+    "tags": [
+      "median",
+      "partition",
+      "clean"
+    ]
+  }
+]

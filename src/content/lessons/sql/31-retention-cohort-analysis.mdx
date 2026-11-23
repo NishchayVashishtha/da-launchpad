@@ -1,0 +1,325 @@
+---
+title: "Interview pattern: retention and cohort analysis"
+description: "Group users into cohorts by first payment month, compute month numbers and build a retention matrix with a CASE pivot."
+module: sql
+order: 31
+estimatedMinutes: 55
+objectives:
+  - "Define a cohort and a retention metric precisely"
+  - "Assign each user a cohort month with MIN() and GROUP BY"
+  - "Compute month number (months since cohort start)"
+  - "Pivot into a retention matrix with CASE WHEN and COUNT(DISTINCT)"
+tags: ["sql", "interview", "cohort", "retention", "subscription"]
+---
+
+## Learning objectives
+
+- Explain what a cohort is and what retention means.
+- Find each user's cohort month and compute the month number.
+- Build a long table (cohort, month number, users) and a wide retention matrix.
+- Turn counts into retention percentages and read the result.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+A streaming app adds 200 paying users in March. How many are still paying in April, May, June? If the March batch leaves faster than the February batch, something changed: a bad ad channel, a pricing issue, a bug. Product, growth and finance teams all ask for cohort retention. Cohort questions are a favourite "hard" question in analyst interviews.
+</RealWorld>
+
+## Concept
+
+### The recognition cue
+
+When you see **"retention", "cohort", "users who came back", "still active after N months", "churn by signup month"**, think: *cohort month, month number, count distinct users, pivot.*
+
+Analogy: a school batch. The Class of 2023 starts with 100 students. After one year, 90 are left. After two years, 82. You track each batch separately and compare them. A "cohort" is a batch of users who started in the same period.
+
+### Three definitions to agree on first
+
+1. **Cohort**: the group a user belongs to. Usually the month of first signup or first purchase. Each user belongs to exactly one cohort.
+2. **Active**: what counts as "retained"? A payment? A login? An order? Define it clearly.
+3. **Period**: month 0 is the cohort month, month 1 is the next month and so on.
+
+<FormulaCard title="Retention rate">
+Retention at month n = users from the cohort active in month n / users in the cohort at month 0
+</FormulaCard>
+
+### The month-number trick
+
+SQLite has no `DATEDIFF`. Convert each date to "months since year 0" and subtract:
+
+```sql
+(CAST(strftime('%Y', activity) AS INT) * 12 + CAST(strftime('%m', activity) AS INT))
+- (CAST(strftime('%Y', cohort_date) AS INT) * 12 + CAST(strftime('%m', cohort_date) AS INT))
+```
+
+This counts calendar-month boundaries, which is what cohorts need. January 31 to February 1 is month 1.
+
+### The template (three steps)
+
+```sql
+WITH cohort AS (          -- 1. one row per user: first date
+  SELECT user_id, MIN(event_time) AS first_time
+  FROM events WHERE <activation event> GROUP BY user_id
+),
+activity AS (             -- 2. one row per user per month number
+  SELECT DISTINCT e.user_id, strftime('%Y-%m', c.first_time) AS cohort_month,
+         <month number> AS month_no
+  FROM events e JOIN cohort c USING (user_id) WHERE <active event>
+)
+SELECT cohort_month,      -- 3. pivot
+       COUNT(DISTINCT CASE WHEN month_no = 0 THEN user_id END) AS m0,
+       COUNT(DISTINCT CASE WHEN month_no = 1 THEN user_id END) AS m1
+FROM activity GROUP BY cohort_month;
+```
+
+<Tip>
+Say "cohort first, activity second, pivot last". Interviewers follow your structure, even if a small syntax error slips in.
+</Tip>
+
+### Edge cases
+
+- **Incomplete recent cohorts.** A user who paid last month cannot have a month-6 value yet. Do not show it as 0%. Drop or grey out those cells.
+- **Duplicates.** The events table contains duplicate rows and mixed-case event names (`PAYMENT_SUCCESS`). Use `LOWER(event_name)` and `COUNT(DISTINCT user_id)`.
+- **Annual plans** pay once a year, so monthly retention is meaningless for them. We restrict to monthly billing.
+- **Empty cells.** A cohort with nobody in a month gives 0 from `COUNT(DISTINCT CASE ...)`. That is correct for "no active users".
+
+## Worked examples
+
+For all examples, "active in a month" means the user had a `payment_success` or `renewal_success` event in that month, and the cohort is the month of the first such event. We look only at monthly-billing users.
+
+### Example 1: assign cohorts and count cohort sizes
+
+<SqlPlayground dataset="subscription" query={`WITH pay AS (
+  SELECT e.user_id, e.event_time
+  FROM events e
+  JOIN subscriptions s ON s.user_id = e.user_id
+  WHERE LOWER(e.event_name) IN ('payment_success', 'renewal_success')
+    AND s.billing_cycle = 'Monthly'
+),
+cohort AS (
+  SELECT user_id, MIN(event_time) AS first_pay FROM pay GROUP BY user_id
+)
+SELECT strftime('%Y-%m', first_pay) AS cohort_month,
+       COUNT(*) AS users
+FROM cohort
+GROUP BY cohort_month
+ORDER BY cohort_month
+LIMIT 8;`} title="Cohort size by first payment month" />
+
+**Output:**
+
+| cohort_month | users |
+|---|---|
+| 2023-01 | 15 |
+| 2023-02 | 25 |
+| 2023-03 | 25 |
+| 2023-04 | 23 |
+| 2023-05 | 36 |
+| 2023-06 | 39 |
+| 2023-07 | 43 |
+| 2023-08 | 41 |
+
+Each paying user appears once, in their first paying month. That is the denominator for every retention number later.
+
+### Example 2: month number and active users (long format)
+
+<SqlPlayground dataset="subscription" query={`WITH pay AS (
+  SELECT e.user_id, e.event_time
+  FROM events e
+  JOIN subscriptions s ON s.user_id = e.user_id
+  WHERE LOWER(e.event_name) IN ('payment_success', 'renewal_success')
+    AND s.billing_cycle = 'Monthly'
+),
+cohort AS (
+  SELECT user_id, MIN(event_time) AS first_pay FROM pay GROUP BY user_id
+),
+activity AS (
+  SELECT DISTINCT p.user_id,
+         strftime('%Y-%m', c.first_pay) AS cohort_month,
+         (CAST(strftime('%Y', p.event_time) AS INT) * 12 + CAST(strftime('%m', p.event_time) AS INT))
+       - (CAST(strftime('%Y', c.first_pay) AS INT) * 12 + CAST(strftime('%m', c.first_pay) AS INT)) AS month_no
+  FROM pay p
+  JOIN cohort c ON c.user_id = p.user_id
+)
+SELECT cohort_month, month_no, COUNT(DISTINCT user_id) AS active_users
+FROM activity
+WHERE cohort_month = '2023-03'
+GROUP BY cohort_month, month_no
+ORDER BY month_no
+LIMIT 10;`} title="Active users by cohort and month number" />
+
+**Output:**
+
+| cohort_month | month_no | active_users |
+|---|---|---|
+| 2023-03 | 0 | 25 |
+| 2023-03 | 1 | 19 |
+| 2023-03 | 2 | 18 |
+| 2023-03 | 3 | 15 |
+| 2023-03 | 4 | 14 |
+| 2023-03 | 5 | 10 |
+| 2023-03 | 6 | 7 |
+| 2023-03 | 7 | 6 |
+| 2023-03 | 8 | 5 |
+| 2023-03 | 9 | 4 |
+
+This is the "long" form: one row per cohort and month number. It is best for charts. The count falls as months pass, which is the retention curve.
+
+### Example 3: the retention matrix with a CASE pivot
+
+Wide form: one row per cohort, columns for months 0 to 3, and the percentages. We use only cohorts from 2023 so that month 3 has full data.
+
+<SqlPlayground dataset="subscription" query={`WITH pay AS (
+  SELECT e.user_id, e.event_time
+  FROM events e
+  JOIN subscriptions s ON s.user_id = e.user_id
+  WHERE LOWER(e.event_name) IN ('payment_success', 'renewal_success')
+    AND s.billing_cycle = 'Monthly'
+),
+cohort AS (
+  SELECT user_id, MIN(event_time) AS first_pay FROM pay GROUP BY user_id
+),
+activity AS (
+  SELECT DISTINCT p.user_id,
+         strftime('%Y-%m', c.first_pay) AS cohort_month,
+         (CAST(strftime('%Y', p.event_time) AS INT) * 12 + CAST(strftime('%m', p.event_time) AS INT))
+       - (CAST(strftime('%Y', c.first_pay) AS INT) * 12 + CAST(strftime('%m', c.first_pay) AS INT)) AS month_no
+  FROM pay p
+  JOIN cohort c ON c.user_id = p.user_id
+),
+matrix AS (
+  SELECT cohort_month,
+         COUNT(DISTINCT CASE WHEN month_no = 0 THEN user_id END) AS m0,
+         COUNT(DISTINCT CASE WHEN month_no = 1 THEN user_id END) AS m1,
+         COUNT(DISTINCT CASE WHEN month_no = 2 THEN user_id END) AS m2,
+         COUNT(DISTINCT CASE WHEN month_no = 3 THEN user_id END) AS m3
+  FROM activity
+  GROUP BY cohort_month
+)
+SELECT cohort_month, m0,
+       ROUND(100.0 * m1 / m0, 1) AS pct_m1,
+       ROUND(100.0 * m2 / m0, 1) AS pct_m2,
+       ROUND(100.0 * m3 / m0, 1) AS pct_m3
+FROM matrix
+WHERE cohort_month BETWEEN '2023-01' AND '2023-09'
+ORDER BY cohort_month;`} title="Retention matrix (percent)" />
+
+**Output:**
+
+| cohort_month | m0 | pct_m1 | pct_m2 | pct_m3 |
+|---|---|---|---|---|
+| 2023-01 | 15 | 66.7 | 53.3 | 40.0 |
+| 2023-02 | 25 | 64.0 | 52.0 | 40.0 |
+| 2023-03 | 25 | 76.0 | 72.0 | 60.0 |
+| 2023-04 | 23 | 73.9 | 60.9 | 60.9 |
+| 2023-05 | 36 | 66.7 | 63.9 | 63.9 |
+| 2023-06 | 39 | 84.6 | 64.1 | 59.0 |
+| 2023-07 | 43 | 86.0 | 79.1 | 67.4 |
+| 2023-08 | 41 | 75.6 | 68.3 | 61.0 |
+| 2023-09 | 50 | 70.0 | 60.0 | 54.0 |
+
+Read each row left to right. Month 0 is 100% by definition. A cohort that drops faster than its neighbours is a lead for investigation. Cohort sizes are small (tens of users), so differences of a few points are noise.
+
+### Example 4: retention by plan
+
+Does the plan change retention? Add `s.plan` to the cohort and group by it. Here, the month-3 retention of 2023 cohorts for each monthly plan.
+
+<SqlPlayground dataset="subscription" query={`WITH pay AS (
+  SELECT e.user_id, e.event_time, s.plan
+  FROM events e
+  JOIN subscriptions s ON s.user_id = e.user_id
+  WHERE LOWER(e.event_name) IN ('payment_success', 'renewal_success')
+    AND s.billing_cycle = 'Monthly'
+),
+cohort AS (
+  SELECT user_id, plan, MIN(event_time) AS first_pay FROM pay GROUP BY user_id, plan
+),
+activity AS (
+  SELECT DISTINCT p.user_id, c.plan,
+         (CAST(strftime('%Y', p.event_time) AS INT) * 12 + CAST(strftime('%m', p.event_time) AS INT))
+       - (CAST(strftime('%Y', c.first_pay) AS INT) * 12 + CAST(strftime('%m', c.first_pay) AS INT)) AS month_no
+  FROM pay p
+  JOIN cohort c ON c.user_id = p.user_id
+  WHERE c.first_pay < '2023-10-01'
+)
+SELECT plan,
+       COUNT(DISTINCT CASE WHEN month_no = 0 THEN user_id END) AS started,
+       COUNT(DISTINCT CASE WHEN month_no = 3 THEN user_id END) AS still_paying_m3,
+       ROUND(100.0 * COUNT(DISTINCT CASE WHEN month_no = 3 THEN user_id END)
+             / COUNT(DISTINCT CASE WHEN month_no = 0 THEN user_id END), 1) AS retention_m3_pct
+FROM activity
+GROUP BY plan
+ORDER BY plan;`} title="Month-3 retention by plan" />
+
+**Output:**
+
+| plan | started | still_paying_m3 | retention_m3_pct |
+|---|---|---|---|
+| Basic | 98 | 54 | 55.1 |
+| Premium | 46 | 28 | 60.9 |
+| Standard | 153 | 90 | 58.8 |
+
+The same template, with one more grouping column. Basic usually retains worse than Premium in this data.
+
+## Common mistakes
+
+<CommonMistake>
+**Counting rows instead of distinct users.** A user with duplicate event rows is counted twice, so retention can exceed 100%. Use `COUNT(DISTINCT user_id)`.
+</CommonMistake>
+<CommonMistake>
+**Case-sensitive event names.** `payment_success` and `PAYMENT_SUCCESS` are the same event. Filtering without `LOWER` silently drops users.
+</CommonMistake>
+<CommonMistake>
+**Using the calendar month of the event, not the month number.** Without subtracting the cohort month you get "active in March" for every cohort, which is not retention.
+</CommonMistake>
+<CommonMistake>
+**Showing zeros for months that have not happened.** The newest cohort has no month-6 data yet. Cut those cells.
+</CommonMistake>
+<CommonMistake>
+**Mixing billing cycles.** Annual-plan users have no events in months 1 to 11, so they look like churn. Segment or exclude them.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="pattern-cohort" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What is a cohort?", options: ["A product category", "A group of users who started in the same period", "A type of join", "A daily report"], answer: 1, explanation: "A cohort is a batch of users sharing a starting period, such as everyone who first paid in March." },
+  { q: "In a retention matrix, what is month 0?", options: ["The month before signup", "The cohort's first month", "The last month of data", "The average month"], answer: 1, explanation: "Month 0 is the month the user entered the cohort. Retention there is 100% by definition." },
+  { q: "Why COUNT(DISTINCT user_id) in each pivot cell?", options: ["To sort users", "A user can have many events in a month and should count once", "To join tables", "To remove NULL months"], answer: 1, explanation: "Many events per user would inflate counts. DISTINCT counts each user once." },
+  { q: "The newest cohort shows 0% at month 6, but it started 2 months ago. What should you do?", options: ["Report 0% churn", "Hide those cells because the data is not there yet", "Delete the cohort", "Use month 7 instead"], answer: 1, explanation: "Future months have no data. Showing zero looks like complete churn, which is false." },
+  { q: "How do you compute months between two dates in SQLite without DATEDIFF?", options: ["date1 - date2", "year*12 + month for each date, then subtract", "MONTHS_BETWEEN()", "COUNT(month)"], answer: 1, explanation: "Converting year and month to a single month count lets you subtract." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Cohort retention is usually the "hard" question in a data analyst loop. Do not rush into code. State the definitions first (cohort, active, period), then build the query in three steps.
+</InterviewAlert>
+
+<InterviewQ q="How would you calculate month-wise retention for users who signed up in each month?">
+"First I define terms. Cohort is the month of the user's first signup (or first payment, depending on the question). Active means at least one qualifying event in that month. Step 1: a CTE with one row per user and `MIN(date)` as their cohort date. Step 2: join the activity table and compute month number as the month difference between the activity date and the cohort date. Use `DISTINCT` so a user counts once per month. Step 3: pivot with `COUNT(DISTINCT CASE WHEN month_no = n THEN user_id END)` and divide each column by the month-0 count. I would drop cells that fall in the future."
+</InterviewQ>
+<InterviewQ q="What is the difference between retention and churn?">
+Churn is the share of users lost in a period. Retention is the share still active. For a cohort, retention at month n plus cumulative churn at month n equals 100%. Retention is usually shown as a matrix by cohort, and churn is often shown as a monthly rate.
+</InterviewQ>
+<InterviewQ q="March's cohort retains worse than the others. What would you do next?">
+First check the cohort size and the data: is it small, or did tracking break? Then split the cohort by acquisition source, plan, platform and city to see which segment drives the drop. Check for events at the time: a price change, an outage or a campaign that brought low-intent users. I would compare against neighbouring cohorts and report the finding with the evidence and a suggested action.
+</InterviewQ>
+<InterviewQ q="Why use CASE inside COUNT(DISTINCT ...) to pivot?">
+`CASE WHEN month_no = 1 THEN user_id END` returns the user id only for month 1 rows and NULL otherwise. `COUNT` ignores NULLs, so each column counts users only for its own month. It turns long rows into columns with one scan, and it works in every SQL dialect.
+</InterviewQ>
+
+## Key takeaways
+
+- Cue: "retention", "cohort", "still active after N months" means cohort month, month number, pivot.
+- Define cohort, active event and period before you write code.
+- Month number = month difference between activity and cohort start.
+- Pivot with `COUNT(DISTINCT CASE WHEN month_no = n THEN user_id END)` and divide by month 0.
+- Clean event names, de-duplicate users, and hide future cells.
+
+## Further reading
+
+<FurtherReading ids={["mode-sql", "sqlite-docs", "datalemur"]} />

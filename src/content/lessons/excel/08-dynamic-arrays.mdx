@@ -1,0 +1,176 @@
+---
+title: "Dynamic arrays: FILTER, UNIQUE, SORT, SORTBY, SEQUENCE and LET"
+description: "Use spilling formulas to filter, de-duplicate and sort data with one formula, and name parts of a formula with LET."
+module: excel
+order: 8
+estimatedMinutes: 50
+objectives: ["Explain what a spill range is", "Use FILTER, UNIQUE, SORT and SORTBY", "Generate lists with SEQUENCE", "Make long formulas readable with LET", "Know which Excel versions support dynamic arrays"]
+tags: ["excel", "dynamic-arrays", "filter", "unique", "let"]
+---
+
+## Learning objectives
+
+- Explain how a formula can **spill** many results into the cells below and to the right.
+- Use `FILTER`, `UNIQUE`, `SORT`, `SORTBY` and `SEQUENCE`.
+- Combine them, and name parts of a formula with `LET`.
+- Know which versions of Excel support them.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Your manager wants a live list of Prime customers in Mumbai, sorted by signup date. With dynamic arrays you write one formula in one cell. The list updates by itself when the data changes. Before this you needed filters, copy and paste or a macro.
+</RealWorld>
+
+Dynamic arrays are the biggest change to Excel in years. Interviewers use them to see whether you know modern Excel.
+
+## Concept
+
+A **dynamic array formula** returns many values. The results fill (**spill**) into neighbouring cells. The first cell holds the formula; the others are greyed. Refer to the whole spill with `A1#`.
+
+Think of pouring water from a jug: one pour fills the glass below. If something blocks the way, you get `#SPILL!`. Clear the cells below to fix it.
+
+**Version support**
+
+- Microsoft 365 and Excel 2021 and later (including Excel for the web): FILTER, UNIQUE, SORT, SORTBY, SEQUENCE, LET.
+- Microsoft 365 only (newer): TAKE, DROP, CHOOSECOLS, TEXTSPLIT, BYROW, LAMBDA.
+- Excel 2019, 2016 and older: not available. Use filters, PivotTables, Remove Duplicates or INDEX-SMALL array formulas. Always check what your interviewer or employer uses.
+
+**The functions**
+
+- `FILTER(array, include, [if_empty])` keeps rows where `include` is TRUE. AND is `(cond1)*(cond2)`; OR is `(cond1)+(cond2)`.
+- `UNIQUE(array, [by_col], [exactly_once])` removes repeats.
+- `SORT(array, [sort_index], [order], [by_col])` sorts by a column number. Order `1` is ascending, `-1` is descending.
+- `SORTBY(array, by_array1, order1, ...)` sorts by another range, even one that is not in the output.
+- `SEQUENCE(rows, [cols], [start], [step])` creates a list of numbers: `SEQUENCE(12)` gives 1 to 12.
+- `LET(name1, value1, ..., calculation)` stores values under names, so a long formula is shorter, faster and easier to read.
+
+<FormulaCard title="Pipeline pattern">
+=SORT(UNIQUE(FILTER(range, condition)))
+Read from the inside out: FILTER the rows, remove repeats with UNIQUE, then SORT.
+</FormulaCard>
+
+<Tip>
+Wrap a spill in a function to get one number: `=ROWS(FILTER(...))` counts matches, `=SUM(FILTER(...))` adds them.
+</Tip>
+
+## Worked examples
+
+<Download href="data/excel/excel-functions.xlsx" label="Download excel-functions.xlsx" />
+
+**Example 1: how many cities?** In `customers`, 38 rows have a blank city. UNIQUE would count the blank as an extra item, so filter first:
+
+```
+=ROWS(UNIQUE(FILTER(customers!C2:C1064,customers!C2:C1064<>"")))
+```
+
+Result: **20** cities. `=SORT(UNIQUE(FILTER(customers!C2:C1064,customers!C2:C1064<>"")))` lists them alphabetically, spilling 20 rows.
+
+**Example 2: FILTER with two conditions.** Prime members who live in Mumbai:
+
+```
+=FILTER(customers!A2:H1064,(customers!C2:C1064="Mumbai")*(customers!H2:H1064=1),"None")
+```
+
+The result spills **42** rows and 8 columns.
+
+**Example 3: top 3 delivered orders.** Combine FILTER, CHOOSECOLS, SORT and TAKE:
+
+```
+=TAKE(SORT(CHOOSECOLS(FILTER(orders!A2:J2001,orders!E2:E2001="Delivered"),1,10),2,-1),3)
+```
+
+| order_id | total_amount |
+|---|---|
+| 8466 | 87,849.93 |
+| 4787 | 67,453.54 |
+| 6972 | 65,844.15 |
+
+Without TAKE and CHOOSECOLS (Excel 2021) sort the filtered rows with SORT and read the top rows by eye, or use INDEX with array constants.
+
+**Example 4: LET.** Delivered revenue for 2023:
+
+```
+=LET(d,orders!C2:C2001,s,orders!E2:E2001,t,orders!J2:J2001,
+ SUM(t*(YEAR(d)=2023)*(s="Delivered")))
+```
+
+Result: **4,705,226.99**. The names `d`, `s` and `t` make the formula readable.
+
+**Example 5: SEQUENCE for monthly totals.** In Microsoft 365:
+
+```
+=LET(d,orders!C2:C2001,s,orders!E2:E2001,t,orders!J2:J2001,m,SEQUENCE(12),
+ BYROW(m,LAMBDA(x,SUM(t*(YEAR(d)=2023)*(MONTH(d)=x)*(s="Delivered")))))
+```
+
+It spills 12 values. January is **329,204.59** and December is **651,006.14**. They add up to 4,705,226.99.
+
+## Common mistakes
+
+<CommonMistake>
+Typing a spill formula where cells below are not empty. You get `#SPILL!`. Clear the blocking cells or move the formula.
+</CommonMistake>
+
+<CommonMistake>
+Sending a file with dynamic array formulas to someone on Excel 2016. They see `_xlfn.` names and errors. Ask about versions first or paste values.
+</CommonMistake>
+
+<CommonMistake>
+Using UNIQUE on a column with blanks and counting the result. The blank becomes a 0 item. Filter out blanks first.
+</CommonMistake>
+
+<CommonMistake>
+Sorting by the sheet column letter. In SORT the number is the column inside the returned array, not the sheet column.
+</CommonMistake>
+
+<CommonMistake>
+Referring to a spill with a normal range such as `D2:D43`. When the data grows the range is wrong. Use the spill reference `D2#`.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="dynamic-arrays" module="excel" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What does the #SPILL! error mean?", options: ["The formula has a typo", "Cells in the spill range are not empty", "The file is corrupt", "The data is text"], answer: 1, explanation: "A spilling formula needs free cells below and to the right. Something is blocking them." },
+  { q: "How do you write FILTER with two conditions that must both be true?", options: ["(a)+(b)", "(a)*(b)", "(a)&(b)", "a,b"], answer: 1, explanation: "Multiplying TRUE and FALSE gives 1 only when both are TRUE. Adding gives OR logic." },
+  { q: "Which Excel versions support FILTER and UNIQUE?", options: ["Excel 2013 and later", "Excel 2016 and later", "Microsoft 365 and Excel 2021 and later", "Only Excel for Mac"], answer: 2, explanation: "Dynamic arrays came with Microsoft 365 and Excel 2021." },
+  { q: "What does SORT(range, 2, -1) do?", options: ["Sorts by column 2 ascending", "Sorts by column 2 descending", "Sorts by row 2", "Takes the second item"], answer: 1, explanation: "The second argument is the column index inside the array and -1 means descending." },
+  { q: "What is the main benefit of LET?", options: ["It deletes data", "It names values so formulas are shorter and easier to read", "It sorts data", "It makes dates"], answer: 1, explanation: "LET stores intermediate values under names, which avoids repeating long expressions." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Show that you know modern Excel and its limits: always mention which version a formula needs, and offer a fallback for older versions.
+</InterviewAlert>
+
+<InterviewQ q="What is a dynamic array and what is a spill?">
+A dynamic array formula returns more than one value. The values spill into neighbouring cells automatically, and the formula lives only in the top-left cell. If cells are in the way you see #SPILL!. I can refer to the whole result with the `#` operator, such as `A2#`.
+</InterviewQ>
+
+<InterviewQ q="How would you get a sorted list of unique cities without a PivotTable?">
+`=SORT(UNIQUE(FILTER(range,range<>"")))`. FILTER removes blanks, UNIQUE removes repeats and SORT orders the list. In older Excel I would use Remove Duplicates on a copy or a PivotTable.
+</InterviewQ>
+
+<InterviewQ q="What does LET do and when do you use it?">
+LET assigns names to values or ranges inside one formula. I use it when the same expression repeats, so the formula is shorter, faster and easy to read, like naming the date, status and amount columns once.
+</InterviewQ>
+
+<InterviewQ q="FILTER versus the AutoFilter button?">
+AutoFilter hides rows in the same table and the result is manual. FILTER returns a separate live result in new cells, which updates with the data and can be used by other formulas.
+</InterviewQ>
+
+## Key takeaways
+
+- A dynamic array formula spills; `#SPILL!` means something blocks it.
+- FILTER selects rows, UNIQUE removes repeats, SORT and SORTBY order, SEQUENCE builds number lists.
+- Multiply conditions for AND and add them for OR inside FILTER.
+- LET names values to keep formulas readable.
+- These need Microsoft 365 or Excel 2021; TAKE, CHOOSECOLS, BYROW and LAMBDA need Microsoft 365. Offer a fallback for older versions.
+
+## Further reading
+
+<FurtherReading ids={["excel-support", "chandoo", "excelisfun"]} />

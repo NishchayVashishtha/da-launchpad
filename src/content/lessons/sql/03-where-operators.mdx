@@ -1,0 +1,271 @@
+---
+title: "WHERE and operators: filtering rows"
+description: "Keep only the rows you need using comparison operators, AND/OR/NOT, IN, BETWEEN and LIKE."
+module: sql
+order: 3
+estimatedMinutes: 40
+objectives:
+  - "Filter rows with WHERE"
+  - "Use comparison operators and combine them with AND, OR, NOT"
+  - "Use IN, BETWEEN and LIKE"
+  - "Avoid operator precedence bugs with brackets"
+tags: ["sql", "where", "filtering", "like", "in", "between"]
+---
+
+## Learning objectives
+
+- Filter rows with `WHERE`.
+- Use `=`, `<>`, `<`, `>`, `<=`, `>=`.
+- Combine conditions with `AND`, `OR`, `NOT` and brackets.
+- Use `IN`, `BETWEEN` and `LIKE` with wildcards.
+- Handle messy text such as mixed upper and lower case.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+"How many UPI payments above ₹10,000 failed last month?" "Which Mumbai restaurants take more than 25 minutes to prepare food?" Every business question starts by narrowing millions of rows to the few that matter. `WHERE` is the tool, and mistakes here silently give wrong numbers.
+</RealWorld>
+
+## Concept
+
+`WHERE` keeps only the rows for which a condition is true. It comes after `FROM`.
+
+```sql
+SELECT columns
+FROM table
+WHERE condition;
+```
+
+Think of a sieve: every row goes through the condition, and only rows that pass are in the result.
+
+### Comparison operators
+
+| Operator | Meaning | Example |
+|---|---|---|
+| `=` | equal | `city = 'Pune'` |
+| `<>` or `!=` | not equal | `status <> 'FAILED'` |
+| `<` `>` | less / greater | `amount > 5000` |
+| `<=` `>=` | less or equal / greater or equal | `quantity >= 3` |
+
+Text goes in single quotes. Numbers do not. Dates are text in ISO format (`'2024-03-15'`), and the format `YYYY-MM-DD` compares correctly in order.
+
+### AND, OR, NOT
+
+- `AND`: both conditions must be true.
+- `OR`: at least one must be true.
+- `NOT`: flips a condition.
+
+`AND` is applied before `OR`. This causes many bugs, so use **brackets** to be clear.
+
+<Warning>
+`WHERE city = 'Pune' OR city = 'Mumbai' AND is_prime = 1` does **not** mean "Prime customers from Pune or Mumbai". SQL reads it as `Pune OR (Mumbai AND prime)`. Write `(city = 'Pune' OR city = 'Mumbai') AND is_prime = 1`.
+</Warning>
+
+### IN
+
+`IN` checks against a list. It is a clean replacement for many `OR`s.
+
+```sql
+WHERE payment_method IN ('UPI', 'Wallet')
+```
+
+`NOT IN` is the opposite. Be careful with NULLs inside a `NOT IN` list (see the NULL lesson).
+
+### BETWEEN
+
+`BETWEEN a AND b` is **inclusive** at both ends. `amount BETWEEN 100 AND 500` means `amount >= 100 AND amount <= 500`.
+
+With dates and timestamps, careful: `BETWEEN '2024-03-01' AND '2024-03-31'` on a column that includes time (like `2024-03-31 18:20:00`) will miss most of the last day, because `'2024-03-31 18:20:00'` is greater than `'2024-03-31'`. Safer: `>= '2024-03-01' AND < '2024-04-01'`.
+
+### LIKE and wildcards
+
+`LIKE` matches text patterns.
+
+- `%` matches any number of characters (including none).
+- `_` matches exactly one character.
+
+| Pattern | Matches |
+|---|---|
+| `'Dosa%'` | starts with Dosa |
+| `'%Express'` | ends with Express |
+| `'%biryani%'` | contains biryani |
+| `'_a%'` | second letter is a |
+
+In SQLite, `LIKE` ignores upper/lower case for plain English letters. In PostgreSQL, `LIKE` is case sensitive (use `ILIKE`). In MySQL, it depends on the column collation. More in the dialects lesson.
+
+<Tip>
+Equality `=` on text is case sensitive in SQLite, so `'mumbai' = 'Mumbai'` is false. `LIKE 'mumbai'` is true. That is a useful trick for messy city names, but proper cleaning with `LOWER()` and `TRIM()` is better (string lesson).
+</Tip>
+
+## Worked examples
+
+### Example 1: simple comparison
+
+UPI transactions above ₹5,000 that failed.
+
+<SqlPlayground dataset="fintech" query={`SELECT txn_id, txn_type, amount, status
+FROM transactions
+WHERE status = 'FAILED' AND amount > 5000
+ORDER BY txn_id
+LIMIT 5;`} title="Failed payments above 5000" />
+
+**Output:**
+
+| txn_id | txn_type | amount | status |
+|---|---|---|---|
+| 589 | Bill Pay | 11363.17 | FAILED |
+| 1374 | P2M | 7320.93 | FAILED |
+| 2700 | P2M | 6126.97 | FAILED |
+| 3077 | P2M | 9966.22 | FAILED |
+| 3690 | P2M | 7330.41 | FAILED |
+
+
+### Example 2: IN and brackets
+
+Delivered orders that were paid by UPI or Wallet, and cost more than ₹1,500.
+
+<SqlPlayground dataset="food_delivery" query={`SELECT delivery_id, payment_mode, order_value
+FROM deliveries
+WHERE delivery_status = 'Delivered'
+  AND payment_mode IN ('UPI', 'Wallet')
+  AND order_value > 1500
+ORDER BY delivery_id
+LIMIT 5;`} title="UPI or Wallet orders above 1500" />
+
+**Output:**
+
+| delivery_id | payment_mode | order_value |
+|---|---|---|
+| 670 | UPI | 2385.0 |
+| 708 | UPI | 1617.0 |
+| 1153 | UPI | 1586.0 |
+| 1202 | UPI | 35100.0 |
+| 1210 | UPI | 1925.0 |
+
+
+### Example 3: BETWEEN
+
+Employees hired during 2022 (inclusive of both dates).
+
+<SqlPlayground dataset="hr" query={`SELECT employee_id, full_name, hire_date
+FROM employees
+WHERE hire_date BETWEEN '2022-01-01' AND '2022-12-31'
+ORDER BY hire_date, employee_id
+LIMIT 5;`} title="Hired in 2022" />
+
+**Output:**
+
+| employee_id | full_name | hire_date |
+|---|---|---|
+| 973 | Dinesh Chatterjee | 2022-01-02 |
+| 974 | Naveen Chowdhury | 2022-01-03 |
+| 975 | Neha Banerjee | 2022-01-04 |
+| 976 | Aditi Patel | 2022-01-04 |
+| 977 | Aditya Kurup | 2022-01-06 |
+
+
+### Example 4: LIKE on messy text
+
+Retail `payment_mode` has values like `upi`, `UPI` and ` upi `. Plain `=` would catch only one of them. `LIKE '%upi%'` ignores case and surrounding spaces, so it catches all.
+
+<SqlPlayground dataset="retail" query={`SELECT
+  SUM(payment_mode = 'UPI') AS exact_match_only,
+  SUM(payment_mode LIKE '%upi%') AS like_match
+FROM sales;`} title="= versus LIKE on messy text" />
+
+**Output:**
+
+| exact_match_only | like_match |
+|---|---|
+| 11373 | 12164 |
+
+
+The `LIKE` version finds more rows. (A comparison inside SUM gives 1 for true and 0 for false in SQLite. We will use that trick again.)
+
+### Example 5: NOT and LIKE together
+
+Products that are not in the Books category and whose name starts with the letter S.
+
+<SqlPlayground dataset="ecommerce" query={`SELECT product_name, category
+FROM products
+WHERE product_name LIKE 'S%'
+  AND NOT category = 'Books'
+ORDER BY product_name
+LIMIT 5;`} title="Name starts with S, not Books" />
+
+**Output:**
+
+| product_name | category |
+|---|---|
+| StrideWell Formal Shoe 641 | Footwear |
+| StrideWell Sneaker 194 | Footwear |
+| StrideWell Sneaker 243 | Footwear |
+| StrideWell Sports Shoe 619 | Footwear |
+| StrideWell Sports Shoe 658 | Footwear |
+
+
+## Common mistakes
+
+<CommonMistake>
+**Mixing AND and OR without brackets.** `AND` wins over `OR`. Always bracket the `OR` part.
+</CommonMistake>
+
+<CommonMistake>
+**Writing `WHERE city = Pune`** without quotes. The database thinks `Pune` is a column name and throws an error.
+</CommonMistake>
+
+<CommonMistake>
+**Using BETWEEN on timestamps.** The upper date loses its time part. Use `>= start AND < next_day` instead.
+</CommonMistake>
+
+<CommonMistake>
+**Trusting `=` on messy text.** `city = 'Mumbai'` misses `mumbai` and ` Mumbai`. Check the distinct values first, then clean with `LOWER(TRIM(city))`.
+</CommonMistake>
+
+<CommonMistake>
+**Using `= NULL`.** It is never true. Use `IS NULL` (next lessons).
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="where" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Which expression is true for amount = 500 ?", options: ["amount BETWEEN 100 AND 500", "amount > 500", "amount < 500", "amount NOT BETWEEN 100 AND 500"], answer: 0, explanation: "BETWEEN includes both end values, so 500 passes." },
+  { q: "In WHERE a = 1 OR b = 2 AND c = 3, which part is evaluated first?", options: ["a = 1 OR b = 2", "b = 2 AND c = 3", "c = 3 only", "Left to right"], answer: 1, explanation: "AND has higher precedence than OR, so b = 2 AND c = 3 groups first. Use brackets to be safe." },
+  { q: "What does LIKE '_a%' match?", options: ["Text starting with a", "Text whose second letter is a", "Text ending with a", "Text containing exactly 2 letters"], answer: 1, explanation: "_ matches exactly one character, so the second character must be a, and % allows anything after." },
+  { q: "Which is the same as city IN ('Pune', 'Delhi')?", options: ["city = 'Pune' AND city = 'Delhi'", "city = 'Pune' OR city = 'Delhi'", "city LIKE 'Pune Delhi'", "city BETWEEN 'Pune' AND 'Delhi'"], answer: 1, explanation: "IN is a short way to write several OR equality checks." },
+  { q: "Why is BETWEEN '2024-03-01' AND '2024-03-31' risky on a datetime column?", options: ["It is slow", "It excludes most of 31 March", "It includes April", "It is a syntax error"], answer: 1, explanation: "Values like '2024-03-31 10:00:00' are greater than '2024-03-31', so they are dropped." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Expect a filter question with a trap: AND/OR precedence, a date range with times, or case-sensitive text. Say your assumption aloud ("let me check how the city values look first") to show real-world habits.
+</InterviewAlert>
+
+<InterviewQ q="What is the difference between WHERE x IN (...) and several ORs?">
+They give the same result. `IN` is shorter and easier to read and edit. One big difference is with `NOT IN` and NULL: if the list contains a NULL, `NOT IN` returns no rows, which surprises many people. This is covered in NULL handling.
+</InterviewQ>
+
+<InterviewQ q="How would you get all orders in March 2024 when the column is a timestamp?">
+Use a half-open range: `WHERE order_ts >= '2024-03-01' AND order_ts < '2024-04-01'`. It includes every moment of 31 March and works with or without a time part. `BETWEEN ... '2024-03-31'` would drop most of the last day.
+</InterviewQ>
+
+<InterviewQ q="Is LIKE case sensitive?">
+It depends on the database. SQLite's `LIKE` is case-insensitive for ASCII letters. PostgreSQL's `LIKE` is case-sensitive, and `ILIKE` is the case-insensitive version. MySQL depends on the column collation (default is usually case-insensitive). A portable approach is `LOWER(col) LIKE 'pattern'`.
+</InterviewQ>
+
+## Key takeaways
+
+- `WHERE` filters rows before anything else is calculated.
+- `AND` binds tighter than `OR`: use brackets.
+- `IN` replaces long OR chains. `BETWEEN` is inclusive on both ends.
+- `%` means any characters, `_` means exactly one. LIKE case rules differ by database.
+- For timestamps, use `>= start AND < next_day`.
+
+## Further reading
+
+<FurtherReading ids={["sqlbolt", "mode-sql", "sqlite-docs"]} />

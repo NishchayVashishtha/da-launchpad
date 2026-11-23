@@ -1,0 +1,97 @@
+[
+  {
+    "id": "sh-plan-001",
+    "module": "start-here",
+    "topic": "plan",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "How many hours a day does the 12-week plan assume, and what is day 7 of each week used for?",
+    "dataset": "none",
+    "hint": "Check the lesson.",
+    "solution": "**Model answer:** It assumes 5 to 6 hours a day. Day 7 is for revision (redoing wrong questions) and a short timed mock test.",
+    "explanation": "Day 7 turns a week's learning into long-term memory.",
+    "commonMistake": "Treating day 7 as optional.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 2,
+    "tags": [
+      "plan",
+      "career"
+    ]
+  },
+  {
+    "id": "sh-plan-002",
+    "module": "start-here",
+    "topic": "plan",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "Name the four blocks of a good study day and give an approximate time for each in a 5-hour day.",
+    "dataset": "none",
+    "hint": "Learn, practise, build, review.",
+    "solution": "**Model answer:** Learn about 1.5 hours; practise about 2 hours; build or apply about 1 hour; review about 30 minutes.",
+    "explanation": "Balanced blocks prevent endless learning without practice.",
+    "commonMistake": "Spending the whole day only in the learn block.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "plan",
+      "career"
+    ]
+  },
+  {
+    "id": "sh-plan-003",
+    "module": "start-here",
+    "topic": "plan",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "You can study only 4 hours a day. Rewrite the weeks 1 to 3 timeline with dates in weeks (not days) and say what you keep and what you move.",
+    "dataset": "none",
+    "hint": "Stretch, do not cut.",
+    "solution": "**Model answer:** Weeks 1 to 3 take about 4.5 weeks. Keep the learn and practise blocks every day. Move the 'build' work to weekends and combine review into the evening. Order stays: setup, Excel basics and SQL first, then Excel formulas and SQL aggregates, then joins.",
+    "explanation": "The same order with stretched time keeps coverage.",
+    "commonMistake": "Dropping SQL practice to save time.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 8,
+    "tags": [
+      "plan",
+      "career"
+    ]
+  },
+  {
+    "id": "sh-plan-004",
+    "module": "start-here",
+    "topic": "plan",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "Write your personal version of the plan: your start date, your daily hours, your fixed study hours, your weekly day for revision, and one reward for finishing week 4.",
+    "dataset": "none",
+    "hint": "Be specific and honest.",
+    "solution": "**Model answer:** Start Monday 1 December; 5 hours a day (9 to 11, 12 to 2, 4 to 5); revision on Sundays; reward for week 4: a movie with friends. I will log hours in the Dashboard every evening.",
+    "explanation": "A written commitment with times is more likely to be followed.",
+    "commonMistake": "Writing 'I will study a lot' with no schedule.",
+    "interviewFrequency": "low",
+    "estimatedMinutes": 6,
+    "tags": [
+      "plan",
+      "career"
+    ]
+  },
+  {
+    "id": "sh-plan-005",
+    "module": "start-here",
+    "topic": "plan",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "You are at the end of week 6 and have not finished the SQL window functions topic. Write a decision: what you skip, what you protect, and a catch-up plan for the next 5 days.",
+    "dataset": "none",
+    "hint": "Use the cut-first list from the lesson.",
+    "solution": "**Model answer:** Protect SQL window functions and the mock test. Skip extra videos and deep chart styling for now. Catch-up: day 1 to 2: finish window functions lessons and 15 questions; day 3: Power BI dashboard practice only 2 hours; day 4: mixed SQL practice; day 5: timed mock and review. Move the Python start by 3 days and update the Dashboard.",
+    "explanation": "Protecting high-value skills when late shows good prioritisation.",
+    "commonMistake": "Trying to double hours for a week and burning out.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 10,
+    "tags": [
+      "plan",
+      "career"
+    ]
+  }
+]

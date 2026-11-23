@@ -1,0 +1,131 @@
+[
+  {
+    "id": "sql-pattern-ab-test-001",
+    "module": "sql",
+    "topic": "pattern-ab-test",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "The experiment team wants a first look at the free-shipping banner test. From `ab_test_results`, remove exact duplicate rows and remove every user who appears in both variants, then report per `variant`: `users`, `conversions` (sum of `converted`) and `conv_rate_pct` (conversions divided by users times 100, rounded to 2 decimals). Order by `variant`.",
+    "dataset": "marketing",
+    "hint": "Find contaminated users with GROUP BY user_id HAVING COUNT(DISTINCT variant) > 1 and exclude them with NOT IN.",
+    "solutionSql": "WITH bad AS (SELECT user_id FROM ab_test_results GROUP BY user_id HAVING COUNT(DISTINCT variant) > 1), a AS (SELECT DISTINCT ab_id, user_id, variant, device_type, converted, revenue_inr FROM ab_test_results WHERE user_id NOT IN (SELECT user_id FROM bad)) SELECT variant, COUNT(*) AS users, SUM(converted) AS conversions, ROUND(100.0 * SUM(converted) / COUNT(*), 2) AS conv_rate_pct FROM a GROUP BY variant ORDER BY variant",
+    "expectedOutput": {
+      "columns": [
+        "variant",
+        "users",
+        "conversions",
+        "conv_rate_pct"
+      ],
+      "rows": [
+        [
+          "control",
+          6016,
+          636,
+          10.57
+        ],
+        [
+          "treatment",
+          5974,
+          700,
+          11.72
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "A user who saw both variants cannot be attributed to either, so they are removed first. DISTINCT drops exact duplicate rows. Since converted is 0 or 1, SUM(converted) counts conversions and dividing by the row count gives the rate. Always clean the assignment before computing any test result.",
+    "commonMistake": "Counting rows without removing duplicates and contaminated users. The rates look slightly different from the truth, and the sample sizes are wrong, which can flip a borderline result.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 10,
+    "tags": [
+      "ab test",
+      "conversion",
+      "cleaning"
+    ]
+  },
+  {
+    "id": "sql-pattern-ab-test-002",
+    "module": "sql",
+    "topic": "pattern-ab-test",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Before trusting any result, check the sample ratio. After removing exact duplicates and users who appear in both variants, return per `variant` the number of `users` and `share_pct` (percent of all remaining users, rounded to 2 decimals). The test was designed as 50/50. Order by `variant`.",
+    "dataset": "marketing",
+    "hint": "COUNT(*) per variant, divided by SUM(COUNT(*)) OVER ().",
+    "solutionSql": "WITH bad AS (SELECT user_id FROM ab_test_results GROUP BY user_id HAVING COUNT(DISTINCT variant) > 1), a AS (SELECT DISTINCT ab_id, user_id, variant, device_type, converted, revenue_inr FROM ab_test_results WHERE user_id NOT IN (SELECT user_id FROM bad)) SELECT variant, COUNT(*) AS users, ROUND(100.0 * COUNT(*) / SUM(COUNT(*)) OVER (), 2) AS share_pct FROM a GROUP BY variant ORDER BY variant",
+    "expectedOutput": {
+      "columns": [
+        "variant",
+        "users",
+        "share_pct"
+      ],
+      "rows": [
+        [
+          "control",
+          6016,
+          50.18
+        ],
+        [
+          "treatment",
+          5974,
+          49.82
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "A sample ratio check compares the actual split with the planned one. Here the shares are close to 50 percent, so there is no sign of a broken randomiser. A big gap (say 55/45 on 12,000 users) would mean something is wrong with assignment, and you should stop before comparing conversion.",
+    "commonMistake": "Skipping this check and jumping straight to conversion. If the groups were not randomised properly, any lift you find could be an artefact and the analysis would mislead the business.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "ab test",
+      "sample ratio",
+      "window"
+    ]
+  },
+  {
+    "id": "sql-pattern-ab-test-003",
+    "module": "sql",
+    "topic": "pattern-ab-test",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Break the test result down by device. After removing exact duplicates and users who appear in both variants, return per `device_type`: `control_rate_pct` and `treatment_rate_pct` (conversion rates in percent, rounded to 2 decimals), `lift_pp` (treatment minus control, in percentage points, rounded to 2 decimals), and `treatment_rpu` (average `revenue_inr` per treatment user including non-converters, rounded to 2 decimals). Order by `device_type`.",
+    "dataset": "marketing",
+    "hint": "Conditional aggregation: AVG(CASE WHEN variant = 'control' THEN converted END) gives the control rate.",
+    "solutionSql": "WITH bad AS (SELECT user_id FROM ab_test_results GROUP BY user_id HAVING COUNT(DISTINCT variant) > 1), a AS (SELECT DISTINCT ab_id, user_id, variant, device_type, converted, revenue_inr FROM ab_test_results WHERE user_id NOT IN (SELECT user_id FROM bad)) SELECT device_type, ROUND(100.0 * AVG(CASE WHEN variant = 'control' THEN converted END), 2) AS control_rate_pct, ROUND(100.0 * AVG(CASE WHEN variant = 'treatment' THEN converted END), 2) AS treatment_rate_pct, ROUND(100.0 * AVG(CASE WHEN variant = 'treatment' THEN converted END) - 100.0 * AVG(CASE WHEN variant = 'control' THEN converted END), 2) AS lift_pp, ROUND(AVG(CASE WHEN variant = 'treatment' THEN revenue_inr END), 2) AS treatment_rpu FROM a GROUP BY device_type ORDER BY device_type",
+    "expectedOutput": {
+      "columns": [
+        "device_type",
+        "control_rate_pct",
+        "treatment_rate_pct",
+        "lift_pp",
+        "treatment_rpu"
+      ],
+      "rows": [
+        [
+          "Desktop",
+          15.35,
+          13.91,
+          -1.44,
+          147.49
+        ],
+        [
+          "Mobile",
+          8.47,
+          10.81,
+          2.33,
+          114.18
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "CASE inside AVG returns the value only for one variant and NULL otherwise, and AVG ignores NULLs, so each expression averages just that variant. Subtracting the two rates gives the lift in percentage points. Revenue per user averages over all users in the variant, converted or not, which is why non-converters have revenue 0 and must stay in the data.",
+    "commonMistake": "Averaging revenue only over converters. That gives average order value, not revenue per user, and hides the effect of conversion.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 16,
+    "tags": [
+      "ab test",
+      "lift",
+      "conditional aggregation"
+    ]
+  }
+]

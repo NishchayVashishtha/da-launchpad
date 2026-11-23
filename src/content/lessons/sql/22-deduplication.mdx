@@ -1,0 +1,292 @@
+---
+title: "Deduplication: find duplicates and keep the right row"
+description: "Detect duplicates with GROUP BY HAVING, remove them with ROW_NUMBER and keep the latest record per key."
+module: sql
+order: 22
+estimatedMinutes: 50
+objectives:
+  - "Define a duplicate using a business key, not only identical rows"
+  - "Find duplicates with GROUP BY and HAVING COUNT(*) > 1"
+  - "Remove duplicates with ROW_NUMBER and keep one row per key"
+  - "Keep the latest (or best) record instead of an arbitrary one"
+  - "Measure how much duplicates inflate counts and revenue"
+tags: ["sql", "deduplication", "row-number", "data-cleaning"]
+---
+
+## Learning objectives
+
+- Define a duplicate using a business key, not only identical rows
+- Find duplicates with GROUP BY and HAVING COUNT(*) > 1
+- Remove duplicates with ROW_NUMBER and keep one row per key
+- Keep the latest (or best) record instead of an arbitrary one
+- Measure how much duplicates inflate counts and revenue
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Duplicates are the most common silent error in analytics. A payment gateway retries a request, an ETL job loads a file twice, a customer signs up again with the same email. Your dashboard then shows 10,100 orders when the business really had 10,000, and revenue that is ₹4.5 lakh too high. Interviewers love dedupe questions because they test GROUP BY, HAVING and window functions in one problem. In real jobs, a trusted analyst is the person who always checks for duplicates before sharing a number.
+</RealWorld>
+
+## Concept
+
+### What is a duplicate?
+
+There are two kinds, and you must know which one you have:
+
+1. **Exact duplicate**: every column is identical. Example: `orders` has 100 order ids that appear twice with the same values, because the file was loaded twice.
+2. **Business-key duplicate**: some columns differ but they represent the same real thing. Example: the same email, phone or `order_id` with a different timestamp or status. Here you must **decide which row to keep**: the latest, the first, the one with the highest priority.
+
+The **business key** (or natural key) is the column or combination of columns that identifies one real-world entity: `order_id`, `email`, `(user_id, plan)`. Always say it out loud before you write SQL.
+
+### Step 1: find duplicates with GROUP BY and HAVING
+
+```sql
+SELECT key_column, COUNT(*) AS copies
+FROM t
+GROUP BY key_column
+HAVING COUNT(*) > 1;
+```
+
+`GROUP BY` puts rows with the same key in one heap. `HAVING COUNT(*) > 1` keeps only heaps with more than one row, so those are your duplicates. (`WHERE` cannot do this because the count does not exist until after grouping.)
+
+A fast health check on any table: compare `COUNT(*)` with `COUNT(DISTINCT key)`. If they differ, the key is not unique.
+
+### Step 2: remove duplicates
+
+**Option A: SELECT DISTINCT**: works only for exact duplicates, and `SELECT DISTINCT *` on a wide table can be slow. It also cannot help when rows differ slightly.
+
+**Option B: ROW_NUMBER (the standard answer)**
+
+```sql
+WITH ranked AS (
+    SELECT *,
+           ROW_NUMBER() OVER (
+               PARTITION BY business_key
+               ORDER BY tie_breaker
+           ) AS rn
+    FROM t
+)
+SELECT * FROM ranked WHERE rn = 1;
+```
+
+- `PARTITION BY business_key` makes one window per real-world entity.
+- `ORDER BY` decides which row becomes number 1.
+- `rn = 1` keeps exactly one row per entity.
+
+You control the winner. To keep the **latest** record use `ORDER BY updated_at DESC`. To keep the **first** use `ASC`. Add a unique id as a final tie-breaker so the result never changes between runs.
+
+**Option C: DELETE in place** (when you own the table, covered in lesson 25):
+
+```sql
+DELETE FROM t
+WHERE rowid NOT IN (SELECT MIN(rowid) FROM t GROUP BY business_key);
+```
+
+`rowid` is SQLite's hidden row number. In other databases you would use a primary key or a CTE with `ROW_NUMBER`. As an analyst, you usually do **not** delete from source tables. You create a deduplicated view or CTE and report how many rows you removed.
+
+### Step 3: verify
+
+After deduplicating, check three things: row count equals distinct key count, the number of removed rows matches your earlier finding, and a metric like revenue has changed in the direction you expected.
+
+<Tip>
+Name your assumption in the report: "I treated order_id as the unique key. 100 orders were duplicated exactly and I kept one copy of each. Revenue fell by ₹4.5 lakh." This is how professional analysts write.
+</Tip>
+
+### DISTINCT, GROUP BY or ROW_NUMBER?
+
+| Situation | Best tool |
+|---|---|
+| All columns identical | `SELECT DISTINCT *` or ROW_NUMBER |
+| Need one row per key, rows differ | ROW_NUMBER with a chosen ORDER BY |
+| Just count how many unique keys | `COUNT(DISTINCT key)` |
+| Need to list the duplicated keys | GROUP BY ... HAVING COUNT(*) > 1 |
+
+## Worked examples
+
+### Example 1: finding duplicate order ids
+
+List the order ids that appear more than once. `GROUP BY order_id` collects the copies and `HAVING` keeps the groups with more than one row.
+
+<SqlPlayground dataset="ecommerce" query={`SELECT order_id,
+       COUNT(*) AS copies
+FROM orders
+GROUP BY order_id
+HAVING COUNT(*) > 1
+ORDER BY copies DESC, order_id
+LIMIT 6;`} title="Find duplicated orders" />
+
+**Output:**
+
+| order_id | copies |
+|---|---|
+| 79 | 2 |
+| 237 | 2 |
+| 399 | 2 |
+| 463 | 2 |
+| 466 | 2 |
+| 910 | 2 |
+
+Each id appears twice. Altogether 100 order ids are duplicated (10,100 rows for 10,000 unique ids). Checking `COUNT(*)` against `COUNT(DISTINCT order_id)` is a one-line way to see this before doing anything else.
+
+### Example 2: removing duplicates with ROW_NUMBER and measuring the damage
+
+Number the rows inside each `order_id` and keep number 1. Because the copies are exact, which copy is number 1 does not matter here. We compare the raw table with the deduplicated one to see how much the duplicates inflated the numbers.
+
+<SqlPlayground dataset="ecommerce" query={`WITH ranked AS (
+    SELECT *,
+           ROW_NUMBER() OVER (PARTITION BY order_id ORDER BY order_id) AS rn
+    FROM orders
+)
+SELECT 'raw table' AS version,
+       COUNT(*) AS orders,
+       ROUND(SUM(total_amount)) AS revenue_inr
+FROM orders
+UNION ALL
+SELECT 'deduplicated',
+       COUNT(*),
+       ROUND(SUM(total_amount))
+FROM ranked
+WHERE rn = 1;`} title="Deduplicate and compare revenue" />
+
+**Output:**
+
+| version | orders | revenue_inr |
+|---|---|---|
+| raw table | 10100 | 54741133.0 |
+| deduplicated | 10000 | 54286730.0 |
+
+Duplicates added 100 fake orders and about ₹4.54 lakh of revenue (54,741,133 versus 54,286,730). That is under 1 percent, small enough to go unnoticed and big enough to fail a reconciliation with the finance team.
+
+### Example 3: keeping the latest record per key
+
+`payments` has one row per attempt. About 5 percent of online orders have an earlier 'Failed' attempt followed by a successful retry. If we want the **final** outcome of each order, we keep the latest attempt. Here we look at a few such orders: `rn = 1` marks the row we keep.
+
+<SqlPlayground dataset="ecommerce" query={`WITH p AS (
+    SELECT order_id, payment_id, payment_method, payment_status, payment_date,
+           COUNT(*) OVER (PARTITION BY order_id) AS attempts,
+           ROW_NUMBER() OVER (
+               PARTITION BY order_id
+               ORDER BY payment_date DESC, payment_id DESC
+           ) AS rn
+    FROM payments
+)
+SELECT order_id, payment_id, payment_method, payment_status, attempts, rn
+FROM p
+WHERE attempts > 1
+ORDER BY order_id, rn
+LIMIT 6;`} title="Latest payment attempt per order" />
+
+**Output:**
+
+| order_id | payment_id | payment_method | payment_status | attempts | rn |
+|---|---|---|---|---|---|
+| 39 | 40 | Credit Card | Success | 2 | 1 |
+| 39 | 39 | UPI | Failed | 2 | 2 |
+| 47 | 49 | Debit Card | Success | 2 | 1 |
+| 47 | 48 | UPI | Failed | 2 | 2 |
+| 94 | 97 | UPI | Success | 2 | 1 |
+| 94 | 96 | Netbanking | Failed | 2 | 2 |
+
+For order 39 the UPI attempt failed and the credit card attempt succeeded, so `rn = 1` is the successful card payment. If we counted raw `payments` rows, there would be 802 'Failed' rows. After keeping the latest attempt per order only 403 orders end in 'Failed'. A 'payment failure rate' calculated on raw rows would be almost double the truth.
+
+### Example 4: the same email for different customers
+
+A trap: `customers` also has 20 exact duplicate rows (same `customer_id`), but several emails are shared by rows with **different** customer ids. Are those the same person? We count distinct customer ids per email.
+
+<SqlPlayground dataset="ecommerce" query={`SELECT email,
+       COUNT(DISTINCT customer_id) AS customer_ids,
+       MIN(signup_date) AS first_signup,
+       MAX(signup_date) AS last_signup
+FROM customers
+WHERE email IS NOT NULL
+GROUP BY email
+HAVING COUNT(DISTINCT customer_id) > 1
+ORDER BY customer_ids DESC, email
+LIMIT 6;`} title="Is a shared email a duplicate?" />
+
+**Output:**
+
+| email | customer_ids | first_signup | last_signup |
+|---|---|---|---|
+| deepak.malhotra@gmail.com | 3 | 2022-11-04 | 2024-09-28 |
+| madhuri.patel@gmail.com | 3 | 2023-01-23 | 2024-11-20 |
+| nikhil.rathore@gmail.com | 3 | 2023-09-20 | 2024-09-25 |
+| aanya.ghosh@gmail.com | 2 | 2022-08-25 | 2024-06-13 |
+| aditya.bansal@gmail.com | 2 | 2022-11-21 | 2024-02-07 |
+| aditya.iyer@gmail.com | 2 | 2022-12-29 | 2024-12-05 |
+
+Three customer ids share `deepak.malhotra@gmail.com`, with signups months apart and different phone numbers. It could be one person who registered again, or three people with the same name. SQL cannot tell you, only the business can. The right move is to flag it, ask the data owner, and avoid deleting customers on a guess. In total, 69 emails are shared by more than one customer id.
+
+## Common mistakes
+
+<CommonMistake>
+**Using WHERE COUNT(*) > 1.** Aggregates cannot be used in `WHERE`. Use `GROUP BY` plus `HAVING COUNT(*) > 1`.
+</CommonMistake>
+
+<CommonMistake>
+**Using SELECT DISTINCT * and thinking you are done.** If two rows differ in just a timestamp or a status, `DISTINCT` keeps both. Decide on the business key and use ROW_NUMBER.
+</CommonMistake>
+
+<CommonMistake>
+**ROW_NUMBER without a deterministic ORDER BY.** If you keep 'any' row, a different row may win next time and your numbers change. Order by a date and finish with a unique id.
+</CommonMistake>
+
+<CommonMistake>
+**Deduplicating on the wrong key.** Treating email as unique would merge different customers and delete real revenue. Treating a full row as the key would keep near-duplicates. Name the key and justify it.
+</CommonMistake>
+
+<CommonMistake>
+**Joining before deduplicating.** If a duplicated row is joined to another table, the duplicates multiply and totals explode. Deduplicate each table first (in a CTE), then join.
+</CommonMistake>
+
+<CommonMistake>
+**Not checking the result.** After dedupe, compare `COUNT(*)` with `COUNT(DISTINCT key)` and report how many rows were removed. Silent clean-up is not clean-up.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="dedup" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Which query lists customer ids that appear more than once?", options: ["SELECT customer_id FROM c WHERE COUNT(*) > 1", "SELECT customer_id FROM c GROUP BY customer_id HAVING COUNT(*) > 1", "SELECT DISTINCT customer_id FROM c", "SELECT customer_id FROM c ORDER BY COUNT(*)"], answer: 1, explanation: "GROUP BY collects the copies and HAVING filters the groups after counting." },
+  { q: "To keep the latest record per customer you would use:", options: ["ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY updated_at DESC), keep rn = 1", "SELECT DISTINCT *", "GROUP BY customer_id without aggregates", "LIMIT 1"], answer: 0, explanation: "The ORDER BY inside the window decides which row is number 1." },
+  { q: "COUNT(*) is 10,100 and COUNT(DISTINCT order_id) is 10,000. What does it mean?", options: ["There are 100 NULL ids", "There are 100 extra rows from repeated ids", "The query is wrong", "Nothing"], answer: 1, explanation: "The difference is the number of surplus copies." },
+  { q: "Why is SELECT DISTINCT * not enough when only a timestamp differs between two copies?", options: ["DISTINCT is slow", "The rows are not identical so both are kept", "DISTINCT only works on numbers", "DISTINCT sorts the rows"], answer: 1, explanation: "DISTINCT compares whole rows, so any difference keeps both." },
+  { q: "Why deduplicate before joining?", options: ["Joins are faster then", "Duplicate rows multiply in a join and inflate totals", "It is required by SQL", "To remove NULLs"], answer: 1, explanation: "One duplicated row matched to three rows becomes six rows, and sums double count." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Dedupe appears in almost every analyst SQL test, often as 'delete duplicate rows keeping the lowest id' or 'latest record per user'. The interviewer is looking for GROUP BY HAVING for detection, ROW_NUMBER for removal, and a sentence on how you chose the surviving row.
+</InterviewAlert>
+
+<InterviewQ q="How do you find and remove duplicate rows in SQL?">
+To find them: `GROUP BY` the business key and `HAVING COUNT(*) > 1`. To remove them in a query: use `ROW_NUMBER() OVER (PARTITION BY key ORDER BY something)` in a CTE and keep `rn = 1`. For exact duplicates `SELECT DISTINCT` also works. In a table I own, I can `DELETE` rows whose `rowid` is not the `MIN(rowid)` per key. I always verify counts before and after.
+</InterviewQ>
+
+<InterviewQ q="How do you keep the most recent record for each customer?">
+Use `ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY updated_at DESC, id DESC)` and filter `rn = 1`. The tie-breaker `id DESC` makes the choice deterministic. Alternatively join to a subquery that gets `MAX(updated_at)` per customer, but that returns two rows if there is a tie on the latest date.
+</InterviewQ>
+
+<InterviewQ q="A report shows 10 percent more orders than the finance team. What do you check first?">
+Duplicates: compare COUNT(*) with COUNT(DISTINCT order_id), then check join fan-out (a one-to-many join before aggregating) and the status filter (cancelled or test orders). Then I reconcile by date and channel to find where the gap starts.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between a duplicate row and a duplicate key?">
+A duplicate row is identical in all columns, usually a loading error, and any copy can be kept. A duplicate key means the same business entity appears more than once with possibly different values, so I must choose which row is correct, usually the latest or the most complete, and document the rule.
+</InterviewQ>
+
+## Key takeaways
+
+- A duplicate is defined by a business key. Name the key first.
+- Find duplicates with `GROUP BY key HAVING COUNT(*) > 1`. Compare COUNT(*) with COUNT(DISTINCT key) for a quick check.
+- Dedupe with `ROW_NUMBER() OVER (PARTITION BY key ORDER BY ...)` and keep `rn = 1`. The ORDER BY picks the winner.
+- Always add a unique tie-breaker so the surviving row is repeatable.
+- Deduplicate before joining, verify counts after, and report what you removed.
+
+## Further reading
+
+<FurtherReading ids={["sqlbolt", "mode-sql", "sqlite-docs"]} />

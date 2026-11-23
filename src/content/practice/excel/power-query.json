@@ -1,0 +1,59 @@
+[
+  {
+    "id": "excel-power-query-001",
+    "module": "excel",
+    "topic": "power-query",
+    "difficulty": "easy",
+    "language": "excel",
+    "question": "Load the `customers_messy` sheet of `excel-cleaning.xlsx` into Power Query, trim and clean `full_name`, and remove duplicate customers by `customer_id`. How many rows remain?",
+    "dataset": "none",
+    "hint": "Data > From Table/Range. Home > Remove Rows > Remove Duplicates on customer_id only.",
+    "solution": "**Steps:** Data > From Table/Range. Select `full_name` > Transform > Format > Trim, then Clean. Select `customer_id` > Home > Remove Rows > Remove Duplicates > Close & Load.\n\n**Expected result:** 1,272 rows become **1,199** rows (73 duplicates removed).",
+    "explanation": "Remove Duplicates keeps the first row for each `customer_id`.",
+    "commonMistake": "Removing duplicates on all columns: that leaves 1,200 rows because one ID has two slightly different rows.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "power-query",
+      "cleaning"
+    ]
+  },
+  {
+    "id": "excel-power-query-002",
+    "module": "excel",
+    "topic": "power-query",
+    "difficulty": "medium",
+    "language": "excel",
+    "question": "In `excel-functions.xlsx`, sheet `monthly_targets` has months across columns B to M and two metric rows. Use Power Query to turn it into a tidy table. How many rows and which columns does it have?",
+    "dataset": "none",
+    "hint": "Select the first column and use Unpivot Other Columns.",
+    "solution": "**Steps:** Data > From Table/Range (tick headers). Select the first column (`Metric`), Transform > Unpivot Other Columns. Rename `Attribute` to `Month` and set the Month type to Date, Value to number.\n\n**Expected result:** 24 rows (2 metrics x 12 months) with columns Metric, Month, Value.",
+    "explanation": "Unpivot rotates month columns into rows.",
+    "commonMistake": "Using Unpivot Columns on selected month columns, so new months added later are missed.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 7,
+    "tags": [
+      "power-query",
+      "unpivot"
+    ]
+  },
+  {
+    "id": "excel-power-query-003",
+    "module": "excel",
+    "topic": "power-query",
+    "difficulty": "hard",
+    "language": "excel",
+    "question": "Unzip `retail.zip`. In Power Query, load `sales.csv` and `stores.csv`, merge sales with stores on `store_id` (Left Outer) and expand `store_name`, `region` and `store_format`. How can you prove that the merge did not lose or duplicate sales rows?",
+    "dataset": "none",
+    "hint": "Compare row counts before and after, and count nulls in the expanded columns.",
+    "solution": "**Steps:** Data > Get Data > From Text/CSV for both files, Load To > Only Create Connection. In the sales query: Home > Merge Queries > pick `store_id` in both tables > Join Kind: Left Outer > OK. Click the expand icon, tick `store_name`, `region`, `store_format`, untick the prefix option.\n\n**Check:** `sales.csv` has 24,350 rows and so does the merged query. Filtering `region` for null returns 0 rows, so every sale found its store. If the count rose, stores had duplicate IDs; if nulls appeared, IDs were missing.",
+    "explanation": "A left outer join keeps every sales row and adds store columns; row count must stay the same when the key is unique in stores.",
+    "commonMistake": "Joining on columns of different types (text vs number) and getting all nulls.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 12,
+    "tags": [
+      "power-query",
+      "merge"
+    ]
+  }
+]

@@ -1,0 +1,339 @@
+---
+title: "Date functions: extracting, bucketing and measuring time"
+description: "Work with dates in SQLite using date(), strftime and julianday, and compare them with DATE_TRUNC, EXTRACT and DATEDIFF in other databases."
+module: sql
+order: 11
+estimatedMinutes: 45
+objectives:
+  - "Explain how SQLite stores dates (as text in ISO format)"
+  - "Extract year, month and weekday with strftime"
+  - "Bucket data by month and week"
+  - "Calculate date differences with julianday"
+  - "Map SQLite date tricks to DATE_TRUNC, EXTRACT, DATEDIFF and DATEADD"
+tags: ["sql", "dates", "strftime", "julianday", "time-series"]
+---
+
+## Learning objectives
+
+- Know that SQLite has no real date type: dates are ISO text.
+- Use `date()`, `datetime()`, `strftime()` and `julianday()`.
+- Group by month, week and weekday.
+- Add and subtract days, months and years.
+- Find the number of days between two dates.
+- Translate each idea to MySQL, PostgreSQL and SQL Server.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+"Monthly orders", "week-on-week growth", "how many days from order to delivery", "users who signed up in the last 30 days". Almost every business report is a time series. If you cannot bucket by month and compute date gaps, you cannot build a report. Date questions are also among the most common SQL interview tasks.
+</RealWorld>
+
+## Concept
+
+### How SQLite stores dates
+
+SQLite has no separate DATE type. A date is **text** in the ISO 8601 format:
+
+- date: `2024-03-15`
+- date and time: `2024-03-15 18:20:00`
+
+This format sorts and compares correctly as plain text, which is why `WHERE order_date >= '2024-01-01'` works. If your dates are not in this format (for example `15-03-2024`), the date functions return NULL. Fix the format first.
+
+### The core functions
+
+| Function | Meaning | Example |
+|---|---|---|
+| `date(x, modifiers...)` | date part only | `date('2024-03-15 18:20:00')` gives `2024-03-15` |
+| `datetime(x, ...)` | date and time | |
+| `strftime(fmt, x, ...)` | format or extract | `strftime('%Y-%m', '2024-03-15')` gives `2024-03` |
+| `julianday(x)` | days as a number, for subtraction | |
+| `'now'` | current time (UTC) | `date('now')` |
+
+### strftime format codes
+
+| Code | Gives | Code | Gives |
+|---|---|---|---|
+| `%Y` | 4-digit year | `%H` | hour (00-23) |
+| `%m` | month (01-12) | `%M` | minute |
+| `%d` | day of month | `%w` | weekday, 0 = Sunday |
+| `%W` | week of year (Monday-based) | `%j` | day of year |
+
+`strftime` returns **text**. `strftime('%m', d)` is `'03'`, not the number 3. Wrap with `CAST(... AS INTEGER)` if you need a number.
+
+### Modifiers: adding and snapping
+
+Modifiers go after the date:
+
+- `date(d, '+7 days')`, `date(d, '-1 month')`, `date(d, '+1 year')`
+- `date(d, 'start of month')`: first day of that month
+- `date(d, 'start of year')`
+- `date(d, 'weekday 0')`: moves forward to the next Sunday (or stays if already Sunday)
+
+**Week bucketing** (week starting Monday): `date(d, 'weekday 0', '-6 days')`. First jump to the Sunday that ends the week, then step back 6 days to the Monday.
+
+**Month bucketing**: `strftime('%Y-%m', d)` or `date(d, 'start of month')`.
+
+### Date differences
+
+Subtract Julian day numbers:
+
+```sql
+julianday(delivery_date) - julianday(order_date)   -- days between
+```
+
+The result is a decimal number (1.0 means 1 day). Use `CAST(... AS INTEGER)` for whole days.
+
+### Be careful with 'now'
+
+`date('now')` changes every day, so the same query gives different results over time. For learning with fixed data, prefer fixed dates or compare against `MAX(date)` in the table.
+
+### Other databases
+
+| Task | SQLite | MySQL | PostgreSQL | SQL Server |
+|---|---|---|---|---|
+| Today | `date('now')` | `CURDATE()` | `CURRENT_DATE` | `CAST(GETDATE() AS DATE)` |
+| Year of a date | `strftime('%Y', d)` | `YEAR(d)` | `EXTRACT(YEAR FROM d)` | `YEAR(d)` |
+| Month start | `date(d, 'start of month')` | `DATE_FORMAT(d, '%Y-%m-01')` | `DATE_TRUNC('month', d)` | `DATETRUNC(month, d)` (2022+) or `DATEFROMPARTS(YEAR(d), MONTH(d), 1)` |
+| Add 7 days | `date(d, '+7 days')` | `DATE_ADD(d, INTERVAL 7 DAY)` | `d + INTERVAL '7 days'` | `DATEADD(day, 7, d)` |
+| Days between a and b | `julianday(b) - julianday(a)` | `DATEDIFF(b, a)` | `b - a` (for dates) | `DATEDIFF(day, a, b)` |
+| Weekday | `strftime('%w', d)` | `DAYOFWEEK(d)` | `EXTRACT(DOW FROM d)` | `DATEPART(weekday, d)` |
+| Format as text | `strftime(fmt, d)` | `DATE_FORMAT(d, fmt)` | `TO_CHAR(d, fmt)` | `FORMAT(d, fmt)` |
+
+<Warning>
+Watch the argument order of `DATEDIFF`. MySQL is `DATEDIFF(end, start)`. SQL Server is `DATEDIFF(unit, start, end)`. Mixing them gives the wrong sign.
+</Warning>
+
+<Tip>
+`BETWEEN` on dates includes both ends. For timestamps, use `>= start_date AND < next_day` so that the full last day is included.
+</Tip>
+
+## Worked examples
+
+### Example 1: extract parts
+
+<SqlPlayground dataset="ecommerce" query={`SELECT order_date,
+       strftime('%Y', order_date) AS year,
+       strftime('%m', order_date) AS month,
+       strftime('%w', order_date) AS weekday_no
+FROM orders
+ORDER BY order_id
+LIMIT 4;`} title="Year, month, weekday" />
+
+**Output:**
+
+| order_date | year | month | weekday_no |
+|---|---|---|---|
+| 2023-01-01 | 2023 | 01 | 0 |
+| 2023-01-01 | 2023 | 01 | 0 |
+| 2023-01-01 | 2023 | 01 | 0 |
+| 2023-01-01 | 2023 | 01 | 0 |
+
+
+### Example 2: monthly trend
+
+Delivered orders and revenue per month in 2024.
+
+<SqlPlayground dataset="ecommerce" query={`SELECT strftime('%Y-%m', order_date) AS month,
+       COUNT(*) AS orders,
+       ROUND(SUM(total_amount), 0) AS revenue
+FROM orders
+WHERE order_status = 'Delivered'
+  AND order_date >= '2024-01-01' AND order_date < '2025-01-01'
+GROUP BY month
+ORDER BY month;`} title="Monthly orders in 2024" />
+
+**Output:**
+
+| month | orders | revenue |
+|---|---|---|
+| 2024-01 | 415 | 2184756.0 |
+| 2024-02 | 330 | 2623963.0 |
+| 2024-03 | 386 | 1995158.0 |
+| 2024-04 | 378 | 2016994.0 |
+| 2024-05 | 386 | 2028709.0 |
+| 2024-06 | 419 | 2379375.0 |
+| 2024-07 | 388 | 2545243.0 |
+| 2024-08 | 468 | 2576947.0 |
+| 2024-09 | 456 | 2198689.0 |
+| 2024-10 | 571 | 2671877.0 |
+| 2024-11 | 499 | 2598698.0 |
+| 2024-12 | 429 | 2082629.0 |
+
+
+The festive months (Oct and Nov) should stand out. Always look at a trend to see if it matches what the business expects.
+
+### Example 3: weekly bucket
+
+Fintech transactions per week (weeks start on Monday). We take only the first few weeks for display.
+
+<SqlPlayground dataset="fintech" query={`SELECT date(txn_datetime, 'weekday 0', '-6 days') AS week_start,
+       COUNT(*) AS txns
+FROM transactions
+GROUP BY week_start
+ORDER BY week_start
+LIMIT 6;`} title="Weekly transactions" />
+
+**Output:**
+
+| week_start | txns |
+|---|---|
+| 2022-12-26 | 19 |
+| 2023-01-02 | 154 |
+| 2023-01-09 | 156 |
+| 2023-01-16 | 170 |
+| 2023-01-23 | 154 |
+| 2023-01-30 | 182 |
+
+
+### Example 4: busiest hour of the day
+
+Food orders by hour of day. `strftime('%H', ...)` pulls the hour from the timestamp.
+
+<SqlPlayground dataset="food_delivery" query={`SELECT strftime('%H', order_time) AS hour,
+       COUNT(*) AS orders
+FROM deliveries
+GROUP BY hour
+ORDER BY orders DESC, hour
+LIMIT 5;`} title="Peak hours" />
+
+**Output:**
+
+| hour | orders |
+|---|---|
+| 20 | 2229 |
+| 21 | 1941 |
+| 19 | 1742 |
+| 12 | 1218 |
+| 22 | 1068 |
+
+
+### Example 5: days between two dates
+
+Average days from order to delivery by sales channel.
+
+<SqlPlayground dataset="ecommerce" query={`SELECT sales_channel,
+       COUNT(*) AS delivered,
+       ROUND(AVG(julianday(delivery_date) - julianday(order_date)), 2) AS avg_delivery_days
+FROM orders
+WHERE delivery_date IS NOT NULL
+GROUP BY sales_channel
+ORDER BY sales_channel;`} title="Delivery time by channel" />
+
+**Output:**
+
+| sales_channel | delivered | avg_delivery_days |
+|---|---|---|
+| Android App | 4629 | 3.07 |
+| Mobile Web | 1189 | 3.02 |
+| Website | 1947 | 2.99 |
+| iOS App | 1548 | 2.98 |
+
+
+### Example 6: date arithmetic and tenure
+
+How long have HR employees been with the company as of a fixed date, 31 Dec 2024? Using a fixed date keeps the output stable.
+
+<SqlPlayground dataset="hr" query={`SELECT employee_id,
+       hire_date,
+       CAST((julianday('2024-12-31') - julianday(hire_date)) / 365.25 AS INTEGER) AS tenure_years,
+       date(hire_date, '+1 year') AS first_anniversary
+FROM employees
+ORDER BY hire_date, employee_id
+LIMIT 4;`} title="Tenure and anniversary" />
+
+**Output:**
+
+| employee_id | hire_date | tenure_years | first_anniversary |
+|---|---|---|---|
+| 1 | 2014-01-04 | 10 | 2015-01-04 |
+| 2 | 2014-01-04 | 10 | 2015-01-04 |
+| 3 | 2014-01-05 | 10 | 2015-01-05 |
+| 4 | 2014-01-08 | 10 | 2015-01-08 |
+
+
+### Example 7: signups per month in the subscription app
+
+<SqlPlayground dataset="subscription" query={`SELECT strftime('%Y-%m', signup_date) AS signup_month,
+       COUNT(*) AS signups
+FROM users
+GROUP BY signup_month
+ORDER BY signup_month
+LIMIT 6;`} title="Signups per month" />
+
+**Output:**
+
+| signup_month | signups |
+|---|---|
+| 2023-01 | 152 |
+| 2023-02 | 154 |
+| 2023-03 | 155 |
+| 2023-04 | 176 |
+| 2023-05 | 178 |
+| 2023-06 | 181 |
+
+
+## Common mistakes
+
+<CommonMistake>
+**Using `MONTH(date)` or `DATEDIFF` in SQLite.** They do not exist. Use `strftime` and `julianday`.
+</CommonMistake>
+
+<CommonMistake>
+**Grouping by month number only** (`%m`). January 2023 and January 2024 merge. Group by `%Y-%m`.
+</CommonMistake>
+
+<CommonMistake>
+**Using BETWEEN on timestamps** and losing the last day. Use `>= start AND < next_day`.
+</CommonMistake>
+
+<CommonMistake>
+**Dates in the wrong format.** `15-03-2024` is not ISO, so `strftime` returns NULL and comparisons sort wrongly. Convert to `YYYY-MM-DD` first.
+</CommonMistake>
+
+<CommonMistake>
+**Relying on `date('now')`** in a practice query. The answer changes every day. Use a fixed date or the maximum date in the data.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="dates" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "How does SQLite store a date?", options: ["As a special DATE type", "As ISO text such as 2024-03-15", "As a number of seconds", "As three separate columns"], answer: 1, explanation: "SQLite uses text, real or integer storage. The common choice is ISO text, which sorts correctly." },
+  { q: "Which gives the year-month bucket '2024-03'?", options: ["strftime('%Y-%m', d)", "MONTH(d)", "DATE_TRUNC('month', d)", "date('now')"], answer: 0, explanation: "strftime with %Y-%m is the SQLite way. DATE_TRUNC is PostgreSQL." },
+  { q: "How do you find days between two dates a and b in SQLite?", options: ["DATEDIFF(b, a)", "julianday(b) - julianday(a)", "b - a", "strftime('%d', b - a)"], answer: 1, explanation: "julianday converts a date to a day number, so subtraction gives days." },
+  { q: "What does date(d, 'start of month') return for 2024-03-15?", options: ["2024-03-01", "2024-03-31", "2024-01-01", "2024-03-15"], answer: 0, explanation: "It snaps the date back to the first day of its month." },
+  { q: "Why is BETWEEN '2024-03-01' AND '2024-03-31' unsafe for timestamps?", options: ["It includes April", "It misses most of 31 March", "It is slow", "It is invalid"], answer: 1, explanation: "A value like '2024-03-31 10:00' is greater than '2024-03-31', so it is excluded." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Date questions test two things: bucketing (month, week) and date arithmetic (days between, last 30 days). Mention which database you are assuming and give the equivalent for others if asked.
+</InterviewAlert>
+
+<InterviewQ q="How would you get monthly revenue in MySQL, PostgreSQL, SQL Server and SQLite?">
+All use `GROUP BY` on a month bucket. SQLite: `strftime('%Y-%m', d)`. PostgreSQL: `DATE_TRUNC('month', d)`. MySQL: `DATE_FORMAT(d, '%Y-%m-01')` (or `YEAR(d), MONTH(d)`). SQL Server: `DATEFROMPARTS(YEAR(d), MONTH(d), 1)` or `DATETRUNC` in 2022+. The idea is the same: map every date to the first day (or label) of its month.
+</InterviewQ>
+
+<InterviewQ q="How do you calculate the number of days between two dates?">
+SQLite: `julianday(end) - julianday(start)`. MySQL: `DATEDIFF(end, start)`. PostgreSQL: `end - start` for dates, which gives an integer number of days. SQL Server: `DATEDIFF(day, start, end)`. I would also clarify whether the end date should be counted (add 1 if inclusive).
+</InterviewQ>
+
+<InterviewQ q="Why avoid CURRENT_DATE or NOW() in reports that must be reproducible?">
+Results change every day, so the same query gives different numbers and is hard to test or compare. For repeatable analysis, I pass a fixed report date as a parameter, or use the latest date in the data. Time zones are another reason: `now` in SQLite is UTC, and Indian business days are in IST (UTC plus 5:30).
+</InterviewQ>
+
+## Key takeaways
+
+- SQLite stores dates as ISO text (`YYYY-MM-DD`). Other formats break date functions.
+- `strftime` extracts and formats. `date(d, 'start of month')` buckets. `julianday` subtracts.
+- Group by `%Y-%m`, not just `%m`.
+- Use `>= start AND < next_day` for timestamp ranges.
+- Other databases use `DATE_TRUNC`, `EXTRACT`, `DATEDIFF`, `DATEADD`. Know the mapping.
+
+## Further reading
+
+<FurtherReading ids={["sqlite-docs", "postgres-docs", "mysql-docs", "sqlserver-docs"]} />

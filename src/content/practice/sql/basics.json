@@ -1,0 +1,242 @@
+[
+ {
+  "id": "sql-basics-001",
+  "module": "sql",
+  "topic": "basics",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "How many rows are in the `customers` table? Return one column named `row_count`.",
+  "dataset": "ecommerce",
+  "hint": "COUNT(*) counts rows.",
+  "solutionSql": "SELECT COUNT(*) AS row_count FROM customers",
+  "orderMatters": false,
+  "explanation": "COUNT(*) counts every row. Note this table holds a few duplicate customer rows, so it is the row count, not the number of unique customers.",
+  "commonMistake": "Assuming the row count equals the number of unique customers.",
+  "interviewFrequency": "high",
+  "estimatedMinutes": 3,
+  "tags": [
+   "basics",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "row_count"
+   ],
+   "rows": [
+    [
+     4520
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-basics-002",
+  "module": "sql",
+  "topic": "basics",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "Show all columns of the first 5 departments, ordered by `department_id`.",
+  "dataset": "hr",
+  "hint": "Use * with ORDER BY and LIMIT.",
+  "solutionSql": "SELECT * FROM departments ORDER BY department_id LIMIT 5",
+  "orderMatters": true,
+  "explanation": "SELECT * with ORDER BY and LIMIT is the standard first peek at a table.",
+  "commonMistake": "Using LIMIT without ORDER BY, so the 5 rows are not guaranteed.",
+  "interviewFrequency": "medium",
+  "estimatedMinutes": 3,
+  "tags": [
+   "basics",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "department_id",
+    "department_name",
+    "department_head",
+    "location",
+    "annual_budget_inr",
+    "cost_center_code"
+   ],
+   "rows": [
+    [
+     1,
+     "Engineering",
+     "Rajiv Menon",
+     "Bengaluru",
+     420000000,
+     "CC100"
+    ],
+    [
+     2,
+     "Sales",
+     "Anita Kapoor",
+     "Mumbai",
+     180000000,
+     "CC110"
+    ],
+    [
+     3,
+     "Marketing",
+     "Sameer Joshi",
+     "Mumbai",
+     90000000,
+     "CC120"
+    ],
+    [
+     4,
+     "Customer Support",
+     "Lata Pillai",
+     "Chennai",
+     120000000,
+     "CC130"
+    ],
+    [
+     5,
+     "Finance",
+     "Harish Iyer",
+     "Pune",
+     60000000,
+     "CC140"
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-basics-003",
+  "module": "sql",
+  "topic": "basics",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "How many different regions do the stores belong to? Return one column named `regions`.",
+  "dataset": "retail",
+  "hint": "Count distinct values.",
+  "solutionSql": "SELECT COUNT(DISTINCT region) AS regions FROM stores",
+  "orderMatters": false,
+  "explanation": "COUNT(DISTINCT region) counts each region once.",
+  "commonMistake": "Using COUNT(region), which counts stores instead.",
+  "interviewFrequency": "medium",
+  "estimatedMinutes": 3,
+  "tags": [
+   "basics",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "regions"
+   ],
+   "rows": [
+    [
+     4
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-basics-004",
+  "module": "sql",
+  "topic": "basics",
+  "difficulty": "medium",
+  "language": "sql",
+  "question": "Check whether `user_id` is unique in the `users` table. Return `total_rows` and `distinct_users`.",
+  "dataset": "fintech",
+  "hint": "Compare COUNT(*) with COUNT(DISTINCT ...).",
+  "solutionSql": "SELECT COUNT(*) AS total_rows, COUNT(DISTINCT user_id) AS distinct_users FROM users",
+  "orderMatters": false,
+  "explanation": "If the two numbers differ, the id is not unique and duplicates exist. Always check a key before relying on it. SQLite and every other database support this check.",
+  "commonMistake": "Trusting that an id column is unique without testing.",
+  "interviewFrequency": "high",
+  "estimatedMinutes": 6,
+  "tags": [
+   "basics",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "total_rows",
+    "distinct_users"
+   ],
+   "rows": [
+    [
+     4010,
+     4000
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-basics-005",
+  "module": "sql",
+  "topic": "basics",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "Return all columns of the campaign whose `campaign_id` is 1.",
+  "dataset": "marketing",
+  "hint": "Filter on the key.",
+  "solutionSql": "SELECT * FROM campaigns WHERE campaign_id = 1",
+  "orderMatters": false,
+  "explanation": "A primary key lookup returns at most one row.",
+  "commonMistake": "Quoting a number, like campaign_id = '1', which can behave differently in stricter databases.",
+  "interviewFrequency": "medium",
+  "estimatedMinutes": 3,
+  "tags": [
+   "basics",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "campaign_id",
+    "campaign_name",
+    "channel",
+    "objective",
+    "start_date",
+    "end_date",
+    "budget_inr",
+    "owner_team",
+    "status"
+   ],
+   "rows": [
+    [
+     1,
+     "Republic Day Sale - Search",
+     "Google Search",
+     "Sales",
+     "2023-01-18",
+     "2023-01-27",
+     7000,
+     "Performance",
+     "Completed"
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-basics-006",
+  "module": "sql",
+  "topic": "basics",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "How many rows does the `events` table have? Return one column named `event_rows`.",
+  "dataset": "subscription",
+  "hint": "Count all rows.",
+  "solutionSql": "SELECT COUNT(*) AS event_rows FROM events",
+  "orderMatters": false,
+  "explanation": "COUNT(*) is the simplest row count.",
+  "commonMistake": "Counting a single column that has NULLs.",
+  "interviewFrequency": "medium",
+  "estimatedMinutes": 3,
+  "tags": [
+   "basics",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "event_rows"
+   ],
+   "rows": [
+    [
+     36383
+    ]
+   ]
+  }
+ }
+]

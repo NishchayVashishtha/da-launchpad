@@ -1,0 +1,367 @@
+[
+  {
+    "id": "sql-pattern-sessions-001",
+    "module": "sql",
+    "topic": "pattern-sessions",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "A product analyst is checking activity of user 2 before building sessions. List every event of `user_id = 2` (ignore exact duplicate rows) with the minutes since that user's previous event as `gap_minutes` (NULL for the first event), rounded to 1 decimal. Return `event_id`, `event_time`, `gap_minutes`, ordered by `event_time`, then `event_id`.",
+    "dataset": "subscription",
+    "hint": "LAG(event_time) OVER (ORDER BY ...) gives the previous time. julianday difference times 1440 is minutes.",
+    "solutionSql": "WITH e AS (SELECT DISTINCT event_id, user_id, event_time FROM events WHERE user_id = 2) SELECT event_id, event_time, ROUND((julianday(event_time) - julianday(LAG(event_time) OVER (ORDER BY event_time, event_id))) * 1440, 1) AS gap_minutes FROM e ORDER BY event_time, event_id",
+    "expectedOutput": {
+      "columns": [
+        "event_id",
+        "event_time",
+        "gap_minutes"
+      ],
+      "rows": [
+        [
+          1,
+          "2023-01-01 09:21:21",
+          null
+        ],
+        [
+          2,
+          "2023-01-01 09:33:21",
+          12
+        ],
+        [
+          25,
+          "2023-01-03 00:10:21",
+          2317
+        ],
+        [
+          34,
+          "2023-01-04 01:14:21",
+          1504
+        ],
+        [
+          93,
+          "2023-01-08 09:33:21",
+          6259
+        ],
+        [
+          118,
+          "2023-01-10 04:13:21",
+          2560
+        ],
+        [
+          195,
+          "2023-01-13 21:59:21",
+          5386
+        ],
+        [
+          208,
+          "2023-01-14 10:56:21",
+          777
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "LAG looks one row back in time order, so each row can see the previous timestamp. julianday converts a timestamp to a number of days, so the difference multiplied by 1440 (minutes in a day) gives minutes. The first row has no previous event, so its gap is NULL. This gap is the building block of sessionisation.",
+    "commonMistake": "Subtracting the timestamps as text, for example event_time - prev_time. SQLite would convert the strings to numbers and return garbage such as 0, instead of a time gap.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "sessions",
+      "lag",
+      "julianday"
+    ]
+  },
+  {
+    "id": "sql-pattern-sessions-002",
+    "module": "sql",
+    "topic": "pattern-sessions",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Define a new session as the first event of a user or any event more than 30 minutes after that user's previous event. Using `events` (ignore exact duplicate rows), report the total number of sessions across all users as `sessions`, and the average events per session as `events_per_session`, rounded to 2 decimals. Return one row.",
+    "dataset": "subscription",
+    "hint": "Flag session starts with LAG and CASE. Total sessions is the sum of the flags.",
+    "solutionSql": "WITH e AS (SELECT DISTINCT event_id, user_id, event_time FROM events), g AS (SELECT user_id, event_id, event_time, (julianday(event_time) - julianday(LAG(event_time) OVER (PARTITION BY user_id ORDER BY event_time, event_id))) * 1440 AS gap_min FROM e), f AS (SELECT user_id, event_id, event_time, CASE WHEN gap_min IS NULL OR gap_min > 30 THEN 1 ELSE 0 END AS new_session FROM g)SELECT SUM(new_session) AS sessions, ROUND(1.0 * COUNT(*) / SUM(new_session), 2) AS events_per_session FROM f",
+    "expectedOutput": {
+      "columns": [
+        "sessions",
+        "events_per_session"
+      ],
+      "rows": [
+        [
+          35603,
+          1.02
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "The gap in minutes comes from LAG. The CASE expression marks a row as a session start when there is no previous event or the gap is over 30. Adding up those 1s gives the number of sessions, and total events divided by sessions gives the average session size. Notice you do not need a running SUM when you only need the count.",
+    "commonMistake": "Counting distinct users instead of flags. That gives the number of users who ever did anything, not the number of sessions, because one user can have many sessions.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 14,
+    "tags": [
+      "sessions",
+      "lag",
+      "case"
+    ]
+  },
+  {
+    "id": "sql-pattern-sessions-003",
+    "module": "sql",
+    "topic": "pattern-sessions",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Build full sessions for users 2, 7 and 9 only, using the 30-minute rule (ignore exact duplicate rows). For each session return `user_id`, `session_no` (1, 2, 3... per user), `session_start`, `session_end`, and `events` (number of events). Order by `user_id`, then `session_no`.",
+    "dataset": "subscription",
+    "hint": "After flagging session starts, a running SUM of the flags per user gives the session number. Then GROUP BY user and session number.",
+    "solutionSql": "WITH e AS (SELECT DISTINCT event_id, user_id, event_time FROM events), g AS (SELECT user_id, event_id, event_time, (julianday(event_time) - julianday(LAG(event_time) OVER (PARTITION BY user_id ORDER BY event_time, event_id))) * 1440 AS gap_min FROM e), f AS (SELECT user_id, event_id, event_time, CASE WHEN gap_min IS NULL OR gap_min > 30 THEN 1 ELSE 0 END AS new_session FROM g), s AS (SELECT user_id, event_id, event_time, SUM(new_session) OVER (PARTITION BY user_id ORDER BY event_time, event_id) AS session_no FROM f) SELECT user_id, session_no, MIN(event_time) AS session_start, MAX(event_time) AS session_end, COUNT(*) AS events FROM s WHERE user_id IN (2, 7, 9) GROUP BY user_id, session_no ORDER BY user_id, session_no",
+    "expectedOutput": {
+      "columns": [
+        "user_id",
+        "session_no",
+        "session_start",
+        "session_end",
+        "events"
+      ],
+      "rows": [
+        [
+          2,
+          1,
+          "2023-01-01 09:21:21",
+          "2023-01-01 09:33:21",
+          2
+        ],
+        [
+          2,
+          2,
+          "2023-01-03 00:10:21",
+          "2023-01-03 00:10:21",
+          1
+        ],
+        [
+          2,
+          3,
+          "2023-01-04 01:14:21",
+          "2023-01-04 01:14:21",
+          1
+        ],
+        [
+          2,
+          4,
+          "2023-01-08 09:33:21",
+          "2023-01-08 09:33:21",
+          1
+        ],
+        [
+          2,
+          5,
+          "2023-01-10 04:13:21",
+          "2023-01-10 04:13:21",
+          1
+        ],
+        [
+          2,
+          6,
+          "2023-01-13 21:59:21",
+          "2023-01-13 21:59:21",
+          1
+        ],
+        [
+          2,
+          7,
+          "2023-01-14 10:56:21",
+          "2023-01-14 10:56:21",
+          1
+        ],
+        [
+          7,
+          1,
+          "2023-01-02 20:12:38",
+          "2023-01-02 20:30:38",
+          2
+        ],
+        [
+          7,
+          2,
+          "2023-01-03 02:33:38",
+          "2023-01-03 02:33:38",
+          1
+        ],
+        [
+          7,
+          3,
+          "2023-01-08 07:49:38",
+          "2023-01-08 07:49:38",
+          1
+        ],
+        [
+          7,
+          4,
+          "2023-01-09 20:30:38",
+          "2023-01-09 20:30:38",
+          1
+        ],
+        [
+          7,
+          5,
+          "2023-01-14 18:03:38",
+          "2023-01-14 18:03:38",
+          1
+        ],
+        [
+          7,
+          6,
+          "2023-01-16 04:30:38",
+          "2023-01-16 04:30:38",
+          1
+        ],
+        [
+          7,
+          7,
+          "2023-01-16 07:44:38",
+          "2023-01-16 07:44:38",
+          1
+        ],
+        [
+          7,
+          8,
+          "2023-01-16 08:31:38",
+          "2023-01-16 08:31:38",
+          1
+        ],
+        [
+          9,
+          1,
+          "2023-01-02 18:57:49",
+          "2023-01-02 18:57:49",
+          1
+        ],
+        [
+          9,
+          2,
+          "2023-01-02 20:38:49",
+          "2023-01-02 20:38:49",
+          1
+        ],
+        [
+          9,
+          3,
+          "2023-01-05 14:26:49",
+          "2023-01-05 14:26:49",
+          1
+        ],
+        [
+          9,
+          4,
+          "2023-01-06 01:18:49",
+          "2023-01-06 01:18:49",
+          1
+        ],
+        [
+          9,
+          5,
+          "2023-01-09 20:38:49",
+          "2023-01-09 20:38:49",
+          1
+        ],
+        [
+          9,
+          6,
+          "2023-01-12 08:25:49",
+          "2023-01-12 08:25:49",
+          1
+        ],
+        [
+          9,
+          7,
+          "2023-01-15 23:06:49",
+          "2023-01-15 23:06:49",
+          1
+        ],
+        [
+          9,
+          8,
+          "2023-01-18 02:22:49",
+          "2023-01-18 02:22:49",
+          1
+        ],
+        [
+          9,
+          9,
+          "2023-02-03 14:38:49",
+          "2023-02-03 14:38:49",
+          1
+        ],
+        [
+          9,
+          10,
+          "2023-02-06 02:45:49",
+          "2023-02-06 02:45:49",
+          1
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "This is the full sessionisation template. LAG finds the gap, CASE flags each session start, and a running SUM of the flags (ordered by time) gives every event a session number. Events with the same number belong to one session, so GROUP BY user and session number gives start, end and size.",
+    "commonMistake": "Skipping the running SUM and grouping by the flag column. The flag is only 0 or 1, so you get two giant groups per user instead of one group per session.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 16,
+    "tags": [
+      "sessions",
+      "running sum",
+      "template"
+    ]
+  },
+  {
+    "id": "sql-pattern-sessions-004",
+    "module": "sql",
+    "topic": "pattern-sessions",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Find the five busiest sessions in the whole `events` table, where a session ends after a gap of more than 30 minutes (ignore exact duplicate rows). Return `user_id`, `session_start`, and `events`. Order by `events` descending, then `user_id`, then `session_start`, and keep 5 rows.",
+    "dataset": "subscription",
+    "hint": "Reuse the session-numbering CTEs, group by user and session, then sort and LIMIT.",
+    "solutionSql": "WITH e AS (SELECT DISTINCT event_id, user_id, event_time FROM events), g AS (SELECT user_id, event_id, event_time, (julianday(event_time) - julianday(LAG(event_time) OVER (PARTITION BY user_id ORDER BY event_time, event_id))) * 1440 AS gap_min FROM e), f AS (SELECT user_id, event_id, event_time, CASE WHEN gap_min IS NULL OR gap_min > 30 THEN 1 ELSE 0 END AS new_session FROM g), s AS (SELECT user_id, event_id, event_time, SUM(new_session) OVER (PARTITION BY user_id ORDER BY event_time, event_id) AS session_no FROM f) SELECT user_id, MIN(event_time) AS session_start, COUNT(*) AS events FROM s GROUP BY user_id, session_no ORDER BY events DESC, user_id, session_start LIMIT 5",
+    "expectedOutput": {
+      "columns": [
+        "user_id",
+        "session_start",
+        "events"
+      ],
+      "rows": [
+        [
+          773,
+          "2023-05-26 18:29:05",
+          3
+        ],
+        [
+          851,
+          "2023-06-15 13:32:41",
+          3
+        ],
+        [
+          944,
+          "2023-06-20 19:47:24",
+          3
+        ],
+        [
+          1735,
+          "2023-10-25 19:08:10",
+          3
+        ],
+        [
+          2,
+          "2023-01-01 09:21:21",
+          2
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Once every event carries a (user_id, session_no) pair, a session is just a group. COUNT(*) is its size. Sorting the groups by size and applying LIMIT 5 gives the busiest sessions. The tie-breakers keep the order stable if two sessions have equal size.",
+    "commonMistake": "Grouping only by session_no. Session numbers restart from 1 for each user, so different users would be merged into one group and the counts would be meaningless.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 14,
+    "tags": [
+      "sessions",
+      "top n",
+      "running sum"
+    ]
+  }
+]

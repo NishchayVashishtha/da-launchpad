@@ -1,0 +1,242 @@
+---
+title: "Getting data into Power BI"
+description: "Connect Power BI to CSV, Excel, folders and SQL Server or ODBC sources, choose Import or DirectQuery, and understand how refresh works."
+module: power-bi
+order: 2
+estimatedMinutes: 35
+objectives:
+  - "Load data from CSV, Excel and a folder of files"
+  - "Describe how Power BI connects to SQL Server and other databases through ODBC"
+  - "Choose between Import and DirectQuery"
+  - "Explain scheduled refresh, credentials and gateways"
+tags: ["power-bi", "get-data", "refresh", "import"]
+---
+
+## Learning objectives
+
+- Load data from CSV, Excel and a folder of files.
+- Describe how Power BI connects to SQL Server and other databases through ODBC.
+- Choose between **Import** and **DirectQuery**.
+- Explain scheduled refresh, credentials and gateways.
+
+## Why this matters for a Data Analyst job
+
+Your report is only as good as the way data enters it. In real jobs the data arrives as monthly CSV exports from a vendor, Excel files from a finance team, or tables in a SQL Server or data warehouse. If you connect in a fragile way, the report breaks every month and you spend your Fridays fixing it.
+
+<RealWorld>
+A retail chain's head office receives one sales CSV per month from its stores system. A fresher who imports each file by hand needs 20 minutes each month, and forgets a file once. A fresher who uses the Folder connector drops the new file into the folder and presses Refresh. The report is correct in seconds.
+</RealWorld>
+
+## Concept
+
+### The Get Data menu
+
+On the **Home** tab choose **Get data**. Power BI shows hundreds of connectors. The ones you will use most as a fresher:
+
+| Source | Connector | Typical use |
+|--------|-----------|-------------|
+| CSV or text file | Text/CSV | Exports from apps, the practice datasets in this course |
+| Excel workbook | Excel workbook | Finance and ops files |
+| A folder of files | Folder | Monthly files with the same columns |
+| SQL Server | SQL Server database | Company database |
+| Any database with an ODBC driver | ODBC | MySQL, PostgreSQL, older systems |
+| Web pages and APIs | Web | Public tables, simple APIs |
+| SharePoint and OneDrive | SharePoint folder, Excel (OneDrive link) | Files that need online refresh |
+
+After you pick the file, a **Navigator** window shows a preview. Click **Transform Data** (not Load) to open Power Query and clean the data first. Loading a messy file directly is a common beginner habit that creates problems later.
+
+### CSV and Excel
+
+For a CSV Power BI guesses the delimiter, the file origin (encoding) and the data types of the first 200 rows. Always check these:
+
+- **File origin**: use `65001: Unicode (UTF-8)` so rupee signs and Indian names show correctly.
+- **Delimiter**: comma for most CSVs.
+- **Data type detection**: the guess may be wrong when a column holds both numbers and text such as `5542.95` and `₹1,234.50`. You will fix this in Power Query (lesson 3).
+
+For Excel, prefer loading **Excel Tables** (named, with a table icon) instead of whole sheets. Tables keep working when rows are added or the top rows move.
+
+### Folder of files
+
+Use **Get data > Folder**, enter the folder path and click **Combine & Transform Data**. Power BI:
+
+1. Lists all files with their names and dates.
+2. Takes one file as a sample and builds a **function** with the steps (promote headers, set types).
+3. Applies the function to every file and appends the results into one table.
+
+The advantage is repeatability. New file in the folder plus **Refresh** equals updated report. Make sure all files have the same columns and the same header row.
+
+### SQL Server and ODBC
+
+For a database, you provide the **server name** and optionally the **database name**. Then choose the mode:
+
+- **Import**: Power BI runs the query and stores the result in the model.
+- **DirectQuery**: Power BI keeps only the structure and queries the database every time a visual loads.
+
+You can also paste a **SQL statement** under Advanced options. Good practice: ask the data team for a **view** that already has clean joins and filters, and connect to the view. It keeps heavy logic in one place and lets Power BI use **query folding** (Power Query steps are translated to SQL and run in the database).
+
+**ODBC** is a standard way for programs to talk to databases. If your company uses PostgreSQL or MySQL, install the matching ODBC driver, create a **DSN** (data source name) in the ODBC Data Sources tool of Windows, and choose **Get data > ODBC**. Then it behaves like any other relational source. Credentials (username and password or Windows authentication) are asked once and stored per data source.
+
+### Import vs DirectQuery
+
+| Point | Import | DirectQuery |
+|-------|--------|-------------|
+| Speed of visuals | Very fast | Depends on source |
+| Data freshness | As of last refresh | Near live |
+| Data size | Up to dataset limit (1 GB for Pro, compressed) | Very large |
+| DAX and Power Query features | All | Some limited |
+| Load on the source | Only at refresh | On every interaction |
+
+Rule of thumb: **start with Import**. Move to DirectQuery or a composite model only if size or freshness forces you.
+
+### Refresh basics
+
+When you click **Refresh** in Desktop, Power BI re-runs all the queries. In the Service you set **scheduled refresh** (for Pro, up to 8 times per day; more with Premium) in the dataset settings. Three things must be right:
+
+1. **Data source credentials** saved in the Service.
+2. A **reachable source**: cloud sources work directly; on-premises sources need an **on-premises data gateway**, installed on an always-on machine.
+3. **Same column names** as before. If a column is renamed or removed, Power Query steps that mention it fail.
+
+<Warning>
+Never leave real passwords in a shared PBIX file or screenshot. Use the credentials dialog and, where possible, a read-only database user.
+</Warning>
+
+Refresh failures are common in real jobs. Check the **refresh history** in the Service; it gives an error message that usually points to a changed column, expired password or an offline gateway.
+
+## Worked examples
+
+### Example 1: Load the retail CSV and check it
+
+Get the retail files from the course datasets (zip at `/data/zip/retail.zip`, folder `retail/` containing `sales.csv`, `stores.csv`, `inventory.csv`, `targets.csv`).
+
+1. **Get data > Text/CSV**, choose `sales.csv`.
+2. In the preview confirm file origin 65001, delimiter comma.
+3. Click **Transform Data**.
+4. Look at **View > Column quality** and **Column profile**. You will see that `net_amount_inr` is partly text (rupee symbols) and `sale_datetime` has two date styles.
+
+What the Navigator preview shows (first rows, illustrative of the structure):
+
+| sale_id | sale_datetime | store_id | category | quantity | net_amount_inr |
+|---------|---------------|----------|----------|----------|----------------|
+| 1 | 2023-01-01 00:53:33 | 7 | Grocery & Staples | 2 | 412.00 |
+| 2 | 01-01-2023 09:12:05 | 3 | Apparel | 1 | ₹1,899.00 |
+
+The numbers are illustrative; the shapes match the real file. The second row shows both issues. You will fix them in the next lesson.
+
+### Example 2: Folder connector for monthly files
+
+Suppose `C:\Reports\Sales\` holds `sales_2024_01.csv` to `sales_2024_12.csv`.
+
+1. **Get data > Folder**, path `C:\Reports\Sales`.
+2. Click **Combine & Transform Data**; Power BI creates a `Sample File` query, a function and the combined table.
+3. Add a new `sales_2025_01.csv` next year and press **Refresh**. Row count goes up with no new steps.
+
+Power Query M for the core step (Power BI writes this for you):
+
+```m
+let
+    Source = Folder.Files("C:\Reports\Sales"),
+    CsvOnly = Table.SelectRows(Source, each Text.EndsWith([Name], ".csv")),
+    Parsed = Table.AddColumn(CsvOnly, "Data",
+        each Table.PromoteHeaders(Csv.Document([Content], [Delimiter=",", Encoding=65001]))),
+    Combined = Table.Combine(Parsed[Data])
+in
+    Combined
+```
+
+The line `Text.EndsWith` protects you from stray files such as `Thumbs.db` or a temp Excel file.
+
+### Example 3: SQL Server view with a parameter-friendly query
+
+A company has a view `vw_upi_transactions`. In Desktop:
+
+1. **Get data > SQL Server database**.
+2. Server: `sql-prod-01`, Database: `payments`, mode **Import**.
+3. Pick `vw_upi_transactions` in the Navigator.
+
+If the view has 22,000 rows it loads in seconds. Choose DirectQuery only when it has hundreds of millions of rows. The size of the loaded table is visible in the Data view (row count at the bottom). With the course sample the fintech `transactions` table has about 22,000 distinct transactions; a real warehouse table may have billions.
+
+Under **Advanced options** you could paste:
+
+```sql
+SELECT txn_id, user_id, txn_datetime, amount, status
+FROM dbo.transactions
+WHERE txn_datetime >= '2024-01-01';
+```
+
+Reduce rows and columns at the source; it keeps the model small and fast.
+
+## Common mistakes
+
+<CommonMistake>
+Clicking **Load** instead of **Transform Data** on a dirty file. You then build measures on wrong types and fix everything later at higher cost.
+</CommonMistake>
+
+<CommonMistake>
+Importing every column and every row "just in case". Remove unused columns early. Smaller models refresh faster and open faster.
+</CommonMistake>
+
+<CommonMistake>
+Choosing DirectQuery because it sounds modern. For small data it makes visuals slower and removes some DAX options.
+</CommonMistake>
+
+<CommonMistake>
+Using a hard-coded local path (`C:\Users\Asha\Desktop\...`) in a report that others will refresh. Use a shared location (SharePoint, OneDrive) or a parameter for the path.
+</CommonMistake>
+
+<CommonMistake>
+Ignoring file encoding. Rupee signs and non-English characters turn into strange symbols when the origin is not UTF-8.
+</CommonMistake>
+
+<CommonMistake>
+Forgetting the gateway for on-premises SQL Server. Desktop refresh works on your office network, but the Service cannot reach the server.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="get-data" module="power-bi" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "You have 12 monthly CSV files with identical columns in one folder. Which connector is best?", options: ["Text/CSV, 12 times", "Folder", "Web", "ODBC"], answer: 1, explanation: "The Folder connector combines all files with the same steps, and new files are included on refresh." },
+  { q: "Which statement about DirectQuery is correct?", options: ["It stores a compressed copy in the model", "It queries the source when visuals load", "It is always faster than Import", "It needs no credentials"], answer: 1, explanation: "DirectQuery sends queries to the source on interaction. That keeps data live but can make visuals slower." },
+  { q: "What lets the Power BI Service refresh data from an on-premises SQL Server?", options: ["A gateway", "A dashboard", "A slicer", "A bookmark"], answer: 0, explanation: "An on-premises data gateway bridges the cloud Service and a private network." },
+  { q: "Why click Transform Data in the Navigator instead of Load?", options: ["It makes the file smaller on disk", "It opens Power Query so you can fix types and clean data before loading", "It publishes the report", "It creates a dashboard"], answer: 1, explanation: "Cleaning before loading prevents wrong types and misleading numbers in the model." },
+  { q: "A CSV shows `â‚¹` instead of the rupee sign. What is the probable cause?", options: ["Wrong delimiter", "File origin is not UTF-8", "Missing relationship", "Too many rows"], answer: 1, explanation: "Mis-decoded characters point to the wrong encoding. Choose 65001 UTF-8 when the file uses it." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers test whether you think beyond clicking. Mention query folding, views, Import vs DirectQuery trade-offs, credentials and gateways. Say you reduce rows and columns at the source.
+</InterviewAlert>
+
+<InterviewQ q="How would you load 24 monthly sales files into one table, and what happens next month?">
+I use the Folder connector with Combine and Transform. Power Query builds a function with my cleaning steps and applies it to every file. Next month I drop the new file in the folder and refresh; the new rows appear without edits. I filter the folder listing to .csv and check that all files share the same header.
+</InterviewQ>
+
+<InterviewQ q="What is query folding and why does it matter?">
+Query folding is when Power Query translates my steps into one native query (SQL) that runs in the source database. It matters because the database filters and aggregates before sending rows, which makes refresh faster and lighter. Steps like filter rows, remove columns and group by usually fold; custom M functions and some merges can break folding. Right-click a step and check whether **View Native Query** is available.
+</InterviewQ>
+
+<InterviewQ q="Your scheduled refresh started failing this week. How do you debug it?">
+I open the refresh history in the Service and read the error. Common causes are: expired credentials, the gateway machine offline, a renamed or removed source column, or a file moved from its folder. I reproduce in Desktop by refreshing; if it fails there too, I fix the Power Query step. If it only fails in the Service, I check credentials and gateway status.
+</InterviewQ>
+
+<InterviewQ q="Import or DirectQuery for a daily sales report with 50 lakh rows?">
+Import. 50 lakh rows compress well in the VertiPaq engine and visuals are fast. A daily refresh is enough for this use. I would only consider DirectQuery or an incremental refresh strategy if the data grew to hundreds of millions of rows or needed live numbers.
+</InterviewQ>
+
+## Key takeaways
+
+- Use **Transform Data**, not Load, so you can clean before the model is built.
+- The Folder connector makes repeating monthly files effortless.
+- SQL Server and ODBC sources need credentials; on-premises sources need a gateway for the Service.
+- Start with Import; use DirectQuery or composite models only for size or freshness reasons.
+- Reduce rows and columns at the source and prefer a clean database view.
+
+## Further reading
+
+<FurtherReading ids={["power-bi-docs", "sqlserver-docs", "pl300"]} />
+
+<Download href="/data/zip/retail.zip" label="Download the retail CSV set (zip)" />

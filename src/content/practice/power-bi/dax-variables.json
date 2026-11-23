@@ -1,0 +1,135 @@
+[
+  {
+    "id": "pbi-dax-variables-001",
+    "module": "power-bi",
+    "topic": "dax-variables",
+    "difficulty": "easy",
+    "language": "dax",
+    "question": "Fintech: rewrite `Failure Rate % = [Failed Txns] / COUNTROWS(Transactions)` so that it never shows an error.",
+    "dataset": "fintech",
+    "hint": "DIVIDE has a built-in zero guard.",
+    "solution": "```dax\nFailure Rate % = DIVIDE ( [Failed Txns], COUNTROWS ( Transactions ) )\n\n-- If you want 0 instead of blank:\nFailure Rate % (0) = DIVIDE ( [Failed Txns], COUNTROWS ( Transactions ), 0 )\n```\n\nDIVIDE returns BLANK by default when the denominator is zero or blank; the third argument is an alternate result. Blank is usually better for charts (no bar drawn). Zero can mislead: 'no transactions' is different from '0% failures'.",
+    "explanation": "Prefer DIVIDE over / and IFERROR.",
+    "commonMistake": "Using IFERROR everywhere, which hides real mistakes.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "divide",
+      "errors"
+    ]
+  },
+  {
+    "id": "pbi-dax-variables-002",
+    "module": "power-bi",
+    "topic": "dax-variables",
+    "difficulty": "easy",
+    "language": "dax",
+    "question": "Ecommerce: rewrite `Margin %` using variables so that `[Revenue]` is computed once and the logic reads top to bottom.",
+    "dataset": "ecommerce",
+    "hint": "VAR name = expression, then RETURN.",
+    "solution": "```dax\nMargin % =\nVAR _rev  = [Revenue]\nVAR _cost = [Cost]\nRETURN\n    DIVIDE ( _rev - _cost, _rev )\n```\n\nVariables improve readability and evaluate once. Name them with a leading underscore so they are not mistaken for columns or measures. The result is the same as the earlier measure.",
+    "explanation": "VAR + RETURN.",
+    "commonMistake": "Reusing the same long expression three times instead of storing it.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "var"
+    ]
+  },
+  {
+    "id": "pbi-dax-variables-003",
+    "module": "power-bi",
+    "topic": "dax-variables",
+    "difficulty": "medium",
+    "language": "dax",
+    "question": "Retail: build a `Sales Label` text measure that shows ₹ in crore or lakh: 1.5 crore as `₹1.5 Cr`, 12.3 lakh as `₹12.3 L`, otherwise full number with commas.",
+    "dataset": "retail",
+    "hint": "SWITCH(TRUE(), ...) with a variable for the value.",
+    "solution": "```dax\nSales Label =\nVAR _s = [Total Sales]\nRETURN\n    SWITCH (\n        TRUE (),\n        ISBLANK ( _s ), BLANK (),\n        _s >= 10000000, \"₹\" & FORMAT ( _s / 10000000, \"0.0\" ) & \" Cr\",\n        _s >= 100000,   \"₹\" & FORMAT ( _s / 100000, \"0.0\" ) & \" L\",\n        \"₹\" & FORMAT ( _s, \"#,0\" )\n    )\n```\n\nOn the sample: all sales (₹3.0 crore) gives `₹3.0 Cr`, Oct 2024 (₹18.9 lakh) gives `₹18.9 L`. Indian users read lakh and crore more easily than millions. Text measures cannot be summed or charted as numbers, so use them for labels and cards only.",
+    "explanation": "Text for labels, numbers for charts.",
+    "commonMistake": "Using FORMAT results in a chart axis. They are text and sort alphabetically.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 6,
+    "tags": [
+      "format",
+      "switch",
+      "lakh-crore"
+    ]
+  },
+  {
+    "id": "pbi-dax-variables-004",
+    "module": "power-bi",
+    "topic": "dax-variables",
+    "difficulty": "medium",
+    "language": "dax",
+    "question": "Retail: `Target` = SUM of `Targets[target_net_sales_inr]`. Write `Attainment %` = sales / target, blank when no target exists (East region stores have none).",
+    "dataset": "retail",
+    "hint": "Check for a blank target.",
+    "solution": "```dax\nTarget = SUM ( Targets[target_net_sales_inr] )\n\nAttainment % =\nVAR _t = [Target]\nVAR _s = [Total Sales]\nRETURN\n    IF ( NOT ISBLANK ( _t ) && _t <> 0, DIVIDE ( _s, _t ) )\n```\n\nTargets are set at about 90 to 115% of actual sales, so attainment clusters near 100%. East region rows show blank rather than a division by zero or a misleading 0%. A card titled 'Attainment' for all regions includes only stores with targets in the denominator only if you also filter sales to those stores: be careful with totals.",
+    "explanation": "Handle missing targets.",
+    "commonMistake": "Dividing all sales by targets that exclude some stores, which inflates attainment.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "target",
+      "blank"
+    ]
+  },
+  {
+    "id": "pbi-dax-variables-005",
+    "module": "power-bi",
+    "topic": "dax-variables",
+    "difficulty": "hard",
+    "language": "dax",
+    "question": "What does this measure return when placed in a table by category, and why? `Odd = VAR _total = [Total Sales] RETURN CALCULATE ( _total, ALL ( Sales[category] ) )`. How would you fix it to get the share-of-total denominator?",
+    "dataset": "retail",
+    "hint": "When is a variable evaluated?",
+    "solution": "```dax\n-- Odd: _total is fixed BEFORE CALCULATE changes the context.\n-- Each row just returns its own sales again.\nOdd =\nVAR _total = [Total Sales]\nRETURN CALCULATE ( _total, ALL ( Sales[category] ) )\n\n-- Fix: call the measure inside CALCULATE, or store the table-wide value\nShare % =\nVAR _all = CALCULATE ( [Total Sales], ALL ( Sales[category] ) )\nRETURN DIVIDE ( [Total Sales], _all )\n```\n\nA variable is calculated once, in the context where it is defined, and its value does not change afterwards. `ALL` inside the later CALCULATE has no effect on the already computed number. To change context, the measure must be evaluated inside CALCULATE (or the variable must be defined with the changed context, as in the fix).",
+    "explanation": "VAR is a snapshot.",
+    "commonMistake": "Thinking a VAR is re-evaluated inside CALCULATE.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 8,
+    "tags": [
+      "var",
+      "context"
+    ]
+  },
+  {
+    "id": "pbi-dax-variables-006",
+    "module": "power-bi",
+    "topic": "dax-variables",
+    "difficulty": "hard",
+    "language": "dax",
+    "question": "Fintech: a revenue-protection measure `High Value Failure Rate %` = failure rate among transactions with amount above ₹50,000. Use variables, make it safe, and say what the reader sees when there are no such transactions.",
+    "dataset": "fintech",
+    "hint": "Calculate numerator and denominator in the same filter.",
+    "solution": "```dax\nHigh Value Failure Rate % =\nVAR _hv =\n    FILTER ( Transactions, Transactions[amount] > 50000 )\nVAR _den = COUNTROWS ( _hv )\nVAR _num = CALCULATE ( COUNTROWS ( Transactions ), _hv, Transactions[status] = \"FAILED\" )\nRETURN\n    DIVIDE ( _num, _den )\n```\n\nIf no transaction is above ₹50,000 in the current slicers, `_den` is zero and DIVIDE returns blank, which a card shows as '(Blank)'. Add `, \"n/a\"`-style handling with IF in a separate label measure. Business context: large amounts fail more often with LIMIT_EXCEEDED, so this measure helps risk teams. The filter table is built once and reused for both counts.",
+    "explanation": "Same filter for numerator and denominator.",
+    "commonMistake": "Counting failures among all transactions but dividing by only high-value ones.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 9,
+    "tags": [
+      "var",
+      "filter",
+      "fintech"
+    ]
+  },
+  {
+    "id": "pbi-dax-variables-007",
+    "module": "power-bi",
+    "topic": "dax-variables",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "List five measure-writing best practices you would follow in a team model, and give a short reason for each.",
+    "dataset": "none",
+    "hint": "Naming, reuse, formatting, guarding, organising.",
+    "solution": "1. **Use a dedicated measure table** (for example `_Measures`) so users find measures in one place.\n2. **Reuse base measures** such as `[Total Sales]` inside others instead of repeating logic. One fix updates everything.\n3. **Use DIVIDE and variables** for safety and readability.\n4. **Set the format string** (percent, currency, no decimals) on the measure, not with FORMAT, so the value stays numeric.\n5. **Name and describe clearly**, for example `Sales YoY %`, with a description; avoid abbreviations only you understand. Keep calculated columns for slicing and grouping only, and measures for numbers that react to filters.",
+    "explanation": "Clear, reusable, safe measures.",
+    "commonMistake": "Hiding business rules inside visuals' filters instead of in named measures.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "best-practices"
+    ]
+  }
+]

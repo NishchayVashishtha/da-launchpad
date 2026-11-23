@@ -1,0 +1,181 @@
+---
+title: "Common Excel test tasks in Indian DA and MIS hiring"
+description: "What recruiters ask in Excel screening tests, a timed 10-task practice set with model solutions, and tips to work faster."
+module: excel
+order: 16
+estimatedMinutes: 70
+objectives:
+  - "Recognise the standard task types in Excel screening tests"
+  - "Solve a timed 10-task practice test with correct formulas"
+  - "Check your answers with quick sanity checks"
+  - "Use speed habits and shortcuts to finish on time"
+tags: ["excel", "interview", "test", "mis"]
+---
+
+## Learning objectives
+
+- Know what a typical Excel test contains.
+- Complete a timed 10-task set.
+- Verify answers fast.
+- Work with keyboard shortcuts.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Many Indian companies screen freshers with a 30 to 45 minute Excel test: a workbook with raw data and 8 to 12 tasks, sent by email or done on a shared laptop. Services firms, MIS teams in banks and e-commerce operations teams use this a lot. Candidates fail not because the tasks are hard, but because they are slow, skip checks or miss a small instruction. This lesson is your rehearsal.
+</RealWorld>
+
+## Concept
+
+Test tasks fall into a small number of families. If you can do each family fast, you can pass most tests.
+
+| Family | Typical asks | Tools |
+|---|---|---|
+| Clean up | remove duplicates, trim names, fix dates, split a column | TRIM, Text to Columns, Remove Duplicates, Flash Fill |
+| Conditional logic | label rows Late/On time, grade bands | IF, IFS, AND, OR |
+| Lookups | find the price for an ID, merge two sheets | XLOOKUP, VLOOKUP, INDEX-MATCH |
+| Conditional totals | revenue per city, count of cancelled orders | SUMIFS, COUNTIFS, AVERAGEIFS |
+| Dates and text | weekday, month, extract a code | TEXT, MONTH, LEFT, MID, DATEDIF |
+| Summaries | pivot, chart, slicer | Pivot table, pivot chart |
+| Presentation | format, freeze panes, validation, print area | CF, Data Validation |
+| Dynamic arrays | unique list, filter rows, sort | UNIQUE, FILTER, SORT |
+
+**Test-day strategy.**
+
+1. Read all tasks first (one minute). Start with the ones you can finish in two minutes.
+2. Convert the data to a Table (Ctrl + T) at the start. Formulas then read like `tbl_food_orders[order_value_inr]`.
+3. Never type numbers; use formulas so the answer stays correct if the data changes.
+4. Add a row of checks: totals that must match, counts that must add up.
+5. Follow the output format exactly: column H for the cities, column I for the totals, if the question says so.
+6. Keep a clean look: header bold, number formats, no stray cells.
+7. Save every 5 minutes (Ctrl + S).
+8. If stuck for more than 3 minutes, move on and return.
+
+<FormulaCard title="Formula patterns to know by heart">
+Sum with condition: =SUMIFS(sum_range, criteria_range1, crit1, criteria_range2, crit2)
+Count with condition: =COUNTIFS(range, crit)
+Average with condition: =AVERAGEIFS(avg_range, range, crit)
+Lookup: =XLOOKUP(key, key_column, return_column, "Not found")
+Lookup (old): =INDEX(return_col, MATCH(key, key_col, 0))
+Band labels: =IFS(x<3,"Short", x<=6,"Medium", TRUE,"Long")
+</FormulaCard>
+
+**Speed shortcuts.**
+
+| Shortcut | Action |
+|---|---|
+| Ctrl + T | Make a Table |
+| Ctrl + Shift + L | Toggle filters |
+| Ctrl + Arrow | Jump to the edge of data |
+| Ctrl + Shift + Arrow | Select to the edge |
+| Alt + = | AutoSum |
+| Ctrl + D / Ctrl + R | Fill down / right |
+| F4 | Cycle absolute reference ($) |
+| Ctrl + ; | Today's date |
+| Alt + N + V | Insert PivotTable |
+| Ctrl + 1 | Format Cells |
+| F2 | Edit cell |
+| Ctrl + Shift + ~ | General number format |
+
+<Tip>
+Double-click the fill handle (small square at the corner of a cell) to copy a formula down the whole table in one go.
+</Tip>
+
+## Worked examples
+
+Practice with the simulated test. **Time limit: 40 minutes.** Do not read the solutions until you have tried.
+
+<Download href="data/excel/excel-test-practice.xlsx" label="excel-test-practice.xlsx" />
+
+The sheet `food_orders` has 2,000 deliveries. The `instructions` sheet holds the 10 tasks. Below are the tasks with model solutions, checked against the data. Cell references assume you converted the data to the table `tbl_food_orders`.
+
+**Task 1: SUMIFS by city.** Total `order_value_inr` per `restaurant_city`. List cities in H, totals in I.
+Solution: in H2 `=SORT(UNIQUE(FILTER(tbl_food_orders[restaurant_city],tbl_food_orders[restaurant_city]<>"")))`, then in I2 `=SUMIFS(tbl_food_orders[order_value_inr],tbl_food_orders[restaurant_city],H2)` filled down. Without dynamic arrays, type the city names.
+Expected: Delhi 1,95,684; Mumbai 1,66,570; Bengaluru 1,27,188; Hyderabad 1,03,616; Chennai 79,485; Ahmedabad 68,411; Kolkata 66,912; Pune 60,555; Jaipur 37,895; Lucknow 30,745. Check: 54 rows have a blank city, so these ten do not add up to the grand total of 9,64,024. The difference is the blank-city orders.
+
+**Task 2: COUNTIFS cancelled by cuisine.** `=COUNTIFS(tbl_food_orders[cuisine],A2,tbl_food_orders[delivery_status],"Cancelled")`.
+Expected: North Indian 17; South Indian 16; Chinese 8; Biryani 7; Desserts 7; Gujarati Thali 7; Mughlai 6; Burgers 4; Pizza 4; Healthy 3; Street Food 3; Bengali 2. Total 84.
+
+**Task 3: AVERAGEIFS delay by weather (Delivered only).** `=AVERAGEIFS(tbl_food_orders[delay_minutes],tbl_food_orders[weather],A2,tbl_food_orders[delivery_status],"Delivered")`.
+Expected: Clear 1.31; Cloudy 1.81; Rain 6.56; Heavy Rain 12.71 minutes. Insight: heavy rain adds about 11 minutes compared with clear weather.
+
+**Task 4: COUNTIF and IF.** `=COUNTIF(tbl_food_orders[delay_minutes],">15")` returns **141**. New column `late_flag`: `=IF([@[delay_minutes]]>15,"Late","On time")`. Careful: cancelled orders have a blank delay, and a blank counts as 0, so they show "On time". Better: `=IF([@[delivery_status]]="Cancelled","",IF([@[delay_minutes]]>15,"Late","On time"))`.
+
+**Task 5: IFS bands.** `=IFS([@[distance_km]]<3,"Short",[@[distance_km]]<=6,"Medium",TRUE,"Long")`.
+Expected counts: Short 690, Medium 998, Long 312 (total 2,000).
+
+**Task 6: INDEX and MATCH.** In K2 type `10020`. In L2: `=INDEX(tbl_food_orders[order_value_inr],MATCH(K2,tbl_food_orders[delivery_id],0))` returns **519**. The `0` means exact match. Mention XLOOKUP as the modern option: `=XLOOKUP(K2,tbl_food_orders[delivery_id],tbl_food_orders[order_value_inr])`.
+
+**Task 7: UNIQUE then SORT.** `=SORT(UNIQUE(tbl_food_orders[cuisine]))` returns 12 cuisines from Bengali to Street Food.
+
+**Task 8: FILTER with two conditions.** `=FILTER(tbl_food_orders,(tbl_food_orders[delivery_status]="Cancelled")*(tbl_food_orders[weather]="Heavy Rain"),"None")`. Expected: **9** rows. Multiplication acts as AND; addition acts as OR.
+
+**Task 9: weekday names.** New column `weekday_name`: `=TEXT([@[order_date]],"dddd")`. Count with `=COUNTIF(tbl_food_orders[weekday_name],A2)`.
+Expected: Sunday 341, Saturday 340, Thursday 280, Tuesday 277, Monday 255, Wednesday 254, Friday 253. Weekends are the busiest.
+
+**Task 10: on-time rate per city.** On-time means `delay_minutes <= 0` among Delivered orders. `=COUNTIFS(city_col,H2,status_col,"Delivered",delay_col,"<=0")/COUNTIFS(city_col,H2,status_col,"Delivered")`.
+Expected: Lucknow 57.5% (42/73); Hyderabad 49.8% (109/219); Pune 47.0% (62/132); Chennai 46.1% (76/165); Delhi 45.8% (162/354); Mumbai 45.1% (153/339); Jaipur 44.3% (35/79); Ahmedabad 39.4% (37/94); Bengaluru 39.0% (103/264); Kolkata 38.5% (55/143).
+
+**Scoring yourself.** 1 point per correct task, plus 0.5 for each of: Table used, formulas not hard-coded, clean formatting. Under 8: repeat in two days. Over 11 of 15 within 40 minutes: you are test-ready.
+
+<Warning>
+Read the unit and the filter in every task. "Delivered orders only" and "all orders" give different answers, and tests are written to catch this.
+</Warning>
+
+## Common mistakes
+
+<CommonMistake>Hard-coding answers (typing 141 instead of a COUNTIF). Many tests check formulas, not only values.</CommonMistake>
+
+<CommonMistake>Forgetting absolute references when filling down (`$A$2` vs `A2`), so ranges slide and totals are wrong. Tables avoid this.</CommonMistake>
+
+<CommonMistake>Using approximate match in VLOOKUP by leaving out the last argument. Use FALSE or 0 for exact match.</CommonMistake>
+
+<CommonMistake>Spending 20 minutes on a hard task and leaving easy tasks blank. Do the quick wins first.</CommonMistake>
+
+<CommonMistake>Ignoring blanks. Blank delay values for cancelled orders can look like zero and spoil an average or a flag.</CommonMistake>
+
+<CommonMistake>Not checking against a total. Always compare a sum of parts with the grand total.</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="excel-tests" module="excel" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "In a test, you must show the number of orders with delay above 15 minutes. Which is best?", options: ["Type 141", "=COUNTIF(range,\">15\")", "Filter and read the status bar once", "Use SUM"], answer: 1, explanation: "A formula stays correct if the data changes and shows the examiner your method." },
+  { q: "FILTER needs both conditions true. How do you write it?", options: ["(cond1)+(cond2)", "(cond1)*(cond2)", "cond1&cond2", "cond1,cond2"], answer: 1, explanation: "Multiplying TRUE/FALSE values acts as AND. Adding acts as OR." },
+  { q: "What does the 0 in MATCH(K2,range,0) mean?", options: ["First item", "Exact match", "Largest item", "Sorted order"], answer: 1, explanation: "0 asks for an exact match." },
+  { q: "Best first step with raw test data?", options: ["Convert to a Table", "Delete blank cells", "Change the font", "Print it"], answer: 0, explanation: "A Table gives readable names and auto-extending formulas." },
+  { q: "You are stuck on a task for over 3 minutes. What should you do?", options: ["Keep going until done", "Move on and come back", "Ask the invigilator for the answer", "Quit"], answer: 1, explanation: "Time is the scarce resource. Collect easy marks first." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+After the test, the interviewer often asks "walk me through how you solved Task 4". Be ready to explain every formula in plain words and say what you checked.
+</InterviewAlert>
+
+<InterviewQ q="How do you prepare for an Excel test in two days?">
+Day one: practise the formula families (SUMIFS, COUNTIFS, IFS, XLOOKUP and INDEX-MATCH, text and date functions) and pivot tables on a sample dataset. Day two: do one timed mock like the 10-task set, review mistakes, and rehearse shortcuts. On the day: convert to a Table, read all tasks first, do easy ones first, and keep checks.
+</InterviewQ>
+
+<InterviewQ q="VLOOKUP vs XLOOKUP vs INDEX-MATCH?">
+VLOOKUP looks only to the right and breaks when columns are inserted if you use a column number. INDEX-MATCH can look in any direction and is stable. XLOOKUP does the same with simpler syntax, a built-in "not found" message and exact match by default, but needs Excel 2021 or 365. I use XLOOKUP when available and INDEX-MATCH when I must support older versions.
+</InterviewQ>
+
+<InterviewQ q="How do you verify that your Excel answer is right?">
+I cross-check with a second method: a pivot against SUMIFS, sum of parts against the grand total, count of rows before and after filtering, and a spot check of two or three rows by hand.
+</InterviewQ>
+
+## Key takeaways
+
+- Tests repeat the same task families; master each family.
+- Use a Table, formulas (not typed numbers) and exact output format.
+- Read every filter: "Delivered only" changes the answer.
+- Sanity-check with totals and a second method.
+- Work easy tasks first; use shortcuts; save often.
+
+## Further reading
+
+<FurtherReading ids={["excel-support", "chandoo", "excelisfun"]} />

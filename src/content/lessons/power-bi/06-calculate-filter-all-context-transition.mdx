@@ -1,0 +1,310 @@
+---
+title: "CALCULATE, FILTER, ALL and context transition"
+description: "Master CALCULATE, the most important DAX function: change filter context, use FILTER, remove filters with ALL, ALLEXCEPT and REMOVEFILTERS, and understand context transition."
+module: power-bi
+order: 6
+estimatedMinutes: 55
+objectives:
+  - "Use CALCULATE to change the filter context of a measure"
+  - "Write boolean filters, FILTER expressions and IN lists inside CALCULATE"
+  - "Remove filters with ALL, ALLEXCEPT, ALLSELECTED and REMOVEFILTERS to compute shares"
+  - "Explain context transition and KEEPFILTERS"
+tags: ["power-bi", "dax", "calculate", "filter", "all", "context-transition"]
+---
+
+## Learning objectives
+
+- Use `CALCULATE` to change the **filter context** of a measure.
+- Write boolean filters, `FILTER` expressions and `IN` lists inside `CALCULATE`.
+- Remove filters with `ALL`, `ALLEXCEPT`, `ALLSELECTED` and `REMOVEFILTERS` to compute shares.
+- Explain **context transition** and `KEEPFILTERS`.
+
+## Why this matters for a Data Analyst job
+
+If you learn one DAX function well, make it `CALCULATE`. Almost every real measure uses it: sales for one region, sales for delivered orders only, percentage of total, failure rate for a bank, high-value customers. In interviews, "explain CALCULATE" and "write percent of total" are the most repeated DAX questions.
+
+<RealWorld>
+A fintech risk analyst needs "failure rate for transactions above ₹50,000" and "share of failed transactions by bank in the total". Both are a single `CALCULATE` with a filter, one to narrow the context and one to widen it for the denominator.
+</RealWorld>
+
+## Concept
+
+### What CALCULATE does
+
+```dax
+CALCULATE ( <expression>, <filter1>, <filter2>, ... )
+```
+
+`CALCULATE` takes the current **filter context** (from the visual), **modifies** it with the filters you list, and then evaluates the expression in the new context. Analogy: the visual hands you a camera pointed at "West region, 2024". `CALCULATE` lets you turn the lens: "Now look at South", or "Zoom out to all regions".
+
+Steps in order:
+
+1. Take the filter context that exists.
+2. Apply each filter argument. If it filters a column that is already filtered, the new filter **replaces** the old one on that column (unless you use `KEEPFILTERS`).
+3. Evaluate the expression in the new context.
+
+### Types of filter arguments
+
+**1. Boolean filter on one column**
+
+```dax
+West Sales = CALCULATE ( [Total Sales], Stores[region] = "West" )
+```
+
+Shorthand for `FILTER(ALL(Stores[region]), Stores[region] = "West")`.
+
+**2. A list of values with IN**
+
+```dax
+Home Sales = CALCULATE ( [Total Sales], Sales[category] IN { "Home & Kitchen", "Home Decor" } )
+```
+
+**3. FILTER over a table**
+
+```dax
+Big Order Revenue =
+CALCULATE ( SUM ( Orders[total_amount] ), FILTER ( Orders, Orders[total_amount] > 5000 ) )
+```
+
+`FILTER(table, condition)` is an **iterator** (it checks each row of the table) and returns the rows that pass. It is needed for conditions on **more than one column** or on **measures**. For one simple column condition the boolean form is faster.
+
+**4. Filter-removing functions**
+
+| Function | Effect |
+|----------|--------|
+| `ALL(table or column)` | Removes all filters on that table or column |
+| `ALL(col1, col2)` | Removes filters on those columns |
+| `ALLEXCEPT(table, col1, ...)` | Removes all filters on the table except the listed columns |
+| `ALLSELECTED(...)` | Removes the visual's own row/column filters but keeps outer slicer selections |
+| `REMOVEFILTERS(...)` | Same as ALL when used inside CALCULATE; clearer name |
+| `VALUES(col)` | The values visible in the current context |
+
+### Multiple filters
+
+Several filter arguments are combined with **AND**:
+
+```dax
+West Apparel Sales =
+CALCULATE ( [Total Sales], Stores[region] = "West", Sales[category] = "Apparel" )
+```
+
+Two filters on the **same** column: `CALCULATE(..., Sales[category]="A", Sales[category]="B")` gives blank (no row is both). Use `IN` or `||` for OR.
+
+### Percent of total patterns
+
+```dax
+-- Share of all categories (respects region slicer)
+Category Share % =
+DIVIDE ( [Total Sales], CALCULATE ( [Total Sales], ALL ( Sales[category] ) ) )
+
+-- Share within the region when rows are stores
+Share of Region % =
+DIVIDE ( [Total Sales], CALCULATE ( [Total Sales], ALLEXCEPT ( Stores, Stores[region] ) ) )
+
+-- Share of grand total, ignoring all slicers
+Share of Company % =
+DIVIDE ( [Total Sales], CALCULATE ( [Total Sales], ALL ( Sales ), ALL ( Stores ) ) )
+```
+
+**Which to use?** Remove only the filter whose total you want in the denominator. `ALL(Sales)` would also remove category and everything else on that table, which may not be what you want.
+
+### Context transition
+
+**Context transition** is what happens when `CALCULATE` runs inside a **row context** (a calculated column or iterator). `CALCULATE` converts the current row's values into **filters**, so the calculation is limited to that row.
+
+```dax
+-- Calculated column on Customers
+Lifetime Spend = CALCULATE ( SUM ( Orders[total_amount] ) )
+```
+
+Without `CALCULATE` every customer row would show the grand total (row context does not filter `Orders`). With `CALCULATE`, the row's `customer_id` becomes a filter on `Customers`, which flows through the relationship to `Orders`, so only that customer's orders are summed.
+
+Important fact: **every measure reference has an implicit CALCULATE around it.** That is why `SUMX(Customers, [Total Sales])` works: each time `[Total Sales]` is called in the row context of a customer, a context transition happens.
+
+Context transition only gives a single row when the table has a **unique key**. If you transition on a table with duplicate rows, DAX filters on all columns of those duplicates and may include more than one row.
+
+### KEEPFILTERS
+
+```dax
+Sales A = CALCULATE ( [Total Sales], Stores[region] = "West" )
+Sales B = CALCULATE ( [Total Sales], KEEPFILTERS ( Stores[region] = "West" ) )
+```
+
+If a slicer selects South: A shows West sales (replaces the filter). B shows blank (South and West together match nothing). Use `KEEPFILTERS` when you want to narrow the user's selection rather than override it.
+
+### Order of evaluation in one sentence
+
+For `CALCULATE(expr, f1, f2)`: filters are computed in the **original** context, then applied together (with `ALL`-style removals first), then `expr` is evaluated. You do not need the details; remember "the filters in CALCULATE win over the visual on the same column".
+
+<Warning>
+`ALL(Sales)` inside CALCULATE removes filters on the **whole** table, including slicers that users expect to keep. Prefer `ALL(Sales[category])`, `ALLEXCEPT` or `REMOVEFILTERS(column)` so you only remove what you mean to.
+</Warning>
+
+## Worked examples
+
+All retail numbers are real values from the cleaned retail data (duplicates removed, 6 outlier rows dropped); ecommerce and fintech numbers come from the cleaned CSVs as noted.
+
+### Example 1: West sales and shares
+
+```dax
+Total Sales = SUM ( Sales[net_amount_inr] )
+West Sales  = CALCULATE ( [Total Sales], Stores[region] = "West" )
+West Share %  = DIVIDE ( [West Sales], CALCULATE ( [Total Sales], ALL ( Stores ) ) )
+```
+
+Table by region:
+
+| Region | Total Sales (₹) | West Sales (₹) | West Share % |
+|--------|-----------------|----------------|--------------|
+| East | 34,01,310 | 1,22,24,247 | 40.7% |
+| North | 59,34,551 | 1,22,24,247 | 40.7% |
+| South | 84,67,623 | 1,22,24,247 | 40.7% |
+| West | 1,22,24,247 | 1,22,24,247 | 40.7% |
+| **Total** | **3,00,27,732** | **1,22,24,247** | **40.7%** |
+
+Why is `West Sales` the same on every row? Because `CALCULATE` replaces whatever the row filter says with `region = "West"`. This is the correct behaviour, and it is a typical beginner surprise.
+
+### Example 2: Category share and store share inside a region
+
+```dax
+Category Share % = DIVIDE ( [Total Sales], CALCULATE ( [Total Sales], ALL ( Sales[category] ) ) )
+```
+
+| Category | Total Sales (₹) | Category Share % |
+|----------|-----------------|------------------|
+| Home & Kitchen | 82,04,736 | 27.3% |
+| Grocery & Staples | 70,01,194 | 23.3% |
+| Apparel | 68,11,086 | 22.7% |
+| Electronics Accessories | 32,21,962 | 10.7% |
+| Personal Care | 31,48,001 | 10.5% |
+| Home Decor | 16,40,752 | 5.5% |
+| **Total** | **3,00,27,732** | **100%** |
+
+Now a matrix of North region stores with `Share of Region %` (ALLEXCEPT on region):
+
+| Store | Total Sales (₹) | Share of Region % |
+|-------|-----------------|-------------------|
+| Vasudha Hypermarket - Dwarka | 24,31,026 | 41.0% |
+| Vasudha Supermarket - Malviya Nagar | 13,05,347 | 22.0% |
+| Vasudha Supermarket - Gomti Nagar | 8,05,132 | 13.6% |
+| Vasudha Express - Sector 17 | 7,36,147 | 12.4% |
+| Vasudha Express - Rohini | 6,56,900 | 11.1% |
+
+The five shares add up to 100% of the North region (₹59.3 lakh).
+
+### Example 3: Failure rate with CALCULATE and a bank comparison (fintech)
+
+```dax
+Failed Txns =
+CALCULATE ( COUNTROWS ( Transactions ), Transactions[status] = "FAILED" )
+
+Failure Rate % = DIVIDE ( [Failed Txns], COUNTROWS ( Transactions ) )
+```
+
+Cleaned fintech data (duplicates removed), selected banks:
+
+| Bank | Transactions | Failed | Failure Rate % |
+|------|--------------|--------|----------------|
+| Kaveri Co-op Bank | 1,770 | 143 | 8.1% |
+| PayNova Small Finance Bank | 758 | 31 | 4.1% |
+| Coromandel Bank | 1,967 | 56 | 2.8% |
+| Bharat Union Bank | 5,170 | 125 | 2.4% |
+| Malabar Savings Bank | 1,298 | 25 | 1.9% |
+
+The numerator uses `CALCULATE` to add a status filter. The denominator uses the visual's own context. One bank (Kaveri Co-op) clearly stands out, which is exactly the kind of insight the measure is meant to show.
+
+### Example 4: Context transition in a calculated column (ecommerce)
+
+```dax
+-- Customers table
+Lifetime Spend (wrong) = SUM ( Orders[total_amount] )
+Lifetime Spend         = CALCULATE ( SUM ( Orders[total_amount] ) )
+```
+
+Illustrative three rows (values are illustrative to show the difference):
+
+| customer_id | Wrong (same everywhere) | Right (per customer) |
+|-------------|-------------------------|----------------------|
+| 101 | 54,29,000 | 12,400 |
+| 102 | 54,29,000 | 0 (blank) |
+| 103 | 54,29,000 | 8,950 |
+
+The "wrong" column is the grand total in every row. The "right" column is each customer's own total, because `CALCULATE` turned the row into a filter. These numbers are illustrative.
+
+## Common mistakes
+
+<CommonMistake>
+Expecting a slicer and a CALCULATE filter on the same column to combine. The CALCULATE filter replaces the slicer for that column. Use `KEEPFILTERS` to combine.
+</CommonMistake>
+
+<CommonMistake>
+Using `ALL(Table)` when you only meant to remove one column's filter. It wipes other slicers on that table and makes shares look wrong.
+</CommonMistake>
+
+<CommonMistake>
+Writing two filters on the same column and expecting OR. Separate filter arguments are ANDed. Use `IN { }` or `||`.
+</CommonMistake>
+
+<CommonMistake>
+Wrapping a whole table in `FILTER(Orders, ...)` for a simple one-column test. It is slower and can bring in unexpected behaviour. Use a boolean filter when possible.
+</CommonMistake>
+
+<CommonMistake>
+Using aggregators in a calculated column and expecting them to filter by the row. Wrap them in `CALCULATE` (context transition) or use `RELATEDTABLE` with an iterator.
+</CommonMistake>
+
+<CommonMistake>
+Forgetting that percent-of-total needs the denominator to be calculated in a wider context. The numerator uses the visual's context; the denominator removes only the right filter.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="calculate" module="power-bi" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What does CALCULATE do?", options: ["Only adds numbers", "Evaluates an expression in a modified filter context", "Creates a new table", "Sorts the data"], answer: 1, explanation: "CALCULATE changes (adds, replaces or removes) filters and then evaluates its first argument in that new context." },
+  { q: "A slicer selects South. What does CALCULATE([Total Sales], Stores[region]=\"West\") show?", options: ["South sales", "West sales", "Blank", "All sales"], answer: 1, explanation: "The CALCULATE filter replaces the slicer filter on the same column, so West sales are shown." },
+  { q: "Which expression is the denominator of Category Share % when region slicer should stay applied?", options: ["CALCULATE([Total Sales], ALL(Sales))", "CALCULATE([Total Sales], ALL(Sales[category]))", "[Total Sales]", "COUNTROWS(Sales)"], answer: 1, explanation: "Removing only the category filter keeps the region slicer, so shares add up to 100% within the selected region." },
+  { q: "What is context transition?", options: ["Switching to dark mode", "CALCULATE converting row context into filter context", "Changing the date table", "A Power Query step"], answer: 1, explanation: "Inside a row context, CALCULATE turns the current row's values into filters so the calculation is restricted to that row." },
+  { q: "You want to narrow the user's slicer selection instead of overriding it. Which function helps?", options: ["REMOVEFILTERS", "KEEPFILTERS", "ALLSELECTED", "DISTINCT"], answer: 1, explanation: "KEEPFILTERS intersects the new filter with the existing one rather than replacing it." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Expect to write "percent of total" and "sales for X only" live. Say aloud which filters you are removing and why, and mention that CALCULATE filters override visual filters on the same column.
+</InterviewAlert>
+
+<InterviewQ q="Explain CALCULATE in simple words.">
+CALCULATE evaluates an expression after changing the filter context. The first argument is the expression. The other arguments are filters that add to, replace or remove the filters coming from the visual. For example `CALCULATE([Total Sales], Stores[region]="West")` always returns West sales, even in a row for another region.
+</InterviewQ>
+
+<InterviewQ q="How do you calculate percent of total, and what is the difference between ALL, ALLEXCEPT and ALLSELECTED?">
+I divide the measure by the same measure evaluated with the relevant filter removed. `ALL` removes all filters on a table or column. `ALLEXCEPT` removes all filters on a table except the listed columns, such as store share within a region. `ALLSELECTED` removes the visual's own filters but keeps the slicers or filters from outside, so percentages are of what the user selected. I choose the narrowest option that gives the right denominator.
+</InterviewQ>
+
+<InterviewQ q="What is context transition? Give an example.">
+It is the conversion of the current row's values into filters when CALCULATE (or a measure reference) is evaluated in a row context. For example in a calculated column on Customers, `CALCULATE(SUM(Orders[total_amount]))` gives that customer's total, because the customer row becomes a filter that flows to Orders. Without CALCULATE every row would show the grand total.
+</InterviewQ>
+
+<InterviewQ q="When would you use FILTER instead of a simple boolean filter in CALCULATE?">
+When the condition involves more than one column or a measure, such as orders above ₹5,000 from the website channel. FILTER evaluates the condition row by row on a table. For a single column, a boolean filter is simpler and faster because the engine can use column filters directly.
+</InterviewQ>
+
+<InterviewQ q="What does KEEPFILTERS do?">
+By default a CALCULATE filter on a column replaces any existing filter on that column. KEEPFILTERS makes the new filter combine with the existing one (intersection). It is useful when I want to restrict within the user's selection rather than override it.
+</InterviewQ>
+
+## Key takeaways
+
+- `CALCULATE(expr, filters)` evaluates `expr` in a changed filter context; filters on the same column replace the visual's filter.
+- Several filter arguments are ANDed; use `IN` or `||` for OR.
+- Use `FILTER` for multi-column or measure-based conditions; use boolean filters for simple ones.
+- Remove only the filter you need: `ALL(column)`, `ALLEXCEPT`, `REMOVEFILTERS`, `ALLSELECTED`.
+- Context transition turns a row into filters; every measure reference has an implicit `CALCULATE`.
+
+## Further reading
+
+<FurtherReading ids={["dax-guide", "power-bi-docs", "pl300"]} />

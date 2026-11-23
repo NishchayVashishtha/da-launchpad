@@ -1,0 +1,318 @@
+---
+title: "Interview pattern: consecutive days and streaks (gaps and islands)"
+description: "Find streaks of consecutive days and the gaps between them with the date-minus-ROW_NUMBER trick and LAG."
+module: sql
+order: 33
+estimatedMinutes: 50
+objectives:
+  - "Recognise consecutive-days and streak questions"
+  - "Explain and use the date minus ROW_NUMBER trick to label islands"
+  - "Find longest streaks, with start and end dates"
+  - "Find gaps with LAG and handle duplicate days"
+tags: ["sql", "interview", "gaps-and-islands", "window-functions", "streaks"]
+---
+
+## Learning objectives
+
+- Spot "N consecutive days", "longest streak" and "gaps" in a question.
+- Label each streak (island) with `date - ROW_NUMBER()`.
+- Get the start, end and length of every streak.
+- Find gaps between activity with `LAG`.
+- De-duplicate days before ranking, and know the edge cases.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+"Users who opened the app 3 days in a row", "longest daily login streak", "employees absent for 5 consecutive days", "customers who ordered every day for a week". Streaks power loyalty rewards, fraud rules, attendance reports and engagement analysis. In interviews this is called the gaps-and-islands problem, and it is considered a hard question.
+</RealWorld>
+
+## Concept
+
+### The recognition cue
+
+When you see **"consecutive", "in a row", "streak", "unbroken", "gap between"**, think: *label the islands with date minus ROW_NUMBER.*
+
+Terms: an **island** is an unbroken run of consecutive days. A **gap** is the break between two islands.
+
+### Why date minus row number works
+
+Take one user's distinct active days, in order, and number them 1, 2, 3...
+
+| day | row number | day minus row number |
+|---|---|---|
+| 10 Mar | 1 | 9 Mar |
+| 11 Mar | 2 | 9 Mar |
+| 12 Mar | 3 | 9 Mar |
+| 15 Mar | 4 | 11 Mar |
+| 16 Mar | 5 | 11 Mar |
+
+Inside a streak, the date goes up by 1 and the row number goes up by 1, so the **difference stays the same**. When a day is skipped, the date jumps but the row number does not, so the difference changes. Rows with the same difference belong to the same streak. That difference is the island label.
+
+Analogy: two people walking up a staircase at the same speed stay the same distance apart. If one jumps ahead, the distance changes.
+
+### The template
+
+```sql
+WITH days AS (
+  SELECT DISTINCT user_id, date(event_time) AS day      -- 1. one row per user per day
+  FROM events
+),
+numbered AS (
+  SELECT user_id, day,
+         ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY day) AS rn
+  FROM days
+),
+labelled AS (
+  SELECT user_id, day,
+         date(day, '-' || rn || ' days') AS grp         -- 2. island label
+  FROM numbered
+)
+SELECT user_id, MIN(day) AS streak_start, MAX(day) AS streak_end, COUNT(*) AS streak_days
+FROM labelled
+GROUP BY user_id, grp;                                  -- 3. one row per island
+```
+
+`date(day, '-' || rn || ' days')` subtracts `rn` days in SQLite. In PostgreSQL use `day - rn * INTERVAL '1 day'`, in MySQL `DATE_SUB(day, INTERVAL rn DAY)`, in SQL Server `DATEADD(day, -rn, day)`.
+
+<Tip>
+The `DISTINCT` in step 1 is the most forgotten part. If a user has two events on one day, the row numbers advance but the date does not, and the streak is cut in half.
+</Tip>
+
+### Finding gaps
+
+For gaps, compare each day with the previous active day:
+
+```sql
+LAG(day) OVER (PARTITION BY user_id ORDER BY day)
+julianday(day) - julianday(prev_day) AS days_since_previous
+```
+
+If `days_since_previous > 1`, there was a gap, and `days_since_previous - 1` is the number of missing days.
+
+## Worked examples
+
+For the subscription app, an "active day" is a day with an `app_open` or `content_view` event. Event names have mixed case, so we use `LOWER`.
+
+### Example 1: see the trick on one user
+
+User 1882 has a 5-day streak. Here are their active days with the row number and the island label.
+
+<SqlPlayground dataset="subscription" query={`WITH days AS (
+  SELECT DISTINCT user_id, date(event_time) AS day
+  FROM events
+  WHERE LOWER(event_name) IN ('app_open', 'content_view')
+),
+numbered AS (
+  SELECT user_id, day,
+         ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY day) AS rn
+  FROM days
+)
+SELECT user_id, day, rn,
+       date(day, '-' || rn || ' days') AS grp
+FROM numbered
+WHERE user_id = 1882
+ORDER BY day;`} title="Row number and island label for one user" />
+
+**Output:**
+
+| user_id | day | rn | grp |
+|---|---|---|---|
+| 1882 | 2023-11-18 | 1 | 2023-11-17 |
+| 1882 | 2023-11-21 | 2 | 2023-11-19 |
+| 1882 | 2023-11-22 | 3 | 2023-11-19 |
+| 1882 | 2023-11-23 | 4 | 2023-11-19 |
+| 1882 | 2023-11-24 | 5 | 2023-11-19 |
+| 1882 | 2023-11-25 | 6 | 2023-11-19 |
+| 1882 | 2023-11-30 | 7 | 2023-11-23 |
+| 1882 | 2023-12-24 | 8 | 2023-12-16 |
+| 1882 | 2024-01-01 | 9 | 2023-12-23 |
+| 1882 | 2024-01-04 | 10 | 2023-12-25 |
+| 1882 | 2024-01-30 | 11 | 2024-01-19 |
+| 1882 | 2024-04-02 | 12 | 2024-03-21 |
+
+Showing the first 12 of 18 rows.
+
+Rows with the same `grp` value are one streak. A new `grp` value starts after a skipped day.
+
+### Example 2: every streak, with start, end and length
+
+<SqlPlayground dataset="subscription" query={`WITH days AS (
+  SELECT DISTINCT user_id, date(event_time) AS day
+  FROM events
+  WHERE LOWER(event_name) IN ('app_open', 'content_view')
+),
+numbered AS (
+  SELECT user_id, day,
+         ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY day) AS rn
+  FROM days
+),
+labelled AS (
+  SELECT user_id, day, date(day, '-' || rn || ' days') AS grp
+  FROM numbered
+)
+SELECT user_id,
+       MIN(day) AS streak_start,
+       MAX(day) AS streak_end,
+       COUNT(*) AS streak_days
+FROM labelled
+GROUP BY user_id, grp
+ORDER BY streak_days DESC, user_id
+LIMIT 10;`} title="Longest streaks" />
+
+**Output:**
+
+| user_id | streak_start | streak_end | streak_days |
+|---|---|---|---|
+| 1882 | 2023-11-21 | 2023-11-25 | 5 |
+| 2918 | 2024-04-13 | 2024-04-17 | 5 |
+| 3518 | 2024-07-02 | 2024-07-06 | 5 |
+| 3764 | 2024-07-31 | 2024-08-04 | 5 |
+| 202 | 2023-02-16 | 2023-02-19 | 4 |
+| 336 | 2023-03-07 | 2023-03-10 | 4 |
+| 388 | 2023-03-24 | 2023-03-27 | 4 |
+| 515 | 2023-04-15 | 2023-04-18 | 4 |
+| 609 | 2023-05-06 | 2023-05-09 | 4 |
+| 793 | 2023-06-08 | 2023-06-11 | 4 |
+
+Group by user **and** label. The same label value can appear for two different users, so grouping by `grp` alone would mix people.
+
+### Example 3: each user's longest streak, and how many users have 3+ days
+
+<SqlPlayground dataset="subscription" query={`WITH days AS (
+  SELECT DISTINCT user_id, date(event_time) AS day
+  FROM events
+  WHERE LOWER(event_name) IN ('app_open', 'content_view')
+),
+numbered AS (
+  SELECT user_id, day,
+         ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY day) AS rn
+  FROM days
+),
+streaks AS (
+  SELECT user_id, COUNT(*) AS streak_days
+  FROM numbered
+  GROUP BY user_id, date(day, '-' || rn || ' days')
+),
+best AS (
+  SELECT user_id, MAX(streak_days) AS longest
+  FROM streaks
+  GROUP BY user_id
+)
+SELECT longest AS longest_streak_days,
+       COUNT(*) AS users
+FROM best
+GROUP BY longest
+ORDER BY longest DESC
+LIMIT 8;`} title="Users with a streak of 3 or more days" />
+
+**Output:**
+
+| longest_streak_days | users |
+|---|---|
+| 5 | 4 |
+| 4 | 24 |
+| 3 | 168 |
+| 2 | 989 |
+| 1 | 3098 |
+
+It is a distribution of longest streaks. Only a few users reach 4 or 5 days in a row, and most people never open the app on two consecutive days. That is a useful insight on its own.
+
+### Example 4: finding gaps with LAG
+
+Which users came back after a long break? Find active days that are more than 14 days after the user's previous active day.
+
+<SqlPlayground dataset="subscription" query={`WITH days AS (
+  SELECT DISTINCT user_id, date(event_time) AS day
+  FROM events
+  WHERE LOWER(event_name) IN ('app_open', 'content_view')
+),
+gaps AS (
+  SELECT user_id, day,
+         LAG(day) OVER (PARTITION BY user_id ORDER BY day) AS prev_day
+  FROM days
+)
+SELECT user_id, prev_day, day AS came_back_on,
+       CAST(julianday(day) - julianday(prev_day) AS INT) AS days_away
+FROM gaps
+WHERE prev_day IS NOT NULL
+  AND julianday(day) - julianday(prev_day) > 14
+ORDER BY days_away DESC, user_id
+LIMIT 8;`} title="Long gaps between active days" />
+
+**Output:**
+
+| user_id | prev_day | came_back_on | days_away |
+|---|---|---|---|
+| 1274 | 2023-08-31 | 2024-05-31 | 274 |
+| 256 | 2023-04-15 | 2023-12-19 | 248 |
+| 43 | 2023-01-15 | 2023-08-28 | 225 |
+| 1732 | 2024-01-06 | 2024-07-31 | 207 |
+| 2300 | 2024-04-25 | 2024-11-11 | 200 |
+| 732 | 2023-08-30 | 2024-03-02 | 185 |
+| 220 | 2023-03-17 | 2023-09-15 | 182 |
+| 1260 | 2023-12-18 | 2024-06-16 | 181 |
+
+A gap is the mirror image of an island. `LAG` finds the previous active day, and the difference in days tells you how long the user was away.
+
+## Common mistakes
+
+<CommonMistake>
+**Skipping the de-duplication of days.** Two events on one day give two row numbers for one date, so the label changes and streaks look shorter than they are. Use `SELECT DISTINCT user_id, date(...)` first.
+</CommonMistake>
+<CommonMistake>
+**Grouping by label only.** The same label can occur for different users. Group by `user_id, grp`.
+</CommonMistake>
+<CommonMistake>
+**Forgetting `PARTITION BY user_id` in ROW_NUMBER.** Numbers run across all users and the trick breaks.
+</CommonMistake>
+<CommonMistake>
+**Using a time stamp, not a date.** `2024-03-01 09:00` and `2024-03-02 08:00` are less than 24 hours apart but still two different days. Truncate to the day with `date()` first.
+</CommonMistake>
+<CommonMistake>
+**Using RANK instead of ROW_NUMBER.** Ties in RANK repeat numbers, which breaks the staircase logic. Use ROW_NUMBER on distinct days.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="pattern-streaks" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Why does date minus ROW_NUMBER stay constant inside a streak?", options: ["Both go up by 1 for each consecutive day", "Dates never change", "ROW_NUMBER resets daily", "It is random"], answer: 0, explanation: "A streak has dates increasing by 1 and row numbers increasing by 1, so their difference is constant." },
+  { q: "What goes wrong if a user has 2 events on the same day and you skip DISTINCT?", options: ["Nothing", "The row number advances without the date, splitting the streak", "The query errors", "The streak is longer"], answer: 1, explanation: "Two rows for one date make the row number jump ahead of the date, so the label changes mid-streak." },
+  { q: "How do you find a gap between consecutive active days?", options: ["LEAD with SUM", "LAG(day) and compare the difference", "GROUP BY day", "HAVING COUNT(*) > 1"], answer: 1, explanation: "LAG gives the previous active day. A difference above 1 means days were missed." },
+  { q: "Which GROUP BY gives one row per streak?", options: ["GROUP BY grp", "GROUP BY user_id", "GROUP BY user_id, grp", "GROUP BY day"], answer: 2, explanation: "A streak is identified by the user and the island label together." },
+  { q: "To keep only users with a streak of at least 3 days you add:", options: ["WHERE streak_days >= 3 before grouping", "HAVING COUNT(*) >= 3 after grouping by user_id, grp", "ORDER BY streak_days", "LIMIT 3"], answer: 1, explanation: "Streak length is an aggregate, so it is filtered with HAVING after grouping by user and label." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Gaps and islands is a classic "hard" question. Most candidates freeze. If you can explain the staircase idea in plain words, you stand out even if you slip on syntax.
+</InterviewAlert>
+
+<InterviewQ q="Find users who logged in on 3 or more consecutive days. Explain how it works.">
+"First I reduce the data to one row per user per day with `SELECT DISTINCT user_id, date(login_time)`. Then I number each user's days in order with `ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY day)`. The key trick: inside a streak the date and the row number both go up by one, so `day minus row_number` stays the same. Whenever a day is skipped, that value changes. So that value is a label for each streak. I group by user and label, count the days with `COUNT(*)`, and keep groups with `HAVING COUNT(*) >= 3`. Finally I select the distinct users."
+</InterviewQ>
+<InterviewQ q="Is there another way to solve consecutive-day problems?">
+Yes. For a fixed length, such as 3 days, use `LEAD`: keep a row if `LEAD(day, 1)` is the next day and `LEAD(day, 2)` is two days later. A self-join of the table with itself on `day + 1` and `day + 2` also works. Those are simple for short fixed streaks. For streaks of any length, or the longest streak, date minus row number is cleaner.
+</InterviewQ>
+<InterviewQ q="How would you find the longest streak for each user?">
+Build the streak table: one row per user and island with its length. Then take `MAX(streak_days)` per user, or rank the streaks per user with ROW_NUMBER ordered by length descending and keep the first. If the interviewer wants the start and end dates, I keep them from the streak table with the rank method.
+</InterviewQ>
+<InterviewQ q="What are the edge cases?">
+Duplicate events on the same day (use DISTINCT), time zones and timestamps near midnight (truncate to a date in a single time zone), users with a single active day (a streak of 1, which is valid), a streak that is still running (its end date is the data end date, not necessarily the end of the streak), and NULL dates (filter them out).
+</InterviewQ>
+
+## Key takeaways
+
+- Cue: "consecutive", "streak", "in a row", "gap" means gaps and islands.
+- One row per user per day first (`DISTINCT` and `date()`).
+- `date - ROW_NUMBER()` is constant within a streak, so it labels the island.
+- Group by user and label, then `COUNT`, `MIN` and `MAX` give length, start and end.
+- Use `LAG` and a day difference for gaps, `LEAD` for short fixed streaks.
+
+## Further reading
+
+<FurtherReading ids={["mode-sql", "sqlite-docs", "datalemur"]} />

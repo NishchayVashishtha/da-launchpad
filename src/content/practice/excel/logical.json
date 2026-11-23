@@ -1,0 +1,82 @@
+[
+  {
+    "id": "excel-logical-001",
+    "module": "excel",
+    "topic": "logical",
+    "difficulty": "easy",
+    "language": "excel",
+    "question": "In `excel-functions.xlsx` (`orders` sheet), add a column N with a formula that says `Large` if `total_amount` is 5,000 or more, otherwise `Regular`. How many orders are `Large`?",
+    "dataset": "none",
+    "hint": "IF(test, value if true, value if false). Count with COUNTIF.",
+    "solution": "In `N2`:\n\n```\n=IF(J2>=5000,\"Large\",\"Regular\")\n```\n\nFill down. Then:\n\n```\n=COUNTIF(N2:N2001,\"Large\")\n```\n\nExpected: **666** Large orders (and 1,334 Regular).",
+    "orderMatters": false,
+    "explanation": "IF checks one condition and picks one of two results.",
+    "commonMistake": "Writing `>5000` when the rule says 5,000 or more. Orders of exactly 5,000 would be missed.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "if"
+    ]
+  },
+  {
+    "id": "excel-logical-002",
+    "module": "excel",
+    "topic": "logical",
+    "difficulty": "easy",
+    "language": "excel",
+    "question": "In `excel-functions.xlsx`, a colleague looks up order 123456 with `=VLOOKUP(123456,orders!A:M,10,FALSE)` and gets `#N/A`. Rewrite the formula so it shows the text `No such order` instead. What does the new formula return?",
+    "dataset": "none",
+    "hint": "Wrap the lookup in IFERROR(value, value_if_error).",
+    "solution": "```\n=IFERROR(VLOOKUP(123456,orders!A:M,10,FALSE),\"No such order\")\n```\n\nExpected result: **No such order** (the largest order_id in the sheet is 9999).\n\nTip: for a real order, such as `1004`, the same formula returns the `total_amount`, 3008.16.",
+    "orderMatters": false,
+    "explanation": "IFERROR catches any error and shows your message instead.",
+    "commonMistake": "Wrapping every formula in IFERROR. It hides real mistakes such as a wrong column number or a typo in the sheet name.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "iferror",
+      "vlookup"
+    ]
+  },
+  {
+    "id": "excel-logical-003",
+    "module": "excel",
+    "topic": "logical",
+    "difficulty": "medium",
+    "language": "excel",
+    "question": "In `excel-functions.xlsx` (`orders` sheet), label each order with IFS: total under 1,000 = `Small`, 1,000 to under 5,000 = `Medium`, 5,000 or more = `Large`. How many orders fall in each label?",
+    "dataset": "none",
+    "hint": "IFS checks conditions in order and stops at the first TRUE. Put a catch-all TRUE last if you want one.",
+    "solution": "In `N2`:\n\n```\n=IFS(J2<1000,\"Small\",J2<5000,\"Medium\",TRUE,\"Large\")\n```\n\nFill down. Count each label with COUNTIF.\n\n| Label | Orders |\n|---|---|\n| Small | 507 |\n| Medium | 827 |\n| Large | 666 |\n\nTotal 2,000. IFS needs Excel 2019 or Microsoft 365. In older Excel use `=IF(J2<1000,\"Small\",IF(J2<5000,\"Medium\",\"Large\"))`.",
+    "orderMatters": false,
+    "explanation": "Because IFS stops at the first TRUE, the Medium test only needs `<5000`. The order of tests does the work of the lower bound.",
+    "commonMistake": "Putting the tests in the wrong order, for example `J2<5000` first. Then every small order is also labelled Medium.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "ifs",
+      "nested-if"
+    ]
+  },
+  {
+    "id": "excel-logical-004",
+    "module": "excel",
+    "topic": "logical",
+    "difficulty": "medium",
+    "language": "excel",
+    "question": "In `excel-functions.xlsx` (`orders` sheet), count the orders that are Delivered AND came from an app (Android App or iOS App) AND have `total_amount` of 5,000 or more. Use a helper column with IF, AND and OR.",
+    "dataset": "none",
+    "hint": "OR goes inside AND for the channel test: AND(status test, OR(app1, app2), amount test).",
+    "solution": "In `N2`:\n\n```\n=IF(AND(E2=\"Delivered\",OR(F2=\"Android App\",F2=\"iOS App\"),J2>=5000),1,0)\n```\n\nFill down and total it:\n\n```\n=SUM(N2:N2001)\n```\n\nExpected: **406** orders.",
+    "orderMatters": false,
+    "explanation": "AND needs every test to be TRUE. OR needs only one. Putting OR inside AND lets you say 'either app, but also delivered and big'.",
+    "commonMistake": "Writing `F2=\"Android App\" OR \"iOS App\"` in plain English. Excel needs two full tests inside OR.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "and",
+      "or",
+      "if"
+    ]
+  }
+]

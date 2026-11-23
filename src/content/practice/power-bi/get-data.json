@@ -1,0 +1,60 @@
+[
+  {
+    "id": "pbi-get-data-001",
+    "module": "power-bi",
+    "topic": "get-data",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "The retail team drops one CSV per month into a shared folder (`sales_2024_01.csv`, `sales_2024_02.csv`, ...), all with the same columns. Which Power BI connector do you use, and why is it better than importing each file separately?",
+    "dataset": "retail",
+    "hint": "Look for a connector named after the place the files live.",
+    "solution": "Use **Get Data > Folder** (or SharePoint folder if the files are on SharePoint/OneDrive). Power Query lists every file; click **Combine & Transform** and it builds a function that applies the same steps to each file and appends them into one table.\n\nBenefit: when next month's file arrives, you only press **Refresh**. No new import and no copy-paste. The cleaning steps are written once.",
+    "explanation": "Folder connector combines same-shaped files.",
+    "commonMistake": "Importing files one by one and appending by hand. This breaks every month.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "folder",
+      "csv"
+    ]
+  },
+  {
+    "id": "pbi-get-data-002",
+    "module": "power-bi",
+    "topic": "get-data",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "An HR analyst must build a monthly headcount report from the `employees` table (about 2,400 rows) in SQL Server. Another analyst needs a live view of 300 crore transaction rows in a data warehouse. Which storage mode (Import or DirectQuery) fits each, and why?",
+    "dataset": "hr",
+    "hint": "Think data size, speed and freshness.",
+    "solution": "**HR headcount: Import.** The table is small. Import gives the fastest visuals (data is compressed in memory by the VertiPaq engine), supports all DAX and Power Query features, and monthly refresh is enough.\n\n**300 crore rows: DirectQuery (or a composite model).** The data is too big to load fully and users need near-live numbers. Every visual sends a query to the source, so the source must be fast, and some DAX and Power Query features are limited. A good design is to import small dimension tables and aggregate tables and keep the big fact table on DirectQuery (a composite model).",
+    "explanation": "Import for speed, DirectQuery for size or freshness.",
+    "commonMistake": "Choosing DirectQuery 'to be live' for a small table. It makes visuals slower for no real benefit.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "import",
+      "directquery"
+    ]
+  },
+  {
+    "id": "pbi-get-data-003",
+    "module": "power-bi",
+    "topic": "get-data",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "Your report imports data from an Excel file on your laptop's D: drive and you publish it to the Service. The scheduled refresh fails. Give two reasons and fix each.",
+    "dataset": "none",
+    "hint": "The cloud cannot see your laptop.",
+    "solution": "**Reason 1: the Service cannot reach a local path.** Fix: move the file to OneDrive or SharePoint and use that connector, or install an on-premises gateway that can read the path.\n\n**Reason 2: stale or missing credentials, or the file schema changed.** Fix: re-enter credentials in dataset settings; if a column was renamed, edit the Power Query step that refers to the old name.\n\nAlso check that the laptop is on if you use a personal gateway.",
+    "explanation": "Cloud needs a reachable source.",
+    "commonMistake": "Assuming the Service can read any path that works in Desktop.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "refresh",
+      "gateway",
+      "excel"
+    ]
+  }
+]

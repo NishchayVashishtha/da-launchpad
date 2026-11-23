@@ -1,0 +1,59 @@
+[
+  {
+    "id": "pbi-interactivity-001",
+    "module": "power-bi",
+    "topic": "interactivity",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "Explain the difference between drill-down and drill-through in Power BI, with one example from the `retail` report.",
+    "dataset": "retail",
+    "hint": "One stays on the same visual, the other jumps to another page.",
+    "solution": "**Drill-down** moves down a hierarchy inside the same visual: Year to Quarter to Month, or Region to Store. **Drill-through** sends the user to a different report page that is filtered to the item they right-clicked, for example right-click the 'Velachery' store bar and go to a 'Store Detail' page showing only Velachery's sales, stock-outs and targets.",
+    "explanation": "Drill-down changes the grain of one visual. Drill-through changes the page and carries the filter context.",
+    "commonMistake": "Saying they are the same thing, or forgetting that drill-through needs the field added to the drill-through well on the target page.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "drill-through",
+      "drill-down"
+    ]
+  },
+  {
+    "id": "pbi-interactivity-002",
+    "module": "power-bi",
+    "topic": "interactivity",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "You want a hover tooltip on the store bar chart that shows a small trend line of sales for that store. How do you build it?",
+    "dataset": "retail",
+    "hint": "Create a special page first.",
+    "solution": "Add a new page and open Page information, then turn on **Allow use as tooltip**. In Format page, set Page size to Tooltip. Put a small line chart (month vs Net Sales) on it. Back on the store bar chart, open Format, Tooltips, set Type to **Report page** and choose that page. Power BI passes the hovered store as a filter, so the line shows that store's trend.",
+    "explanation": "Report page tooltips reuse a normal page as a hover card and automatically receive the filter from the hovered mark.",
+    "commonMistake": "Forgetting to hide the tooltip page or leaving it as a normal-size page so the tooltip is huge.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "tooltip",
+      "report-page"
+    ]
+  },
+  {
+    "id": "pbi-interactivity-003",
+    "module": "power-bi",
+    "topic": "interactivity",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "Your HR page has a slicer for Department, and an executive wants one button that resets every slicer to its default view, and another that swaps a bar chart for a table. Which Power BI features do you use?",
+    "dataset": "hr",
+    "hint": "Think bookmarks plus buttons.",
+    "solution": "Create a **bookmark** named 'Default view' captured with all slicers cleared (Data option on, Display on), and attach it to a **Button** (Insert, Buttons) with the Action type Bookmark. For the swap, create two bookmarks ('Chart view', 'Table view') where the visuals are shown or hidden in the Selection pane, and wire one button each. Name objects clearly in the Selection pane so bookmarks stay maintainable.",
+    "explanation": "Bookmarks save the state of filters, visibility and slicers. Buttons trigger bookmarks, page navigation or drill-through.",
+    "commonMistake": "Creating bookmarks before naming objects, or leaving 'Data' on when you only want to change visibility.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 6,
+    "tags": [
+      "bookmarks",
+      "buttons"
+    ]
+  }
+]

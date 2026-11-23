@@ -1,0 +1,312 @@
+---
+title: "Guided dashboard 2: HR attrition"
+description: "Build a three-page HR attrition dashboard: questions, cleaning, model, 10 measures, a risk flag, page layout and verified insights."
+module: power-bi
+order: 17
+estimatedMinutes: 90
+objectives:
+  - "Frame attrition questions for an HR leader"
+  - "Clean employees, salaries, reviews and exits in Power Query"
+  - "Build helper columns and a risk-flag column in DAX"
+  - "Create 10 measures and a three-page dashboard with verified insights"
+tags: ["power-bi", "walkthrough", "hr", "attrition", "dashboard"]
+---
+
+## Learning objectives
+
+- Define attrition rate precisely and use it consistently.
+- Model employees with exits, salaries and performance reviews.
+- Build a transparent risk flag from three drivers.
+- Write insights that are specific, true and careful about causation.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+The HR head at "Kiran Technologies", a fictional IT services company with 2,400 people in the file, says: "We lost over 500 people in two years. Finance says each exit costs months of salary. Where are we losing people, and who might leave next?" HR analytics is a growing area in Indian IT and consulting, and attrition is the number one question.
+</RealWorld>
+
+Attrition dashboards are common in portfolios. Yours will stand out if you define things clearly, handle data quality, and recommend actions.
+
+## Concept
+
+### The brief and business questions
+
+1. What is our attrition rate, and how many exits were regretted losses?
+2. Which departments lose the most people?
+3. When do people leave (which months) and how long had they stayed?
+4. What drives attrition: manager rating, overtime, pay hikes?
+5. Which current employees look at risk, and what should HR do?
+
+### Download the data
+
+<Download href="/data/zip/hr.zip" label="hr.zip" />
+
+Five CSV files: `departments` (8 rows), `employees` (about 2,400 people), `salaries` (salary history, about 5,000 rows), `attrition` (544 exits over 2023 and 2024) and `performance_reviews` (about 4,800 rows).
+
+<Warning>
+The data has real-world problems: duplicate employees and reviews, gender written as "M" or "Male", city names with odd casing, some dates as DD-MM-YYYY, CTC written as text like "₹12,50,000", and 5 salary rows 100x too high.
+</Warning>
+
+### Define attrition clearly
+
+<FormulaCard title="Attrition rate used in this walkthrough">
+Attrition % = employees who exited / all employees in the file
+Here: 544 / 2,400 = 22.7% over the two-year window.
+</FormulaCard>
+
+This is a **cumulative two-year rate**, not an annual rate. In real HR reporting you might use average headcount for each year. State your definition on the dashboard.
+
+### Step 1: Clean in Power Query
+
+**Employees**
+
+1. Remove Duplicates on `employee_id` (12 duplicates, leaving 2,400 rows).
+2. Gender: replace "M" with "Male", "F" with "Female".
+3. City: Trim, then Capitalize each word; leave nulls as "Unknown".
+4. Fix `hire_date` and `date_of_birth` types using the English (India) locale, so DD-MM-YYYY text converts.
+5. Keep `manager_id` null for top managers; do not fill.
+
+**Salaries**
+
+1. `annual_ctc` may be text with ₹ and Indian grouping like ₹12,50,000: use Replace Values to remove "₹" and ",", then set type to Decimal.
+2. Exclude the 5 rows where `annual_ctc > 10000000` (100x outliers) into a separate `Salary_Outliers` query.
+3. `hike_pct` null means joining or opening salary; keep null.
+
+**Attrition**: remove duplicates by `employee_id`; leave `exit_interview_score` null.
+
+**Performance reviews**: remove duplicates (10 rows). Keep `avg_monthly_overtime_hours`.
+
+**Date table**: `ADDCOLUMNS(CALENDAR(DATE(2014,1,1), DATE(2024,12,31)), "Year", YEAR([Date]), "Month No", MONTH([Date]), "Month", FORMAT([Date],"MMM"))` and mark as date table.
+
+### Step 2: Model
+
+| One side | Many side | Key |
+|---|---|---|
+| Departments | Employees | department_id |
+| Employees | Salaries | employee_id |
+| Employees | Performance_Reviews | employee_id |
+| Employees | Attrition | employee_id (one to one) |
+| Date | Attrition | exit_date |
+| Date | Employees | hire_date (make inactive if you only need exits) |
+
+Set filter direction single. For the one-to-one Employees to Attrition, keep the direction Employees to Attrition so department filters reach exits.
+
+### Step 3: Helper columns on Employees
+
+Calculated columns are right here because they describe each employee and we slice by them.
+
+```dax
+Latest CTC =
+VAR LastDate =
+  CALCULATE(MAX(Salaries[effective_date]), ALLEXCEPT(Salaries, Salaries[employee_id]))
+RETURN
+CALCULATE(MAX(Salaries[annual_ctc]), Salaries[effective_date] = LastDate)
+```
+
+A simpler approach is to compute Latest CTC in Power Query by grouping Salaries by employee and taking the row with the max effective date, then merging into Employees. Do this if the DAX is slow.
+
+```dax
+Avg Manager Rating = CALCULATE(AVERAGE(Performance_Reviews[manager_rating]))
+Avg Overtime Hrs   = CALCULATE(AVERAGE(Performance_Reviews[avg_monthly_overtime_hours]))
+Avg Hike %         = CALCULATE(AVERAGE(Salaries[hike_pct]))
+
+Risk Flags =
+IF(NOT ISBLANK([Avg Manager Rating]) && [Avg Manager Rating] < 3, 1, 0)
++ IF(NOT ISBLANK([Avg Overtime Hrs]) && [Avg Overtime Hrs] > 10, 1, 0)
++ IF(NOT ISBLANK([Avg Hike %]) && [Avg Hike %] < 4, 1, 0)
+
+Tenure Band =
+VAR EndDate = IF(ISBLANK(RELATED(Attrition[exit_date])), DATE(2024,12,31), RELATED(Attrition[exit_date]))
+VAR Yrs = DATEDIFF(Employees[hire_date], EndDate, DAY) / 365.25
+RETURN IF(Yrs < 2, "Under 2 years", "2 years or more")
+```
+
+Note: `RELATED` works across a one-to-one relationship. If it gives you trouble, create `Tenure Band` in Power Query instead, by merging `exit_date` from Attrition into Employees.
+
+### Step 4: The 10 measures
+
+```dax
+Headcount = DISTINCTCOUNT(Employees[employee_id])
+
+Exits = CALCULATE([Headcount], Employees[employment_status] = "Exited")
+
+Active Headcount = CALCULATE([Headcount], Employees[employment_status] = "Active")
+
+Attrition % = DIVIDE([Exits], [Headcount])
+
+Regretted Exits = SUM(Attrition[regretted_loss])
+
+Avg CTC = AVERAGE(Employees[Latest CTC])
+
+Avg Overtime = AVERAGE(Performance_Reviews[avg_monthly_overtime_hours])
+
+Avg Manager Rating = AVERAGE(Performance_Reviews[manager_rating])
+
+Avg Hike % = AVERAGE(Salaries[hike_pct])
+
+High-Risk Active =
+CALCULATE([Headcount], Employees[employment_status] = "Active", Employees[Risk Flags] >= 2)
+```
+
+If you named the column `Avg Manager Rating` as well, rename the measure to avoid a clash, for example `Mgr Rating (avg)`.
+
+### Step 5: Page-by-page layout
+
+**Page 1, Attrition overview.** Title: "We lost 544 people (22.7%) in two years; Support and Sales lose about 1 in 3".
+
+- Slicers: Department, Year of exit.
+- Cards: Headcount, Exits, Attrition %, Regretted Exits.
+- Bar chart: Attrition % by Department, sorted, top two highlighted in red.
+- Line/column chart: Exits by month (Date[Month]).
+- Bar: Exit reason counts.
+
+**Page 2, Drivers.** Title: "Low manager ratings, long overtime and low hikes each double or triple attrition".
+
+- Three small bar charts: Attrition % by manager rating band, by overtime band (up to 10 hours, over 10), by hike band (under 4%, 4% and above).
+- Column chart: Attrition % by Risk Flags (0 to 3). The staircase is the main exhibit.
+- Matrix: Department by Avg Overtime, Avg CTC, Avg Hike %.
+
+**Page 3, Who is at risk.** Title: "415 active employees carry two or more risk flags; start with Customer Support".
+
+- Cards: High-Risk Active, Active Headcount.
+- Table: department, active count, high-risk count (conditional formatting). Hide names unless the role requires them, and use RLS for HR only. Avoid showing individual names on a public portfolio.
+- Text box with recommended actions.
+
+## Worked examples
+
+All numbers below are from the cleaned dataset.
+
+### Insight 1: The headline
+
+Of 2,400 employees, **544 exited (22.7%)**; 464 resigned, 45 were terminated, 26 had contracts ended and 9 retired. Only **67 exits were regretted losses** (12.3% of exits), all among resignations. Exit interview scores average about 2.8 out of 5 for those who completed one.
+
+### Insight 2: Department differences
+
+| Department | Headcount | Exits | Attrition % | Avg latest CTC |
+|---|---|---|---|---|
+| Customer Support | 440 | 148 | 33.6% | ₹7.9 lakh |
+| Sales | 349 | 109 | 31.2% | ₹14.0 lakh |
+| Operations | 275 | 67 | 24.4% | ₹12.1 lakh |
+| Engineering | 833 | 140 | 16.8% | ₹15.9 lakh |
+| Marketing | 156 | 26 | 16.7% | ₹12.8 lakh |
+| Human Resources | 96 | 16 | 16.7% | ₹12.4 lakh |
+| Product | 148 | 23 | 15.5% | ₹17.7 lakh |
+| Finance | 103 | 15 | 14.6% | ₹13.3 lakh |
+
+Customer Support pays about 41% less than the company average (₹13.4 lakh), has the highest average overtime (9.9 hours a month, against 4.4 to 5.3 in Finance, HR and Marketing), and the highest attrition. Sales has the lowest average hike (3.7%, against 4.4% overall).
+
+### Insight 3: When people leave
+
+Exits are not even across the year: 155 of 544 (28.5%) fall in April to June, after appraisals, and another 155 (28.5%) in November to January after bonuses. December alone has 70 exits, the highest month. Plan retention conversations and counter-offers just before those windows.
+
+### Insight 4: Tenure
+
+Employees with **under 2 years** of service left at **32.2%**, against **15.3%** for those with 2 years or more. Early-tenure onboarding and manager check-ins at months 3, 6 and 12 matter.
+
+### Insight 5: Three drivers
+
+| Driver | Group | Attrition % |
+|---|---|---|
+| Average manager rating | below 3 | 28.8% |
+| | 3 or above | 12.2% |
+| Average monthly overtime | over 10 hours | 25.3% |
+| | 10 hours or less | 14.7% |
+| Average hike | below 4% | 29.4% |
+| | 4% or above | 7.8% |
+
+Individually, each driver raises attrition. Together, the staircase is clear:
+
+| Risk flags (0 to 3) | Employees | Attrition % |
+|---|---|---|
+| 0 | 575 | 4.5% |
+| 1 | 486 | 13.2% |
+| 2 | 459 | 27.0% |
+| 3 | 136 | 41.2% |
+
+That is about **9 times** the attrition of employees with no flags. Also, people who left averaged a manager rating of 2.6 against 3.3 for those who stayed. Work-life and overtime is cited by 15.5% of Customer Support leavers against 9.9% overall, and overtime-heavy leavers cite it much more often.
+
+<Tip>
+Only employees with data for all three drivers are in the flag table (about 1,656 of 2,400). About 700 employees have no hike history because they only have a joining salary row. Mention this in a data note.
+</Tip>
+
+### Insight 6: Who is at risk now
+
+415 **active** employees carry two or more flags (335 with 2, 80 with 3). Customer Support has the most active employees (292), so start there. Actions: review pay and overtime in Support, coach managers with ratings below 3, and make hike decisions more equal across performance levels.
+
+### Recommendations
+
+1. Pilot overtime caps and a pay review for Customer Support, track attrition for 6 months.
+2. Run manager coaching for managers whose teams rate low.
+3. Time retention conversations before April and November.
+4. Strengthen onboarding for the first 2 years.
+5. Use the risk flag as a simple early warning, not as an automatic decision about people.
+
+<Warning>
+Be careful with people data. A risk flag is a tool for conversation and support, not a reason to punish anyone. Keep individual-level views behind row-level security, and never publish real employee data.
+</Warning>
+
+## Common mistakes
+
+<CommonMistake>
+Not removing duplicate employees. Headcount and every rate become wrong, and exits can be counted twice.
+</CommonMistake>
+
+<CommonMistake>
+Averaging CTC with the 5 outlier rows. Those 100x values lift the average from about ₹13.3 lakh to ₹15.3 lakh on salary rows.
+</CommonMistake>
+
+<CommonMistake>
+Not stating the attrition definition. Is it two-year cumulative or annual? Readers will compare to other numbers if you do not say.
+</CommonMistake>
+
+<CommonMistake>
+Presenting correlation as cause. "Employees with low hikes leave more" is true; "low hikes cause attrition" needs more evidence.
+</CommonMistake>
+
+<CommonMistake>
+Using a measure for a flag you want on an axis. A flag that you slice by needs to be a calculated column (or a Power Query column).
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="walkthrough-hr" module="power-bi" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "How is attrition % defined in this walkthrough?", options: ["Exits divided by all employees in the file", "Hires divided by exits", "Active divided by exits", "Salary divided by exits"], answer: 0, explanation: "544 exits divided by 2,400 employees is 22.7% over the two-year window." },
+  { q: "Which department has the highest attrition?", options: ["Finance", "Customer Support", "Product", "Engineering"], answer: 1, explanation: "Customer Support is at about 33.6%." },
+  { q: "Why use a calculated column for Risk Flags?", options: ["It is faster to type", "It is a fixed property of each employee that we want to slice by", "Measures cannot do IF", "Power BI requires it"], answer: 1, explanation: "Flags are row-level attributes used on axes and slicers." },
+  { q: "What happens to attrition as risk flags rise from 0 to 3?", options: ["It falls", "It stays flat", "It climbs from about 4.5% to about 41%", "It disappears"], answer: 2, explanation: "Each added flag raises attrition sharply." },
+  { q: "What is the right way to word the pay insight?", options: ["Low hikes cause people to leave", "Employees with low hikes leave at a much higher rate", "Hikes do not matter", "Everyone leaves"], answer: 1, explanation: "Describe the association; propose a test before claiming cause." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+For HR analytics roles, be ready to define attrition, regretted loss and tenure, and to discuss ethics: people data is sensitive.
+</InterviewAlert>
+
+<InterviewQ q="How do you calculate attrition rate?">
+Attrition % is exits divided by headcount for the period. In HR reporting, headcount is usually average headcount over the period. In my project I used exits divided by all employees in the file, which gives a two-year cumulative 22.7%, and I stated that on the dashboard.
+</InterviewQ>
+
+<InterviewQ q="What did your analysis show about drivers of attrition?">
+Low manager ratings, overtime above 10 hours a month and hikes below 4% each raised attrition. With zero of those flags attrition was about 4.5%; with all three it was about 41%. I presented it as an association, recommended pilots, and highlighted Customer Support, which combines low pay, high overtime and the highest attrition.
+</InterviewQ>
+
+<InterviewQ q="What are the ethical concerns with an HR dashboard?">
+Individual employee data is sensitive. I would use row-level security so only HR sees names, avoid publishing real data, and use risk flags to support employees, not to penalise. I would also explain limits of the data, such as missing hike history for new joiners.
+</InterviewQ>
+
+## Key takeaways
+
+- Define attrition, headcount and flags clearly on the page.
+- Clean duplicates, outliers and mixed formats before any measure.
+- A risk flag from three drivers produced a 9x gap in attrition.
+- Customer Support and Sales lead attrition; exits peak after appraisals and bonuses.
+- Report associations carefully and protect people data.
+
+## Further reading
+
+<FurtherReading ids={["power-bi-docs", "dax-guide", "pl300"]} />

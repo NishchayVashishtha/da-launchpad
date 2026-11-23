@@ -1,0 +1,319 @@
+---
+title: "String functions: cleaning and slicing text"
+description: "Clean messy text and extract parts of it with SQLite string functions, and know the names used in other databases."
+module: sql
+order: 10
+estimatedMinutes: 40
+objectives:
+  - "Use LOWER, UPPER, TRIM, LENGTH, REPLACE and SUBSTR"
+  - "Find text positions with INSTR and cut text around them"
+  - "Join text with || and handle NULLs while doing it"
+  - "Clean messy city and category columns before grouping"
+  - "Name the equivalent functions in MySQL, PostgreSQL and SQL Server"
+tags: ["sql", "strings", "text-cleaning", "substr", "instr", "trim"]
+---
+
+## Learning objectives
+
+- Change case with `LOWER` and `UPPER`.
+- Remove spaces with `TRIM`, `LTRIM`, `RTRIM`.
+- Measure with `LENGTH`, cut with `SUBSTR`, find with `INSTR`.
+- Replace text with `REPLACE` and join with `||`.
+- Clean messy text columns so `GROUP BY` and `=` work.
+- Know the MySQL, PostgreSQL and SQL Server versions.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Real data is typed by humans and apps. City appears as `mumbai`, ` Mumbai` and `MUMBAI `. Emails need their domain extracted (`gmail.com` versus `yahoo.in`). A phone number has spaces. Before you can count or group correctly, you must clean text. Analysts spend a big part of their week on exactly this.
+</RealWorld>
+
+## Concept
+
+### The main SQLite string functions
+
+| Function | What it does | Example | Result |
+|---|---|---|---|
+| `LOWER(x)` / `UPPER(x)` | change case | `LOWER('Pune')` | `pune` |
+| `TRIM(x)` | remove spaces from both ends | `TRIM('  Pune ')` | `Pune` |
+| `LTRIM(x)` / `RTRIM(x)` | left or right only | | |
+| `TRIM(x, chars)` | remove given characters | `TRIM('##5##', '#')` | `5` |
+| `LENGTH(x)` | number of characters | `LENGTH('Delhi')` | `5` |
+| `SUBSTR(x, start, len)` | slice (start is **1-based**) | `SUBSTR('Mumbai', 1, 3)` | `Mum` |
+| `INSTR(x, find)` | position of first match, 0 if none | `INSTR('a@b.com', '@')` | `2` |
+| `REPLACE(x, old, new)` | replace all matches | `REPLACE('9876-543', '-', '')` | `9876543` |
+| `x \|\| y` | join text | `'Hi ' \|\| 'Asha'` | `Hi Asha` |
+
+If you omit `len` in `SUBSTR`, you get everything from `start` to the end. A negative start counts from the end in SQLite: `SUBSTR(x, -4)` gives the last 4 characters.
+
+### Standard cleaning recipe
+
+For a messy label column:
+
+```sql
+LOWER(TRIM(city))
+```
+
+Then, if you want Title Case for presentation, combine `UPPER(SUBSTR(x, 1, 1)) || SUBSTR(x, 2)` on the lowered text.
+
+### Cutting around a separator
+
+To get the domain of an email:
+
+```sql
+SUBSTR(email, INSTR(email, '@') + 1)
+```
+
+`INSTR` finds the `@`, `+ 1` moves one past it, and `SUBSTR` takes everything after that.
+
+To get the part before the `@`: `SUBSTR(email, 1, INSTR(email, '@') - 1)`.
+
+### NULLs and text
+
+Any function on NULL returns NULL, and `NULL || 'x'` is NULL. Use `COALESCE(col, '')` before joining.
+
+### Other databases
+
+SQLite has no `LEFT`, `RIGHT`, `CONCAT` or `SPLIT_PART`. Other databases do:
+
+| Task | SQLite | MySQL | PostgreSQL | SQL Server |
+|---|---|---|---|---|
+| Join text | `a \|\| b` | `CONCAT(a, b)` | `a \|\| b` or `CONCAT` | `a + b` or `CONCAT` |
+| First n chars | `SUBSTR(x,1,n)` | `LEFT(x,n)` | `LEFT(x,n)` | `LEFT(x,n)` |
+| Last n chars | `SUBSTR(x,-n)` | `RIGHT(x,n)` | `RIGHT(x,n)` | `RIGHT(x,n)` |
+| Length | `LENGTH(x)` | `CHAR_LENGTH(x)` | `LENGTH(x)` | `LEN(x)` |
+| Position | `INSTR(x,s)` | `INSTR(x,s)` or `LOCATE` | `POSITION(s IN x)` | `CHARINDEX(s,x)` |
+| Split on a delimiter | `SUBSTR` + `INSTR` | `SUBSTRING_INDEX(x,d,n)` | `SPLIT_PART(x,d,n)` | `STRING_SPLIT` (table) |
+| Pad with zeros | manual | `LPAD(x,n,'0')` | `LPAD(x,n,'0')` | `RIGHT('000'+x,n)` |
+
+<Warning>
+`LENGTH` of a number in SQLite works (it counts the characters of its text form), but it is better to use text columns for text functions. Phone numbers stored as numbers will lose leading zeros. In MySQL `LENGTH` counts bytes, not characters. Use `CHAR_LENGTH`.
+</Warning>
+
+<Tip>
+You can write `col LIKE '%@gmail.com'` to filter by email domain. Use `SUBSTR`/`INSTR` when you need the domain as a value to group by.
+</Tip>
+
+## Worked examples
+
+### Example 1: see the mess, then fix it
+
+First, how many different `city` values are there in HR employees if we do nothing?
+
+<SqlPlayground dataset="hr" query={`SELECT COUNT(DISTINCT city) AS raw_city_values,
+       COUNT(DISTINCT LOWER(TRIM(city))) AS clean_city_values
+FROM employees;`} title="Raw versus cleaned distinct cities" />
+
+**Output:**
+
+| raw_city_values | clean_city_values |
+|---|---|
+| 36 | 6 |
+
+
+Cleaning cuts the distinct count a lot, to the real list of cities. Now group on the cleaned value.
+
+<SqlPlayground dataset="hr" query={`SELECT UPPER(SUBSTR(LOWER(TRIM(city)), 1, 1)) || SUBSTR(LOWER(TRIM(city)), 2) AS city,
+       COUNT(*) AS employees
+FROM employees
+WHERE city IS NOT NULL
+GROUP BY LOWER(TRIM(city))
+ORDER BY employees DESC, city
+LIMIT 6;`} title="Employees by clean city (Title Case)" />
+
+**Output:**
+
+| city | employees |
+|---|---|
+| Bengaluru | 718 |
+| Pune | 398 |
+| Mumbai | 397 |
+| Hyderabad | 305 |
+| Chennai | 283 |
+| Delhi | 262 |
+
+
+The `UPPER(SUBSTR(...,1,1)) || SUBSTR(...,2)` part turns `pune` into `Pune` for presentation.
+
+### Example 2: extract the email domain
+
+Which email providers do our ecommerce customers use?
+
+<SqlPlayground dataset="ecommerce" query={`SELECT SUBSTR(email, INSTR(email, '@') + 1) AS email_domain,
+       COUNT(*) AS customers
+FROM customers
+WHERE email IS NOT NULL
+GROUP BY email_domain
+ORDER BY customers DESC;`} title="Customers by email domain" />
+
+**Output:**
+
+| email_domain | customers |
+|---|---|
+| gmail.com | 2530 |
+| yahoo.in | 609 |
+| outlook.com | 488 |
+| rediffmail.com | 342 |
+| hotmail.com | 223 |
+
+
+### Example 3: build text and handle NULL
+
+A label combining name and a safe city. `COALESCE` prevents a NULL city from wiping the whole label.
+
+<SqlPlayground dataset="ecommerce" query={`SELECT customer_id,
+       full_name || ' - ' || COALESCE(TRIM(city), 'City unknown') AS label,
+       LENGTH(full_name) AS name_length
+FROM customers
+WHERE city IS NULL OR customer_id <= 3
+ORDER BY customer_id
+LIMIT 6;`} title="Safe label with COALESCE" />
+
+**Output:**
+
+| customer_id | label | name_length |
+|---|---|---|
+| 1 | Rohan Patel - Bengaluru | 11 |
+| 2 | Ramesh Patel - Chennai | 12 |
+| 3 | Komal Patel - Delhi | 11 |
+| 54 | Vivaan Reddy - City unknown | 12 |
+| 182 | Faisal Shetty - City unknown | 13 |
+| 227 | Tarun Bose - City unknown | 10 |
+
+
+### Example 4: slicing codes
+
+Fintech UPI IDs look like `8157578200@rnb`. The part after `@` is a bank handle.
+
+<SqlPlayground dataset="fintech" query={`SELECT SUBSTR(upi_id, INSTR(upi_id, '@') + 1) AS handle,
+       COUNT(*) AS users
+FROM users
+WHERE upi_id IS NOT NULL
+GROUP BY handle
+ORDER BY users DESC, handle;`} title="Users by UPI handle" />
+
+**Output:**
+
+| handle | users |
+|---|---|
+| bub | 937 |
+| sdm | 774 |
+| rnb | 620 |
+| htb | 472 |
+| cor | 380 |
+| kcb | 339 |
+
+Showing the first 6 of 8 rows.
+
+
+### Example 5: REPLACE and pattern search
+
+Retail SKU codes like `APP-01` have a category prefix. Find the prefixes and also a version without the dash.
+
+<SqlPlayground dataset="retail" query={`SELECT SUBSTR(sku_id, 1, INSTR(sku_id, '-') - 1) AS sku_prefix,
+       REPLACE(MIN(sku_id), '-', '') AS example_no_dash,
+       COUNT(*) AS sale_lines
+FROM sales
+GROUP BY sku_prefix
+ORDER BY sale_lines DESC;`} title="SKU prefixes" />
+
+**Output:**
+
+| sku_prefix | example_no_dash | sale_lines |
+|---|---|---|
+| GRC | GRC01 | 7635 |
+| PRC | PRC01 | 5090 |
+| APP | APP01 | 3869 |
+| HNK | HNK01 | 3809 |
+| ELC | ELC01 | 2639 |
+| DCR | DCR01 | 1308 |
+
+
+### Example 6: subscription event names
+
+Normalise event names (some are UPPERCASE) and measure their length for a sanity check.
+
+<SqlPlayground dataset="subscription" query={`SELECT LOWER(event_name) AS event_name,
+       LENGTH(event_name) AS chars,
+       COUNT(*) AS events
+FROM events
+GROUP BY LOWER(event_name), LENGTH(event_name)
+ORDER BY events DESC
+LIMIT 5;`} title="Normalised events" />
+
+**Output:**
+
+| event_name | chars | events |
+|---|---|---|
+| app_open | 8 | 9372 |
+| content_view | 12 | 7868 |
+| signup | 6 | 5237 |
+| renewal_success | 15 | 4133 |
+| trial_start | 11 | 3328 |
+
+
+## Common mistakes
+
+<CommonMistake>
+**Comparing without cleaning.** `WHERE city = 'Mumbai'` misses `mumbai` and ` Mumbai`. Clean with `LOWER(TRIM(city))` and compare with `'mumbai'`.
+</CommonMistake>
+
+<CommonMistake>
+**Thinking SUBSTR starts at 0.** In SQL, the first character is position 1.
+</CommonMistake>
+
+<CommonMistake>
+**Joining with NULL.** One NULL piece makes the whole joined text NULL. Wrap nullable columns in `COALESCE(col, '')`.
+</CommonMistake>
+
+<CommonMistake>
+**Using a function in WHERE on a large table** without need. `WHERE LOWER(city) = 'pune'` cannot use a normal index on `city`. Fine for analysis, but know the cost in production.
+</CommonMistake>
+
+<CommonMistake>
+**Copying MySQL or SQL Server syntax into SQLite.** `LEFT()`, `CONCAT()` and `LEN()` do not exist in the playground. Use `SUBSTR`, `||` and `LENGTH`.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="strings" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What does SUBSTR('Hyderabad', 1, 4) return?", options: ["Hyde", "yder", "Hyd", "Hydera"], answer: 0, explanation: "Start at position 1, take 4 characters: H-y-d-e." },
+  { q: "What does INSTR('asha@mail.in', '@') return?", options: ["4", "5", "0", "-1"], answer: 1, explanation: "The @ is the 5th character. INSTR returns 0 only when there is no match." },
+  { q: "Which expression cleans ' PUNE ' into 'pune'?", options: ["LOWER(TRIM(x))", "TRIM(UPPER(x))", "LENGTH(x)", "REPLACE(x, ' ', '')"], answer: 0, explanation: "TRIM removes the spaces and LOWER changes the case. REPLACE would also remove inner spaces." },
+  { q: "What is 'Ravi' || NULL?", options: ["Ravi", "NULL", "RaviNULL", "An empty string"], answer: 1, explanation: "Joining with NULL gives NULL. Use COALESCE to avoid that." },
+  { q: "Which function gives the first 3 characters in MySQL and PostgreSQL but is missing in SQLite?", options: ["LEFT", "LOWER", "TRIM", "REPLACE"], answer: 0, explanation: "SQLite has no LEFT. Use SUBSTR(x, 1, 3)." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Text cleaning questions test practical skill: "Extract the domain from an email", "Clean city names before counting", "Split full name into first and last name". Walk through the steps with SUBSTR and INSTR.
+</InterviewAlert>
+
+<InterviewQ q="How would you split full_name into first and last name in SQLite?">
+First name: `SUBSTR(full_name, 1, INSTR(full_name, ' ') - 1)`. Last name: `SUBSTR(full_name, INSTR(full_name, ' ') + 1)`. This assumes exactly one space. For names with more parts, I would clarify the rule (for example last word is the surname) and handle it with a more careful expression. In PostgreSQL I would use `SPLIT_PART(full_name, ' ', 1)`.
+</InterviewQ>
+
+<InterviewQ q="Why do GROUP BY results on text columns sometimes show duplicate-looking groups?">
+Because `Pune`, `pune` and ` Pune ` are different strings. The database compares them exactly (with the default settings in SQLite). I clean the key with `LOWER(TRIM(col))` first, then group, and I report how many rows were affected.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between CONCAT and || ?">
+Both join strings. `||` is standard SQL and is used in SQLite and PostgreSQL, and NULL makes the result NULL. `CONCAT()` is used in MySQL and also exists in PostgreSQL and SQL Server. In MySQL and SQL Server, `CONCAT` treats NULL as an empty string, while the SQL Server `+` operator returns NULL. Always check how your database handles NULL.
+</InterviewQ>
+
+## Key takeaways
+
+- Clean text keys with `LOWER(TRIM(col))` before comparing or grouping.
+- `SUBSTR` is 1-based. `INSTR` finds a position. Together they cut text around a separator.
+- `||` joins text in SQLite and PostgreSQL. A NULL piece makes the result NULL, so use `COALESCE`.
+- `REPLACE` swaps text, `LENGTH` counts characters.
+- Other databases add `CONCAT`, `LEFT`, `RIGHT`, `SPLIT_PART`, `CHARINDEX`, `LEN`. The playground (SQLite) does not have them.
+
+## Further reading
+
+<FurtherReading ids={["sqlite-docs", "postgres-docs", "mysql-docs", "sqlserver-docs"]} />

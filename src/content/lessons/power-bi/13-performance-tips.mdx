@@ -1,0 +1,176 @@
+---
+title: "Power BI performance tips"
+description: "Keep reports fast: smaller models, lower cardinality, Performance Analyzer, single-direction filters and measures over calculated columns."
+module: power-bi
+order: 13
+estimatedMinutes: 35
+objectives:
+  - "Explain why model size and cardinality matter"
+  - "Use Performance Analyzer to find slow visuals"
+  - "Avoid bi-directional filters unless needed"
+  - "Choose measures over calculated columns"
+tags: ["power-bi", "performance", "dax", "modeling"]
+---
+
+## Learning objectives
+
+- Describe how Power BI stores data and why fewer, smaller columns help.
+- Run Performance Analyzer and read its results.
+- Apply a checklist of 10 performance fixes.
+- Choose between a measure and a calculated column.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+The CEO opens your dashboard on Monday morning and waits 25 seconds for each click. By the third click she closes it. A slow report is an unused report, however clever. Interviewers like candidates who can say "here is how I would find and fix the slow part".
+</RealWorld>
+
+Fresher datasets are small, so you may never feel slowness. Real company data has millions or billions of rows. The habits below cost nothing on small data and save you on big data.
+
+## Concept
+
+### How Power BI stores data
+
+In **Import mode**, Power BI copies data into an in-memory engine called **VertiPaq**. VertiPaq stores data column by column and compresses each column. Two things decide the size:
+
+- **Number of rows and columns.** More columns means more memory.
+- **Cardinality**: the number of **distinct values** in a column. A column with few distinct values (Region: 4 values) compresses very well. A column with nearly unique values (a timestamp with seconds, a transaction id, a GUID) compresses badly.
+
+<FormulaCard title="Rule of thumb">
+Smaller model = faster refresh, faster visuals, cheaper hosting.
+Cut columns, cut high-cardinality columns, use numbers instead of text where possible.
+</FormulaCard>
+
+### Performance checklist
+
+| Area | Do | Why |
+|---|---|---|
+| Columns | Remove columns you do not use in Power Query | Less memory |
+| Rows | Filter old or irrelevant rows at source | Smaller model |
+| Cardinality | Split datetime into date and time (or drop time) | Fewer distinct values |
+| Data types | Use whole numbers or fixed decimals, not text | Better compression |
+| Keys | Use integer keys for relationships | Faster joins |
+| Schema | Use a star schema, not one wide table | Smaller and simpler |
+| Relationships | Prefer single-direction (one to many) | Predictable and faster |
+| Calculations | Use measures not calculated columns for aggregations | No storage cost |
+| Visuals | Fewer visuals per page, avoid heavy custom visuals | Fewer queries |
+| Auto date/time | Turn off, use your own Date table | Hidden tables use memory |
+
+### Measures vs calculated columns
+
+- A **calculated column** is calculated per row when data refreshes and **stored** in the model. Use it for row-level attributes you need to slice by: an age band, a risk flag.
+- A **measure** is calculated when a visual asks for it, based on the current filters, and **not stored**. Use it for sums, ratios and rates.
+
+If the value changes with filters (a rate, a total), it must be a measure. Summing a stored ratio column gives a wrong answer.
+
+### Bi-directional filters
+
+By default a filter flows from the one side to the many side (Stores to Sales). **Bi-directional** (both) lets filters also flow back from many to one. It looks handy, but it:
+
+- slows queries,
+- can create ambiguous filter paths and wrong numbers,
+- spreads filters unexpectedly.
+
+Use it only when you really need it, such as a many-to-many bridge table, and prefer measures with `CROSSFILTER` or `TREATAS` for one-off needs.
+
+### Performance Analyzer
+
+**Performance Analyzer** (View, Performance analyzer) records how long each visual takes to refresh. For each visual it shows:
+
+- **DAX query**: time to run the query on the model.
+- **Visual display**: time to draw the visual.
+- **Other**: waiting on other visuals.
+
+You can copy the DAX query and examine it in DAX Studio (an external free tool). If the DAX query is slow, fix the model or measure. If display is slow, simplify the visual.
+
+## Worked examples
+
+### Example 1: Reducing cardinality in retail sales
+
+`sale_datetime` in `sales` has about 24,000 distinct values since it includes seconds. Your reports only use date and hour.
+
+In Power Query:
+
+1. Add a column `SaleDate` = `DateTime.Date([sale_datetime])`.
+2. Add a column `SaleHour` = `Time.Hour(DateTime.Time([sale_datetime]))`.
+3. Remove the original `sale_datetime`.
+
+Now `SaleDate` has about 730 distinct values and `SaleHour` has about 24. On a 24,000-row sample it is small, but on 50 million rows this change cuts the model massively.
+
+### Example 2: Finding the slow visual
+
+You open View, Performance analyzer, Start recording, then click Refresh visuals. The result list shows a table visual with a DAX query of 4,200 ms and a card at 90 ms. You copy the table's query and see it is returning 50,000 rows because no filters are applied. Fix: use a Top N filter, add a slicer and move the details to a drill-through page. After the fix the table runs in 300 ms.
+
+### Example 3: Replacing a calculated column
+
+Suppose a learner created a calculated column `Margin %` in `Sales` and then averaged it per store. The averaged result is wrong because each row has a different weight. The right way is a measure: `Margin % = DIVIDE([Profit], [Net Sales])`. This is correct at store, region and total level and uses no storage.
+
+### Example 4: Bi-directional relationship trap
+
+A report has `Stores` to `Sales` set to both directions "to make slicers work". A card for Net Sales now changes when the user filters Inventory. After switching back to single direction and fixing the slicers to use the dimension tables, the numbers become predictable and the page speeds up.
+
+## Common mistakes
+
+<CommonMistake>
+Loading every column "just in case". Unused columns cost memory and refresh time. Remove them in Power Query.
+</CommonMistake>
+
+<CommonMistake>
+Keeping full timestamps with seconds in the model when only the date is needed. High cardinality compresses badly.
+</CommonMistake>
+
+<CommonMistake>
+Creating calculated columns for things that should be measures, then summing or averaging them. The totals are wrong and the model is larger.
+</CommonMistake>
+
+<CommonMistake>
+Setting relationships to both directions to fix a slicer problem. Fix the model design instead.
+</CommonMistake>
+
+<CommonMistake>
+Guessing which visual is slow. Always measure with Performance Analyzer first.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="performance" module="power-bi" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What does high cardinality mean?", options: ["Many distinct values in a column", "Many tables", "Many measures", "Many reports"], answer: 0, explanation: "Cardinality is the number of distinct values; high cardinality compresses poorly." },
+  { q: "Which tool shows the time each visual takes to load?", options: ["Power Query", "Performance Analyzer", "Q&A", "Bookmarks"], answer: 1, explanation: "Performance Analyzer records DAX query and display times per visual." },
+  { q: "Which is stored in the model after refresh?", options: ["A measure", "A calculated column", "A slicer", "A theme"], answer: 1, explanation: "Calculated columns are computed at refresh and stored; measures are computed at query time." },
+  { q: "Why should you be careful with bi-directional relationships?", options: ["They are illegal", "They can slow queries and cause ambiguous or wrong results", "They delete data", "They hide visuals"], answer: 1, explanation: "Both-direction filters spread unexpectedly and add cost." },
+  { q: "Which change most reduces cardinality of a timestamp column?", options: ["Rename it", "Split into date and hour, drop seconds", "Sort it", "Change its colour"], answer: 1, explanation: "Fewer distinct values means better compression." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+A very common question is "Your report is slow. What do you do?" Show a method: measure, find the slowest part, fix the model first, then the DAX, then the visuals.
+</InterviewAlert>
+
+<InterviewQ q="Your report is slow. How do you troubleshoot it?">
+First I run Performance Analyzer to find which visuals are slow and whether the time is DAX query or visual display. If the DAX is slow, I check the model (star schema, cardinality, relationship direction) and the measure logic. If display is slow, I reduce the number of points shown or simplify the visual. I also remove unused columns and reduce the number of visuals on the page.
+</InterviewQ>
+
+<InterviewQ q="Measure or calculated column: how do you decide?">
+If the result depends on the filters in the report (sums, ratios, rates), use a measure. If it is a fixed attribute of each row that I need to slice or filter by (age band, risk flag), use a calculated column, or better, compute it in Power Query to keep the model lean.
+</InterviewQ>
+
+<InterviewQ q="Why avoid bi-directional filtering?">
+It can create ambiguous paths, produce unexpected totals and slow queries because filters travel in both directions. I use single direction from dimension to fact and use measures or a proper bridge table when I need many-to-many behaviour.
+</InterviewQ>
+
+## Key takeaways
+
+- Smaller models are faster: remove columns, reduce cardinality.
+- Prefer measures to calculated columns for anything that aggregates.
+- Keep a star schema with single-direction relationships.
+- Use Performance Analyzer to measure, not guess.
+- Fewer visuals per page means fewer queries.
+
+## Further reading
+
+<FurtherReading ids={["power-bi-docs", "dax-guide", "pl300"]} />

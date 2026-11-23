@@ -1,0 +1,287 @@
+---
+title: "Interview pattern: top N per group"
+description: "Return the top 1, 2 or 3 rows inside each category using ROW_NUMBER, RANK and PARTITION BY, and decide how ties should behave."
+module: sql
+order: 27
+estimatedMinutes: 45
+objectives:
+  - "Recognise a top-N-per-group question from its wording"
+  - "Use PARTITION BY with ROW_NUMBER, RANK or DENSE_RANK and filter in an outer query"
+  - "Pick the right ranking function for ties"
+  - "Use the same template to get the latest row per group"
+tags: ["sql", "interview", "window-functions", "partition-by"]
+---
+
+## Learning objectives
+
+- Recognise "top N per category" and "latest record per user" questions.
+- Write the rank-then-filter template with a CTE.
+- Choose between `ROW_NUMBER`, `RANK` and `DENSE_RANK` when values tie.
+- Explain why `LIMIT` alone cannot solve this problem.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+"Top 3 products in every category", "best-selling restaurant in each city", "latest salary of every employee", "most recent order of each customer". Business teams almost never want one global top list. They want a top list inside every segment. This pattern is in nearly every analyst SQL screening.
+</RealWorld>
+
+## Concept
+
+### The recognition cue
+
+When you see **"top N ... in each / per / for every ..."**, or **"latest / first / most recent ... per ..."**, think: *rank inside each group with a window function, then keep rank <= N.*
+
+Analogy: a school with many classes. A global `ORDER BY marks LIMIT 3` picks the top 3 students of the whole school. "Topper of each class" means ranking separately inside every class. `PARTITION BY class` is exactly that.
+
+### The template
+
+```sql
+WITH ranked AS (
+  SELECT group_col, item_col, metric,
+         ROW_NUMBER() OVER (
+           PARTITION BY group_col
+           ORDER BY metric DESC, item_col      -- tie-breaker
+         ) AS rn
+  FROM ...
+)
+SELECT *
+FROM ranked
+WHERE rn <= 3;
+```
+
+Two points are important:
+
+1. You **cannot** write `WHERE ROW_NUMBER() OVER (...) <= 3`. Window functions run after `WHERE`, so you need an outer query or CTE to filter on the rank.
+2. `PARTITION BY` restarts the numbering for each group. `ORDER BY` inside `OVER` decides who is first.
+
+### Which ranking function?
+
+| Want | Use | Behaviour on ties |
+|---|---|---|
+| Exactly N rows per group | `ROW_NUMBER` | Breaks the tie arbitrarily (so add a tie-breaker column). |
+| All rows that tie for a place | `RANK` | Ties share a rank, the next rank is skipped. You may get more than N rows. |
+| Top N distinct values | `DENSE_RANK` | Ties share a rank, no gaps. |
+
+<Tip>
+Ask: "If two items tie for third place, do you want both or just one?" Then you know which function to use. If just one, always add a deterministic tie-breaker such as an id, or the answer changes every time the database feels like it.
+</Tip>
+
+### Latest row per group
+
+"Latest" is just "top 1 ordered by date descending":
+
+```sql
+ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY event_time DESC) AS rn  -- keep rn = 1
+```
+
+### Why not LIMIT?
+
+`LIMIT 3` applies to the whole result, not to each group. You would need one query per category, which does not scale.
+
+## Worked examples
+
+### Example 1: top 3 products in each category
+
+The category manager wants the three best-selling products (by units) in every category.
+
+<SqlPlayground dataset="ecommerce" query={`WITH sales AS (
+  SELECT LOWER(TRIM(p.category)) AS category, p.product_id, p.product_name,
+         SUM(oi.quantity) AS units
+  FROM order_items oi
+  JOIN products p ON p.product_id = oi.product_id
+  GROUP BY LOWER(TRIM(p.category)), p.product_id, p.product_name
+),
+ranked AS (
+  SELECT *,
+         ROW_NUMBER() OVER (
+           PARTITION BY category
+           ORDER BY units DESC, product_id
+         ) AS rn
+  FROM sales
+)
+SELECT category, rn, product_name, units
+FROM ranked
+WHERE rn <= 3
+ORDER BY category, rn;`} title="Top 3 products per category" />
+
+**Output:**
+
+| category | rn | product_name | units |
+|---|---|---|---|
+| beauty | 1 | PureNeem Skincare 841 | 126 |
+| beauty | 2 | GlowVeda Makeup 821 | 95 |
+| beauty | 3 | Ayurmitra Haircare 163 | 69 |
+| books | 1 | Kitaab Press Kid 717 | 354 |
+| books | 2 | Pustak Ghar Self Help 839 | 158 |
+| books | 3 | Sahitya Hub Self Help 615 | 151 |
+| electronics | 1 | VoltEdge Smartwatche 609 | 1170 |
+| electronics | 2 | Gadgetry Smartwatche 547 | 177 |
+| electronics | 3 | Technova Smartwatche 630 | 138 |
+
+Showing the first 9 of 21 rows.
+
+Steps: aggregate to one row per product, rank inside each category, then filter. Keep the aggregation and the ranking in separate steps, because that makes each easy to check. Note `LOWER(TRIM(p.category))`: about 2% of category values in this dataset have odd casing or spaces, which would otherwise create duplicate categories such as `Beauty` and `BEAUTY`. Clean the group key before you rank.
+
+### Example 2: ties with RANK versus ROW_NUMBER
+
+Find the top two busiest restaurants in each city by completed deliveries. Let us see what `RANK` returns when counts tie. We keep five clean city names only.
+
+<SqlPlayground dataset="food_delivery" query={`WITH counts AS (
+  SELECT city, restaurant_id, COUNT(DISTINCT delivery_id) AS deliveries
+  FROM deliveries
+  WHERE delivery_status = 'Delivered' AND city IN ('Mumbai','Delhi','Pune','Chennai','Kolkata')
+  GROUP BY city, restaurant_id
+),
+ranked AS (
+  SELECT *, RANK() OVER (PARTITION BY city ORDER BY deliveries DESC) AS rnk
+  FROM counts
+)
+SELECT city, restaurant_id, deliveries, rnk
+FROM ranked
+WHERE rnk <= 2
+ORDER BY city, rnk, restaurant_id;`} title="Busiest restaurant per city, ties kept" />
+
+**Output:**
+
+| city | restaurant_id | deliveries | rnk |
+|---|---|---|---|
+| Chennai | 191 | 118 | 1 |
+| Chennai | 277 | 59 | 2 |
+| Delhi | 505 | 264 | 1 |
+| Delhi | 92 | 69 | 2 |
+| Kolkata | 279 | 59 | 1 |
+| Kolkata | 138 | 55 | 2 |
+| Kolkata | 510 | 55 | 2 |
+| Mumbai | 573 | 239 | 1 |
+| Mumbai | 199 | 225 | 2 |
+| Pune | 320 | 209 | 1 |
+| Pune | 600 | 187 | 2 |
+
+Look at Kolkata: restaurants 138 and 510 both have 55 deliveries, so both get rank 2 and the city shows three rows. With `ROW_NUMBER` you would see exactly two rows per city, but which restaurant you got would be arbitrary unless you add `restaurant_id` as a tie-breaker. Neither is wrong: the right one depends on the business question.
+
+### Example 3: latest salary of each employee
+
+HR wants each employee's current CTC, which is their most recent salary row. This is "top 1 per group" ordered by date.
+
+<SqlPlayground dataset="hr" query={`WITH ranked AS (
+  SELECT employee_id, effective_date, annual_ctc, change_reason,
+         ROW_NUMBER() OVER (
+           PARTITION BY employee_id
+           ORDER BY effective_date DESC
+         ) AS rn
+  FROM salaries
+)
+SELECT employee_id, effective_date, annual_ctc, change_reason
+FROM ranked
+WHERE rn = 1
+ORDER BY employee_id
+LIMIT 6;`} title="Latest salary row per employee" />
+
+**Output:**
+
+| employee_id | effective_date | annual_ctc | change_reason |
+|---|---|---|---|
+| 1 | 2024-04-01 | 628000.0 | Annual Appraisal |
+| 2 | 2024-04-01 | 1088000.0 | Annual Appraisal |
+| 3 | 2024-04-01 | 1572000.0 | Annual Appraisal |
+| 4 | 2024-04-01 | 564000.0 | Annual Appraisal |
+| 5 | 2024-04-01 | 2406000.0 | Annual Appraisal |
+| 6 | 2024-04-01 | 293000.0 | Annual Appraisal |
+
+Each employee appears once, with the newest row. Compare with `MAX(effective_date)` and a join, which also works but needs a second step. The window version also gives you the whole row without extra joins.
+
+### Example 4: top 2 stores in each region
+
+A correlated alternative: a store is in the top 2 of its region when fewer than 2 stores in the same region have more sales. It needs no window function.
+
+<SqlPlayground dataset="retail" query={`WITH store_sales AS (
+  SELECT s.store_id, st.store_name, st.region,
+         ROUND(SUM(s.net_amount_inr), 0) AS revenue
+  FROM sales s
+  JOIN stores st ON st.store_id = s.store_id
+  WHERE s.net_amount_inr < 100000
+  GROUP BY s.store_id, st.store_name, st.region
+)
+SELECT a.region, a.store_name, a.revenue
+FROM store_sales a
+WHERE (SELECT COUNT(*) FROM store_sales b
+       WHERE b.region = a.region AND b.revenue > a.revenue) < 2
+ORDER BY a.region, a.revenue DESC;`} title="Top 2 stores per region (no window function)" />
+
+**Output:**
+
+| region | store_name | revenue |
+|---|---|---|
+| East | Vasudha Supermarket - Six Mile | 1392652.0 |
+| East | Vasudha Supermarket - Salt Lake | 1336745.0 |
+| North | Vasudha Hypermarket - Dwarka | 2453250.0 |
+| North | Vasudha Supermarket - Malviya Nagar | 1370692.0 |
+| South | Vasudha Hypermarket - Whitefield | 2368901.0 |
+| South | Vasudha Supermarket - RS Puram | 1293997.0 |
+| West | Vasudha Hypermarket - Satellite | 2567391.0 |
+| West | Vasudha Hypermarket - Andheri | 2461189.0 |
+
+Same idea, older style. It also keeps all stores that tie at the boundary, like `RANK`. Use the window version in interviews unless they forbid it.
+
+## Common mistakes
+
+<CommonMistake>
+**Using `LIMIT 3` and expecting 3 per group.** You get 3 rows in total. Use a window function with `PARTITION BY`.
+</CommonMistake>
+<CommonMistake>
+**Filtering on the rank in the same `SELECT`.** `WHERE rn <= 3` fails because the window runs after `WHERE`. Put the ranking in a CTE or subquery.
+</CommonMistake>
+<CommonMistake>
+**Missing tie-breaker with `ROW_NUMBER`.** Two products with equal units can swap places between runs, so your answer changes. Add a unique column to `ORDER BY`.
+</CommonMistake>
+<CommonMistake>
+**Ranking before aggregating.** If you rank raw order lines instead of per-product totals, you get the top 3 single lines, not the top 3 products.
+</CommonMistake>
+<CommonMistake>
+**Forgetting `DESC`.** Default order is ascending, so you get the bottom N. Always say whether you mean highest or lowest.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="pattern-top-n" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What does PARTITION BY do inside OVER()?", options: ["Sorts the final output", "Restarts the calculation for each group", "Removes duplicate rows", "Joins two tables"], answer: 1, explanation: "PARTITION BY splits rows into groups and the window function is calculated separately inside each group." },
+  { q: "Why can you not write WHERE ROW_NUMBER() OVER (...) <= 3 directly?", options: ["ROW_NUMBER is not allowed in SQLite", "Window functions run after WHERE", "It needs a HAVING clause", "ROW_NUMBER cannot be filtered"], answer: 1, explanation: "WHERE runs before window functions are calculated, so the rank has to be filtered in an outer query or CTE." },
+  { q: "Three products tie for 3rd place. You use RANK() and keep rank <= 3. How many products from that tie are returned?", options: ["1", "2", "All three", "None"], answer: 2, explanation: "RANK gives tied rows the same rank, so all rows tied at rank 3 pass the filter." },
+  { q: "Which is the best way to get each customer's most recent order?", options: ["ORDER BY order_date DESC LIMIT 1", "ROW_NUMBER() OVER (PARTITION BY customer_id ORDER BY order_date DESC) = 1", "MAX(order_id) with GROUP BY only", "DISTINCT customer_id"], answer: 1, explanation: "Ranking inside each customer by date descending and keeping rank 1 returns one latest row per customer." },
+  { q: "Why add a second column to the ORDER BY in ROW_NUMBER, such as product_id?", options: ["To make the query faster", "To make ties break the same way every time", "To remove NULLs", "To change the groups"], answer: 1, explanation: "A unique tie-breaker makes the result deterministic. Without it, tied rows can come in any order." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Top N per group is the second most common window-function question after the "second highest" one. Interviewers look for: PARTITION BY used correctly, a CTE for filtering, and a clear stand on ties.
+</InterviewAlert>
+
+<InterviewQ q="Show the top 3 earners in every department. Walk me through your approach.">
+"I need a rank inside each department, so I will use a window function. I will write a CTE that ranks employees with `DENSE_RANK() OVER (PARTITION BY department_id ORDER BY salary DESC)`. I choose DENSE_RANK because if two people tie for third I assume the business wants both. Then the outer query keeps rank <= 3. I filter in the outer query because window functions are evaluated after WHERE. If you want strictly 3 rows per department I would switch to ROW_NUMBER with a tie-breaker like employee_id."
+</InterviewQ>
+<InterviewQ q="How do you pick one row per user, the most recent?">
+`ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY event_time DESC)` in a CTE and keep `rn = 1`. If two events have the same timestamp I add a tie-breaker such as `event_id DESC`. The alternative is a join to a `MAX(event_time)` subquery, but that can return two rows when timestamps tie.
+</InterviewQ>
+<InterviewQ q="What is the difference between ROW_NUMBER, RANK and DENSE_RANK for top N?">
+`ROW_NUMBER` always returns exactly N rows per group but breaks ties arbitrarily. `RANK` can return more than N rows when ties happen at the boundary, and the rank after a tie is skipped. `DENSE_RANK` also keeps ties but has no gaps, so "top 3" means the three highest distinct values. I pick based on what the business wants for ties.
+</InterviewQ>
+<InterviewQ q="Can you solve top N per group without window functions?">
+Yes. A correlated subquery that counts how many rows in the same group beat the current row: keep the row if that count is below N. It is a nice fallback on old MySQL versions. It is slower than a window function on large tables.
+</InterviewQ>
+
+## Key takeaways
+
+- Cue: "top N per ...", "latest per ..." means rank inside groups with `PARTITION BY`.
+- Rank in a CTE, then filter `rn <= N` in the outer query.
+- `ROW_NUMBER` for exactly N rows (add a tie-breaker), `RANK` or `DENSE_RANK` to keep ties.
+- Aggregate first (per product, per restaurant), then rank the aggregated rows.
+- `LIMIT` cannot do per-group limits.
+
+## Further reading
+
+<FurtherReading ids={["mode-sql", "sqlite-docs", "datalemur"]} />

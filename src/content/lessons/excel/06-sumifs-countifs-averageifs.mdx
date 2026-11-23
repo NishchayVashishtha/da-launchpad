@@ -1,0 +1,188 @@
+---
+title: "SUMIFS, COUNTIFS and AVERAGEIFS: conditional aggregation"
+description: "Total, count and average only the rows that meet your conditions, including date ranges and wildcards."
+module: excel
+order: 6
+estimatedMinutes: 45
+objectives: ["Write SUMIFS, COUNTIFS and AVERAGEIFS with several criteria", "Filter by date ranges", "Use wildcards and not-equal criteria", "Avoid range-size and quote mistakes"]
+tags: ["excel", "sumifs", "countifs", "averageifs", "wildcards"]
+---
+
+## Learning objectives
+
+- Write `SUMIFS`, `COUNTIFS` and `AVERAGEIFS` with more than one condition.
+- Build date range criteria with `">="&DATE(...)`.
+- Use wildcards (`*`, `?`) and the not-equal operator `<>`.
+- Understand why all ranges must be the same size.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+A regional manager asks: "What was the delivered revenue from the Android app in 2023, and how many orders were that?" You answer with two SUMIFS and COUNTIFS formulas in under a minute, without building a PivotTable.
+</RealWorld>
+
+These are the Excel version of SQL's `SUM ... WHERE ... GROUP BY`. They are the most-used analyst functions after lookups.
+
+## Concept
+
+**Conditional aggregation** means adding up, counting or averaging only the rows that match your conditions. Think of a kirana shop owner who totals only the bills marked "paid".
+
+The three functions:
+
+- `SUMIFS(sum_range, criteria_range1, criteria1, [criteria_range2, criteria2], ...)`
+- `COUNTIFS(criteria_range1, criteria1, [criteria_range2, criteria2], ...)`
+- `AVERAGEIFS(average_range, criteria_range1, criteria1, ...)`
+
+All conditions are joined by AND: a row must meet every one. The ranges must have the same number of rows.
+
+**How to write criteria**
+
+| You want | Criterion |
+|---|---|
+| Equal to text | `"Delivered"` |
+| Equal to a number | `1` or `">=5000"` |
+| Not equal | `"<>Cancelled"` |
+| A value from a cell | `">="&Q1` |
+| A date | `">="&DATE(2023,6,1)` |
+| Starts with | `"Aditya*"` |
+| Ends with | `"*Sharma"` |
+| Contains | `"*an*"` |
+| Exactly 5 characters | `"?????"` |
+| Blank | `"="` |
+| Not blank | `"<>"` |
+
+**Date ranges** need two criteria on the same date column: one for the start, one for the end. Join the operator and the date with `&`, outside the quotes.
+
+**OR logic.** SUMIFS does AND only. For OR, add two SUMIFS together, or use `SUM(SUMIFS(..., {"Cancelled","RTO"}))`.
+
+**The older single-condition forms** `SUMIF`, `COUNTIF` and `AVERAGEIF` still work. Note that in `SUMIF` the sum range comes last. In SUMIFS it comes first. This is a famous mix-up.
+
+<FormulaCard title="Date range pattern">
+=SUMIFS(amount, date_col, ">="&start, date_col, "<="&end, status_col, "Delivered")
+</FormulaCard>
+
+<Tip>
+Put the start and end dates in cells and refer to them. Change the cells and the whole report updates.
+</Tip>
+
+## Worked examples
+
+<Download href="data/excel/excel-functions.xlsx" label="Download excel-functions.xlsx" />
+
+Data is in `orders` (A to M, 2,000 rows) and `customers`.
+
+**Example 1: SUMIFS with two conditions.** Delivered revenue from the Android App:
+
+```
+=SUMIFS(orders!J2:J2001,orders!E2:E2001,"Delivered",orders!F2:F2001,"Android App")
+```
+
+Result: **5,154,880.43** INR, from **916** orders (`COUNTIFS` with the same criteria).
+
+**Example 2: date range.** Orders from 1 June to 31 August 2023:
+
+```
+=COUNTIFS(orders!C2:C2001,">="&DATE(2023,6,1),orders!C2:C2001,"<="&DATE(2023,8,31))
+```
+
+Result: **206**. The average of the Delivered ones:
+
+```
+=AVERAGEIFS(orders!J2:J2001,orders!C2:C2001,">="&DATE(2023,6,1),orders!C2:C2001,"<="&DATE(2023,8,31),orders!E2:E2001,"Delivered")
+```
+
+Result: **4,947.62** from 187 orders.
+
+**Example 3: wildcard.** Customers whose name starts with Aditya:
+
+```
+=COUNTIF(customers!B2:B1064,"Aditya*")
+```
+
+Result: **15**. Names ending in Sharma: `"*Sharma"` gives **16**.
+
+**Example 4: not equal.** Q4 2024 revenue, excluding Cancelled orders:
+
+```
+=SUMIFS(J2:J2001,C2:C2001,">="&DATE(2024,10,1),C2:C2001,"<="&DATE(2024,12,31),E2:E2001,"<>Cancelled")
+```
+
+Result: **1,507,860.47** INR from **293** orders. RTO orders stay in because only Cancelled is excluded.
+
+**Example 5: two text conditions.** Prime members in Mumbai:
+
+```
+=COUNTIFS(customers!C2:C1064,"Mumbai",customers!H2:H1064,1)
+```
+
+Result: **42**.
+
+## Common mistakes
+
+<CommonMistake>
+Ranges of different sizes, such as `J2:J2001` with `E2:E2000`. Excel returns `#VALUE!`. Keep every range the same shape, or use Table columns.
+</CommonMistake>
+
+<CommonMistake>
+Writing a date criterion inside the quotes: `">=DATE(2023,6,1)"`. Excel reads it as text and matches nothing. Use `">="&DATE(2023,6,1)`.
+</CommonMistake>
+
+<CommonMistake>
+Mixing up SUMIF and SUMIFS argument order. SUMIFS starts with the sum range; SUMIF ends with it.
+</CommonMistake>
+
+<CommonMistake>
+Expecting `"<>Cancelled"` to remove RTO as well. It excludes only the word you name.
+</CommonMistake>
+
+<CommonMistake>
+Using wildcards on numbers. `*` works on text only. A number stored as text can match, but a real number will not.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="conditional-aggregation" module="excel" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Which argument comes first in SUMIFS?", options: ["The first criteria range", "The sum range", "The first criterion", "The column number"], answer: 1, explanation: "SUMIFS(sum_range, criteria_range1, criteria1, ...). SUMIF is the one with the sum range last." },
+  { q: "How do you write 'on or after 1 June 2023' as a criterion?", options: ["\">=DATE(2023,6,1)\"", "\">=\"&DATE(2023,6,1)", ">=DATE(2023,6,1)", "\"DATE(2023,6,1)\""], answer: 1, explanation: "Put the operator in quotes and join the date with &." },
+  { q: "What does COUNTIF(B:B, \"*Sharma\") count?", options: ["Names starting with Sharma", "Names ending with Sharma", "Names containing exactly Sharma only", "Blank cells"], answer: 1, explanation: "The * stands for any characters before Sharma, so it matches names that end with Sharma." },
+  { q: "Multiple criteria in SUMIFS are joined by...", options: ["OR", "AND", "XOR", "NOT"], answer: 1, explanation: "A row must satisfy all conditions. For OR add separate SUMIFS together." },
+  { q: "Which criterion excludes Cancelled orders?", options: ["\"!Cancelled\"", "\"<>Cancelled\"", "\"not Cancelled\"", "\"=Cancelled\""], answer: 1, explanation: "<> means not equal to." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Be ready to turn a sentence into criteria on the spot: "delivered orders from the app in Q3 above 2,000 rupees".
+</InterviewAlert>
+
+<InterviewQ q="How do you sum values between two dates?">
+Use two criteria on the date column: `=SUMIFS(amount,dates,">="&start,dates,"<="&end)`. I keep the start and end dates in cells so the formula is reusable.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between COUNT, COUNTA and COUNTIFS?">
+COUNT counts numbers. COUNTA counts non-blank cells of any type. COUNTIFS counts rows that meet one or more conditions.
+</InterviewQ>
+
+<InterviewQ q="SUMIFS versus PivotTable: when do you use each?">
+SUMIFS for one or a few specific numbers, or for a number that sits inside a formatted report. A PivotTable when I need to explore many groups quickly. Formulas update live; a PivotTable needs a refresh.
+</InterviewQ>
+
+<InterviewQ q="How do you do an OR condition in SUMIFS?">
+SUMIFS is AND only, so I add two SUMIFS, one per value, or use an array constant: `=SUM(SUMIFS(amt,status,{"Cancelled","RTO"}))`.
+</InterviewQ>
+
+## Key takeaways
+
+- SUMIFS, COUNTIFS and AVERAGEIFS add, count and average rows that match all your conditions.
+- Dates need `">="&date` style criteria, with two criteria for a range.
+- `*` and `?` are text wildcards; `<>` means not equal.
+- All ranges must be the same size.
+- SUMIFS starts with the sum range; the older SUMIF ends with it.
+
+## Further reading
+
+<FurtherReading ids={["excel-support", "chandoo", "excelisfun"]} />

@@ -1,0 +1,297 @@
+---
+title: "Median and percentiles in SQL"
+description: "Compute the median and any percentile in SQLite with ROW_NUMBER and COUNT, and know the built-in versions in other databases."
+module: sql
+order: 35
+estimatedMinutes: 45
+objectives:
+  - "Explain why the median beats the average for skewed data"
+  - "Compute a median with ROW_NUMBER and COUNT in SQLite"
+  - "Handle odd and even row counts correctly"
+  - "Compute the median per group and a percentile such as p90"
+  - "Name PERCENTILE_CONT in PostgreSQL and SQL Server"
+tags: ["sql", "interview-patterns", "median", "percentile", "window-functions"]
+---
+
+## Learning objectives
+
+- Explain when to report the median instead of the mean.
+- Build a median in SQLite, which has no `MEDIAN` function.
+- Take the average of the middle two values when the row count is even.
+- Compute a median per group and a nearest-rank percentile.
+- Know the shortcut functions in PostgreSQL and SQL Server.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+"What is the typical delivery time?" "What does a normal customer spend?" If one customer pays Rs 5 lakh in a day, the average jumps and no longer describes a normal customer. The median is the middle value and ignores such extremes. Hiring managers love asking for it in SQL because many databases have no simple `MEDIAN` function, so you must build it.
+</RealWorld>
+
+## Concept
+
+### The recognition cue
+
+- "median", "typical", "middle value", "50th percentile"
+- "p90", "95th percentile", "top decile threshold"
+- "the average is misleading because of outliers"
+
+### Mean versus median
+
+Imagine five salaries in a small team (in lakh per year): 4, 5, 5, 6, 60. The mean is 16 lakh, but nobody earns near 16. The median, the middle of the sorted list, is 5. For skewed data (money, time, counts), the median describes the typical case.
+
+### The method that works everywhere
+
+1. Sort the values and give each a position with `ROW_NUMBER()`.
+2. Count the rows with `COUNT(*) OVER ()` and call it `n`.
+3. Pick the middle position(s). Average them.
+
+The middle positions are `(n + 1) / 2` and `(n + 2) / 2` using integer division.
+
+- If `n = 7`: `(8)/2 = 4` and `(9)/2 = 4`. The same row, position 4. 
+- If `n = 8`: `(9)/2 = 4` and `(10)/2 = 5`. Two rows, positions 4 and 5. Their average is the median.
+
+<FormulaCard title="Median template (SQLite, any database with window functions)">
+```sql
+WITH ranked AS (
+  SELECT value_col,
+         ROW_NUMBER() OVER (ORDER BY value_col) AS rn,
+         COUNT(*)     OVER ()                   AS n
+  FROM some_table
+  WHERE value_col IS NOT NULL
+)
+SELECT AVG(value_col) AS median
+FROM ranked
+WHERE rn IN ((n + 1) / 2, (n + 2) / 2);
+```
+</FormulaCard>
+
+### Variations
+
+1. **Median per group.** Add `PARTITION BY group_col` to both the `ROW_NUMBER` and the `COUNT`, then `GROUP BY group_col` in the final query.
+2. **Any percentile (nearest rank).** The p-th percentile is the value at position `CEIL(p * n)`. For p90, that is `CEIL(0.9 * n)`.
+3. **Median next to the mean.** Show both to expose skew. If mean is much bigger than median, a few large values are pulling it up.
+
+### Built-in functions in other databases
+
+| Database | How to get the median |
+|---|---|
+| PostgreSQL | `PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY col)` |
+| SQL Server | `PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY col) OVER (PARTITION BY ...)` |
+| Oracle | `MEDIAN(col)` |
+| MySQL | No built-in; use the ROW_NUMBER method (MySQL 8+) |
+| SQLite | No built-in; use the ROW_NUMBER method |
+
+`PERCENTILE_CONT` interpolates between two values (a continuous percentile). `PERCENTILE_DISC` returns an actual value from the data. In an interview, say "I would use `PERCENTILE_CONT` in Postgres, but since this is SQLite I will build it with window functions."
+
+<Tip>
+`ROW_NUMBER` needs a tie-breaker (for example the id) in its `ORDER BY`, so the numbering is the same on every run when values repeat.
+</Tip>
+
+### Edge cases
+
+- **NULLs:** filter them out before counting. A NULL counted in `n` shifts the middle.
+- **Even count:** you must average two rows. Taking only row `n/2` is a common wrong answer.
+- **Duplicates in the data:** repeated rows change the median. Decide whether to dedupe first.
+- **Empty group:** no rows means no median row, so the group simply does not appear.
+- **Integer division:** `AVG` of two integers returns a decimal, but `(n + 1) / 2` must stay integer division. Do not multiply by `1.0` there.
+
+## Worked examples
+
+### Example 1: median ticket size
+
+Median amount of successful payments in the fintech data. Exact duplicate rows are removed first.
+
+<SqlPlayground dataset="fintech" query={`WITH ok AS (
+  SELECT DISTINCT txn_id, amount
+  FROM transactions
+  WHERE status = 'SUCCESS'
+),
+ranked AS (
+  SELECT amount,
+         ROW_NUMBER() OVER (ORDER BY amount, txn_id) AS rn,
+         COUNT(*) OVER () AS n
+  FROM ok
+)
+SELECT n AS rows_used,
+       ROUND(AVG(amount), 2) AS median_amount
+FROM ranked
+WHERE rn IN ((n + 1) / 2, (n + 2) / 2);`} title="Median payment amount" />
+
+Output:
+
+| rows_used | median_amount |
+|---|---|
+| 21293 | 565.08 |
+
+
+The result is a single number: half of the payments are smaller and half are larger.
+
+### Example 2: mean versus median
+
+<SqlPlayground dataset="fintech" query={`WITH d AS (
+  SELECT DISTINCT txn_id, amount
+  FROM transactions
+  WHERE status = 'SUCCESS'
+),
+r AS (
+  SELECT amount,
+         ROW_NUMBER() OVER (ORDER BY amount, txn_id) AS rn,
+         COUNT(*) OVER () AS n
+  FROM d
+)
+SELECT (SELECT ROUND(AVG(amount), 2) FROM d) AS mean_amount,
+       ROUND(AVG(amount), 2) AS median_amount
+FROM r
+WHERE rn IN ((n + 1) / 2, (n + 2) / 2);`} title="Mean versus median" />
+
+Output:
+
+| mean_amount | median_amount |
+|---|---|
+| 1367.62 | 565.08 |
+
+
+The mean is far above the median. A small number of very large payments (and a few data-entry errors that are 100 times too big) pull the mean up. This is exactly why the median is the safer "typical" value.
+
+### Example 3: median per city
+
+Median delivery time (minutes) of delivered orders, per cleaned city.
+
+<SqlPlayground dataset="food_delivery" query={`WITH d AS (
+  SELECT DISTINCT delivery_id,
+         LOWER(TRIM(city)) AS city,
+         actual_minutes
+  FROM deliveries
+  WHERE delivery_status = 'Delivered'
+),
+r AS (
+  SELECT city, actual_minutes,
+         ROW_NUMBER() OVER (PARTITION BY city ORDER BY actual_minutes, delivery_id) AS rn,
+         COUNT(*)     OVER (PARTITION BY city) AS n
+  FROM d
+)
+SELECT city,
+       MAX(n) AS deliveries,
+       ROUND(AVG(actual_minutes), 1) AS median_minutes
+FROM r
+WHERE rn IN ((n + 1) / 2, (n + 2) / 2)
+GROUP BY city
+ORDER BY median_minutes DESC, city;`} title="Median per city" />
+
+Output:
+
+| city | deliveries | median_minutes |
+|---|---|---|
+| ahmedabad | 828 | 45 |
+| bengaluru | 2086 | 45 |
+| chennai | 1357 | 44 |
+| kolkata | 1214 | 44 |
+| mumbai | 2445 | 44 |
+| pune | 1063 | 44 |
+| delhi | 2415 | 43 |
+| hyderabad | 1610 | 43 |
+| jaipur | 668 | 43 |
+| lucknow | 604 | 43 |
+
+
+Both window functions use `PARTITION BY city`, so each city gets its own middle. Cleaning the city first stops "mumbai" and " Mumbai" from becoming two groups.
+
+### Example 4: the 90th percentile
+
+Operations often track the "slow tail", the time within which 90 percent of deliveries finish.
+
+<SqlPlayground dataset="food_delivery" query={`WITH d AS (
+  SELECT DISTINCT delivery_id, actual_minutes
+  FROM deliveries
+  WHERE delivery_status = 'Delivered'
+),
+r AS (
+  SELECT actual_minutes,
+         ROW_NUMBER() OVER (ORDER BY actual_minutes, delivery_id) AS rn,
+         COUNT(*) OVER () AS n
+  FROM d
+)
+SELECT n AS deliveries,
+       CAST(0.9 * n AS INTEGER) + (0.9 * n > CAST(0.9 * n AS INTEGER)) AS p90_position,
+       actual_minutes AS p90_minutes
+FROM r
+WHERE rn = CAST(0.9 * n AS INTEGER) + (0.9 * n > CAST(0.9 * n AS INTEGER));`} title="Nearest-rank p90" />
+
+Output:
+
+| deliveries | p90_position | p90_minutes |
+|---|---|---|
+| 14290 | 12861 | 62 |
+
+
+SQLite has no `CEIL` in every build, so the expression `CAST(x AS INTEGER) + (x > CAST(x AS INTEGER))` rounds up. In PostgreSQL you would simply write `PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY actual_minutes)`.
+
+## Common mistakes
+
+<CommonMistake>
+Using `AVG` and calling it the median. With skewed money or time data the two numbers are far apart.
+</CommonMistake>
+
+<CommonMistake>
+Taking only the row at position `n / 2`. For an even `n` you must average the two middle rows. For an odd `n`, `n / 2` rounds down to the wrong row.
+</CommonMistake>
+
+<CommonMistake>
+Leaving NULLs in the data. `ROW_NUMBER` and `COUNT(*)` count NULL rows, and NULLs sort first, so the middle moves. Filter `IS NOT NULL` first.
+</CommonMistake>
+
+<CommonMistake>
+Forgetting `PARTITION BY` when you want a median per group. You get one row for the whole table instead of one per group.
+</CommonMistake>
+
+<CommonMistake>
+Not breaking ties in `ROW_NUMBER`'s `ORDER BY`. With repeated values, two runs can pick different rows. The median value stays the same, but a percentile row can change.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="pattern-median" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "For 8 sorted values, which positions hold the median?", options: ["Position 4 only", "Positions 4 and 5, averaged", "Position 5 only", "Positions 3 and 6"], answer: 1, explanation: "With an even count the median is the average of the two middle values, positions 4 and 5." },
+  { q: "With (n + 1) / 2 and (n + 2) / 2 using integer division and n = 9, which positions are picked?", options: ["Both are 5, so one row", "4 and 5", "5 and 6", "9 and 10"], answer: 0, explanation: "(9+1)/2 = 5 and (9+2)/2 = 5 (integer division), so the same single middle row." },
+  { q: "Which database has no built-in MEDIAN or PERCENTILE_CONT?", options: ["PostgreSQL", "SQL Server", "SQLite", "Oracle"], answer: 2, explanation: "SQLite has neither, so you use ROW_NUMBER and COUNT." },
+  { q: "When is the median better than the mean?", options: ["Always", "When data has big outliers or is skewed", "When data is text", "Only for dates"], answer: 1, explanation: "Outliers drag the mean, while the median stays near the typical value." },
+  { q: "To get a median per city, what do you add to the window functions?", options: ["GROUP BY city only", "PARTITION BY city", "LIMIT 1", "DISTINCT city"], answer: 1, explanation: "PARTITION BY restarts numbering and counting inside each city." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+"Find the median" is a classic because it exposes whether you know window functions and can handle odd and even counts. Say the dialect out loud: built-in in PostgreSQL and SQL Server, manual in SQLite and MySQL.
+</InterviewAlert>
+
+<InterviewQ q="How do you calculate the median in SQL without a MEDIAN function?">
+I sort the values with `ROW_NUMBER() OVER (ORDER BY value)`, count them with `COUNT(*) OVER ()` and call it n, then average the values at positions `(n+1)/2` and `(n+2)/2` using integer division. That gives the middle row for odd n and the average of the two middle rows for even n. I filter NULLs first.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between PERCENTILE_CONT and PERCENTILE_DISC?">
+`PERCENTILE_CONT` is continuous: it interpolates, so the median of 4 and 6 is 5 even if 5 is not in the data. `PERCENTILE_DISC` is discrete: it returns an actual value from the data. For a median of an even count, CONT gives the average of the middle two.
+</InterviewQ>
+
+<InterviewQ q="Why would you report median and mean together?">
+If the mean is much higher than the median, the data is right-skewed: a few large values pull the mean up. Showing both tells the reader about the typical case and about the spread. For delivery times I would also add p90 to show the slow tail.
+</InterviewQ>
+
+<InterviewQ q="How would you compute the 90th percentile in SQLite?">
+Same method as the median: rank the sorted values, count n, and pick the row at position `CEIL(0.9 * n)` (nearest rank). In PostgreSQL I would use `PERCENTILE_CONT(0.9) WITHIN GROUP (ORDER BY col)`.
+</InterviewQ>
+
+## Key takeaways
+
+- Use the median for skewed data such as money and time.
+- SQLite recipe: `ROW_NUMBER`, `COUNT(*) OVER ()`, then `AVG` of positions `(n+1)/2` and `(n+2)/2`.
+- Add `PARTITION BY` for a median per group, and filter NULLs first.
+- A percentile is the value at position `CEIL(p * n)`.
+- PostgreSQL and SQL Server offer `PERCENTILE_CONT`; Oracle has `MEDIAN`; SQLite and MySQL need the manual method.
+
+## Further reading
+
+<FurtherReading ids={["mode-sql", "sqlite-docs", "postgres-docs", "sqlserver-docs"]} />

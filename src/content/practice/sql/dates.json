@@ -1,0 +1,350 @@
+[
+ {
+  "id": "sql-dates-001",
+  "module": "sql",
+  "topic": "dates",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "How many orders were placed in each year? Return `year` and `orders`, ordered by `year`.",
+  "dataset": "ecommerce",
+  "hint": "strftime('%Y', date).",
+  "solutionSql": "SELECT strftime('%Y', order_date) AS year, COUNT(*) AS orders FROM orders GROUP BY year ORDER BY year",
+  "orderMatters": true,
+  "explanation": "In PostgreSQL use EXTRACT(YEAR FROM order_date); in MySQL YEAR(order_date).",
+  "commonMistake": "Using YEAR() in SQLite.",
+  "interviewFrequency": "high",
+  "estimatedMinutes": 3,
+  "tags": [
+   "dates",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "year",
+    "orders"
+   ],
+   "rows": [
+    [
+     "2023",
+     4545
+    ],
+    [
+     "2024",
+     5555
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-dates-002",
+  "module": "sql",
+  "topic": "dates",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "How many users signed up in each month of 2024? Return `signup_month` (as YYYY-MM) and `signups`, ordered by `signup_month`.",
+  "dataset": "subscription",
+  "hint": "Group by strftime('%Y-%m', ...).",
+  "solutionSql": "SELECT strftime('%Y-%m', signup_date) AS signup_month, COUNT(*) AS signups FROM users WHERE signup_date >= '2024-01-01' AND signup_date < '2025-01-01' GROUP BY signup_month ORDER BY signup_month",
+  "orderMatters": true,
+  "explanation": "Filter with a half-open range, then bucket by month. PostgreSQL would use DATE_TRUNC('month', signup_date).",
+  "commonMistake": "Grouping by month number only.",
+  "interviewFrequency": "high",
+  "estimatedMinutes": 3,
+  "tags": [
+   "dates",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "signup_month",
+    "signups"
+   ],
+   "rows": [
+    [
+     "2024-01",
+     234
+    ],
+    [
+     "2024-02",
+     198
+    ],
+    [
+     "2024-03",
+     245
+    ],
+    [
+     "2024-04",
+     224
+    ],
+    [
+     "2024-05",
+     281
+    ],
+    [
+     "2024-06",
+     234
+    ],
+    [
+     "2024-07",
+     266
+    ],
+    [
+     "2024-08",
+     267
+    ],
+    [
+     "2024-09",
+     258
+    ],
+    [
+     "2024-10",
+     307
+    ],
+    [
+     "2024-11",
+     263
+    ],
+    [
+     "2024-12",
+     271
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-dates-003",
+  "module": "sql",
+  "topic": "dates",
+  "difficulty": "medium",
+  "language": "sql",
+  "question": "For subscriptions with a `paid_start_date`, what is the average number of days from `trial_start_date` to `paid_start_date`? Return `avg_days_to_pay`, rounded to 1 decimal.",
+  "dataset": "subscription",
+  "hint": "julianday(end) - julianday(start).",
+  "solutionSql": "SELECT ROUND(AVG(julianday(paid_start_date) - julianday(trial_start_date)), 1) AS avg_days_to_pay FROM subscriptions WHERE paid_start_date IS NOT NULL",
+  "orderMatters": false,
+  "explanation": "julianday turns dates into numbers so they can be subtracted. SQL Server uses DATEDIFF(day, start, end); MySQL uses DATEDIFF(end, start).",
+  "commonMistake": "Subtracting the text dates directly.",
+  "interviewFrequency": "high",
+  "estimatedMinutes": 6,
+  "tags": [
+   "dates",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "avg_days_to_pay"
+   ],
+   "rows": [
+    [
+     7
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-dates-004",
+  "module": "sql",
+  "topic": "dates",
+  "difficulty": "medium",
+  "language": "sql",
+  "question": "How many transactions happen on each weekday? Return `weekday_no` (0 = Sunday, as text from strftime) and `txns`, ordered by `weekday_no`.",
+  "dataset": "fintech",
+  "hint": "strftime('%w', ...).",
+  "solutionSql": "SELECT strftime('%w', txn_datetime) AS weekday_no, COUNT(*) AS txns FROM transactions GROUP BY weekday_no ORDER BY weekday_no",
+  "orderMatters": true,
+  "explanation": "In SQLite %w gives 0 to 6, Sunday first. In MySQL DAYOFWEEK starts at 1 for Sunday.",
+  "commonMistake": "Assuming Monday is 0.",
+  "interviewFrequency": "medium",
+  "estimatedMinutes": 6,
+  "tags": [
+   "dates",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "weekday_no",
+    "txns"
+   ],
+   "rows": [
+    [
+     "0",
+     3368
+    ],
+    [
+     "1",
+     3089
+    ],
+    [
+     "2",
+     3042
+    ],
+    [
+     "3",
+     3064
+    ],
+    [
+     "4",
+     3126
+    ],
+    [
+     "5",
+     3005
+    ],
+    [
+     "6",
+     3394
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-dates-005",
+  "module": "sql",
+  "topic": "dates",
+  "difficulty": "medium",
+  "language": "sql",
+  "question": "Count deliveries placed during the lunch hours 12:00 to 13:59 (hours 12 and 13). Return `lunch_orders`.",
+  "dataset": "food_delivery",
+  "hint": "Extract the hour and cast to a number.",
+  "solutionSql": "SELECT COUNT(*) AS lunch_orders FROM deliveries WHERE CAST(strftime('%H', order_time) AS INTEGER) BETWEEN 12 AND 13",
+  "orderMatters": false,
+  "explanation": "strftime returns text. CAST makes it a number so BETWEEN compares numerically.",
+  "commonMistake": "Comparing the text hour to numbers without CAST.",
+  "interviewFrequency": "medium",
+  "estimatedMinutes": 6,
+  "tags": [
+   "dates",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "lunch_orders"
+   ],
+   "rows": [
+    [
+     2176
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-dates-006",
+  "module": "sql",
+  "topic": "dates",
+  "difficulty": "hard",
+  "language": "sql",
+  "question": "Show weekly clicks for campaign 4. Weeks start on Monday. Return `week_start` and `clicks` for the first 5 weeks, ordered by `week_start`.",
+  "dataset": "marketing",
+  "hint": "Move to Sunday, then back 6 days.",
+  "solutionSql": "SELECT date(click_time, 'weekday 0', '-6 days') AS week_start, COUNT(*) AS clicks FROM clicks WHERE campaign_id = 4 GROUP BY week_start ORDER BY week_start LIMIT 5",
+  "orderMatters": true,
+  "explanation": "date(d, 'weekday 0') jumps forward to Sunday, then -6 days gives that week's Monday. PostgreSQL uses DATE_TRUNC('week', d).",
+  "commonMistake": "Using 'weekday 1', which moves forward to the next Monday and gives the wrong week.",
+  "interviewFrequency": "medium",
+  "estimatedMinutes": 10,
+  "tags": [
+   "dates",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "week_start",
+    "clicks"
+   ],
+   "rows": [
+    [
+     "2023-03-27",
+     49
+    ],
+    [
+     "2023-04-03",
+     201
+    ],
+    [
+     "2023-04-10",
+     201
+    ],
+    [
+     "2023-04-17",
+     218
+    ],
+    [
+     "2023-04-24",
+     202
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-dates-007",
+  "module": "sql",
+  "topic": "dates",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "How many hires happened in each year? Return `hire_year` and `hires` (count of unique employees), ordered by `hire_year`.",
+  "dataset": "hr",
+  "hint": "Group by year from strftime.",
+  "solutionSql": "SELECT strftime('%Y', hire_date) AS hire_year, COUNT(DISTINCT employee_id) AS hires FROM employees GROUP BY hire_year ORDER BY hire_year",
+  "orderMatters": true,
+  "explanation": "COUNT DISTINCT protects against duplicate employee rows.",
+  "commonMistake": "Counting duplicate rows.",
+  "interviewFrequency": "medium",
+  "estimatedMinutes": 3,
+  "tags": [
+   "dates",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "hire_year",
+    "hires"
+   ],
+   "rows": [
+    [
+     "2014",
+     127
+    ],
+    [
+     "2015",
+     119
+    ],
+    [
+     "2016",
+     139
+    ],
+    [
+     "2017",
+     110
+    ],
+    [
+     "2018",
+     112
+    ],
+    [
+     "2019",
+     115
+    ],
+    [
+     "2020",
+     117
+    ],
+    [
+     "2021",
+     133
+    ],
+    [
+     "2022",
+     494
+    ],
+    [
+     "2023",
+     476
+    ],
+    [
+     "2024",
+     458
+    ]
+   ]
+  }
+ }
+]

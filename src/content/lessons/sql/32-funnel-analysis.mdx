@@ -1,0 +1,250 @@
+---
+title: "Interview pattern: funnel analysis"
+description: "Count users at each step, compute step conversion and drop-off, enforce step order with timestamps, and compare segments."
+module: sql
+order: 32
+estimatedMinutes: 50
+objectives:
+  - "Recognise funnel, conversion and drop-off questions"
+  - "Count distinct users per step with conditional aggregation"
+  - "Calculate step-to-step and overall conversion"
+  - "Enforce step order and compare segments such as platform"
+tags: ["sql", "interview", "funnel", "conversion", "subscription"]
+---
+
+## Learning objectives
+
+- Recognise funnel questions from their wording.
+- Build a step-count table with `COUNT(DISTINCT CASE WHEN ...)`.
+- Compute step conversion, overall conversion and drop-off.
+- Make sure steps happened in the right order.
+- Compare a funnel across segments.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+A streaming app wants to know: of the people who sign up, how many start a free trial, how many then pay, and how many renew? Each step loses some people. The funnel shows where. Growth, product and marketing teams ask funnel questions every week, and so do interviewers.
+</RealWorld>
+
+## Concept
+
+### The recognition cue
+
+When you see **"funnel", "conversion rate from X to Y", "drop-off", "where do users leave"**, think: *distinct users at each step, then divide step by step.*
+
+Analogy: a real funnel. You pour 1000 users in at the top. Some spill at every stage. The funnel table tells you how many reach each narrower part.
+
+### Two ratios
+
+<FormulaCard title="Funnel ratios">
+Step conversion = users at this step / users at the previous step
+
+Overall conversion = users at this step / users at the first step
+
+Drop-off = 100% - step conversion
+</FormulaCard>
+
+### The template: conditional aggregation
+
+```sql
+SELECT
+  COUNT(DISTINCT CASE WHEN LOWER(event_name) = 'signup'          THEN user_id END) AS step1_signup,
+  COUNT(DISTINCT CASE WHEN LOWER(event_name) = 'trial_start'     THEN user_id END) AS step2_trial,
+  COUNT(DISTINCT CASE WHEN LOWER(event_name) = 'payment_success' THEN user_id END) AS step3_paid
+FROM events;
+```
+
+One scan, one row, steps as columns. For a vertical layout (one row per step) use `UNION ALL`, or unpivot afterwards.
+
+### Counting users, not events
+
+A user can fire `app_open` 30 times but is **one** user in the funnel. Always `COUNT(DISTINCT user_id)`.
+
+### Strict versus loose funnels
+
+- **Loose**: a user counts at step 3 if they ever did step 3, even if the step 2 event is missing. Simple, but can break the "never goes up" rule.
+- **Strict**: a user counts at a step only if they did all earlier steps, in order. Build it with a per-user table of first times (`MIN(CASE WHEN ... THEN event_time END)`) and compare timestamps.
+
+<Tip>
+Ask the interviewer: "Does the order of steps matter, and is there a time window, such as 7 days?" It shows product thinking.
+</Tip>
+
+## Worked examples
+
+### Example 1: step counts
+
+How many distinct users reached each step of the subscription journey? Event names have mixed case (`SIGNUP` and `signup`), so we lower-case them.
+
+<SqlPlayground dataset="subscription" query={`SELECT
+  COUNT(DISTINCT CASE WHEN LOWER(event_name) = 'signup'          THEN user_id END) AS signed_up,
+  COUNT(DISTINCT CASE WHEN LOWER(event_name) = 'trial_start'     THEN user_id END) AS trial_started,
+  COUNT(DISTINCT CASE WHEN LOWER(event_name) = 'payment_success' THEN user_id END) AS paid,
+  COUNT(DISTINCT CASE WHEN LOWER(event_name) = 'renewal_success' THEN user_id END) AS renewed
+FROM events;`} title="Distinct users at each step" />
+
+**Output:**
+
+| signed_up | trial_started | paid | renewed |
+|---|---|---|---|
+| 5200 | 3308 | 1193 | 766 |
+
+Counts only go down. Now we turn them into ratios.
+
+### Example 2: step conversion and drop-off (vertical layout)
+
+<SqlPlayground dataset="subscription" query={`WITH steps AS (
+  SELECT 1 AS step_no, 'signup' AS step, COUNT(DISTINCT user_id) AS users
+  FROM events WHERE LOWER(event_name) = 'signup'
+  UNION ALL
+  SELECT 2, 'trial_start', COUNT(DISTINCT user_id)
+  FROM events WHERE LOWER(event_name) = 'trial_start'
+  UNION ALL
+  SELECT 3, 'payment_success', COUNT(DISTINCT user_id)
+  FROM events WHERE LOWER(event_name) = 'payment_success'
+  UNION ALL
+  SELECT 4, 'renewal_success', COUNT(DISTINCT user_id)
+  FROM events WHERE LOWER(event_name) = 'renewal_success'
+)
+SELECT step_no, step, users,
+       ROUND(100.0 * users / FIRST_VALUE(users) OVER (ORDER BY step_no), 1) AS overall_pct,
+       ROUND(100.0 * users / LAG(users) OVER (ORDER BY step_no), 1) AS step_conv_pct,
+       ROUND(100.0 - 100.0 * users / LAG(users) OVER (ORDER BY step_no), 1) AS drop_off_pct
+FROM steps
+ORDER BY step_no;`} title="Step conversion and drop-off" />
+
+**Output:**
+
+| step_no | step | users | overall_pct | step_conv_pct | drop_off_pct |
+|---|---|---|---|---|---|
+| 1 | signup | 5200 | 100.0 | NULL | NULL |
+| 2 | trial_start | 3308 | 63.6 | 63.6 | 36.4 |
+| 3 | payment_success | 1193 | 22.9 | 36.1 | 63.9 |
+| 4 | renewal_success | 766 | 14.7 | 64.2 | 35.8 |
+
+`FIRST_VALUE` gives the top of the funnel for the overall percent, and `LAG` gives the previous step for step conversion. The biggest drop is between trial and payment. That is where the product team should look first.
+
+### Example 3: strict order, by platform
+
+A strict funnel: a user is counted at the trial step only if the trial came after signup, and at the payment step only if payment came after the trial. We also split by platform from the `users` table.
+
+<SqlPlayground dataset="subscription" query={`WITH firsts AS (
+  SELECT user_id,
+         MIN(CASE WHEN LOWER(event_name) = 'signup'          THEN event_time END) AS t_signup,
+         MIN(CASE WHEN LOWER(event_name) = 'trial_start'     THEN event_time END) AS t_trial,
+         MIN(CASE WHEN LOWER(event_name) = 'payment_success' THEN event_time END) AS t_paid
+  FROM events
+  GROUP BY user_id
+),
+joined AS (
+  SELECT u.platform, f.*
+  FROM firsts f
+  JOIN (SELECT DISTINCT user_id, platform FROM users) u ON u.user_id = f.user_id
+)
+SELECT platform,
+       COUNT(t_signup) AS signed_up,
+       SUM(t_trial IS NOT NULL AND t_trial >= t_signup) AS trial,
+       SUM(t_paid IS NOT NULL AND t_trial IS NOT NULL
+           AND t_trial >= t_signup AND t_paid >= t_trial) AS paid,
+       ROUND(100.0 * SUM(t_paid IS NOT NULL AND t_trial IS NOT NULL
+           AND t_trial >= t_signup AND t_paid >= t_trial)
+           / NULLIF(SUM(t_trial IS NOT NULL AND t_trial >= t_signup), 0), 1) AS trial_to_paid_pct
+FROM joined
+GROUP BY platform
+ORDER BY platform;`} title="Strict ordered funnel by platform" />
+
+**Output:**
+
+| platform | signed_up | trial | paid | trial_to_paid_pct |
+|---|---|---|---|---|
+| Android | 3209 | 1973 | 612 | 31.0 |
+| Web | 863 | 502 | 199 | 39.6 |
+| iOS | 1128 | 833 | 382 | 45.9 |
+
+`MIN(CASE WHEN ... THEN event_time END)` gives each user's first time at a step, or NULL if never. Comparing the timestamps enforces the order. iOS converts trials to paid better than Android, as the product team suspected.
+
+### Example 4: an e-commerce funnel
+
+Funnels exist outside apps. For an online store: customers, then customers who ordered, then customers with a delivered order, then customers who returned something.
+
+<SqlPlayground dataset="ecommerce" query={`WITH cust AS (SELECT DISTINCT customer_id FROM customers),
+ordered AS (SELECT DISTINCT customer_id FROM orders),
+delivered AS (SELECT DISTINCT customer_id FROM orders WHERE order_status = 'Delivered'),
+returned AS (
+  SELECT DISTINCT o.customer_id
+  FROM returns r JOIN orders o ON o.order_id = r.order_id
+)
+SELECT (SELECT COUNT(*) FROM cust) AS customers,
+       (SELECT COUNT(*) FROM ordered) AS placed_order,
+       (SELECT COUNT(*) FROM delivered) AS got_delivery,
+       (SELECT COUNT(*) FROM returned) AS made_return;`} title="Customer funnel in e-commerce" />
+
+**Output:**
+
+| customers | placed_order | got_delivery | made_return |
+|---|---|---|---|
+| 4500 | 2222 | 2166 | 1005 |
+
+Each step is its own set of distinct customers. Using `DISTINCT` inside each CTE protects against the duplicate rows in `customers` and `orders`.
+
+## Common mistakes
+
+<CommonMistake>
+**Counting events, not users.** `COUNT(*)` of `app_open` events says nothing about users. Use `COUNT(DISTINCT user_id)`.
+</CommonMistake>
+<CommonMistake>
+**Case-sensitive event names.** `'signup'` misses `'SIGNUP'`, so the first step is too small and conversion looks better than it is.
+</CommonMistake>
+<CommonMistake>
+**Ignoring order.** A user whose payment time is before their trial time should not count as converted from the trial. Compare timestamps for strict funnels.
+</CommonMistake>
+<CommonMistake>
+**Dividing by the wrong base.** Step conversion uses the previous step. Overall conversion uses the first step. Mixing them gives a number nobody can interpret.
+</CommonMistake>
+<CommonMistake>
+**Ignoring users who are still in the funnel.** A user who signed up yesterday has not had time to pay. Use a time window or only mature cohorts for conversion.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="pattern-funnel" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Step 1 has 1000 users and step 2 has 600. What is the step conversion and drop-off?", options: ["60% and 40%", "40% and 60%", "60% and 60%", "600% and 40%"], answer: 0, explanation: "600 / 1000 = 60% converted, so 40% dropped off." },
+  { q: "Why COUNT(DISTINCT user_id) in a funnel?", options: ["A user can have many events but is one person", "It is faster", "It sorts the funnel", "It removes NULL"], answer: 0, explanation: "A person who opens the app 30 times is still one user at that step." },
+  { q: "What does MIN(CASE WHEN event_name = 'trial_start' THEN event_time END) return per user?", options: ["Their last trial", "Their first trial time, or NULL if none", "A count", "Always a date"], answer: 1, explanation: "CASE returns the time only for trial rows, MIN picks the earliest, and NULL means the user never reached the step." },
+  { q: "What is overall conversion?", options: ["Users at a step / users at the previous step", "Users at a step / users at the first step", "Users at the last step / users at step 2", "Drop-off + 1"], answer: 1, explanation: "Overall conversion measures each step against the top of the funnel." },
+  { q: "Which clause lets you compare each step with the previous one in a vertical funnel table?", options: ["LAG()", "GROUP BY", "DISTINCT", "HAVING"], answer: 0, explanation: "LAG reads the previous row's user count, which is the denominator for step conversion." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Funnel questions test whether you think about the user, not the row. Clarify steps, order, and time window first, then count distinct users.
+</InterviewAlert>
+
+<InterviewQ q="How would you compute the signup to paid conversion funnel?">
+"I clarify the steps first: signup, trial start, payment. And whether order and a time window matter. Then I count distinct users per step with conditional aggregation: `COUNT(DISTINCT CASE WHEN event = 'signup' THEN user_id END)`, and the same for the other steps. For strict order, I compute each user's first time per step with `MIN(CASE ...)` and require each time to be at or after the previous one. Step conversion is each step over the previous step, and overall conversion is each step over signup. I would also normalise event name casing, because the logs are messy."
+</InterviewQ>
+<InterviewQ q="Conversion from trial to paid is lower on Android than iOS. What next?">
+First confirm the difference is real: check sample sizes and the same time window. Then segment further: plan, acquisition source, city, app version. Look for a product cause such as payment failures on Android, UPI handling, or slow app. Check the payment_failed events by platform. Recommend a test or a fix and say how I would measure success.
+</InterviewQ>
+<InterviewQ q="What is the difference between a loose and a strict funnel?">
+A loose funnel counts a user at a step if they ever did that event. A strict funnel counts them only if they completed all earlier steps, in order, possibly within a time window. Strict is more accurate but needs per-user timestamps. Loose is quick and often good enough for a first look.
+</InterviewQ>
+<InterviewQ q="How do you present a funnel to a non-technical manager?">
+A simple table or bar chart with count, step conversion and drop-off at each step, plus one sentence on the biggest leak ("45% of trials never pay") and one suggested action. Avoid showing every ratio. Highlight the step the team can change.
+</InterviewQ>
+
+## Key takeaways
+
+- Cue: "funnel", "conversion", "drop-off" means distinct users per step, then ratios.
+- Use `COUNT(DISTINCT CASE WHEN step THEN user_id END)` for one-row step counts.
+- Step conversion divides by the previous step, overall conversion divides by the first.
+- For strict funnels use `MIN(CASE ...)` timestamps per user and compare order.
+- Clean event names, count users not events, and ignore users who have not had time to convert.
+
+## Further reading
+
+<FurtherReading ids={["mode-sql", "sqlite-docs", "datalemur"]} />

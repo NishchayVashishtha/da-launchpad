@@ -1,0 +1,176 @@
+---
+title: "Logical functions: IF, nested IF vs IFS, AND, OR and IFERROR"
+description: "Make Excel decide with IF, IFS, AND, OR and IFERROR, and learn when to choose IFS over nested IF."
+module: excel
+order: 4
+estimatedMinutes: 40
+objectives: ["Write IF formulas with text and numbers", "Choose between nested IF and IFS", "Combine tests with AND and OR", "Handle errors with IFERROR without hiding bugs"]
+tags: ["excel", "if", "ifs", "and-or", "iferror"]
+---
+
+## Learning objectives
+
+- Write an `IF` formula that returns one of two results.
+- Build tiers with nested `IF` and with `IFS`.
+- Combine tests with `AND` and `OR`.
+- Use `IFERROR` to show a clean message, and know when not to.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+A fintech team wants every transaction labelled: under 1,000 is Small, 1,000 to 4,999 is Medium, 5,000 and above is Large. The analyst writes one formula, fills it down 2,000 rows, and the ops team gets a labelled file in minutes.
+</RealWorld>
+
+Labelling, bucketing and flagging are daily work. `IF` is the base of almost all of it.
+
+## Concept
+
+A **logical test** is a statement that is either TRUE or FALSE, such as `J2>=5000`.
+
+`IF(test, value_if_true, value_if_false)` is like a traffic signal: if the light is green go, otherwise stop.
+
+**Comparison operators**: `=`, `<>` (not equal), `>`, `<`, `>=`, `<=`.
+
+**AND and OR**
+
+- `AND(test1, test2, ...)` is TRUE only if all tests are TRUE.
+- `OR(test1, test2, ...)` is TRUE if at least one test is TRUE.
+- `NOT(test)` flips TRUE and FALSE.
+
+**Nested IF versus IFS.** To make three or more buckets you can put an `IF` inside another `IF`:
+
+```
+=IF(J2<1000,"Small",IF(J2<5000,"Medium","Large"))
+```
+
+`IFS` (Excel 2019 and Microsoft 365) checks pairs of test and result in order:
+
+```
+=IFS(J2<1000,"Small",J2<5000,"Medium",TRUE,"Large")
+```
+
+IFS is easier to read when there are many tiers. The final `TRUE` works as the "everything else" bucket. If no test is TRUE and you have no catch-all, IFS returns `#N/A`.
+
+**IFERROR(value, value_if_error)** replaces any error with your message:
+
+```
+=IFERROR(VLOOKUP(A2,Table,3,FALSE),"Not found")
+```
+
+<FormulaCard title="Tier pattern">
+Order your tests from the smallest bucket upward (or largest downward) and let the first TRUE win. Both nested IF and IFS stop at the first TRUE.
+</FormulaCard>
+
+<Tip>
+For a simple "Yes or No" flag you can skip IF: `=--(J2>=5000)` returns 1 or 0. Summing that column counts the matches.
+</Tip>
+
+## Worked examples
+
+<Download href="data/excel/excel-functions.xlsx" label="Download excel-functions.xlsx" />
+
+Use the `orders` sheet (columns A to M, 2,000 orders). Put formulas in column N.
+
+**Example 1: simple IF.**
+
+```
+=IF(J2>=5000,"Large","Regular")
+```
+
+Fill down and count with `=COUNTIF(N2:N2001,"Large")`. Result: **666** Large orders.
+
+**Example 2: three tiers with IFS.**
+
+```
+=IFS(J2<1000,"Small",J2<5000,"Medium",TRUE,"Large")
+```
+
+| Label | Orders |
+|---|---|
+| Small | 507 |
+| Medium | 827 |
+| Large | 666 |
+
+The three labels add to 2,000.
+
+**Example 3: AND with OR.** Flag orders that are Delivered, came from an app, and are 5,000 or more:
+
+```
+=IF(AND(E2="Delivered",OR(F2="Android App",F2="iOS App"),J2>=5000),1,0)
+```
+
+`=SUM(N2:N2001)` gives **406**.
+
+**Example 4: IFERROR.** There is no order 123456.
+
+```
+=IFERROR(VLOOKUP(123456,orders!A:M,10,FALSE),"No such order")
+```
+
+Result: `No such order`. For order 1004 the same formula returns `3008.16`.
+
+## Common mistakes
+
+<CommonMistake>
+Writing text without quotes: `=IF(E2=Delivered,...)`. Excel treats `Delivered` as a name and returns `#NAME?`. Text needs double quotes.
+</CommonMistake>
+
+<CommonMistake>
+Wrong order in nested tests. `=IF(J2<5000,"Medium",IF(J2<1000,"Small",...))` labels every small order as Medium, because the first test is already TRUE.
+</CommonMistake>
+
+<CommonMistake>
+Writing `OR(F2="Android App","iOS App")`. Each test must be a full comparison: `OR(F2="Android App",F2="iOS App")`.
+</CommonMistake>
+
+<CommonMistake>
+Wrapping everything in IFERROR. It also hides real mistakes such as a wrong column number. Use it only where an error is expected and normal, like a lookup that may not find a key.
+</CommonMistake>
+
+<CommonMistake>
+Comparing numbers stored as text. `"5000">=1000` can behave unexpectedly. Check types first.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="logical" module="excel" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What does =IF(J2>=5000,\"Large\",\"Regular\") return when J2 is 5000?", options: ["Large", "Regular", "#VALUE!", "TRUE"], answer: 0, explanation: "The test J2>=5000 is TRUE for exactly 5000, so the first result is returned." },
+  { q: "Which function is TRUE only when every test is TRUE?", options: ["OR", "AND", "NOT", "IFERROR"], answer: 1, explanation: "AND needs all conditions TRUE. OR needs at least one." },
+  { q: "In IFS, what does a final pair of TRUE, \"Other\" do?", options: ["Causes an error", "Works as the else bucket", "Is ignored", "Returns TRUE"], answer: 1, explanation: "TRUE is always true, so it catches every row that failed the earlier tests." },
+  { q: "Which Excel versions support IFS?", options: ["All versions", "Excel 2019 and Microsoft 365", "Only Excel 2003", "Only Mac"], answer: 1, explanation: "IFS arrived in Excel 2019 and Microsoft 365. Use nested IF for older versions." },
+  { q: "When is IFERROR a bad idea?", options: ["When a lookup may not find a key", "When it hides a genuine formula mistake", "When you want a clean message", "Never"], answer: 1, explanation: "IFERROR hides every error, including real bugs. Use it where an error is expected." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers love "label customers into tiers" tasks. Say which approach you pick (IFS for readability, nested IF for compatibility) and why.
+</InterviewAlert>
+
+<InterviewQ q="Nested IF or IFS: which do you prefer?">
+IFS when everyone has Excel 2019 or later, because it is flat and easier to read and audit. Nested IF when the file goes to someone with an older version. In both, the order of tests matters because the first TRUE wins.
+</InterviewQ>
+
+<InterviewQ q="How do you check if a value is between two limits?">
+Use AND: `=AND(A2>=1000,A2<5000)`. Writing `1000<=A2<5000` does not work in Excel.
+</InterviewQ>
+
+<InterviewQ q="What does IFERROR do and what is the risk?">
+It returns your fallback when the formula gives an error. The risk is that it hides every error, so a wrong column number looks like "Not found". I use it only on lookups where missing keys are expected, and I count the fallback results as a check.
+</InterviewQ>
+
+## Key takeaways
+
+- `IF(test, yes, no)` is the base of every label or flag.
+- The first TRUE wins in nested IF and IFS, so order your tests.
+- AND needs all tests TRUE, OR needs one. Each test must be a full comparison.
+- `IFS` is cleaner than nested IF, but needs Excel 2019 or Microsoft 365.
+- Use `IFERROR` only where an error is expected.
+
+## Further reading
+
+<FurtherReading ids={["excel-support", "chandoo", "excelisfun"]} />

@@ -1,0 +1,232 @@
+[
+ {
+  "id": "sql-nulls-001",
+  "module": "sql",
+  "topic": "nulls",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "How many customers have no email recorded? Return `no_email`.",
+  "dataset": "ecommerce",
+  "hint": "Use IS NULL.",
+  "solutionSql": "SELECT COUNT(*) AS no_email FROM customers WHERE email IS NULL",
+  "orderMatters": false,
+  "explanation": "= NULL never matches. IS NULL is the correct test.",
+  "commonMistake": "Writing email = NULL.",
+  "interviewFrequency": "high",
+  "estimatedMinutes": 3,
+  "tags": [
+   "nulls",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "no_email"
+   ],
+   "rows": [
+    [
+     328
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-nulls-002",
+  "module": "sql",
+  "topic": "nulls",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "How many employee rows have no manager (`manager_id` is NULL)? Return `top_level`.",
+  "dataset": "hr",
+  "hint": "IS NULL.",
+  "solutionSql": "SELECT COUNT(*) AS top_level FROM employees WHERE manager_id IS NULL",
+  "orderMatters": false,
+  "explanation": "A NULL manager means a top-level manager here, so the NULL has meaning.",
+  "commonMistake": "Filling the NULL with 0, which would invent a manager.",
+  "interviewFrequency": "medium",
+  "estimatedMinutes": 3,
+  "tags": [
+   "nulls",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "top_level"
+   ],
+   "rows": [
+    [
+     118
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-nulls-003",
+  "module": "sql",
+  "topic": "nulls",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "What is the average `exit_interview_score` in `attrition`, ignoring missing scores, rounded to 2 decimals? Return `avg_score`.",
+  "dataset": "hr",
+  "hint": "AVG ignores NULLs.",
+  "solutionSql": "SELECT ROUND(AVG(exit_interview_score), 2) AS avg_score FROM attrition",
+  "orderMatters": false,
+  "explanation": "AVG skips NULLs by itself, so no special handling is needed.",
+  "commonMistake": "Wrapping with COALESCE(...,0), which lowers the average.",
+  "interviewFrequency": "high",
+  "estimatedMinutes": 3,
+  "tags": [
+   "nulls",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "avg_score"
+   ],
+   "rows": [
+    [
+     2.82
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-nulls-004",
+  "module": "sql",
+  "topic": "nulls",
+  "difficulty": "medium",
+  "language": "sql",
+  "question": "Count customers whose gender is not 'Female', INCLUDING customers whose gender is unknown (NULL). Return `not_female_incl_unknown`.",
+  "dataset": "ecommerce",
+  "hint": "Add OR gender IS NULL.",
+  "solutionSql": "SELECT COUNT(*) AS not_female_incl_unknown FROM customers WHERE gender <> 'Female' OR gender IS NULL",
+  "orderMatters": false,
+  "explanation": "NULL <> 'Female' is unknown, so those rows are dropped unless you add IS NULL.",
+  "commonMistake": "Using only gender <> 'Female' and silently losing the NULL rows.",
+  "interviewFrequency": "high",
+  "estimatedMinutes": 6,
+  "tags": [
+   "nulls",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "not_female_incl_unknown"
+   ],
+   "rows": [
+    [
+     2615
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-nulls-005",
+  "module": "sql",
+  "topic": "nulls",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "How many conversions have no revenue figure (`revenue_inr` is NULL)? Return `no_revenue`.",
+  "dataset": "marketing",
+  "hint": "IS NULL.",
+  "solutionSql": "SELECT COUNT(*) AS no_revenue FROM conversions WHERE revenue_inr IS NULL",
+  "orderMatters": false,
+  "explanation": "Signups and leads carry no revenue by design.",
+  "commonMistake": "Treating NULL revenue as zero in averages.",
+  "interviewFrequency": "medium",
+  "estimatedMinutes": 3,
+  "tags": [
+   "nulls",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "no_revenue"
+   ],
+   "rows": [
+    [
+     109
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-nulls-006",
+  "module": "sql",
+  "topic": "nulls",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "For the first 5 failed transactions by `failed_txn_id`, return `failed_txn_id` and `retry_flag`, which is `retry_succeeded` with NULL replaced by -1.",
+  "dataset": "fintech",
+  "hint": "COALESCE(col, -1).",
+  "solutionSql": "SELECT failed_txn_id, COALESCE(retry_succeeded, -1) AS retry_flag FROM failed_transactions ORDER BY failed_txn_id LIMIT 5",
+  "orderMatters": true,
+  "explanation": "COALESCE returns the first non-NULL value. IFNULL(a, b) works in SQLite and MySQL; ISNULL(a, b) in SQL Server.",
+  "commonMistake": "Using = NULL instead of COALESCE.",
+  "interviewFrequency": "medium",
+  "estimatedMinutes": 3,
+  "tags": [
+   "nulls",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "failed_txn_id",
+    "retry_flag"
+   ],
+   "rows": [
+    [
+     1,
+     -1
+    ],
+    [
+     2,
+     1
+    ],
+    [
+     3,
+     1
+    ],
+    [
+     4,
+     1
+    ],
+    [
+     5,
+     1
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-nulls-007",
+  "module": "sql",
+  "topic": "nulls",
+  "difficulty": "medium",
+  "language": "sql",
+  "question": "Compare the average `discount_pct` in `sales` two ways: `avg_known` ignoring NULLs, and `avg_null_as_zero` treating NULL as 0. Round both to 3 decimals.",
+  "dataset": "retail",
+  "hint": "One plain AVG and one AVG over COALESCE.",
+  "solutionSql": "SELECT ROUND(AVG(discount_pct), 3) AS avg_known, ROUND(AVG(COALESCE(discount_pct, 0)), 3) AS avg_null_as_zero FROM sales",
+  "orderMatters": false,
+  "explanation": "The second average is lower because the invented zeros add rows without adding discount. Which is right depends on what NULL means.",
+  "commonMistake": "Assuming the two averages are the same.",
+  "interviewFrequency": "high",
+  "estimatedMinutes": 6,
+  "tags": [
+   "nulls",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "avg_known",
+    "avg_null_as_zero"
+   ],
+   "rows": [
+    [
+     4.373,
+     4.195
+    ]
+   ]
+  }
+ }
+]

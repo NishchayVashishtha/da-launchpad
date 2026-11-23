@@ -4,35 +4,785 @@
     "day": 1,
     "title": "Understand the role and set up your tools",
     "tasks": [
-      "Read the Start Here lessons on what a Data Analyst does",
-      "Install VS Code and Git",
-      "Log your first study hours on the Dashboard"
+      "Read the Start Here lessons on the Data Analyst role and the 12-week plan",
+      "Install VS Code, Git and test Excel",
+      "Create a GitHub account and push a first repository",
+      "Log your hours on the Dashboard"
     ],
     "links": [
       {
         "label": "Start Here",
         "href": "/start-here/"
       }
-    ]
+    ],
+    "hours": "5-6"
   },
   {
     "week": 1,
     "day": 2,
     "title": "First SQL queries",
     "tasks": [
+      "Learn what a database, table, row and column are",
       "Open the SQL playground and explore a dataset",
-      "Write 5 simple SELECT queries",
-      "Mark one practice question as done"
+      "Write 10 simple SELECT queries",
+      "Do 5 easy practice questions"
     ],
     "links": [
       {
+        "label": "SQL",
+        "href": "/sql/"
+      },
+      {
         "label": "SQL playground",
         "href": "/playground/"
+      }
+    ],
+    "hours": "5-6"
+  },
+  {
+    "week": 1,
+    "day": 3,
+    "title": "Filtering rows with WHERE",
+    "tasks": [
+      "Learn WHERE with comparison operators, AND, OR, IN, BETWEEN",
+      "Write 10 filter queries",
+      "Do 8 easy practice questions"
+    ],
+    "links": [
+      {
+        "label": "SQL",
+        "href": "/sql/"
+      },
+      {
+        "label": "SQL playground",
+        "href": "/playground/"
+      }
+    ],
+    "hours": "5-6"
+  },
+  {
+    "week": 1,
+    "day": 4,
+    "title": "Excel basics and data types",
+    "tasks": [
+      "Learn the Excel interface, shortcuts, data types and formatting",
+      "Practise SUM, AVERAGE, COUNT, MIN and MAX",
+      "Finish 8 easy Excel practice tasks"
+    ],
+    "links": [
+      {
+        "label": "Excel",
+        "href": "/excel/"
+      }
+    ],
+    "hours": "5-6"
+  },
+  {
+    "week": 1,
+    "day": 5,
+    "title": "Sorting, limiting and Excel cleaning",
+    "tasks": [
+      "Learn ORDER BY, LIMIT and DISTINCT in SQL",
+      "Learn TRIM, Remove Duplicates and Find and Replace in Excel",
+      "Do 8 SQL and 4 Excel practice questions"
+    ],
+    "links": [
+      {
+        "label": "SQL",
+        "href": "/sql/"
+      },
+      {
+        "label": "Excel",
+        "href": "/excel/"
+      }
+    ],
+    "hours": "5-6"
+  },
+  {
+    "week": 1,
+    "day": 6,
+    "title": "NULLs, mini project start, and study habits",
+    "tasks": [
+      "Learn NULL handling and IS NULL",
+      "Read the study-effectively lesson and start your error log",
+      "Start Mini Project 1: choose a dataset and write 3 business questions",
+      "Do 8 mixed SQL questions"
+    ],
+    "links": [
+      {
+        "label": "SQL",
+        "href": "/sql/"
+      },
+      {
+        "label": "Start Here",
+        "href": "/start-here/"
+      },
+      {
+        "label": "Projects",
+        "href": "/projects/"
+      }
+    ],
+    "hours": "5-6"
+  },
+  {
+    "week": 1,
+    "day": 7,
+    "title": "Revision and mock test",
+    "tasks": [
+      "Redo every question you got wrong this week",
+      "Take a timed 30-45 minute mock on this week's topics",
+      "Update your error log and log your study hours",
+      "Plan next week: aggregates and Excel formulas"
+    ],
+    "links": [
+      {
+        "label": "SQL",
+        "href": "/sql/"
+      },
+      {
+        "label": "Excel",
+        "href": "/excel/"
       },
       {
         "label": "Practice hub",
         "href": "/practice/"
       }
-    ]
+    ],
+    "hours": "5-6"
+  },
+  {
+    "week": 2,
+    "day": 1,
+    "title": "SQL aggregate functions",
+    "tasks": [
+      "Learn COUNT, SUM, AVG, MIN, MAX",
+      "Write 10 aggregate queries",
+      "Do 8 practice questions"
+    ],
+    "links": [
+      {
+        "label": "SQL",
+        "href": "/sql/"
+      },
+      {
+        "label": "SQL playground",
+        "href": "/playground/"
+      }
+    ],
+    "hours": "5-6"
+  },
+  {
+    "week": 2,
+    "day": 2,
+    "title": "GROUP BY and HAVING",
+    "tasks": [
+      "Learn GROUP BY with aggregates and HAVING vs WHERE",
+      "Write 10 grouped queries on the practice datasets",
+      "Do 8 practice questions"
+    ],
+    "links": [
+      {
+        "label": "SQL",
+        "href": "/sql/"
+      },
+      {
+        "label": "SQL playground",
+        "href": "/playground/"
+      }
+    ],
+    "hours": "5-6"
+  },
+  {
+    "week": 2,
+    "day": 3,
+    "title": "Excel logical and text functions",
+    "tasks": [
+      "Learn IF, IFS, AND, OR",
+      "Learn text functions such as LEFT, RIGHT, MID, TEXTJOIN and Flash Fill",
+      "Do 8 Excel practice tasks"
+    ],
+    "links": [
+      {
+        "label": "Excel",
+        "href": "/excel/"
+      }
+    ],
+    "hours": "5-6"
+  },
+  {
+    "week": 2,
+    "day": 4,
+    "title": "CASE WHEN and string functions in SQL",
+    "tasks": [
+      "Learn CASE WHEN for categories",
+      "Learn UPPER, LOWER, SUBSTR, LIKE and REPLACE in SQLite",
+      "Do 10 practice questions"
+    ],
+    "links": [
+      {
+        "label": "SQL",
+        "href": "/sql/"
+      },
+      {
+        "label": "SQL playground",
+        "href": "/playground/"
+      }
+    ],
+    "hours": "5-6"
+  },
+  {
+    "week": 2,
+    "day": 5,
+    "title": "Excel pivot tables",
+    "tasks": [
+      "Build pivot tables, pivot charts and slicers",
+      "Summarise a sales sheet by city and month",
+      "Do 6 Excel practice tasks"
+    ],
+    "links": [
+      {
+        "label": "Excel",
+        "href": "/excel/"
+      }
+    ],
+    "hours": "5-6"
+  },
+  {
+    "week": 2,
+    "day": 6,
+    "title": "Date functions and mixed practice",
+    "tasks": [
+      "Learn SQL date functions with strftime",
+      "Learn Excel date functions",
+      "Do 12 mixed practice questions and continue Mini Project 1"
+    ],
+    "links": [
+      {
+        "label": "SQL",
+        "href": "/sql/"
+      },
+      {
+        "label": "Excel",
+        "href": "/excel/"
+      },
+      {
+        "label": "Projects",
+        "href": "/projects/"
+      }
+    ],
+    "hours": "5-6"
+  },
+  {
+    "week": 2,
+    "day": 7,
+    "title": "Revision and mock test",
+    "tasks": [
+      "Redo every question you got wrong this week",
+      "Take a timed 30-45 minute mock on this week's topics",
+      "Update your error log and log your study hours",
+      "Plan next week: joins and Excel lookups"
+    ],
+    "links": [
+      {
+        "label": "SQL",
+        "href": "/sql/"
+      },
+      {
+        "label": "Practice hub",
+        "href": "/practice/"
+      }
+    ],
+    "hours": "5-6"
+  },
+  {
+    "week": 3,
+    "day": 1,
+    "title": "SQL INNER JOIN",
+    "tasks": [
+      "Learn why data is split across tables and how keys connect them",
+      "Write 10 INNER JOIN queries",
+      "Do 8 practice questions"
+    ],
+    "links": [
+      {
+        "label": "SQL",
+        "href": "/sql/"
+      },
+      {
+        "label": "SQL playground",
+        "href": "/playground/"
+      }
+    ],
+    "hours": "5-6"
+  },
+  {
+    "week": 3,
+    "day": 2,
+    "title": "LEFT JOIN and finding missing rows",
+    "tasks": [
+      "Learn LEFT JOIN and the anti-join pattern",
+      "Find customers who never ordered",
+      "Do 8 practice questions"
+    ],
+    "links": [
+      {
+        "label": "SQL",
+        "href": "/sql/"
+      },
+      {
+        "label": "SQL playground",
+        "href": "/playground/"
+      }
+    ],
+    "hours": "5-6"
+  },
+  {
+    "week": 3,
+    "day": 3,
+    "title": "Excel lookups",
+    "tasks": [
+      "Learn VLOOKUP, XLOOKUP and INDEX-MATCH",
+      "Merge two sheets with a lookup",
+      "Do 8 Excel practice tasks"
+    ],
+    "links": [
+      {
+        "label": "Excel",
+        "href": "/excel/"
+      }
+    ],
+    "hours": "5-6"
+  },
+  {
+    "week": 3,
+    "day": 4,
+    "title": "More joins: multi-table, self and cross",
+    "tasks": [
+      "Join three tables in one query",
+      "Learn SELF JOIN and CROSS JOIN with an example each",
+      "Do 8 practice questions"
+    ],
+    "links": [
+      {
+        "label": "SQL",
+        "href": "/sql/"
+      },
+      {
+        "label": "SQL playground",
+        "href": "/playground/"
+      }
+    ],
+    "hours": "5-6"
+  },
+  {
+    "week": 3,
+    "day": 5,
+    "title": "Excel conditional sums and charts",
+    "tasks": [
+      "Learn SUMIFS, COUNTIFS and AVERAGEIFS",
+      "Build clear charts and use conditional formatting",
+      "Do 6 Excel practice tasks"
+    ],
+    "links": [
+      {
+        "label": "Excel",
+        "href": "/excel/"
+      }
+    ],
+    "hours": "5-6"
+  },
+  {
+    "week": 3,
+    "day": 6,
+    "title": "Mixed join practice and mini project",
+    "tasks": [
+      "Do 15 mixed join and aggregate questions",
+      "Write your project questions as SQL and save the queries to GitHub"
+    ],
+    "links": [
+      {
+        "label": "SQL",
+        "href": "/sql/"
+      },
+      {
+        "label": "Projects",
+        "href": "/projects/"
+      }
+    ],
+    "hours": "5-6"
+  },
+  {
+    "week": 3,
+    "day": 7,
+    "title": "Revision and mock test",
+    "tasks": [
+      "Redo every question you got wrong this week",
+      "Take a timed 30-45 minute mock on this week's topics",
+      "Update your error log and log your study hours",
+      "Plan next week: subqueries and CTEs"
+    ],
+    "links": [
+      {
+        "label": "SQL",
+        "href": "/sql/"
+      },
+      {
+        "label": "Practice hub",
+        "href": "/practice/"
+      }
+    ],
+    "hours": "5-6"
+  },
+  {
+    "week": 4,
+    "day": 1,
+    "title": "SQL subqueries",
+    "tasks": [
+      "Learn subqueries in WHERE, FROM and SELECT",
+      "Do 10 practice questions"
+    ],
+    "links": [
+      {
+        "label": "SQL",
+        "href": "/sql/"
+      },
+      {
+        "label": "SQL playground",
+        "href": "/playground/"
+      }
+    ],
+    "hours": "5-6"
+  },
+  {
+    "week": 4,
+    "day": 2,
+    "title": "CTEs and set operations",
+    "tasks": [
+      "Learn WITH, how to break a problem into steps, UNION and INTERSECT",
+      "Rewrite two subqueries as CTEs",
+      "Do 8 practice questions"
+    ],
+    "links": [
+      {
+        "label": "SQL",
+        "href": "/sql/"
+      },
+      {
+        "label": "SQL playground",
+        "href": "/playground/"
+      }
+    ],
+    "hours": "5-6"
+  },
+  {
+    "week": 4,
+    "day": 3,
+    "title": "Excel dashboard building",
+    "tasks": [
+      "Build an Excel dashboard with pivots, charts and slicers",
+      "Apply data validation and what-if analysis basics"
+    ],
+    "links": [
+      {
+        "label": "Excel",
+        "href": "/excel/"
+      }
+    ],
+    "hours": "5-6"
+  },
+  {
+    "week": 4,
+    "day": 4,
+    "title": "SQL data cleaning and deduplication",
+    "tasks": [
+      "Learn COALESCE, TRIM, duplicates and ROW_NUMBER for dedup preview",
+      "Do 10 practice questions"
+    ],
+    "links": [
+      {
+        "label": "SQL",
+        "href": "/sql/"
+      },
+      {
+        "label": "SQL playground",
+        "href": "/playground/"
+      }
+    ],
+    "hours": "5-6"
+  },
+  {
+    "week": 4,
+    "day": 5,
+    "title": "Excel Power Query basics and test tasks",
+    "tasks": [
+      "Clean a messy file with Power Query",
+      "Practise common Excel test tasks under a 30-minute timer"
+    ],
+    "links": [
+      {
+        "label": "Excel",
+        "href": "/excel/"
+      }
+    ],
+    "hours": "5-6"
+  },
+  {
+    "week": 4,
+    "day": 6,
+    "title": "First SQL screening test",
+    "tasks": [
+      "Take a timed SQL test: 5 questions in 45 minutes",
+      "Review each mistake in your error log",
+      "Finish Mini Project 1 and write its README"
+    ],
+    "links": [
+      {
+        "label": "SQL",
+        "href": "/sql/"
+      },
+      {
+        "label": "Projects",
+        "href": "/projects/"
+      }
+    ],
+    "hours": "5-6"
+  },
+  {
+    "week": 4,
+    "day": 7,
+    "title": "Revision and mock test",
+    "tasks": [
+      "Redo every question you got wrong this week",
+      "Take a timed 30-45 minute mock on this week's topics",
+      "Update your error log and log your study hours",
+      "Plan next week: window functions and Power BI start"
+    ],
+    "links": [
+      {
+        "label": "SQL",
+        "href": "/sql/"
+      },
+      {
+        "label": "Practice hub",
+        "href": "/practice/"
+      }
+    ],
+    "hours": "5-6"
+  },
+  {
+    "week": 5,
+    "day": 1,
+    "title": "SQL window functions and Power BI begins",
+    "tasks": [
+      "Days 1-3: ROW_NUMBER, RANK, DENSE_RANK, LAG, LEAD, running totals (10 questions a day)",
+      "Days 4-5: install Power BI Desktop, load data, learn Power Query basics",
+      "Day 6: first SQL interview patterns (top N per group, second highest)",
+      "Day 7: revision and timed SQL test",
+      "Create a one-page resume draft"
+    ],
+    "links": [
+      {
+        "label": "SQL",
+        "href": "/sql/"
+      },
+      {
+        "label": "Power BI",
+        "href": "/power-bi/"
+      },
+      {
+        "label": "Interview prep",
+        "href": "/interview/"
+      }
+    ],
+    "hours": "5-6"
+  },
+  {
+    "week": 6,
+    "day": 1,
+    "title": "Power BI modelling and DAX, Python starts, applications begin",
+    "tasks": [
+      "Days 1-3: star schema, relationships, measures, CALCULATE and time intelligence",
+      "Day 4: build and publish Dashboard 1 (screenshots to GitHub)",
+      "Days 5-6: Python basics, setup Jupyter and pandas",
+      "Day 7: revision and mock",
+      "Start applying: 10 tailored applications this week and set up the tracker"
+    ],
+    "links": [
+      {
+        "label": "Power BI",
+        "href": "/power-bi/"
+      },
+      {
+        "label": "Python",
+        "href": "/python/"
+      },
+      {
+        "label": "Job search",
+        "href": "/job-search/"
+      }
+    ],
+    "hours": "5-6"
+  },
+  {
+    "week": 7,
+    "day": 1,
+    "title": "Python pandas and Project 1",
+    "tasks": [
+      "Days 1-3: pandas DataFrames, filtering, groupby, merge, missing values",
+      "Days 4-6: start Project 1 (clean and analyse a dataset with SQL and Python)",
+      "Day 7: revision and mock",
+      "Apply to 10-15 jobs and message 3 alumni"
+    ],
+    "links": [
+      {
+        "label": "Python",
+        "href": "/python/"
+      },
+      {
+        "label": "Projects",
+        "href": "/projects/"
+      },
+      {
+        "label": "Job search",
+        "href": "/job-search/"
+      }
+    ],
+    "hours": "5-6"
+  },
+  {
+    "week": 8,
+    "day": 1,
+    "title": "Python visualisation and statistics begins",
+    "tasks": [
+      "Days 1-2: matplotlib and seaborn charts",
+      "Days 3-5: descriptive statistics, distributions, normal curve, z-scores, outliers",
+      "Day 6: finish and publish Project 1 with a README",
+      "Day 7: revision and mock",
+      "Continue 10-15 applications and one SQL timed test"
+    ],
+    "links": [
+      {
+        "label": "Python",
+        "href": "/python/"
+      },
+      {
+        "label": "Statistics",
+        "href": "/statistics/"
+      },
+      {
+        "label": "Projects",
+        "href": "/projects/"
+      }
+    ],
+    "hours": "5-6"
+  },
+  {
+    "week": 9,
+    "day": 1,
+    "title": "Statistics, A/B testing and business case thinking; Project 2",
+    "tasks": [
+      "Days 1-2: sampling, confidence intervals, hypothesis testing, p-values",
+      "Day 3: A/B test end to end",
+      "Days 4-5: business metrics and structured case answers (fintech first)",
+      "Day 6: start Project 2 (dashboard project in Power BI)",
+      "Day 7: revision and mock case",
+      "Keep applying"
+    ],
+    "links": [
+      {
+        "label": "Statistics",
+        "href": "/statistics/"
+      },
+      {
+        "label": "Business thinking",
+        "href": "/business/"
+      },
+      {
+        "label": "Projects",
+        "href": "/projects/"
+      }
+    ],
+    "hours": "5-6"
+  },
+  {
+    "week": 10,
+    "day": 1,
+    "title": "Project 3 and SQL interview patterns",
+    "tasks": [
+      "Days 1-3: SQL interview patterns (retention, cohorts, funnels, gaps and islands, percent of total)",
+      "Days 4-6: build Project 3 (end-to-end analysis with SQL, Python and a short report)",
+      "Day 7: revision and a full mock interview",
+      "10-15 applications and follow-ups"
+    ],
+    "links": [
+      {
+        "label": "SQL",
+        "href": "/sql/"
+      },
+      {
+        "label": "Projects",
+        "href": "/projects/"
+      },
+      {
+        "label": "Interview prep",
+        "href": "/interview/"
+      }
+    ],
+    "hours": "5-6"
+  },
+  {
+    "week": 11,
+    "day": 1,
+    "title": "Interview preparation, project polish and applications",
+    "tasks": [
+      "Days 1-2: polish GitHub profile, READMEs and LinkedIn",
+      "Days 3-4: practise HR questions, your project story and the resume pitch",
+      "Days 5-6: aptitude practice and timed Excel and SQL tests",
+      "Day 7: two mock interviews",
+      "20 applications this week and follow up on old ones"
+    ],
+    "links": [
+      {
+        "label": "Interview prep",
+        "href": "/interview/"
+      },
+      {
+        "label": "Job search",
+        "href": "/job-search/"
+      },
+      {
+        "label": "Projects",
+        "href": "/projects/"
+      }
+    ],
+    "hours": "5-6"
+  },
+  {
+    "week": 12,
+    "day": 1,
+    "title": "Final mock week",
+    "tasks": [
+      "Day 1-2: full timed SQL test and Excel task",
+      "Day 3: Power BI practical test (90 minutes)",
+      "Day 4: business case mock",
+      "Day 5: technical plus HR mock interview",
+      "Day 6: fix your top three weak areas",
+      "Day 7: review the 12 weeks, plan the next month and keep applying daily"
+    ],
+    "links": [
+      {
+        "label": "Interview prep",
+        "href": "/interview/"
+      },
+      {
+        "label": "Practice hub",
+        "href": "/practice/"
+      },
+      {
+        "label": "Job search",
+        "href": "/job-search/"
+      }
+    ],
+    "hours": "5-6"
   }
 ]

@@ -1,0 +1,301 @@
+---
+title: "Pivoting with CASE: rows to columns and back"
+description: "Turn rows into columns with conditional aggregation and turn columns back into rows with UNION ALL."
+module: sql
+order: 23
+estimatedMinutes: 50
+objectives:
+  - "Explain what pivoting is and why reports need it"
+  - "Write conditional aggregation with SUM(CASE WHEN ...) and COUNT(CASE WHEN ...)"
+  - "Compute rates and shares per column using AVG over a CASE"
+  - "Unpivot wide columns back into rows with UNION ALL"
+  - "Know the PIVOT syntax of other databases and why CASE works everywhere"
+tags: ["sql", "pivot", "case-when", "conditional-aggregation", "unpivot"]
+---
+
+## Learning objectives
+
+- Explain what pivoting is and why reports need it
+- Write conditional aggregation with SUM(CASE WHEN ...) and COUNT(CASE WHEN ...)
+- Compute rates and shares per column using AVG over a CASE
+- Unpivot wide columns back into rows with UNION ALL
+- Know the PIVOT syntax of other databases and why CASE works everywhere
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Raw data is long (one row per order, one row per event). Reports are wide: months across the top, categories down the side, one column each for Delivered, Cancelled and RTO. Turning long into wide is pivoting, and Excel people know it as a Pivot Table. In SQL you do it with `SUM(CASE WHEN ...)`. This pattern drives dashboards, cohort tables, funnel summaries and KPI cards, and it is asked in many interviews as 'show the count of each status as separate columns'.
+</RealWorld>
+
+## Concept
+
+### Long and wide tables
+
+**Long** format: each row is one observation.
+
+| order_id | status |
+|---|---|
+| 1 | Delivered |
+| 2 | Cancelled |
+| 3 | Delivered |
+
+**Wide** format: one row per entity, one column per category.
+
+| channel | delivered | cancelled |
+|---|---|---|
+| Website | 1930 | 117 |
+
+**Pivoting** goes long to wide. **Unpivoting** goes wide to long. Long is best for storage and for tools like Power BI and pandas. Wide is best for people reading a table.
+
+### The idea: conditional aggregation
+
+`GROUP BY` gives you one row per group. To spread a category over columns, you aggregate inside each group but only count the rows that match the column's condition.
+
+```sql
+SELECT channel,
+       SUM(CASE WHEN status = 'Delivered' THEN 1 ELSE 0 END) AS delivered,
+       SUM(CASE WHEN status = 'Cancelled' THEN 1 ELSE 0 END) AS cancelled
+FROM orders
+GROUP BY channel;
+```
+
+Read it as: for each channel, walk through its rows. For the `delivered` column add 1 when the status is Delivered and 0 otherwise.
+
+Analogy: a school attendance register. You tally "present" ticks in one column and "absent" ticks in another, for each class, from the same list of student-days.
+
+### Variations
+
+| Goal | Pattern |
+|---|---|
+| Count per category | `SUM(CASE WHEN cat = 'A' THEN 1 ELSE 0 END)` or `COUNT(CASE WHEN cat = 'A' THEN 1 END)` |
+| Sum of an amount per category | `SUM(CASE WHEN cat = 'A' THEN amount END)` |
+| Rate (percent) per category | `100.0 * AVG(CASE WHEN type = 'A' THEN (status = 'FAILED') END)` |
+| Compare two periods | `SUM(CASE WHEN date < '2024-01-01' THEN x END)` and the matching 2024 column |
+
+Notes:
+
+- `COUNT(CASE WHEN ... THEN 1 END)` works because `COUNT` ignores NULL, and a CASE without ELSE returns NULL when no condition matches.
+- `SUM(CASE WHEN ... THEN amount END)` returns NULL (not 0) if nothing matches. Use `COALESCE(..., 0)` or `ELSE 0` if you want zeros.
+- In SQLite a comparison such as `status = 'FAILED'` returns 1 or 0, so `AVG(status = 'FAILED')` is a failure rate as a fraction. In MySQL also. In PostgreSQL you need `CASE WHEN ... THEN 1 ELSE 0 END`.
+- The `AVG(CASE WHEN type = 'A' THEN flag END)` trick works because rows of other types give NULL, and `AVG` skips NULLs. So each column's average is taken over its own rows only.
+
+<FormulaCard title="Conditional rate">
+`rate for category A = 100.0 * AVG(CASE WHEN category = 'A' THEN flag END)`
+
+`flag` is 1 for the event you count (failed, converted, returned) and 0 otherwise.
+</FormulaCard>
+
+### The limits of CASE pivoting
+
+You must **write every column by hand**. If a new category appears next month, the query does not show it. Standard SQL cannot create columns dynamically. Solutions: generate the SQL from code, use Power BI or Excel pivots, or keep the data long and pivot in the BI tool. Because of this, you pivot only when the set of columns is small and stable (statuses, years, quarters, channels).
+
+### Other databases
+
+- SQL Server and Oracle have a `PIVOT` operator.
+- PostgreSQL has `crosstab()` in an extension, and `FILTER (WHERE ...)` as a neater alternative: `COUNT(*) FILTER (WHERE status = 'Delivered')`.
+- MySQL and SQLite use the CASE pattern.
+
+The CASE pattern works in **every** database, so learn it first.
+
+### Unpivot with UNION ALL
+
+Some tables are wide already: `ratings` has `food_rating`, `delivery_rating` and `overall_rating` in separate columns. To analyse them as one "score" with a "type" label, stack the columns using `UNION ALL`: one SELECT per column, each adding a label.
+
+```sql
+SELECT id, 'food' AS rating_type, food_rating AS score FROM ratings
+UNION ALL
+SELECT id, 'delivery', delivery_rating FROM ratings;
+```
+
+Use `UNION ALL`, not `UNION`. `UNION` removes duplicates (and is slower), which would wrongly delete identical scores. SQL Server and Oracle offer an `UNPIVOT` operator, and PostgreSQL can do it with `LATERAL (VALUES ...)`.
+
+## Worked examples
+
+### Example 1: status counts per channel
+
+How many orders end in each status, for each sales channel? We first take unique orders, then pivot the three statuses into columns. `cancel_pct` is a rate built from the same idea.
+
+<SqlPlayground dataset="ecommerce" query={`WITH o AS (
+    SELECT DISTINCT order_id, sales_channel, order_status FROM orders
+)
+SELECT sales_channel,
+       COUNT(*) AS total,
+       SUM(CASE WHEN order_status = 'Delivered' THEN 1 ELSE 0 END) AS delivered,
+       SUM(CASE WHEN order_status = 'Cancelled' THEN 1 ELSE 0 END) AS cancelled,
+       SUM(CASE WHEN order_status = 'RTO' THEN 1 ELSE 0 END) AS rto,
+       ROUND(100.0 * SUM(CASE WHEN order_status = 'Cancelled' THEN 1 ELSE 0 END) / COUNT(*), 1) AS cancel_pct
+FROM o
+GROUP BY sales_channel
+ORDER BY total DESC;`} title="Pivot order status by channel" />
+
+**Output:**
+
+| sales_channel | total | delivered | cancelled | rto | cancel_pct |
+|---|---|---|---|---|---|
+| Android App | 4982 | 4608 | 292 | 82 | 5.9 |
+| Website | 2087 | 1930 | 117 | 40 | 5.6 |
+| iOS App | 1665 | 1545 | 92 | 28 | 5.5 |
+| Mobile Web | 1266 | 1185 | 65 | 16 | 5.1 |
+
+Android App leads on volume and also has the highest cancellation share (5.9 percent versus 5.1 percent for Mobile Web). Every row sums correctly: 4,608 + 292 + 82 = 4,982.
+
+### Example 2: year over year in one row per category
+
+Years become columns, so a manager can read growth directly. Sales are de-duplicated and the six 100x outliers removed first.
+
+<SqlPlayground dataset="retail" query={`WITH s AS (
+    SELECT DISTINCT sale_id, category, sale_datetime, net_amount_inr
+    FROM sales
+    WHERE net_amount_inr < 100000
+)
+SELECT category,
+       ROUND(SUM(CASE WHEN sale_datetime <  '2024-01-01' THEN net_amount_inr END)) AS rev_2023,
+       ROUND(SUM(CASE WHEN sale_datetime >= '2024-01-01' THEN net_amount_inr END)) AS rev_2024,
+       ROUND(100.0 * (SUM(CASE WHEN sale_datetime >= '2024-01-01' THEN net_amount_inr END)
+                    / SUM(CASE WHEN sale_datetime <  '2024-01-01' THEN net_amount_inr END) - 1), 1) AS growth_pct
+FROM s
+GROUP BY category
+ORDER BY category;`} title="Revenue by category, 2023 vs 2024" />
+
+**Output:**
+
+| category | rev_2023 | rev_2024 | growth_pct |
+|---|---|---|---|
+| Apparel | 3162410.0 | 3648676.0 | 15.4 |
+| Electronics Accessories | 1528470.0 | 1693492.0 | 10.8 |
+| Grocery & Staples | 3152065.0 | 3880207.0 | 23.1 |
+| Home & Kitchen | 3687767.0 | 4516969.0 | 22.5 |
+| Home Decor | 725733.0 | 915019.0 | 26.1 |
+| Personal Care | 1547186.0 | 1817385.0 | 17.5 |
+
+Home Decor grew fastest in percentage (26.1 percent) but from a small base. Grocery grew 23.1 percent. Because the pivot puts both years in one row, the growth formula is just one expression.
+
+### Example 3: a rate matrix: failure rate by app and transaction type
+
+Each cell is the failure rate (percent) of one payment app for one transaction type. `AVG(CASE WHEN txn_type = 'P2P' THEN status = 'FAILED' END)` averages 1s and 0s over P2P rows only, because the other rows return NULL and are skipped. Exact duplicate transactions are removed first.
+
+<SqlPlayground dataset="fintech" query={`WITH t AS (SELECT DISTINCT * FROM transactions)
+SELECT payment_app,
+       COUNT(*) AS txns,
+       ROUND(100.0 * AVG(CASE WHEN txn_type = 'P2P'      THEN status = 'FAILED' END), 2) AS p2p_fail_pct,
+       ROUND(100.0 * AVG(CASE WHEN txn_type = 'P2M'      THEN status = 'FAILED' END), 2) AS p2m_fail_pct,
+       ROUND(100.0 * AVG(CASE WHEN txn_type = 'Bill Pay' THEN status = 'FAILED' END), 2) AS billpay_fail_pct,
+       ROUND(100.0 * AVG(CASE WHEN txn_type = 'Recharge' THEN status = 'FAILED' END), 2) AS recharge_fail_pct
+FROM t
+GROUP BY payment_app
+ORDER BY payment_app;`} title="Failure rate matrix" />
+
+**Output:**
+
+| payment_app | txns | p2p_fail_pct | p2m_fail_pct | billpay_fail_pct | recharge_fail_pct |
+|---|---|---|---|---|---|
+| NammaPay | 3556 | 2.52 | 3.06 | 3.2 | 3.18 |
+| PayZippy | 7243 | 3.13 | 2.47 | 2.84 | 1.53 |
+| QuickPaisa | 5513 | 2.94 | 3.36 | 3.84 | 2.47 |
+| RupeeRocket | 2697 | 3.11 | 2.68 | 2.5 | 1.5 |
+| SabPay | 2991 | 3.15 | 2.56 | 2.17 | 4.09 |
+
+SabPay recharges fail the most (4.09 percent), while PayZippy recharges fail the least (1.53 percent). Reading a matrix like this is much faster than scanning 20 rows of a long table.
+
+### Example 4: unpivot with UNION ALL
+
+`ratings` stores three scores in three columns. We stack them into one `score` column with a `rating_type` label, and then summarise by type. The long form makes it easy to add one more metric or to feed a chart.
+
+<SqlPlayground dataset="food_delivery" query={`WITH long_ratings AS (
+    SELECT rating_id, 'food' AS rating_type, food_rating AS score FROM ratings
+    UNION ALL
+    SELECT rating_id, 'delivery', delivery_rating FROM ratings
+    UNION ALL
+    SELECT rating_id, 'overall', overall_rating FROM ratings
+)
+SELECT rating_type,
+       COUNT(score) AS ratings,
+       ROUND(AVG(score), 2) AS avg_score,
+       ROUND(100.0 * AVG(score = 5), 1) AS pct_five_star
+FROM long_ratings
+GROUP BY rating_type
+ORDER BY avg_score DESC;`} title="Stack three rating columns into rows" />
+
+**Output:**
+
+| rating_type | ratings | avg_score | pct_five_star |
+|---|---|---|---|
+| delivery | 8630 | 4.19 | 41.4 |
+| overall | 8630 | 4.09 | 28.2 |
+| food | 8630 | 3.94 | 25.7 |
+
+Delivery scores average higher than food scores. The long table has three times the rows of the wide one (8,630 x 3), and one `GROUP BY rating_type` replaced three separate AVG columns.
+
+## Common mistakes
+
+<CommonMistake>
+**Forgetting GROUP BY.** `SUM(CASE ...)` without `GROUP BY` returns one row for the whole table. You wanted one row per channel, so group by it.
+</CommonMistake>
+
+<CommonMistake>
+**Typos in the category text.** `'Delivred'` or the wrong casing makes the column silently 0. Check each pivot column total against the overall count (`delivered + cancelled + rto = total`).
+</CommonMistake>
+
+<CommonMistake>
+**Mixing up ELSE 0 and no ELSE.** With no `ELSE`, a no-match returns NULL. `SUM` of all NULLs is NULL, not 0, and `AVG` ignores them. Choose consciously.
+</CommonMistake>
+
+<CommonMistake>
+**Using UNION instead of UNION ALL for unpivot.** `UNION` removes duplicate rows, so repeated scores vanish and averages change. Use `UNION ALL`.
+</CommonMistake>
+
+<CommonMistake>
+**Pivoting in SQL when categories change often.** Every new category needs a new column written by hand. For open-ended categories, keep the data long and pivot in Power BI or Excel.
+</CommonMistake>
+
+<CommonMistake>
+**Averaging percentages.** Taking the average of cell percentages is not the same as the overall rate. Compute rates from counts (`SUM(failed) / COUNT(*)`) at the level you report.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="pivot" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What does SUM(CASE WHEN status = 'Cancelled' THEN 1 ELSE 0 END) do inside a GROUP BY query?", options: ["Counts all rows", "Counts the Cancelled rows in each group", "Removes cancelled rows", "Sums the status text"], answer: 1, explanation: "It adds 1 for each Cancelled row and 0 for others, per group." },
+  { q: "What does COUNT(CASE WHEN x > 10 THEN 1 END) return?", options: ["Number of rows where x > 10", "Number of rows where x <= 10", "Total rows", "Sum of x"], answer: 0, explanation: "Rows that do not match produce NULL and COUNT ignores NULL." },
+  { q: "Which is right for stacking columns into rows?", options: ["UNION", "UNION ALL", "INTERSECT", "JOIN"], answer: 1, explanation: "UNION ALL keeps every row. UNION would remove duplicates and change counts." },
+  { q: "A pivot with SUM(CASE WHEN type = 'A' THEN amount END) shows NULL for some groups. Why?", options: ["A bug", "No rows of type A in the group, and SUM of nothing is NULL", "amount is text", "Wrong GROUP BY"], answer: 1, explanation: "With no matching rows every CASE returns NULL, and SUM of only NULLs is NULL." },
+  { q: "What is the main limitation of CASE pivoting?", options: ["It is slow", "Columns must be written by hand, so new categories are missed", "It needs a plugin", "It cannot count"], answer: 1, explanation: "The set of output columns is fixed in the query text." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+'Show the count of each status as separate columns' or 'make a table with months as columns' is a classic screening question. Interviewers want to see conditional aggregation without a PIVOT keyword, and a check that the columns add up to the total.
+</InterviewAlert>
+
+<InterviewQ q="How do you convert rows to columns in MySQL or SQLite, which have no PIVOT?">
+With conditional aggregation: `SUM(CASE WHEN category = 'X' THEN value END)` for each wanted column, plus `GROUP BY` the row label. It works in every database. In PostgreSQL I can also use `FILTER (WHERE ...)`, and SQL Server and Oracle have a PIVOT operator.
+</InterviewQ>
+
+<InterviewQ q="Show the count of orders per status as separate columns for each month.">
+Group by month (`strftime('%Y-%m', order_date)`) and add one `SUM(CASE WHEN status = 'Delivered' THEN 1 ELSE 0 END)` column per status. I would check the sum of the status columns equals `COUNT(*)` so no status is missed, and de-duplicate orders first.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between SUM(CASE ...) and COUNT(CASE ...)?">
+`SUM(CASE WHEN cond THEN 1 ELSE 0 END)` adds ones and zeros. `COUNT(CASE WHEN cond THEN 1 END)` counts non-NULL results, because no-match gives NULL. Both give the same count. For amounts, `SUM(CASE WHEN cond THEN amount END)` sums only the matching rows.
+</InterviewQ>
+
+<InterviewQ q="When would you unpivot data?">
+When values for related metrics sit in separate columns (rating columns, monthly columns like jan, feb, mar) and I need to group, filter or chart them together. I stack with `UNION ALL` and a label column, or use UNPIVOT in SQL Server. Long data is also what Power BI and pandas prefer.
+</InterviewQ>
+
+## Key takeaways
+
+- Pivot = long to wide, using `SUM(CASE WHEN ... THEN ... END)` with `GROUP BY`.
+- `COUNT(CASE ... THEN 1 END)` and `SUM(CASE ... THEN 1 ELSE 0 END)` are equivalent for counting.
+- `AVG(CASE WHEN type = 'A' THEN flag END)` gives a rate per column because NULLs are skipped.
+- Unpivot with `UNION ALL`, one SELECT per column, adding a label. Never use UNION here.
+- Column lists are fixed by hand. Check that the pivot columns add up to the total.
+
+## Further reading
+
+<FurtherReading ids={["sqlbolt", "mode-sql", "sqlite-docs"]} />

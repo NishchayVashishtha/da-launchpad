@@ -1,0 +1,60 @@
+[
+  {
+    "id": "excel-pivots-001",
+    "module": "excel",
+    "topic": "pivots",
+    "difficulty": "easy",
+    "language": "excel",
+    "question": "In `excel-sales-analysis.xlsx` (sheet `sales`), build a pivot table that shows total `net_amount_inr` for each `store_region`. Which region is the largest and what is the grand total?",
+    "dataset": "none",
+    "hint": "Convert the data to a Table first. Rows = store_region, Values = Sum of net_amount_inr.",
+    "solution": "**Steps:** Click inside the data, Ctrl + T, then Insert > PivotTable > New Worksheet. Drag `store_region` to Rows and `net_amount_inr` to Values (check it says Sum).\n\n**Expected result:** East 4,30,021; North 8,07,814; South 9,89,044; West 15,61,654. Grand total 37,88,533. West is the largest.",
+    "explanation": "The pivot groups the 3,000 rows by region and adds the sales in each group.",
+    "commonMistake": "Reading 'Count of net_amount_inr' as sales. Check the label says Sum.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "pivot",
+      "sum"
+    ]
+  },
+  {
+    "id": "excel-pivots-002",
+    "module": "excel",
+    "topic": "pivots",
+    "difficulty": "medium",
+    "language": "excel",
+    "question": "In `excel-sales-analysis.xlsx` (sheet `sales`), show how total `net_amount_inr` splits by `payment_mode` as a percent of the grand total, sorted from largest to smallest. Which mode has the largest share?",
+    "dataset": "none",
+    "hint": "Add net_amount_inr to Values and use Show Values As > % of Grand Total. Sort largest to smallest.",
+    "solution": "**Steps:** Rows = `payment_mode`, Values = Sum of `net_amount_inr`. Right-click a value > Show Values As > % of Grand Total. Right-click > Sort > Largest to Smallest.\n\n**Expected result:** UPI 51.7%; Card 25.2%; Cash 16.3%; Wallet 6.2%; Not Recorded 0.6% (total 100%). UPI is the largest, with ₹19,57,791 of ₹37,88,533.",
+    "explanation": "Show Values As divides each group by the grand total.",
+    "commonMistake": "Using % of Column Total when there is only one column (it also works), but picking % of Row Total gives 100% everywhere.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "pivot",
+      "percent-of-total"
+    ]
+  },
+  {
+    "id": "excel-pivots-003",
+    "module": "excel",
+    "topic": "pivots",
+    "difficulty": "hard",
+    "language": "excel",
+    "question": "In `excel-sales-analysis.xlsx` (sheet `sales`), create a pivot that compares 2023 and 2024 net sales for each `category`, and add the year-on-year growth percent. Which category grew fastest and which slowest?",
+    "dataset": "none",
+    "hint": "Group sale_date by Years and put Years in Columns. Use Show Values As > % Difference From (previous year), or a helper formula next to the pivot.",
+    "solution": "**Steps:** Rows = `category`, Columns = `sale_date` grouped by Years (remove Months), Values = Sum of `net_amount_inr`. Add a second `net_amount_inr` to Values > Show Values As > % Difference From > Base field `Years` > Base item (previous). Or compute `=C2/B2-1` outside the pivot.\n\n**Expected result (2023 to 2024):** Apparel 3,68,832 to 4,86,577 (+31.9%); Grocery & Staples 3,85,268 to 5,01,956 (+30.3%); Home & Kitchen 4,68,209 to 6,03,679 (+28.9%); Home Decor 94,881 to 1,21,192 (+27.7%); Electronics Accessories 1,64,922 to 2,04,032 (+23.7%); Personal Care 1,79,817 to 2,09,167 (+16.3%). Apparel grew fastest; Personal Care slowest.",
+    "explanation": "Growth is the 2024 value divided by the 2023 value minus 1. The pivot can do it with Show Values As.",
+    "commonMistake": "Calculating growth from the grand total row instead of per category, or dividing 2023 by 2024.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 10,
+    "tags": [
+      "pivot",
+      "yoy",
+      "grouping"
+    ]
+  }
+]

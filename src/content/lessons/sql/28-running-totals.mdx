@@ -1,0 +1,283 @@
+---
+title: "Interview pattern: running totals and cumulative metrics"
+description: "Build running totals, cumulative percentages and moving averages with SUM() OVER, and understand window frames and ties."
+module: sql
+order: 28
+estimatedMinutes: 45
+objectives:
+  - "Recognise running total, cumulative and moving-average questions"
+  - "Write SUM() OVER (ORDER BY ...) and restart it with PARTITION BY"
+  - "Explain the difference between ROWS and RANGE frames"
+  - "Build a cumulative percent of total and a moving average"
+tags: ["sql", "interview", "window-functions", "running-total"]
+---
+
+## Learning objectives
+
+- Spot "running", "cumulative", "year to date" and "moving average" in a question.
+- Write a running total with `SUM() OVER (ORDER BY ...)`.
+- Restart the running total for each year or segment using `PARTITION BY`.
+- Choose a window frame (`ROWS BETWEEN ...`) on purpose.
+- Compute a cumulative share and a moving average.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+"Year-to-date revenue", "cumulative signups against target", "wallet balance after each transaction", "how many orders did we cross by mid-month?" Dashboards are full of running totals. Interviewers love this pattern because it separates people who know window functions from people who only know `GROUP BY`.
+</RealWorld>
+
+## Concept
+
+### The recognition cue
+
+When you see **"running total", "cumulative", "year to date (YTD)", "so far", "balance after each ..."**, think: *`SUM(...) OVER (ORDER BY ...)`.*
+
+Analogy: a bank passbook. Each line shows the amount and the balance so far. The balance is a running total of all earlier lines.
+
+### The template
+
+```sql
+SELECT period,
+       amount,
+       SUM(amount) OVER (ORDER BY period) AS running_total
+FROM per_period_table;
+```
+
+First aggregate to one row per period (day or month), then add the window. Doing both in a single step is a common cause of wrong numbers.
+
+### Restart per group
+
+```sql
+SUM(amount) OVER (PARTITION BY year ORDER BY month) AS ytd
+```
+
+`PARTITION BY` resets the total at the start of each year. That is how you get year-to-date.
+
+### Frames: what exactly is added
+
+The frame says which rows around the current row are included.
+
+| Frame | Meaning |
+|---|---|
+| `ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` | From the first row to this row (the usual running total). |
+| `ROWS BETWEEN 2 PRECEDING AND CURRENT ROW` | This row and the 2 before it: a 3-row moving window. |
+| `RANGE ...` (default when `ORDER BY` is present) | Includes all **peer** rows with the same `ORDER BY` value. |
+
+The default frame is `RANGE`, so **rows that tie on the ORDER BY column get the same running total**. If you want a clean row-by-row total with ties, add a unique tie-breaker to the `ORDER BY` and use `ROWS`.
+
+### Cumulative percent
+
+```sql
+SUM(amount) OVER (ORDER BY period) * 100.0 / SUM(amount) OVER () AS cum_pct
+```
+
+`SUM() OVER ()` with empty brackets is the grand total.
+
+<Tip>
+In an interview say: "I aggregate to the grain first, then apply the window." It shows you know the order of operations.
+</Tip>
+
+## Worked examples
+
+### Example 1: monthly revenue and running total
+
+Finance wants delivered revenue per month for 2024 and the running total. The orders table has about 100 duplicate rows, so we de-duplicate first with `SELECT DISTINCT`.
+
+<SqlPlayground dataset="ecommerce" query={`WITH o AS (SELECT DISTINCT * FROM orders),
+monthly AS (
+  SELECT strftime('%Y-%m', order_date) AS month,
+         ROUND(SUM(total_amount), 0) AS revenue
+  FROM o
+  WHERE order_status = 'Delivered' AND order_date >= '2024-01-01'
+  GROUP BY month
+)
+SELECT month, revenue,
+       ROUND(SUM(revenue) OVER (ORDER BY month), 0) AS running_revenue
+FROM monthly
+ORDER BY month;`} title="Monthly revenue with running total" />
+
+**Output:**
+
+| month | revenue | running_revenue |
+|---|---|---|
+| 2024-01 | 2177042.0 | 2177042.0 |
+| 2024-02 | 2594640.0 | 4771682.0 |
+| 2024-03 | 1952587.0 | 6724269.0 |
+| 2024-04 | 2010858.0 | 8735127.0 |
+| 2024-05 | 2011182.0 | 10746309.0 |
+| 2024-06 | 2356236.0 | 13102545.0 |
+| 2024-07 | 2544531.0 | 15647076.0 |
+| 2024-08 | 2544467.0 | 18191543.0 |
+| 2024-09 | 2172132.0 | 20363675.0 |
+| 2024-10 | 2661384.0 | 23025059.0 |
+| 2024-11 | 2591559.0 | 25616618.0 |
+| 2024-12 | 2059545.0 | 27676163.0 |
+
+The last row's `running_revenue` equals the sum of all `revenue` values. A quick sanity check like this catches mistakes.
+
+### Example 2: year-to-date (reset every year)
+
+Now count delivered orders per month, restarting the total in January of each year. We show November 2023 to March 2024, so the reset is visible. The filter on months sits in an outer query, because filtering inside would change the totals.
+
+<SqlPlayground dataset="ecommerce" query={`WITH o AS (SELECT DISTINCT * FROM orders),
+monthly AS (
+  SELECT strftime('%Y', order_date) AS yr,
+         strftime('%m', order_date) AS mth,
+         COUNT(*) AS orders
+  FROM o
+  WHERE order_status = 'Delivered'
+  GROUP BY yr, mth
+)
+SELECT * FROM (
+  SELECT yr, mth, orders,
+         SUM(orders) OVER (PARTITION BY yr ORDER BY mth) AS ytd_orders
+  FROM monthly
+)
+WHERE (yr = '2023' AND mth >= '11') OR (yr = '2024' AND mth <= '03')
+ORDER BY yr, mth;`} title="Year-to-date with PARTITION BY" />
+
+**Output:**
+
+| yr | mth | orders | ytd_orders |
+|---|---|---|---|
+| 2023 | 11 | 404 | 3784 |
+| 2023 | 12 | 411 | 4195 |
+| 2024 | 01 | 414 | 414 |
+| 2024 | 02 | 327 | 741 |
+| 2024 | 03 | 378 | 1119 |
+
+In January 2024 the running total starts again from that month's own count. The 2023 rows keep growing until December.
+
+### Example 3: cumulative percent and moving average
+
+For fintech, we want the share of the year's successful UPI amount reached by the end of each month in 2024, and a 3-month moving average. We only count rows with `status = 'SUCCESS'`, and skip the six 100x outliers with a simple cap.
+
+<SqlPlayground dataset="fintech" query={`WITH monthly AS (
+  SELECT strftime('%Y-%m', txn_datetime) AS month,
+         ROUND(SUM(amount), 0) AS total
+  FROM transactions
+  WHERE status = 'SUCCESS' AND amount < 500000
+    AND txn_datetime >= '2024-01-01'
+  GROUP BY month
+)
+SELECT month, total,
+       ROUND(100.0 * SUM(total) OVER (ORDER BY month) / SUM(total) OVER (), 1) AS cum_pct,
+       ROUND(AVG(total) OVER (ORDER BY month
+             ROWS BETWEEN 2 PRECEDING AND CURRENT ROW), 0) AS moving_avg_3m
+FROM monthly
+ORDER BY month;`} title="Cumulative percent and 3-month moving average" />
+
+**Output:**
+
+| month | total | cum_pct | moving_avg_3m |
+|---|---|---|---|
+| 2024-01 | 1221684.0 | 7.3 | 1221684.0 |
+| 2024-02 | 1270009.0 | 14.9 | 1245847.0 |
+| 2024-03 | 1153790.0 | 21.8 | 1215161.0 |
+| 2024-04 | 1188760.0 | 28.8 | 1204186.0 |
+| 2024-05 | 1361400.0 | 37.0 | 1234650.0 |
+| 2024-06 | 1342599.0 | 45.0 | 1297586.0 |
+| 2024-07 | 1459643.0 | 53.7 | 1387881.0 |
+| 2024-08 | 1487841.0 | 62.6 | 1430028.0 |
+| 2024-09 | 1509357.0 | 71.6 | 1485614.0 |
+| 2024-10 | 1749034.0 | 82.0 | 1582077.0 |
+| 2024-11 | 1530508.0 | 91.1 | 1596300.0 |
+| 2024-12 | 1485361.0 | 100.0 | 1588301.0 |
+
+In the first two months the moving average is based on fewer than 3 months, because there are not enough earlier rows. Mention this to the reader of your report.
+
+### Example 4: ties and the default frame
+
+Look at the first orders of a single day. When two orders share the same `order_date`, the default `RANGE` frame treats them as peers.
+
+<SqlPlayground dataset="ecommerce" query={`WITH o AS (
+  SELECT DISTINCT order_id, order_date, total_amount
+  FROM orders
+  WHERE order_date = '2024-01-01'
+)
+SELECT order_id, order_date, ROUND(total_amount, 0) AS amount,
+       ROUND(SUM(total_amount) OVER (ORDER BY order_date), 0) AS default_frame,
+       ROUND(SUM(total_amount) OVER (ORDER BY order_date, order_id
+             ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW), 0) AS rows_frame
+FROM o
+ORDER BY order_id;`} title="Default frame versus ROWS frame" />
+
+**Output:**
+
+| order_id | order_date | amount | default_frame | rows_frame |
+|---|---|---|---|---|
+| 4507 | 2024-01-01 | 7976.0 | 58247.0 | 7976.0 |
+| 4508 | 2024-01-01 | 2110.0 | 58247.0 | 10087.0 |
+| 4509 | 2024-01-01 | 2516.0 | 58247.0 | 12603.0 |
+| 4510 | 2024-01-01 | 10461.0 | 58247.0 | 23063.0 |
+| 4511 | 2024-01-01 | 13317.0 | 58247.0 | 36380.0 |
+| 4512 | 2024-01-01 | 5780.0 | 58247.0 | 42160.0 |
+| 4513 | 2024-01-01 | 4964.0 | 58247.0 | 47124.0 |
+| 4514 | 2024-01-01 | 3642.0 | 58247.0 | 50765.0 |
+
+Showing the first 8 of 13 rows.
+
+`default_frame` shows the same number on every row of that day, because all rows tie on `order_date`. `rows_frame` grows row by row. For "balance after each transaction" you want the second form.
+
+## Common mistakes
+
+<CommonMistake>
+**Forgetting the ORDER BY inside OVER.** `SUM(x) OVER ()` is the grand total on every row, not a running total.
+</CommonMistake>
+<CommonMistake>
+**Not aggregating to the grain first.** If you window over order lines and then group, you may get several rows per month. Build a one-row-per-month CTE first.
+</CommonMistake>
+<CommonMistake>
+**Letting ties share a running total.** With the default `RANGE` frame, two rows with the same date show the same total. Add a unique tie-breaker and `ROWS`.
+</CommonMistake>
+<CommonMistake>
+**Not resetting per group.** Running total across years when the question says "YTD". Use `PARTITION BY year`.
+</CommonMistake>
+<CommonMistake>
+**Counting duplicate rows or outliers.** Duplicate orders or 100x entries inflate every later row of the running total, since the error carries forward.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="pattern-running-total" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What does SUM(x) OVER (ORDER BY d) return?", options: ["The grand total on every row", "A running total ordered by d", "The maximum so far", "One row per group"], answer: 1, explanation: "With ORDER BY inside OVER, the sum covers all rows from the start up to the current row." },
+  { q: "How do you restart a running total each year?", options: ["Add GROUP BY year", "Use PARTITION BY year in OVER", "Use DISTINCT", "Use HAVING"], answer: 1, explanation: "PARTITION BY year makes a separate window for every year, so the total restarts." },
+  { q: "Two rows share the same date. With the default frame and ORDER BY date only, their running totals will be:", options: ["Different", "The same", "NULL", "An error"], answer: 1, explanation: "The default RANGE frame includes all peers with the same ORDER BY value, so tied rows get the same running total." },
+  { q: "Which frame gives a 3-row moving average?", options: ["ROWS BETWEEN 3 PRECEDING AND CURRENT ROW", "ROWS BETWEEN 2 PRECEDING AND CURRENT ROW", "ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING ROW", "RANGE UNBOUNDED PRECEDING"], answer: 1, explanation: "Two preceding rows plus the current row make three rows." },
+  { q: "SUM(total) OVER () is used in a cumulative percent query to get:", options: ["The running total", "The grand total", "The previous row", "The group total"], answer: 1, explanation: "Empty OVER () means one window over all rows, so it gives the grand total used as the denominator." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Running totals appear in almost every analytics interview, often as "cumulative signups by day" or "balance after each transaction". Watch your frame and your ties. Those are the two follow-ups interviewers use.
+</InterviewAlert>
+
+<InterviewQ q="Write a query for the cumulative revenue by month. How do you explain it?">
+"First I aggregate orders to one row per month, in a CTE, so the grain is clear. Then I apply `SUM(revenue) OVER (ORDER BY month)`. With an ORDER BY inside OVER, SQL adds up all rows from the first month to the current one, which is the running total. If the question says year to date, I add `PARTITION BY year` so it restarts each January. I would check that the last running value equals the overall total."
+</InterviewQ>
+<InterviewQ q="What is the difference between ROWS and RANGE in a window frame?">
+`ROWS` counts physical rows: "the 2 rows before this one". `RANGE` works on values of the ORDER BY column: all rows that tie with the current row are included together. With the default `RANGE` frame, two rows with the same date get the same running total. For a strict row-by-row total I use `ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW` and add a tie-breaker.
+</InterviewQ>
+<InterviewQ q="How would you calculate a 7-day moving average of daily orders?">
+Aggregate to daily counts, then `AVG(orders) OVER (ORDER BY day ROWS BETWEEN 6 PRECEDING AND CURRENT ROW)`. I would warn that days with no orders are missing from the table, so the 7 rows may cover more than 7 calendar days. To fix that, I would first build a calendar of all days and left join the counts, filling zeros. The first six rows have fewer than seven days, so I may hide them.
+</InterviewQ>
+<InterviewQ q="Can you do a running total without window functions?">
+Yes, with a self-join or correlated subquery: for each row, sum all rows with a date less than or equal to the current date. It is fine on small data but slow on big tables, because it re-scans the table for each row. Window functions do it in one pass.
+</InterviewQ>
+
+## Key takeaways
+
+- Cue: "running", "cumulative", "YTD", "balance so far" means `SUM() OVER (ORDER BY ...)`.
+- Aggregate to the right grain first, then apply the window.
+- `PARTITION BY` restarts the total per year or segment.
+- The default frame treats ties as peers. Use `ROWS` plus a tie-breaker for row-by-row totals.
+- Sanity check: the last running value must equal the plain total.
+
+## Further reading
+
+<FurtherReading ids={["mode-sql", "sqlite-docs", "sqlbolt"]} />

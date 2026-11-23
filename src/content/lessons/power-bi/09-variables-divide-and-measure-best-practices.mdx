@@ -1,0 +1,308 @@
+---
+title: "Variables, DIVIDE, error handling and measure best practices"
+description: "Write clean, safe and fast DAX with VAR and RETURN, DIVIDE, blank handling, IFERROR, formatting and a team-friendly measure style."
+module: power-bi
+order: 9
+estimatedMinutes: 45
+objectives:
+  - "Use VAR and RETURN to make measures readable and efficient"
+  - "Handle division by zero and blanks safely with DIVIDE and IF"
+  - "Explain when a variable is evaluated and why that matters"
+  - "Apply a checklist of measure-writing best practices"
+tags: ["power-bi", "dax", "variables", "divide", "best-practices", "error-handling"]
+---
+
+## Learning objectives
+
+- Use `VAR` and `RETURN` to make measures readable and efficient.
+- Handle division by zero and blanks safely with `DIVIDE` and `IF`.
+- Explain **when** a variable is evaluated and why that matters.
+- Apply a checklist of measure-writing best practices.
+
+## Why this matters for a Data Analyst job
+
+Anyone can write a DAX measure that works on a demo. A hired analyst writes measures that other people can read, that do not break when a slicer selects nothing, and that run fast on millions of rows. Interviewers look at how you write, not just whether the answer is correct. Clean DAX with variables and safe division shows you can be trusted with a team model.
+
+<RealWorld>
+A bank's reporting team has 150 measures in one model. When the regional head selects a new branch with no transactions, half of the cards show "Infinity" or an error. The analyst who rewrites them with `DIVIDE`, variables and blank handling stops the daily "the dashboard is broken" messages.
+</RealWorld>
+
+## Concept
+
+### Variables with VAR and RETURN
+
+```dax
+Measure =
+VAR _name1 = <expression>
+VAR _name2 = <expression using _name1>
+RETURN
+    <final expression>
+```
+
+Benefits:
+
+1. **Readability**: each step has a name.
+2. **Speed**: a variable is evaluated once, even if you use it many times.
+3. **Debugging**: change `RETURN` to return a variable and check the intermediate value.
+
+```dax
+Margin % =
+VAR _rev  = [Revenue]
+VAR _cost = [Cost]
+RETURN
+    DIVIDE ( _rev - _cost, _rev )
+```
+
+Style: start variable names with an underscore, use meaningful names (`_LastYearSales`) and keep one idea per variable.
+
+### A variable is a snapshot
+
+A variable is calculated **once**, at the place where it is defined, in the **filter context at that place**. Later `CALCULATE` calls do not change its value.
+
+```dax
+Odd =
+VAR _total = [Total Sales]
+RETURN CALCULATE ( _total, ALL ( Sales[category] ) )   -- ALL has no effect on _total
+```
+
+To use a changed context, evaluate the expression inside `CALCULATE`:
+
+```dax
+Share % =
+VAR _all = CALCULATE ( [Total Sales], ALL ( Sales[category] ) )
+RETURN DIVIDE ( [Total Sales], _all )
+```
+
+Variables also can hold tables, such as a filtered table, for reuse:
+
+```dax
+High Value Failure Rate % =
+VAR _hv  = FILTER ( Transactions, Transactions[amount] > 50000 )
+VAR _den = COUNTROWS ( _hv )
+VAR _num = CALCULATE ( COUNTROWS ( Transactions ), _hv, Transactions[status] = "FAILED" )
+RETURN DIVIDE ( _num, _den )
+```
+
+### DIVIDE and blanks
+
+```dax
+DIVIDE ( numerator, denominator [, alternateResult] )
+```
+
+- Returns blank (or the alternate result) when the denominator is zero or blank. No error.
+- Better than `IF(den = 0, 0, num / den)` because it is shorter and optimised.
+
+Blank is often the right answer. A bar with blank is not drawn, while a bar with 0 says "zero percent", which is a different statement from "no data".
+
+Other safe-handling tools:
+
+| Need | Tool |
+|------|------|
+| Test for blank | `ISBLANK(x)` |
+| Replace blank with 0 | `x + 0` or `COALESCE(x, 0)` |
+| Return blank deliberately | `BLANK()` |
+| Catch errors | `IFERROR(x, alt)` (use sparingly) |
+| Show text when empty | `IF(ISBLANK(x), "No data", x)` in a **label** measure |
+| Check that a visual is at the right level | `ISINSCOPE(column)`, `HASONEVALUE(column)` |
+
+`IFERROR` hides every kind of error, even real mistakes. Prefer to prevent the error (`DIVIDE`) than to hide it.
+
+### Formatting and display
+
+- Set the **format string** on the measure (percentage, whole number, currency) from Measure tools. This keeps the value numeric.
+- Use `FORMAT()` only for text labels (cards with text, titles). It returns text, which cannot be summed or charted.
+- A text label measure for Indian readers:
+
+```dax
+Sales Label =
+VAR _s = [Total Sales]
+RETURN
+    SWITCH (
+        TRUE (),
+        ISBLANK ( _s ), BLANK (),
+        _s >= 10000000, "₹" & FORMAT ( _s / 10000000, "0.0" ) & " Cr",
+        _s >= 100000,   "₹" & FORMAT ( _s / 100000, "0.0" ) & " L",
+        "₹" & FORMAT ( _s, "#,0" )
+    )
+```
+
+### Measure best practices checklist
+
+1. **One home**: keep all measures in a dedicated measure table (for example `_Measures`).
+2. **Base measures first**: define `[Total Sales]`, `[Order Count]`, then build `[AOV]`, `[YoY %]` from them. A fix to the base fixes all.
+3. **Clear names**: `Sales YoY %`, `Failure Rate %`. Avoid `Measure 1` and unclear abbreviations.
+4. **Use DIVIDE and variables**.
+5. **No hard-coded business rules in visuals**: put them in named measures (for example `[Big Order Revenue]`), so everyone uses the same definition.
+6. **Remove filters narrowly**: `ALL(column)` or `REMOVEFILTERS(column)` instead of `ALL(table)`.
+7. **Prefer measures to calculated columns** for aggregation; use columns for slicers and categories.
+8. **Document**: use the description property, and short `//` comments for unusual logic.
+9. **Test**: compare to a SQL query or Excel pivot on a small slice, and check grand totals against known numbers.
+10. **Avoid heavy iterators** over big tables when a plain aggregator works.
+
+### Naming convention suggestion
+
+| Type | Pattern | Example |
+|------|---------|---------|
+| Base | Noun | `Total Sales`, `Orders` |
+| Ratio | with % | `Failure Rate %` |
+| Time variants | suffix | `Sales YTD`, `Sales LY` |
+| Variables | underscore | `_ly` |
+| Helper (hidden) | prefix | `_Sales Base` |
+
+<Tip>
+Debug a long measure by temporarily replacing the `RETURN` expression with one variable. Seeing `_ly` alone in a table tells you whether the problem is before or after that step.
+</Tip>
+
+## Worked examples
+
+### Example 1: Safe failure rate (fintech)
+
+```dax
+Failed Txns = CALCULATE ( COUNTROWS ( Transactions ), Transactions[status] = "FAILED" )
+Failure Rate % = DIVIDE ( [Failed Txns], COUNTROWS ( Transactions ) )
+```
+
+When a slicer picks a bank with no transactions in the selected month, `COUNTROWS` is blank and `DIVIDE` returns blank, so the card shows empty instead of an error. On the cleaned sample the overall rate is 627 of 22,088 transactions, 2.8%.
+
+| Bank | Failure Rate % |
+|------|----------------|
+| Kaveri Co-op Bank | 8.1% |
+| PayNova Small Finance Bank | 4.1% |
+| Malabar Savings Bank | 1.9% |
+
+(The three banks shown are real values from the cleaned data.)
+
+### Example 2: Attainment with variables (retail)
+
+```dax
+Target = SUM ( Targets[target_net_sales_inr] )
+
+Attainment % =
+VAR _t = [Target]
+VAR _s = [Total Sales]
+RETURN
+    IF ( NOT ISBLANK ( _t ) && _t <> 0, DIVIDE ( _s, _t ) )
+```
+
+East region stores have no targets, so `_t` is blank and the measure returns blank rather than a division error or a misleading 0%. A matrix by region looks like:
+
+| Region | Attainment % |
+|--------|--------------|
+| North | about 100% |
+| South | about 100% |
+| West | about 100% |
+| East | (blank) |
+
+The North, South and West values are illustrative: targets are set at roughly 90 to 115% of actual sales, so attainment clusters near 100%, but exact values depend on the months selected. East is blank because the dataset has no targets for it.
+
+### Example 3: Variable timing
+
+Which of the two measures shows the share of total by category?
+
+```dax
+Version A =
+VAR _total = [Total Sales]
+RETURN CALCULATE ( _total, ALL ( Sales[category] ) )
+
+Version B =
+VAR _all = CALCULATE ( [Total Sales], ALL ( Sales[category] ) )
+RETURN DIVIDE ( [Total Sales], _all )
+```
+
+Only Version B. Version A computes `_total` before `ALL` is applied, so each row just returns its own sales again. Version B calculates the denominator inside `CALCULATE`. Using real sample numbers, Version B gives the share for Home & Kitchen as 82,04,736 / 3,00,27,732 = 27.3%.
+
+### Example 4: Rewriting a messy measure
+
+Before (hard to read, repeated logic):
+
+```dax
+Margin Bad =
+IF ( SUM ( Order_Items[line_total] ) = 0, 0,
+     ( SUM ( Order_Items[line_total] ) - SUM ( Order_Items[Line Cost] ) ) / SUM ( Order_Items[line_total] ) )
+```
+
+After:
+
+```dax
+Revenue  = SUM ( Order_Items[line_total] )
+Cost     = SUM ( Order_Items[Line Cost] )
+Margin % =
+VAR _rev = [Revenue]
+RETURN DIVIDE ( _rev - [Cost], _rev )
+```
+
+Same result, shorter, reusable `[Revenue]` and `[Cost]` for other measures, and blank (not 0) when there is no revenue.
+
+## Common mistakes
+
+<CommonMistake>
+Using `/` and wrapping everything in `IFERROR`. This hides real problems. Use `DIVIDE` and fix the cause of errors.
+</CommonMistake>
+
+<CommonMistake>
+Returning 0 where "no data" is the truth. A zero failure rate and an empty month are different statements.
+</CommonMistake>
+
+<CommonMistake>
+Assuming a variable changes inside a later `CALCULATE`. Variables are snapshots.
+</CommonMistake>
+
+<CommonMistake>
+Using `FORMAT` on numbers that you will chart or sum. The result is text and sorts alphabetically.
+</CommonMistake>
+
+<CommonMistake>
+Copying the same business rule into ten measures. When the rule changes you must edit ten places. Create one named measure and reuse it.
+</CommonMistake>
+
+<CommonMistake>
+Leaving measures unnamed or in random tables. Teams waste hours looking for them.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="dax-variables" module="power-bi" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "When is a DAX variable evaluated?", options: ["Every time it is mentioned", "Once, where it is defined, in that filter context", "Only at refresh", "Never"], answer: 1, explanation: "A variable is computed once at its definition and keeps that value, even inside a later CALCULATE." },
+  { q: "What does DIVIDE(a, b) return when b is zero?", options: ["An error", "Infinity", "Blank (or the alternate result if given)", "Zero always"], answer: 2, explanation: "DIVIDE is safe: it returns blank by default, or the third argument if you provide one." },
+  { q: "Why prefer setting a format string over using FORMAT() for numbers?", options: ["FORMAT is faster", "FORMAT returns text, which cannot be charted or summed as numbers", "Format strings are not allowed", "No difference"], answer: 1, explanation: "A format string keeps the value numeric. FORMAT converts it to text." },
+  { q: "Which is a good habit?", options: ["Repeat the same long expression in many measures", "Build base measures and reuse them", "Name measures Measure1, Measure2", "Hide errors with IFERROR everywhere"], answer: 1, explanation: "Reusing base measures keeps definitions consistent and easy to maintain." },
+  { q: "How can you debug a long measure with variables?", options: ["Delete it", "Change RETURN to output one variable and inspect it", "Use FORMAT", "Convert it to a column"], answer: 1, explanation: "Returning an intermediate variable shows the value at that step and finds where the logic goes wrong." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+They may hand you a messy measure and ask you to improve it. Introduce variables, replace `/` with `DIVIDE`, handle blanks, reuse base measures and rename clearly. Say why each change helps.
+</InterviewAlert>
+
+<InterviewQ q="What are variables in DAX and why use them?">
+Variables are defined with VAR and used after RETURN. They make a measure easier to read, evaluate an expression once even if it is used several times (better performance) and make debugging simple because I can return an intermediate variable. They are snapshots: their value does not change inside a later CALCULATE.
+</InterviewQ>
+
+<InterviewQ q="How do you avoid divide-by-zero errors in DAX?">
+I use `DIVIDE(numerator, denominator)`, which returns blank (or an alternate result I specify) when the denominator is zero or blank. I prefer blank because it shows "no data" rather than a misleading 0%. I avoid blanket `IFERROR`, because it hides real errors.
+</InterviewQ>
+
+<InterviewQ q="What are your best practices for writing measures in a team model?">
+Keep measures in one table, build from base measures, name them clearly, use DIVIDE and variables, set format strings on the measure, remove filters narrowly, document unusual logic and test totals against SQL or Excel. I keep business rules in named measures instead of in visual-level filters.
+</InterviewQ>
+
+<InterviewQ q="This measure returns the same number as the base measure. What is wrong? VAR _t = [Sales] RETURN CALCULATE(_t, ALL(Stores))">
+The variable `_t` is evaluated before `CALCULATE` runs, so `ALL(Stores)` cannot change it. To get the total across all stores I would write `CALCULATE([Sales], ALL(Stores))`, or define the variable with that expression.
+</InterviewQ>
+
+## Key takeaways
+
+- `VAR` and `RETURN` give readable, once-evaluated, debuggable measures.
+- A variable is a snapshot of the context where it is defined.
+- Use `DIVIDE`, blank handling and `ISINSCOPE` for safe visuals; avoid blanket `IFERROR`.
+- Set number formats on the measure; use `FORMAT` only for text labels.
+- Build base measures once, reuse them, name them clearly and test against a known source.
+
+## Further reading
+
+<FurtherReading ids={["dax-guide", "power-bi-docs", "pl300"]} />

@@ -1,0 +1,97 @@
+[
+  {
+    "id": "sh-jmkt-001",
+    "module": "start-here",
+    "topic": "job-market",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "An offer letter says ₹4.8 LPA CTC. Convert this to rupees per year and explain in one sentence why the monthly in-hand pay will not be ₹4.8 lakh divided by 12.",
+    "dataset": "none",
+    "hint": "1 lakh = 1,00,000.",
+    "solution": "**Model answer:** ₹4.8 LPA is ₹4,80,000 per year. The in-hand pay will be lower than ₹40,000 a month because CTC may include variable pay, and deductions such as provident fund and tax are taken from the fixed part.",
+    "explanation": "CTC is the company's total yearly cost, not the monthly credit to your account.",
+    "commonMistake": "Dividing CTC by 12 and planning rent on that number.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "job-market",
+      "career"
+    ]
+  },
+  {
+    "id": "sh-jmkt-002",
+    "module": "start-here",
+    "topic": "job-market",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "List five types of employers who hire fresher analysts in India and mark the two you will target first, with a reason.",
+    "dataset": "none",
+    "hint": "Think of fintech, e-commerce, services, consulting, health, startups.",
+    "solution": "**Model answer:** Fintech, e-commerce, IT services, consulting, healthcare. First targets: **fintech** (heavy SQL, clear data, my long-term interest) and **IT services** (regular fresher hiring and structured training).",
+    "explanation": "Having target types makes your resume and projects more focused.",
+    "commonMistake": "Applying to everyone without a focus.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "job-market",
+      "career"
+    ]
+  },
+  {
+    "id": "sh-jmkt-003",
+    "module": "start-here",
+    "topic": "job-market",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "Create a weekly job-hunt routine for week 6 that uses about 90 minutes a day for 6 days. Include applications, networking, a mock and a review.",
+    "dataset": "none",
+    "hint": "Use the routine in the lesson but adapt it to you.",
+    "solution": "**Model answer:**\n- Mon: shortlist 10 jobs (60 min), update resume headline (30).\n- Tue: tailor and apply to 5 jobs (90).\n- Wed: message 3 seniors (45), practise one SQL test (45).\n- Thu: tailor and apply to 5 jobs (90).\n- Fri: update tracker, follow up (45), LinkedIn profile polish (45).\n- Sat: mock interview (60), review feedback (30).\nAbout 10 applications a week plus 3 networking messages.",
+    "explanation": "A routine makes the search steady and measurable.",
+    "commonMistake": "Applying in a burst for a day and then stopping for weeks.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 10,
+    "tags": [
+      "job-market",
+      "career"
+    ]
+  },
+  {
+    "id": "sh-jmkt-004",
+    "module": "start-here",
+    "topic": "job-market",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "A recruiter on a messaging app offers you a job but asks for ₹15,000 as a registration and training fee. Write what you should do and why.",
+    "dataset": "none",
+    "hint": "Genuine employers do not charge candidates.",
+    "solution": "**Model answer:** Do not pay. Genuine employers do not charge candidates to hire them. Check the company's official website and careers page, search the recruiter's name and the company for scam reports, and ask for an offer letter on official email. If it looks fake, block and report the message.",
+    "explanation": "Safety is part of a realistic job search.",
+    "commonMistake": "Paying under pressure of limited seats or a deadline.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "job-market",
+      "career"
+    ]
+  },
+  {
+    "id": "sh-jmkt-005",
+    "module": "start-here",
+    "topic": "job-market",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "Set three honest goals for your first 12 weeks of job hunting: one input goal, one skill goal and one proof goal. Then write how you will react if you get zero interview calls by week 9.",
+    "dataset": "none",
+    "hint": "Goals you control are inputs, not outcomes.",
+    "solution": "**Model answer:**\n- **Input:** 12 tailored applications a week from week 6 (about 80 in total).\n- **Skill:** pass a timed 5-question SQL test in 45 minutes.\n- **Proof:** 3 projects on GitHub with README files.\n\nIf I get zero calls by week 9: review three resumes with seniors for clarity and keywords, check that my profile shows projects first, widen titles to MIS and Reporting Analyst, ask for referrals, and keep improving SQL. I will not conclude I am not good enough; I will change one variable at a time.",
+    "explanation": "Controlling inputs keeps motivation up while outcomes take time.",
+    "commonMistake": "Setting 'get an offer by week 12' as the only goal.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 12,
+    "tags": [
+      "job-market",
+      "career"
+    ]
+  }
+]

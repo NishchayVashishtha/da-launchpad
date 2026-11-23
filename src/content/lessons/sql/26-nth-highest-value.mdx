@@ -1,0 +1,232 @@
+---
+title: "Interview pattern: second / Nth highest value"
+description: "Find the second, third or Nth highest value using LIMIT OFFSET, DENSE_RANK and a correlated subquery, and handle ties and missing answers."
+module: sql
+order: 26
+estimatedMinutes: 45
+objectives:
+  - "Recognise an Nth-highest question from its wording"
+  - "Write the answer three ways: DISTINCT with LIMIT OFFSET, DENSE_RANK, correlated subquery"
+  - "Explain why ties change the meaning of the question"
+  - "Return NULL, not an empty result, when the Nth value does not exist"
+tags: ["sql", "interview", "window-functions", "ranking"]
+---
+
+## Learning objectives
+
+- Spot the "Nth highest" pattern in an interview question.
+- Write it with `DISTINCT` + `LIMIT ... OFFSET`.
+- Write it with `DENSE_RANK()`, the most flexible version.
+- Write it with a correlated subquery, the "no window functions allowed" version.
+- Decide how to treat ties and what to return when there is no Nth value.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+"Who is our second-biggest customer?", "What is the third-highest order value this month?", "Which restaurant has the second-slowest prep time?" Analysts rank things all day. In screening rounds, "second highest salary" is the single most repeated SQL question in India, because it tests ties, NULLs and window functions in one go.
+</RealWorld>
+
+## Concept
+
+### The recognition cue
+
+When you see **"second highest", "Nth largest", "third lowest", "runner-up"**, think: *rank the distinct values, then pick the rank you want.*
+
+The big question to ask the interviewer first: **"If two people share the top value, is the second highest the next different value, or the other person with the same value?"** Most interviewers mean the next different value. That is the "dense" meaning, and it is the one we use here.
+
+Analogy: a race where two runners finish together in first place. Is the runner who finishes next "second" or "third"? Rank functions answer this differently:
+
+| Function | Values 100, 100, 90 | Meaning |
+|---|---|---|
+| `ROW_NUMBER` | 1, 2, 3 | Ties broken randomly. Almost never what you want here. |
+| `RANK` | 1, 1, 3 | Skips rank 2 after a tie. |
+| `DENSE_RANK` | 1, 1, 2 | No gaps. Value 90 is the second highest. |
+
+### Template 1: DISTINCT + LIMIT OFFSET
+
+```sql
+SELECT DISTINCT col
+FROM t
+ORDER BY col DESC
+LIMIT 1 OFFSET N-1;   -- N=2 means OFFSET 1
+```
+
+`DISTINCT` removes ties. `OFFSET` skips the top N-1 values. Short and fast to write. In SQL Server use `OFFSET ... FETCH`, in older Oracle use `ROWNUM`.
+
+### Template 2: DENSE_RANK
+
+```sql
+WITH ranked AS (
+  SELECT col, DENSE_RANK() OVER (ORDER BY col DESC) AS rnk
+  FROM t
+)
+SELECT DISTINCT col FROM ranked WHERE rnk = N;
+```
+
+Best when you also need the **rows** with that value (for example, the names of everyone who earns the second highest salary).
+
+### Template 3: correlated subquery
+
+```sql
+SELECT DISTINCT a.col
+FROM t a
+WHERE (SELECT COUNT(DISTINCT b.col) FROM t b WHERE b.col > a.col) = N - 1;
+```
+
+Read it as: "a value is the Nth highest if exactly N-1 distinct values are bigger than it." It works on any database, even without window functions. It is slower on big tables because the inner query runs for each row.
+
+### Edge cases: NULL and "no Nth value"
+
+- `ORDER BY col DESC` puts NULLs **last** in SQLite and MySQL, but **first** in PostgreSQL. Filter them out with `WHERE col IS NOT NULL` to be safe.
+- If the table has only 3 distinct values and you ask for the 5th, template 1 returns **zero rows**, not NULL. Many interviewers expect `NULL`. Wrap it as a scalar subquery: `SELECT (SELECT DISTINCT ... LIMIT 1 OFFSET 4) AS fifth_highest;`. A scalar subquery with no rows becomes NULL.
+
+<Tip>
+Say the assumption out loud: "I will treat duplicates as one value and return NULL if there is no Nth value." That one sentence earns marks even before you type code.
+</Tip>
+
+## Worked examples
+
+### Example 1: second highest salary (LIMIT OFFSET)
+
+HR wants the second highest CTC (annual cost to company) ever recorded. The salary table has five 100x data-entry outliers, so we filter them first.
+
+<SqlPlayground dataset="hr" query={`SELECT DISTINCT annual_ctc
+FROM salaries
+WHERE annual_ctc IS NOT NULL
+  AND annual_ctc < 10000000
+ORDER BY annual_ctc DESC
+LIMIT 1 OFFSET 1;`} title="Second highest CTC with LIMIT OFFSET" />
+
+**Output:**
+
+| annual_ctc |
+|---|
+| 7446000.0 |
+
+The top value was removed by `OFFSET 1` and the next distinct value remained. Without the `< 10000000` filter, the outliers would have been first and second.
+
+### Example 2: DENSE_RANK and ties (third slowest kitchen)
+
+Which restaurants have the third highest average prep time? Prep time is a whole number of minutes, so several restaurants tie.
+
+<SqlPlayground dataset="food_delivery" query={`WITH ranked AS (
+  SELECT restaurant_id, restaurant_name, avg_prep_minutes,
+         DENSE_RANK() OVER (ORDER BY avg_prep_minutes DESC) AS rnk
+  FROM restaurants
+  WHERE avg_prep_minutes IS NOT NULL
+)
+SELECT restaurant_id, restaurant_name, avg_prep_minutes, rnk
+FROM ranked
+WHERE rnk = 3
+ORDER BY restaurant_id;`} title="Nth highest with DENSE_RANK" />
+
+**Output:**
+
+| restaurant_id | restaurant_name | avg_prep_minutes | rnk |
+|---|---|---|---|
+| 286 | Annapoorna Villa | 26 | 3 |
+| 338 | Punjabi Magic | 26 | 3 |
+| 370 | Royal Rasoi | 26 | 3 |
+| 545 | Royal Magic | 26 | 3 |
+| 557 | Dosa Bhavan | 26 | 3 |
+
+Five restaurants share the third highest prep time (26 minutes), and `DENSE_RANK` returns all of them. The values 28 and 27 are ranks 1 and 2, so there is no gap. `LIMIT/OFFSET` could only give you the value, not the rows. Change `DENSE_RANK` to `ROW_NUMBER` and you would get exactly one restaurant, which hides the ties.
+
+### Example 3: correlated subquery
+
+The same value, with no window function. A value is second highest if exactly one distinct value is above it.
+
+<SqlPlayground dataset="food_delivery" query={`SELECT DISTINCT a.avg_prep_minutes
+FROM restaurants a
+WHERE (SELECT COUNT(DISTINCT b.avg_prep_minutes)
+       FROM restaurants b
+       WHERE b.avg_prep_minutes > a.avg_prep_minutes) = 1;`} title="Second highest, correlated subquery" />
+
+**Output:**
+
+| avg_prep_minutes |
+|---|
+| 27 |
+
+Same answer as Example 2. Use this when the interviewer says "without window functions".
+
+### Example 4: when the Nth value does not exist
+
+There are only 24 stores in the retail dataset. Ask for the 30th largest carpet area and see what happens with and without the scalar-subquery wrapper.
+
+<SqlPlayground dataset="retail" query={`SELECT
+  (SELECT DISTINCT carpet_area_sqft FROM stores
+   ORDER BY carpet_area_sqft DESC LIMIT 1 OFFSET 29) AS thirtieth_largest,
+  (SELECT DISTINCT carpet_area_sqft FROM stores
+   ORDER BY carpet_area_sqft DESC LIMIT 1 OFFSET 1) AS second_largest;`} title="Missing Nth value returns NULL" />
+
+**Output:**
+
+| thirtieth_largest | second_largest |
+|---|---|
+| NULL | 62300 |
+
+The first column is `NULL` because there is no 30th value. The bare `LIMIT/OFFSET` query alone would have returned an empty table, and a dashboard or app reading it might crash.
+
+## Common mistakes
+
+<CommonMistake>
+**Using `MAX` twice with `<` and forgetting duplicates.** `SELECT MAX(x) FROM t WHERE x < (SELECT MAX(x) FROM t)` is fine for the second highest, but it does not scale to N and it breaks if you ask for the "second highest row" instead of the value.
+</CommonMistake>
+<CommonMistake>
+**Using `ROW_NUMBER` or `LIMIT 1 OFFSET 1` without `DISTINCT`.** If the top two rows tie at 100, the "second highest" comes out as 100, which is the highest, not the second.
+</CommonMistake>
+<CommonMistake>
+**Off-by-one in OFFSET.** For the Nth highest the offset is N-1, not N. `OFFSET 2` gives the third highest.
+</CommonMistake>
+<CommonMistake>
+**Forgetting NULLs.** In PostgreSQL, `ORDER BY x DESC` puts NULL first, so your "highest" is NULL. Filter `IS NOT NULL`.
+</CommonMistake>
+<CommonMistake>
+**Ignoring outliers.** If one data-entry error is 100x too big, it hides the real second highest. Look at the top 5 values before you trust the answer.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="pattern-nth-highest" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Values are 500, 500, 400, 300. What does DENSE_RANK() OVER (ORDER BY v DESC) give?", options: ["1, 2, 3, 4", "1, 1, 3, 4", "1, 1, 2, 3", "1, 2, 2, 3"], answer: 2, explanation: "DENSE_RANK gives tied values the same rank and does not skip the next rank, so 400 is rank 2 and 300 is rank 3." },
+  { q: "You want the 4th highest distinct value with LIMIT/OFFSET. What is the OFFSET?", options: ["4", "3", "5", "0"], answer: 1, explanation: "OFFSET skips the top N-1 values, so the 4th highest needs OFFSET 3." },
+  { q: "A table has 2 distinct values. SELECT DISTINCT v ... LIMIT 1 OFFSET 2 returns:", options: ["NULL", "0", "An empty result", "An error"], answer: 2, explanation: "OFFSET skips past all rows, so no row comes back. Wrap it as a scalar subquery to get NULL." },
+  { q: "Which approach returns all employees who share the second highest salary?", options: ["LIMIT 1 OFFSET 1", "ROW_NUMBER() = 2", "DENSE_RANK() = 2", "MAX(salary) twice"], answer: 2, explanation: "DENSE_RANK gives every tied row the same rank, so filtering rank = 2 returns all of them." },
+  { q: "In the correlated-subquery version, a value is the Nth highest when:", options: ["N distinct values are bigger", "N-1 distinct values are bigger", "N-1 rows are bigger", "N values are smaller"], answer: 1, explanation: "If exactly N-1 distinct values are above it, it must sit at rank N." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+"Find the second highest salary" is asked in almost every fresher screening. The interviewer is not testing whether you can google a query. They are checking that you ask about ties, think about NULL and missing results, and can offer more than one method.
+</InterviewAlert>
+
+<InterviewQ q="Find the second highest salary. Explain your approach as you write it.">
+Say it out loud in this order. "First, a clarification: if two people share the highest salary, should the second highest be the next different value? I will assume yes, so I need distinct values. I will rank salaries from high to low using DENSE_RANK, so ties share a rank and there are no gaps, and then keep rank 2. If the table might have fewer than two distinct salaries I will wrap the result as a scalar subquery so I return NULL instead of an empty set. A shorter version is `SELECT DISTINCT salary ... ORDER BY salary DESC LIMIT 1 OFFSET 1`." Then write the query.
+</InterviewQ>
+<InterviewQ q="What is the difference between RANK, DENSE_RANK and ROW_NUMBER, and which do you use for Nth highest?">
+`ROW_NUMBER` gives unique numbers and breaks ties arbitrarily. `RANK` gives ties the same number and then skips (1, 1, 3). `DENSE_RANK` gives ties the same number without skipping (1, 1, 2). For "Nth highest value" I use `DENSE_RANK`, because the second highest value should be the next different value, even if many rows tie above it.
+</InterviewQ>
+<InterviewQ q="How would you do it without window functions or LIMIT?">
+Use a correlated subquery: keep a value if exactly N-1 distinct values are greater than it. For example, `WHERE (SELECT COUNT(DISTINCT b.s) FROM t b WHERE b.s > a.s) = 1` gives the second highest. I would mention that it is O(n squared) in the worst case, so for big tables I prefer the window function.
+</InterviewQ>
+<InterviewQ q="What should the query return when there is no second highest value?">
+That depends on the contract, so I would ask. A common expectation is a single row with NULL. With `LIMIT/OFFSET` the plain query returns no rows, so I wrap it as `SELECT (SELECT DISTINCT ... LIMIT 1 OFFSET 1) AS second_highest`. A scalar subquery that finds nothing yields NULL.
+</InterviewQ>
+
+## Key takeaways
+
+- Cue: "second / Nth highest" means rank the distinct values, then pick rank N.
+- `DISTINCT ... ORDER BY ... DESC LIMIT 1 OFFSET N-1` is the shortest answer. `DENSE_RANK() = N` is the most flexible, and a correlated subquery works without window functions.
+- Ask about ties first. `DENSE_RANK` treats the next different value as the next rank.
+- Wrap in a scalar subquery to return NULL when the Nth value does not exist.
+- Filter NULLs and look out for outliers before trusting the answer.
+
+## Further reading
+
+<FurtherReading ids={["sqlbolt", "mode-sql", "sqlite-docs"]} />

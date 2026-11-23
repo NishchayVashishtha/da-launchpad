@@ -1,0 +1,268 @@
+---
+title: "Power BI practical test simulation (90 minutes)"
+description: "A timed practical test: marketing campaign brief, dataset, 90-minute plan, required deliverables, scoring rubric and a model solution outline."
+module: power-bi
+order: 19
+estimatedMinutes: 120
+objectives:
+  - "Complete a Power BI case test in 90 minutes"
+  - "Plan your time across cleaning, modelling, DAX, visuals and the summary"
+  - "Self-score your work with a detailed rubric"
+  - "Compare your answer with a model solution outline"
+tags: ["power-bi", "practical-test", "simulation", "marketing", "interview"]
+---
+
+## Learning objectives
+
+- Run a realistic 90-minute Power BI test, alone and timed.
+- Split time sensibly and avoid common time traps.
+- Deliver a working report plus a short written summary.
+- Score yourself with a rubric and find the gaps.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+A Mumbai e-commerce company shortlists 20 freshers and sends each a CSV pack with the message: "You have 90 minutes. Build a dashboard that tells our CMO where to cut and where to invest marketing spend, and send the .pbix with a short summary." No one will guide you. This lesson lets you rehearse that exact situation before it counts.
+</RealWorld>
+
+Companies use practical tests because they reveal how you work: cleaning, modelling, choosing visuals, and communicating. The best answers are not the fanciest; they are correct, clear and finished on time.
+
+## Concept
+
+### How to use this simulation
+
+1. Finish lessons 1 to 18 first. You need modelling, DAX, visuals and design.
+2. Set a **90-minute timer**. Do not look at the model solution until the end.
+3. Work alone. You may use Power BI help and DAX reference pages (as in many real tests) but no copy-pasting from this site's walkthroughs.
+4. Save the file as `marketing_test.pbix`. Write your summary in a text box on the last page.
+5. Score yourself with the rubric and compare with the model solution outline.
+
+### The business brief
+
+**Company:** "Bazaarly", a fictional online store.
+
+**Message from the CMO:** "We spent money across search, social, influencers, email and WhatsApp over 2023 and 2024. I need to decide next quarter's budget. Which campaigns and channels are worth it? Where are we wasting money? Does device or city tier matter? Give me a dashboard and a short note I can read in two minutes."
+
+**Your tasks:**
+
+1. Clean and model the data.
+2. Build a dashboard of up to 3 pages.
+3. Write an executive summary with 3 insights and 2 recommendations.
+
+### The dataset
+
+Use the `marketing` dataset.
+
+<Download href="/data/zip/marketing.zip" label="marketing.zip" />
+
+| Table | Rows | What it holds |
+|---|---|---|
+| campaigns | 28 | Campaign name, channel, objective, dates, budget |
+| ad_spend | about 2,100 | Daily spend, impressions, clicks per campaign and device |
+| clicks | about 21,500 | One row per click with device, city, city tier, landing page |
+| conversions | about 800 | Purchases, signups and leads linked to a click, with revenue |
+| ab_test_results | about 12,000 | Not needed for this test; ignore it |
+
+Known issues you must handle (the brief does not list them, but your reviewer expects you to find them):
+
+- duplicate rows in `clicks` and `ad_spend`,
+- a few `ad_spend` rows with spend far too high (100x),
+- casing and spaces in `device` and `city`,
+- revenue is empty for Signup and Lead conversions by design,
+- budgets and dates may be stored as text in the CSVs.
+
+### The 90-minute timeline
+
+| Minutes | Task | Output |
+|---|---|---|
+| 0 to 5 | Read the brief, write 4 questions you will answer | Notes |
+| 5 to 25 | Load and clean in Power Query | Clean queries, documented fixes |
+| 25 to 35 | Model: relationships, Date table | Star schema |
+| 35 to 55 | Write 6 to 8 measures | Spend, Clicks, Conversions, Purchases, Revenue, CPC, Conv Rate, ROAS, CAC |
+| 55 to 75 | Build 2 or 3 pages | Overview, Channel and campaign, Audience |
+| 75 to 85 | Write the executive summary and data notes | Text box |
+| 85 to 90 | Check numbers, save, final look | Final file |
+
+<Tip>
+Time trap: spending 30 minutes making colours perfect. Get a correct, readable report first, then polish with leftover minutes.
+</Tip>
+
+### Required deliverables
+
+1. `marketing_test.pbix` with Power Query steps visible.
+2. A report of 2 or 3 pages with a consistent theme, slicers and at least 6 different visuals.
+3. At least **6 DAX measures** including ROAS and CAC (cost per purchase).
+4. A **data notes** box listing what you cleaned and how.
+5. An **executive summary**: three insights with numbers and two recommendations.
+
+### Evaluation rubric (100 points)
+
+| Area | What a strong answer shows | Points |
+|---|---|---|
+| Data cleaning | Duplicates removed (clicks, ad_spend); 100x spend rows found and handled; device and city standardised; nulls left where by design; steps documented | 15 |
+| Data model | Star schema; Campaigns as dimension; correct one-to-many relationships; single direction; marked Date table | 15 |
+| DAX quality | Correct ROAS, CAC, CPC, conversion rate; DIVIDE used; measures not calculated columns; clear names; numbers reconcile | 20 |
+| Visual choice | Right chart for each question; sorted bars; cards for KPIs; no misleading axes | 15 |
+| Design and layout | Z-pattern layout, theme, limited colours, readable fonts, slicers placed sensibly | 10 |
+| Insights | At least 3 true, specific, numbered insights supported by the data (not just descriptions) | 15 |
+| Recommendations and communication | Two clear, actionable recommendations; plain English; caveats on small samples | 10 |
+| **Total** | | **100** |
+
+Scoring guide: 85 to 100 is strong (ready for real tests); 70 to 84 is good; 50 to 69 means revisit weak areas; below 50 repeat the walkthroughs. Deduct up to 5 points if the file is not finished in 90 minutes.
+
+### What evaluators often look for beyond the rubric
+
+- Do the numbers reconcile (for example, channel revenues sum to total revenue)?
+- Did you notice a data problem without being told?
+- Can you explain a measure in one sentence?
+- Do you state limits and not overclaim?
+
+## Worked examples
+
+Here is the **model solution outline**. Numbers come from the cleaned data. Compare yours; small differences are fine if your definitions differ, but state them.
+
+### Cleaning decisions
+
+| Issue | Fix | Effect |
+|---|---|---|
+| 30 duplicate click rows | Remove duplicates on `click_id` | Clicks: 21,484 |
+| 6 duplicate spend rows | Remove duplicates on the full row | |
+| 3 spend rows 100x too high (campaign 25 on 2024-10-08 at ₹99,637 for 62 clicks, and rows for YouTube and Display) | Spot with spend per click above ₹100, correct by dividing by 100 (or exclude), keep original column and note it | Total spend about ₹2.17 lakh |
+| Device and city casing | Trim and uppercase device, proper-case city | 3 devices, 2 tiers |
+| Revenue null for Signup/Lead | Leave null; revenue only from purchases | Purchases: 698 |
+
+### Model
+
+`Campaigns` (one) to `ad_spend`, `clicks`, `conversions` (many) on `campaign_id`. `Date` table to `ad_spend[spend_date]`, a date column from `clicks`, and from `conversions`. A conversion links to its click by `click_id`; keep the relationship from `clicks` to `conversions` only if you need device or city tier for conversions, or copy device and tier into conversions in Power Query.
+
+### Measures
+
+```dax
+Spend = SUM(ad_spend[spend_clean])
+Clicks = COUNTROWS(clicks)
+Conversions = COUNTROWS(conversions)
+Purchases = CALCULATE(COUNTROWS(conversions), conversions[conversion_type] = "Purchase")
+Revenue = SUM(conversions[revenue_inr])
+CPC = DIVIDE([Spend], [Clicks])
+Conversion Rate % = DIVIDE([Conversions], [Clicks])
+ROAS = DIVIDE([Revenue], [Spend])
+CAC (per purchase) = DIVIDE([Spend], [Purchases])
+```
+
+`Conversion Rate %` here is all conversions divided by clicks (3.8%). State your definition; some analysts use purchases only.
+
+### Page 1, overview
+
+Title: "Search drives 56% of revenue at about 5.8x return; one influencer campaign spent ₹36K for no revenue".
+
+Key numbers: spend about **₹2.17 lakh**, revenue **₹9.90 lakh**, overall ROAS **4.55**, 21,484 clicks, 807 conversions, 698 purchases, cost per purchase about **₹311**.
+
+### Page 2, channel and campaign
+
+| Channel | Spend | Revenue | ROAS | Cost per purchase |
+|---|---|---|---|---|
+| Email | ₹836 | ₹91,438 | 109x | ₹15 |
+| WhatsApp | ₹1,520 | ₹74,391 | 49x | ₹33 |
+| Affiliate | ₹2,677 | ₹31,955 | 11.9x | ₹112 |
+| Google Search | ₹95,526 | ₹5,50,502 | 5.8x | ₹255 |
+| Meta Ads | ₹44,958 | ₹1,77,912 | 4.0x | ₹319 |
+| YouTube | ₹14,894 | ₹24,346 | 1.6x | ₹648 |
+| Google Display | ₹10,423 | ₹10,454 | 1.0x | ₹869 |
+| Influencer | ₹46,599 | ₹28,967 | 0.6x | ₹2,219 |
+
+Worst campaign: **Influencer Mega Reach Oct-24**, spend about ₹36,240, only 2 conversions (both signups) and **₹0 revenue**. Without correcting the 100x row, its spend would be about ₹1.35 lakh, which shows why cleaning matters. Best large campaigns: Diwali Dhamaka 2023 Search (₹16,388 spend, ₹1.24 lakh revenue, ROAS 7.6) and Diwali Dhamaka 2024 Search (ROAS 5.8).
+
+Awareness-objective channels (YouTube, Display) look weak on last-click revenue, since they mostly generate signups and leads. Mention that last-click does not credit them for awareness.
+
+### Page 3, audience
+
+| Segment | Clicks | Conversions | Conversion rate |
+|---|---|---|---|
+| Desktop | 5,354 | 286 | 5.3% |
+| Mobile | 15,261 | 492 | 3.2% |
+| Tablet | 869 | 29 | 3.3% |
+| Metro | 15,280 | 598 | 3.9% |
+| Tier-2 | 6,204 | 209 | 3.4% |
+
+Desktop converts about **1.7 times** as well as mobile, though mobile brings about 71% of clicks. Metro converts slightly better than Tier-2.
+
+### Model executive summary
+
+**Insights**
+
+1. Search delivers 56% of revenue (₹5.5 lakh of ₹9.9 lakh) at ROAS 5.8, the best paid channel at scale.
+2. Influencer is the worst channel: ROAS 0.6 and cost per purchase about ₹2,200, and the Oct-24 mega campaign made no revenue for about ₹36K.
+3. Desktop converts at 5.3% against 3.2% on mobile, so the mobile landing experience may need work.
+
+**Recommendations**
+
+1. Pause or cap influencer spend until a tracked test shows purchases; move that budget to Search and to Email and WhatsApp.
+2. Fix mobile landing pages and test again, since mobile is 71% of traffic.
+
+**Caveat:** Email and WhatsApp have tiny spend (under ₹2,000 each), so their very high ROAS may not hold at scale. Scale them gradually and measure.
+
+## Common mistakes
+
+<CommonMistake>
+Skipping the data check and building straight away. Duplicates and 100x spend rows change your worst campaign from "bad" to "terrible" and can reverse a channel ranking.
+</CommonMistake>
+
+<CommonMistake>
+Recommending to scale a channel just because its ROAS is highest, without noting the tiny spend base.
+</CommonMistake>
+
+<CommonMistake>
+Writing no summary. Many candidates submit a pretty dashboard without a single sentence of insight. The CMO needs the note.
+</CommonMistake>
+
+<CommonMistake>
+Not saving a version early. If Power BI crashes at minute 80, you lose everything. Save every 10 minutes.
+</CommonMistake>
+
+<CommonMistake>
+Using calculated columns for ROAS and then averaging them. Use measures with DIVIDE.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="practical-test" module="power-bi" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "How should you handle 100x spend outliers in the test?", options: ["Ignore them", "Detect them, correct or exclude, and document", "Delete the ad_spend table", "Double all spend"], answer: 1, explanation: "Evaluators reward finding and documenting the problem." },
+  { q: "Which measure is ROAS?", options: ["Spend divided by Revenue", "Revenue divided by Spend", "Clicks divided by Spend", "Purchases divided by Clicks"], answer: 1, explanation: "Return on ad spend is revenue divided by spend." },
+  { q: "What is the best use of the first 5 minutes?", options: ["Change colours", "Read the brief and write the questions to answer", "Write all measures", "Publish the report"], answer: 1, explanation: "Clear questions guide the entire build." },
+  { q: "Why mention a caveat about Email and WhatsApp ROAS?", options: ["Because they are free", "Their spend is tiny so ROAS may not scale", "They are illegal", "They have no clicks"], answer: 1, explanation: "A high ratio on a tiny base can mislead." },
+  { q: "Which deliverable is easy to forget but heavily scored?", options: ["A logo", "Executive summary with numbered insights and recommendations", "Animations", "A dark theme"], answer: 1, explanation: "Insights and recommendations carry about 25 of 100 points." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+After a take-home test, interviewers often ask: "Walk me through your decisions." Be ready to explain each cleaning choice, each measure and why you picked each chart.
+</InterviewAlert>
+
+<InterviewQ q="How do you approach a 90-minute Power BI test?">
+I spend the first 5 minutes reading the brief and writing the questions to answer. Then 20 minutes cleaning, 10 on the model, 20 on measures, 20 on pages, 10 on the summary and 5 on checks. I save often, finish a simple report first, and polish last. I also write down data issues I found and how I handled them.
+</InterviewQ>
+
+<InterviewQ q="What do you do when stuck on a DAX formula during a timed test?">
+I simplify: first write a basic version (a SUM or COUNTROWS), check it on a card, then add the filter or ratio. If it still fails after a few minutes, I use an alternative such as a calculated column or Power Query step and note it, so I keep moving.
+</InterviewQ>
+
+<InterviewQ q="How would you present the result to a CMO in two minutes?">
+Headline first: where money works and where it is wasted. Then two supporting numbers (Search ROAS 5.8, Influencer ROAS 0.6), one recommendation each for what to cut and where to shift budget, and one caveat about small bases. I would not explain the model unless asked.
+</InterviewQ>
+
+## Key takeaways
+
+- Plan your 90 minutes and protect time for the summary.
+- Clean first and document: duplicates, 100x values, casing.
+- Use measures with DIVIDE for ROAS, CAC, CPC and conversion rate.
+- Give three numbered insights and two recommendations, plus caveats.
+- Score yourself with the rubric, then repeat the weakest area.
+
+## Further reading
+
+<FurtherReading ids={["power-bi-docs", "dax-guide", "pl300"]} />

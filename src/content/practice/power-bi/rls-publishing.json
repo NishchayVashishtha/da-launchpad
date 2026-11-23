@@ -1,0 +1,61 @@
+[
+  {
+    "id": "pbi-rls-publishing-001",
+    "module": "power-bi",
+    "topic": "rls-publishing",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "Name three differences between a Workspace and an App in the Power BI Service.",
+    "dataset": "none",
+    "hint": "One is for builders, the other for readers.",
+    "solution": "A **workspace** is where creators build and edit datasets and reports and collaborate. An **app** is a packaged, read-only set of reports and dashboards published from a workspace for a wider audience. Differences: (1) workspace users are editors/contributors, app users are consumers; (2) an app has a curated navigation and its own audience permissions; (3) changes in the workspace do not reach app users until the app is updated.",
+    "explanation": "Publishing an app lets you control exactly what readers see and when.",
+    "commonMistake": "Sharing the whole workspace with business users who only need to read.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "service",
+      "apps",
+      "workspace"
+    ]
+  },
+  {
+    "id": "pbi-rls-publishing-002",
+    "module": "power-bi",
+    "topic": "rls-publishing",
+    "difficulty": "medium",
+    "language": "dax",
+    "question": "Using the `hr` data, write the DAX filter expression for a **static** RLS role named 'Support Managers' that only sees Customer Support employees. Then write the **dynamic** RLS filter that restricts each user to the rows where `Employees[manager_email]` matches their login.",
+    "dataset": "hr",
+    "hint": "The role filter is a table filter expression.",
+    "solution": "Static role on the `Departments` table:\n\n```dax\n[department_name] = \"Customer Support\"\n```\n\nDynamic role on the `Employees` table (assuming a `manager_email` column exists):\n\n```dax\n[manager_email] = USERPRINCIPALNAME()\n```\n\nIn Desktop use Modeling, Manage roles, then View as to test. After publishing, add members to the role in the dataset's Security page.",
+    "explanation": "Static roles hard-code a value, one role per group. Dynamic RLS uses one role and USERPRINCIPALNAME() so the filter changes per signed-in user.",
+    "commonMistake": "Testing as the author, who sees all data. Always use View as a role.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "rls",
+      "dax",
+      "security"
+    ]
+  },
+  {
+    "id": "pbi-rls-publishing-003",
+    "module": "power-bi",
+    "topic": "rls-publishing",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "A fresher wants to put a Power BI portfolio report on LinkedIn for recruiters. List the safe way to share it, and three caveats of 'Publish to web'.",
+    "dataset": "none",
+    "hint": "Think public link, and what is not protected.",
+    "solution": "Use only **public sample or fictional data** (never company data). Publish the report to a workspace, then File, Embed report, **Publish to web (public)** and copy the link; or share screenshots and a short screen recording. Caveats: (1) anyone with the link can see all the data in the report, there is no login and RLS does not apply; (2) the data is cached, so it can take time to update; (3) your admin may disable it, and some features (e.g. certain custom visuals or live connections) are not supported. Also, never put real personal or company data in it.",
+    "explanation": "Publish to web is public by design. It is fine for open datasets, dangerous for anything private.",
+    "commonMistake": "Publishing a report built on real employer data.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "publish-to-web",
+      "portfolio"
+    ]
+  }
+]

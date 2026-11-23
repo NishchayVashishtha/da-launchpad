@@ -1,0 +1,58 @@
+[
+  {
+    "id": "excel-formatting-validation-001",
+    "module": "excel",
+    "topic": "formatting-validation",
+    "difficulty": "easy",
+    "language": "excel",
+    "question": "In `excel-test-practice.xlsx` (sheet `food_orders`), highlight every `delay_minutes` value above 15 in light red. How many cells are highlighted, and how can you verify it with a formula?",
+    "dataset": "none",
+    "hint": "Home > Conditional Formatting > Highlight Cells Rules > Greater Than. Verify with COUNTIF.",
+    "solution": "**Steps:** Select the `delay_minutes` data, Conditional Formatting > Highlight Cells Rules > Greater Than > 15 > Light Red Fill.\n\n**Expected result:** 141 cells are highlighted. Check: `=COUNTIF(J2:J2001,\">15\")` returns 141.",
+    "explanation": "The rule colours cells; COUNTIF gives the same count, so you can trust it.",
+    "commonMistake": "Applying the rule to the whole column including the header.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "conditional-formatting"
+    ]
+  },
+  {
+    "id": "excel-formatting-validation-002",
+    "module": "excel",
+    "topic": "formatting-validation",
+    "difficulty": "medium",
+    "language": "excel",
+    "question": "In `excel-test-practice.xlsx` (sheet `food_orders`), format the whole row grey when `delivery_status` is Cancelled and `weather` is Heavy Rain. Write the rule formula and say how many rows turn grey.",
+    "dataset": "none",
+    "hint": "Use a formula rule. Lock the column letters with $ but not the row number.",
+    "solution": "**Steps:** Select `A2:P2001`. New Rule > Use a formula. Formula: `=AND($O2=\"Cancelled\",$N2=\"Heavy Rain\")` (O = delivery_status, N = weather). Choose a grey fill.\n\n**Expected result:** 9 rows turn grey.",
+    "explanation": "The formula is written for the first selected row and Excel shifts the row number for the rest.",
+    "commonMistake": "Writing `=O2=...` without the $, which colours only some cells and shifts references.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 7,
+    "tags": [
+      "conditional-formatting",
+      "formula-rule"
+    ]
+  },
+  {
+    "id": "excel-formatting-validation-003",
+    "module": "excel",
+    "topic": "formatting-validation",
+    "difficulty": "hard",
+    "language": "excel",
+    "question": "Using `excel-test-practice.xlsx` (sheet `food_orders`), build a dependent dropdown: cell P1 picks a `restaurant_city`, and cell P2 lists only the `restaurant_name` values of that city. Show a method for Excel 365 and say how many names appear for Pune.",
+    "dataset": "none",
+    "hint": "Create a helper spill with FILTER and UNIQUE, then use the spill reference in data validation.",
+    "solution": "**Steps (Excel 365):** In P1 add a List validation with source `=$R$1#` where R1 holds `=SORT(UNIQUE(FILTER(tbl_food_orders[restaurant_city],tbl_food_orders[restaurant_city]<>\"\")))`. In S1 put `=SORT(UNIQUE(FILTER(tbl_food_orders[restaurant_name],tbl_food_orders[restaurant_city]=P1)))`. In P2 add a List validation with source `=$S$1#`.\n\nOlder Excel: make a named range per city and use `=INDIRECT(P1)`.\n\n**Expected result:** choosing Pune gives 31 restaurant names in P2.",
+    "explanation": "The FILTER spill rebuilds the child list whenever P1 changes, and validation reads the spill with the # operator.",
+    "commonMistake": "Using names with spaces for INDIRECT, which fails.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 15,
+    "tags": [
+      "data-validation",
+      "dependent-dropdown"
+    ]
+  }
+]

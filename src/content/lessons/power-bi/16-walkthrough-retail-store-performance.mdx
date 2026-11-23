@@ -1,0 +1,314 @@
+---
+title: "Guided dashboard 1: Retail store performance"
+description: "Build a three-page retail dashboard step by step: business questions, cleaning, model, 10 measures, layout and the insights the data supports."
+module: power-bi
+order: 16
+estimatedMinutes: 90
+objectives:
+  - "Turn a business brief into questions and a page plan"
+  - "Clean and model the retail data in Power BI"
+  - "Write 10 DAX measures for sales, targets and stock"
+  - "Lay out a three-page dashboard and write verified insights"
+tags: ["power-bi", "walkthrough", "retail", "dashboard", "dax"]
+---
+
+## Learning objectives
+
+- Translate a vague request into five clear business questions.
+- Clean `sales`, `stores`, `inventory` and `targets` in Power Query.
+- Build a star-style model with a Date table, Stores and a Category table.
+- Create 10 measures and three report pages with insight titles.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+The operations head of "Vasudha Retail", a fictional chain of 24 stores across India, says: "Sales feel fine, but I do not know which stores are in trouble, or why. Give me one dashboard I can open on Monday." This is a typical first project in a retail analytics job, and a typical portfolio project. Finishing it end to end shows you can clean, model, calculate, design and explain.
+</RealWorld>
+
+This lesson is a guided project. You will follow the same steps a working analyst would, and the numbers below are verified against the dataset, so your dashboard should match them.
+
+## Concept
+
+### The brief and the business questions
+
+The brief: "Show how our stores are performing, whether we are hitting targets, and where inventory problems hurt sales."
+
+Turn it into questions:
+
+1. How much did we sell, and how fast are we growing year on year?
+2. Which regions, formats and stores bring in the most sales?
+3. Are stores meeting their monthly targets?
+4. Which stores have stock problems, and does it affect sales?
+5. Which categories are overstocked or slow-moving?
+
+### Download the data
+
+<Download href="/data/zip/retail.zip" label="retail.zip" />
+
+The zip has 4 CSV files: `stores` (24 rows), `sales` (about 24,000 lines over 2023 and 2024), `inventory` (monthly snapshots per store, SKU) and `targets` (monthly targets per store). Unzip it and put the CSVs in one folder.
+
+<Warning>
+The data is realistic and messy on purpose. The CSVs have duplicate sale rows, some dates written as DD-MM-YYYY, some amounts as text such as "₹1,234.50", inconsistent payment mode casing, and a few 100x outlier amounts. Cleaning is part of the exercise.
+</Warning>
+
+### Step 1: Clean in Power Query
+
+Load each CSV with Home, Get data, Text/CSV, then Transform data. Use these steps.
+
+**Sales**
+
+1. Set data types: `sale_datetime` as Date/Time, `quantity` as Whole number, `unit_price_inr` and `discount_pct` as Decimal.
+2. If `sale_datetime` shows errors, the text is mixed. Add a custom column that tries both formats:
+
+```m
+= try DateTime.From([sale_datetime], "en-IN") otherwise null
+```
+
+   Check there are no nulls left, and where dates are DD-MM-YYYY, use Transform, Using locale, Date/Time, English (India).
+3. `net_amount_inr`: it may be text with the rupee sign. Replace "₹" and "," with nothing, then change type to Decimal.
+4. **Remove duplicates** on the `sale_id` column (350 duplicate lines). After this, about 24,000 rows remain.
+5. **Outliers**: filter `net_amount_inr < 20000`. Six rows are 100x too large (for example ₹131,556 for a 3-unit sale at ₹438). Keep a copy of the removed rows in a separate query named `Sales_Outliers` so you can show them in your notes.
+6. Clean `payment_mode`: Transform, Format, Trim, then Uppercase; replace null with "UNKNOWN".
+7. Add `SaleDate = DateTime.Date([sale_datetime])`. Remove `sale_datetime` to reduce cardinality.
+
+After cleaning you should have 23,994 sales lines.
+
+**Stores**: Trim and proper-case `city` (for example "KOLKATA" to "Kolkata"). Add a column `Has Target` which is false for East region stores.
+
+```m
+= Table.AddColumn(Source, "Has Target", each [region] <> "East", type logical)
+```
+
+**Targets**: types: `target_month` is text like 2024-03. Add `MonthStart = Date.FromText([target_month] & "-01")`. Leave null targets as null; do not replace with zero.
+
+**Inventory**: fix `snapshot_date` format; leave null stock as null. Keep `days_out_of_stock`.
+
+**Category dimension**: there is no product master, so create a table from `sales`: Reference the Sales query, keep only `category`, Remove Duplicates, and name it `Categories`.
+
+### Step 2: Model
+
+Create these tables and relationships. All are one-to-many with filter direction single (dimension to fact).
+
+| One side | Many side | Key |
+|---|---|---|
+| Stores | Sales | store_id |
+| Stores | Inventory | store_id |
+| Stores | Targets | store_id |
+| Date | Sales | Date[Date] to Sales[SaleDate] |
+| Date | Targets | Date[Date] to Targets[MonthStart] |
+| Categories | Sales | category |
+| Categories | Inventory | category |
+
+Create the Date table with DAX and mark it as a date table:
+
+```dax
+Date = ADDCOLUMNS(
+  CALENDAR(DATE(2023,1,1), DATE(2024,12,31)),
+  "Year", YEAR([Date]),
+  "Month No", MONTH([Date]),
+  "Month", FORMAT([Date], "MMM"),
+  "Month Start", DATE(YEAR([Date]), MONTH([Date]), 1)
+)
+```
+
+Sort `Month` by `Month No`. For the Targets relationship, use a Date column that has only month starts: relate `Targets[MonthStart]` to `'Date'[Date]` (a date that is the first of the month exists in the Date table).
+
+<Tip>
+Hide key columns and the fact table columns you do not want users to drag. A clean field list makes the report easier to build and use.
+</Tip>
+
+### Step 3: The 10 measures
+
+Create a table named `_Measures` (Enter data, empty) and add:
+
+```dax
+Net Sales = SUM(Sales[net_amount_inr])
+
+Units = SUM(Sales[quantity])
+
+Avg Line Value = DIVIDE([Net Sales], COUNTROWS(Sales))
+
+Net Sales LY = CALCULATE([Net Sales], SAMEPERIODLASTYEAR('Date'[Date]))
+
+YoY % = DIVIDE([Net Sales] - [Net Sales LY], [Net Sales LY])
+
+Target = SUM(Targets[target_net_sales_inr])
+
+Net Sales Targeted = CALCULATE([Net Sales], Stores[Has Target] = TRUE())
+
+Target Attainment % = DIVIDE([Net Sales Targeted], [Target])
+
+Stockout Rate % =
+DIVIDE(
+  CALCULATE(COUNTROWS(Inventory), Inventory[days_out_of_stock] > 0),
+  COUNTROWS(Inventory)
+)
+
+Stock Cover (months) =
+DIVIDE(SUM(Inventory[stock_on_hand]), SUM(Inventory[units_sold_in_month]))
+```
+
+That is 10 measures. Why each exists:
+
+| Measure | Purpose |
+|---|---|
+| Net Sales, Units | Core volume and value |
+| Avg Line Value | Spend per sale line |
+| Net Sales LY, YoY % | Growth |
+| Target, Net Sales Targeted, Target Attainment % | Target tracking without mixing East sales |
+| Stockout Rate % | Share of store-SKU snapshots with at least one day out of stock |
+| Stock Cover (months) | Stock on hand divided by monthly sales |
+
+<Warning>
+The data is a sampled extract of about one sale line per store per day. Treat sales as indicative: use rates, shares and comparisons, not exact business totals.
+</Warning>
+
+### Step 4: Page-by-page layout
+
+**Page 1, Executive overview.** Title: "Retail 2023 to 2024: sales up 19.7%, four stores held back by stockouts".
+
+- Left strip: slicers for Year and Region.
+- Row of 4 cards: Net Sales, YoY %, Target Attainment %, Stockout Rate %.
+- Main visual: line chart of Net Sales by `Date[Month]`, legend `Date[Year]`.
+- Bottom left: bar chart Net Sales by Region, sorted.
+- Bottom right: bar chart of Net Sales by Store Format.
+
+**Page 2, Store performance.** Title: "Four hypermarkets bring in a third of sales; four small stores sell 30% less than peers".
+
+- Bar chart of Net Sales by Store, coloured by Store Format (sorted).
+- Scatter: X = Units, Y = Stockout Rate %, details = store name, legend = Store Format.
+- Matrix: Store, Net Sales, Target Attainment %, Stockout Rate % with conditional formatting.
+- Make it a drill-through source to a hidden page `Store Detail`.
+
+**Page 3, Category and inventory.** Title: "Home Decor holds about 7 months of stock but makes only 5% of units".
+
+- Donut or stacked bar of Units share by Category (6 categories; use a bar).
+- Bar of Stock Cover (months) by Category.
+- Table of Stockout Rate % by store top 10.
+- Add a text box at the bottom: "Data note: duplicates removed, 6 outlier rows excluded, sampled extract."
+
+**Store Detail (drill-through).** Monthly sales line, category bar, stockout rate card, target attainment card. Add a back button.
+
+Also add a report page tooltip for the store bars showing a tiny sales trend.
+
+## Worked examples
+
+Verify your numbers. These were computed from the cleaned data (de-duplicated, 6 outliers removed).
+
+### Insight 1: Sales are growing, mostly through volume
+
+| Year | Net sales (₹) | Units | Avg price per unit (₹) |
+|---|---|---|---|
+| 2023 | 1.37 crore (₹13,665,597) | 29,167 | 468.5 |
+| 2024 | 1.64 crore (₹16,362,135) | 33,331 | 490.9 |
+
+YoY growth is **+19.7%**. Units grew 14.3% and price per unit about 4.8%. The data notes say 2024 prices are about 6% higher on the same SKU, so the rest is mix. Sales peak in October 2024 (about ₹18.9 lakh) and November, the Diwali season.
+
+### Insight 2: The West region and hypermarkets lead
+
+| Region | Net sales | Share |
+|---|---|---|
+| West | ₹1.22 crore | 40.7% |
+| South | ₹84.7 lakh | 28.2% |
+| North | ₹59.3 lakh | 19.8% |
+| East | ₹34.0 lakh | 11.3% |
+
+The four hypermarkets (Ahmedabad, Delhi, Mumbai, Bengaluru) each bring in ₹23 to 24 lakh, together about 32% of sales. A hypermarket does roughly twice the sales of a supermarket and 3.6 times an express store.
+
+### Insight 3: Targets are mostly met, but only for 3 regions
+
+Overall attainment on stores with targets is about **97.6%**, which fits a business that sets targets close to last year's actuals. North is highest at 99.0%, South lowest at 97.0%. East has no targets at all, so it cannot be judged. Raise this with the business: "East stores have no targets, so they are invisible in attainment".
+
+### Insight 4: Four stores have a stockout problem
+
+In `inventory`, 8.4% of store-SKU snapshots have at least one day out of stock overall. Four stores are far worse, with 38 to 43% of snapshots affected:
+
+| Store | Avg days out of stock | Snapshots with a stockout |
+|---|---|---|
+| Gomti Nagar (Lucknow) | 4.97 | 42.5% |
+| Velachery (Chennai) | 4.74 | 38.4% |
+| Adajan (Surat) | 4.72 | 41.7% |
+| Kharadi (Pune) | 4.65 | 40.5% |
+
+The same four stores sell about **31 to 32% fewer units** than their format peers: supermarkets Velachery and Gomti Nagar average 1,839 units against 2,669 for other supermarkets, and express stores Kharadi and Adajan average 1,024 against 1,514. Other stores average well under 1 day out of stock. The pattern strongly suggests that stockouts are limiting sales, though other store factors could also play a part, so recommend testing by fixing replenishment at these stores first.
+
+### Insight 5: Home Decor is overstocked
+
+Home Decor is about **5.2% of units** and 5.5% of sales value, but its stock covers about **7.3 months** of monthly sales, against about 1 month for every other category. Grocery and Apparel sell more units per month, yet hold only about a month of stock. Action: reduce Home Decor purchase orders, run clearance, and move stock to stores that sell more of it.
+
+### Recommendations for page 1
+
+1. Fix replenishment at Gomti Nagar, Velachery, Adajan and Kharadi.
+2. Set targets for East region stores.
+3. Cut Home Decor reorders and run a clearance sale.
+4. Prepare stock for the Oct and Nov peaks (October 2024 sales were about 1.5 times the average month).
+
+<Tip>
+For your portfolio, add a short "Method and data notes" page. It shows you cleaned the data carefully and understand its limits.
+</Tip>
+
+## Common mistakes
+
+<CommonMistake>
+Dividing all net sales by a target that excludes East. Use `Net Sales Targeted` with the `Has Target` flag so numerator and denominator cover the same stores.
+</CommonMistake>
+
+<CommonMistake>
+Not removing duplicate `sale_id` rows. Totals are overstated by about 1.4% and some stores appear busier than they are.
+</CommonMistake>
+
+<CommonMistake>
+Leaving the six 100x outliers in. One row of ₹1,31,556 is bigger than 100 normal sales and can make a small store look like the best performer.
+</CommonMistake>
+
+<CommonMistake>
+Using the date column in the fact table for YoY. Time intelligence needs the marked Date table.
+</CommonMistake>
+
+<CommonMistake>
+Claiming stockouts caused low sales as a fact. The data shows a strong link; say "associated with" and recommend a test.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="walkthrough-retail" module="power-bi" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Why create a Has Target flag on Stores?", options: ["To hide stores", "So net sales for attainment cover only stores that have targets", "To speed up refresh", "To change the theme"], answer: 1, explanation: "East stores have no targets; including their sales in the numerator would overstate attainment." },
+  { q: "What is the overall YoY growth of net sales from 2023 to 2024 in the cleaned data?", options: ["About 5%", "About 19.7%", "About 50%", "About 0%"], answer: 1, explanation: "Net sales rose from about ₹1.37 crore to ₹1.64 crore." },
+  { q: "Which category is overstocked relative to demand?", options: ["Grocery and Staples", "Apparel", "Home Decor", "Personal Care"], answer: 2, explanation: "Home Decor stock covers about 7 months of sales versus about 1 month for other categories." },
+  { q: "How should you handle the six 100x outlier sales rows?", options: ["Leave them", "Exclude them and document the exclusion", "Double them", "Delete the whole table"], answer: 1, explanation: "They distort totals; excluding with a note is transparent." },
+  { q: "Which statement is safest for the stockout insight?", options: ["Stockouts caused the lower sales", "Stockouts are strongly associated with about 31% lower units", "Sales are random", "Stockouts do not matter"], answer: 1, explanation: "The data shows an association; causal claims need a test." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+"Walk me through a project" is the most common interview question for freshers. Use this one: state the brief, the data problems you fixed, the model, one measure you are proud of, and two insights with numbers.
+</InterviewAlert>
+
+<InterviewQ q="Walk me through your retail dashboard.">
+The brief was to find which of 24 stores were struggling and why. I cleaned duplicates and outliers in Power Query, built a star model with Stores, Date and Categories, and wrote measures for sales, YoY, target attainment, stockout rate and stock cover. Three pages cover overview, store performance and inventory. Key findings: sales grew 19.7% in 2024, four stores with frequent stockouts sold about 31% fewer units than peers, and Home Decor holds about 7 months of stock.
+</InterviewQ>
+
+<InterviewQ q="How did you handle stores without targets?">
+East stores have no targets, so I added a Has Target flag and a measure that sums sales only for stores with targets. That keeps attainment fair and I flagged the missing targets as a data gap to the business.
+</InterviewQ>
+
+<InterviewQ q="How would you extend this dashboard?">
+I would add a product master to analyse SKUs, a margin measure when cost data exists, forecast sales for peak seasons, and alerts when a store crosses a stockout threshold.
+</InterviewQ>
+
+## Key takeaways
+
+- Start from five business questions, then the page plan.
+- Clean first: remove duplicates, outliers and mixed formats, and document it.
+- Build a star model with a marked Date table and single-direction relationships.
+- Keep measures consistent: numerator and denominator must cover the same rows.
+- State insights with numbers, and avoid claiming causation.
+
+## Further reading
+
+<FurtherReading ids={["power-bi-docs", "dax-guide", "pl300"]} />

@@ -1,0 +1,272 @@
+---
+title: "Tool setup guide: Excel, Power BI, Python, Jupyter, Git and GitHub"
+description: "Step-by-step installation and first test for every tool you need in the 12-week plan."
+module: start-here
+order: 6
+estimatedMinutes: 45
+objectives:
+  - "Install and test Excel, Power BI Desktop, Python, Jupyter and Git"
+  - "Create a virtual environment and a first notebook"
+  - "Create a GitHub account and push your first repository"
+tags: ["setup", "tools", "git", "python"]
+---
+
+## Learning objectives
+
+- Confirm you have a working Excel and know the Mac or free alternatives for Power BI.
+- Install Python through Anaconda or through VS Code with a virtual environment.
+- Run a Jupyter notebook.
+- Install Git, configure it and push a repository to GitHub.
+
+## Why this matters for a Data Analyst job
+
+Interviewers rarely ask "do you know how to install Python", but a broken setup wastes your first week and your motivation. Also, GitHub is your public proof of work. A recruiter who opens your profile and sees three tidy projects with README files learns more about you than a resume line can say.
+
+<RealWorld>
+A fresher lost two days in week 1 because Python was installed twice with different versions, and her notebooks used the wrong one. A clean, tested setup done on day 1 avoids this kind of problem.
+</RealWorld>
+
+## Concept
+
+You need six things. The SQL practice on this site runs in your browser, so for SQL itself you do not need to install anything.
+
+| Tool | Used for | Cost | When you need it |
+|---|---|---|---|
+| Microsoft Excel (or a free alternative) | Cleaning, pivots, reports | Paid; web version has free tier | Week 1 |
+| Power BI Desktop | Dashboards | Free (Windows only) | Week 5 |
+| Python | Analysis with pandas | Free | Week 6 |
+| Jupyter Notebook | Writing Python in notebooks | Free | Week 6 |
+| VS Code | Code editor for everything | Free | Week 1 |
+| Git and GitHub | Version control and portfolio | Free | Week 1 |
+
+### Step 1: Excel
+
+1. Check whether your college or laptop includes Microsoft 365 or Office 2019 or later. XLOOKUP and dynamic arrays (FILTER, UNIQUE) need Microsoft 365 or Excel 2021 and above.
+2. If you do not have it, options are: Excel for the web through a free Microsoft account (limited features), or LibreOffice Calc or Google Sheets for practising basic formulas and pivots.
+3. Test: type `=SUM(1,2,3)` in a cell. It should show 6. Then try `=XLOOKUP(1,{1,2},{"a","b"})`. If it returns `a`, you have a modern version.
+
+### Step 2: Power BI Desktop
+
+Power BI Desktop runs on **Windows only**.
+
+1. Go to the official Power BI Desktop download page, or install "Power BI Desktop" from the Microsoft Store. The Store version updates by itself.
+2. Open it and sign in only if asked; you can use Desktop without signing in.
+3. Test: choose "Get data", then "Text/CSV", and load any small CSV. Drag one column onto the canvas to create a visual.
+
+**If you use a Mac or Linux**, you have these options:
+
+- Use a Windows PC in a college lab or computer centre for the Power BI weeks (5 to 6).
+- Run Windows in a virtual machine (for example with Parallels on a Mac) if your laptop has enough memory.
+- Use a cloud Windows desktop if your college offers one.
+- Use the Power BI web service in a browser for viewing and light editing; building full models there is limited.
+- Practise the same ideas in Tableau Public, which runs on Mac and Windows and is free.
+
+### Step 3: Python, option A: Anaconda
+
+Anaconda bundles Python, Jupyter and many data libraries in one installer. It is easiest for beginners.
+
+1. Download the Anaconda individual edition installer for your operating system from the official Anaconda site.
+2. Run the installer with default options. On Windows, choose "Just me".
+3. Open "Anaconda Prompt" (Windows) or a new terminal (Mac, Linux).
+4. Test: type `python --version`. It should print a version such as 3.11 or higher.
+5. Test the libraries: `python -c "import pandas, numpy; print(pandas.__version__)"`.
+
+### Step 3: Python, option B: VS Code with a virtual environment
+
+This is lighter and teaches the way professionals work. A **virtual environment (venv)** is a private folder of packages for one project, so projects do not conflict.
+
+1. Install Python from the official python.org site. On Windows tick "Add Python to PATH" during installation.
+2. Install VS Code. Open it and add the Python and Jupyter extensions from the Extensions panel.
+3. Make a folder, for example `da-practice`, and open it in VS Code.
+4. Open the terminal in VS Code and create a venv:
+
+```bash
+python -m venv .venv
+```
+
+5. Activate it:
+
+```bash
+# Windows (PowerShell)
+.venv\Scripts\Activate.ps1
+
+# Mac or Linux
+source .venv/bin/activate
+```
+
+6. Install the libraries:
+
+```bash
+pip install pandas numpy matplotlib seaborn jupyter
+```
+
+7. Test: `python -c "import pandas; print(pandas.__version__)"`.
+
+<Tip>
+If PowerShell refuses to run the activate script on Windows, use the Command Prompt instead and run `.venv\Scripts\activate.bat`.
+</Tip>
+
+### Step 4: Jupyter
+
+A **Jupyter notebook** mixes code, results and notes in one file. Analysts use it for exploration.
+
+1. In Anaconda: open Anaconda Prompt and run `jupyter notebook`. In a venv: run the same command after activating it.
+2. A browser tab opens. Click "New", then "Python 3".
+3. In the first cell type `print("Hello, analyst")` and press Shift+Enter. You should see the text printed.
+4. Or in VS Code: create a file named `first.ipynb`, pick your venv as the kernel at the top right, and run the cell.
+
+### Step 5: Git and GitHub
+
+**Git** tracks the history of your files. **GitHub** is a website that stores your Git projects online, and it is your portfolio.
+
+1. Install Git from the official Git site (Windows, Mac) or with your package manager on Linux.
+2. Test: `git --version`.
+3. Tell Git who you are (use the same email as your GitHub account):
+
+```bash
+git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+```
+
+4. Create a free GitHub account. Choose a professional username, ideally your name.
+5. Create a new repository named `da-practice` on GitHub with a README.
+6. Clone it, add a file, and push:
+
+```bash
+git clone https://github.com/YOUR-USERNAME/da-practice.git
+cd da-practice
+echo "My first analysis" > notes.txt
+git add notes.txt
+git commit -m "Add first notes"
+git push
+```
+
+7. GitHub will ask you to sign in. If it asks for a password, create a personal access token in GitHub settings under Developer settings, or use the GitHub sign-in prompt that Git for Windows or VS Code offers.
+
+The five commands you will use every day: `git status`, `git add`, `git commit -m "message"`, `git push`, `git pull`.
+
+### Step 6: A tidy folder structure
+
+Keep one folder for everything:
+
+```text
+da-journey/
+  excel/
+  sql/
+  power-bi/
+  python/
+  projects/
+    project-1-loan-analysis/
+      README.md
+      data/
+      notebooks/
+```
+
+Never put passwords or personal data in a public GitHub repository.
+
+## Worked examples
+
+### Example 1: A full Python test
+
+After setup, create a notebook and run this in a cell:
+
+```python
+import pandas as pd
+
+df = pd.DataFrame({"city": ["Pune", "Delhi", "Pune"], "sales": [1200, 900, 800]})
+print(df.groupby("city")["sales"].sum())
+```
+
+The output should be:
+
+```text
+city
+Delhi     900
+Pune     2000
+Name: sales, dtype: int64
+```
+
+If you see this, pandas works.
+
+### Example 2: First commit for a project
+
+You finish a small Excel cleaning exercise and save the file as `clean_sales.xlsx` in your repo.
+
+```bash
+git status
+git add clean_sales.xlsx
+git commit -m "Add cleaned sales workbook"
+git push
+```
+
+Refresh the GitHub page. Your file is online, with a message and timestamp.
+
+### Example 3: Fixing "python is not recognized"
+
+On Windows, this message usually means Python is not on the PATH. Fix: re-run the installer, choose "Modify", and tick "Add Python to environment variables". Close and reopen the terminal, then run `python --version` again.
+
+## Common mistakes
+
+<CommonMistake>
+Installing Python from three different places. Pick one route (Anaconda or python.org plus venv) and stay with it.
+</CommonMistake>
+
+<CommonMistake>
+Forgetting to activate the venv before `pip install`. The packages go to the wrong place and your notebook cannot find them.
+</CommonMistake>
+
+<CommonMistake>
+Committing large data files or secrets (API keys, passwords) to GitHub. Use a `.gitignore` file for big or private files.
+</CommonMistake>
+
+<CommonMistake>
+Using pirated software. Use free tools (Power BI Desktop, VS Code, Python) or your college licence.
+</CommonMistake>
+
+<CommonMistake>
+Leaving setup until the week you need it. Test every tool in week 1, so surprises come early.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="tool-setup" module="start-here" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "On which operating system does Power BI Desktop run?", options: ["Windows only", "Mac only", "Linux only", "All three"], answer: 0, explanation: "Power BI Desktop is Windows-only. Mac users need a Windows machine, a VM or alternatives." },
+  { q: "What does a Python virtual environment do?", options: ["Speeds up the internet", "Keeps packages for one project separate from others", "Makes Python free", "Backs up your files"], answer: 1, explanation: "A venv isolates the libraries of each project so versions do not conflict." },
+  { q: "Which command creates a venv called .venv?", options: ["python -m venv .venv", "pip create .venv", "git venv .venv", "jupyter venv"], answer: 0, explanation: "python -m venv followed by a folder name creates the environment." },
+  { q: "What is the correct order of the basic Git save sequence?", options: ["push, add, commit", "add, commit, push", "commit, push, add", "pull, delete, push"], answer: 1, explanation: "Stage files with add, record them with commit, then upload with push." },
+  { q: "Why is GitHub useful for a fresher?", options: ["It makes your laptop faster", "It shows your projects publicly as proof of work", "It replaces SQL", "It is required to run Excel"], answer: 1, explanation: "Recruiters can open your repositories and see real examples of your work." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Tech rounds sometimes ask "Do you use Git?" or "How do you manage Python packages?" Short, practical answers show real experience.
+</InterviewAlert>
+
+<InterviewQ q="What is the difference between Git and GitHub?">
+Git is the version control tool that runs on my computer and tracks the history of my files. GitHub is a website that hosts Git repositories online, so I can back up my work, share it and collaborate. I use Git commands to commit and push my projects to GitHub.
+</InterviewQ>
+
+<InterviewQ q="Why do you use a virtual environment in Python?">
+A virtual environment keeps the libraries for each project separate. Different projects may need different versions of pandas, and a venv prevents conflicts. It also makes it easy to share a `requirements.txt` so someone else can reproduce my environment.
+</InterviewQ>
+
+<InterviewQ q="Why use Jupyter notebooks for analysis?">
+Notebooks let me run code in small steps and see results immediately, with notes and charts in the same file. This is ideal for exploration and for explaining my reasoning. For repeatable production work I would move the code into scripts.
+</InterviewQ>
+
+## Key takeaways
+
+- Excel 2021 or Microsoft 365 gives you XLOOKUP and dynamic arrays; free options exist for practice.
+- Power BI Desktop is Windows only; Mac users can use a lab PC, a virtual machine, or Tableau Public for practice.
+- Choose one Python route (Anaconda, or python.org with VS Code and a venv) and test it with pandas.
+- Git commands to remember: status, add, commit, push, pull.
+- Test every tool in week 1 and keep a tidy project folder with a README.
+
+## Further reading
+
+<FurtherReading ids={["anaconda", "vscode", "jupyter", "git-docs", "github-docs", "power-bi-download", "tableau-public"]} />

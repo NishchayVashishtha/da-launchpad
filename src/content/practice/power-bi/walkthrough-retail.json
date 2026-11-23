@@ -1,0 +1,59 @@
+[
+  {
+    "id": "pbi-walkthrough-retail-001",
+    "module": "power-bi",
+    "topic": "walkthrough-retail",
+    "difficulty": "easy",
+    "language": "dax",
+    "question": "In the retail model, write a measure `Net Sales` and a measure `Avg Line Value` (net sales per sale line).",
+    "dataset": "retail",
+    "hint": "SUM and DIVIDE.",
+    "solution": "```dax\nNet Sales = SUM(Sales[net_amount_inr])\nAvg Line Value = DIVIDE([Net Sales], COUNTROWS(Sales))\n```",
+    "explanation": "Use DIVIDE to avoid divide-by-zero errors.",
+    "commonMistake": "Using `/` which errors on zero.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "measures",
+      "retail"
+    ]
+  },
+  {
+    "id": "pbi-walkthrough-retail-002",
+    "module": "power-bi",
+    "topic": "walkthrough-retail",
+    "difficulty": "medium",
+    "language": "dax",
+    "question": "Write a `YoY %` measure for the retail model that compares Net Sales with the same period last year, given a marked Date table.",
+    "dataset": "retail",
+    "hint": "SAMEPERIODLASTYEAR.",
+    "solution": "```dax\nNet Sales LY = CALCULATE([Net Sales], SAMEPERIODLASTYEAR('Date'[Date]))\nYoY % = DIVIDE([Net Sales] - [Net Sales LY], [Net Sales LY])\n```\nFormat as percentage. For 2024 vs 2023 the retail data gives about +19.7%.",
+    "explanation": "Time intelligence needs a proper Date table marked as a date table.",
+    "commonMistake": "Using the date column from the fact table instead of the Date table.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "time-intelligence",
+      "yoy"
+    ]
+  },
+  {
+    "id": "pbi-walkthrough-retail-003",
+    "module": "power-bi",
+    "topic": "walkthrough-retail",
+    "difficulty": "hard",
+    "language": "dax",
+    "question": "East region stores have no targets. Write a Target Attainment % measure that does not mix East sales into the numerator. Assume a column `Stores[Has Target]` (TRUE/FALSE) exists.",
+    "dataset": "retail",
+    "hint": "Restrict the sales to stores that have a target.",
+    "solution": "```dax\nNet Sales Targeted = CALCULATE([Net Sales], Stores[Has Target] = TRUE())\nTarget = SUM(Targets[target_net_sales_inr])\nTarget Attainment % = DIVIDE([Net Sales Targeted], [Target])\n```\nWithout the filter, total sales (including East) would be divided by a target that excludes East, overstating attainment.",
+    "explanation": "The numerator and denominator must cover the same stores.",
+    "commonMistake": "Dividing all net sales by a target that excludes a region.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 8,
+    "tags": [
+      "calculate",
+      "targets"
+    ]
+  }
+]

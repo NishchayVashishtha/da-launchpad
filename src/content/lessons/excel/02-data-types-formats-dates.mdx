@@ -1,0 +1,160 @@
+---
+title: "Data types, number formats and how Excel stores dates"
+description: "Understand numbers, text, dates and booleans in Excel, and avoid the traps where text pretends to be a number."
+module: excel
+order: 2
+estimatedMinutes: 35
+objectives: ["Tell numbers, text, dates and TRUE/FALSE apart", "Explain that a date is a serial number", "Apply number formats without changing the value", "Spot and fix numbers stored as text"]
+tags: ["excel", "data-types", "dates", "formatting"]
+---
+
+## Learning objectives
+
+- Identify the four basic data types in Excel: number, text, date and logical (TRUE or FALSE).
+- Explain how Excel stores dates and times as numbers.
+- Change how a value looks (format) without changing the value itself.
+- Detect and fix numbers stored as text, and dates stored as text.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+A finance analyst at a Mumbai lender exports loan data. The `disbursal_date` column looks like dates, but every formula on it fails. The reason: the dates are text. Half of real-world Excel debugging is finding a text value that looks like a number.
+</RealWorld>
+
+Wrong data types give silent wrong answers: sums that skip cells, sorting that puts "100" before "9", lookups that fail. Before you analyse, you check types.
+
+## Concept
+
+**Data type** means what kind of value a cell holds. Excel has these main types:
+
+- **Number**: `5980.53`, `12`, `-40`. Right-aligned by default. You can add them.
+- **Text**: `Mumbai`, `SKU100000`, `+91 98765 43210`. Left-aligned by default. Excel cannot do maths on it.
+- **Date and time**: stored as numbers (see below), shown with a date format.
+- **Logical**: `TRUE` or `FALSE`, the result of a test such as `=5>3`.
+- **Error**: `#N/A`, `#VALUE!`, `#DIV/0!`, `#REF!`, `#NAME?`. These tell you something went wrong.
+
+**Number format versus value.** A format is only a costume. The cell `5980.529` formatted with two decimals shows `5980.53`, but the formula bar and all calculations still use `5980.529`. Use `Ctrl + 1` to open Format Cells.
+
+Common formats for Indian work: Number with comma separator, Currency with the rupee symbol, Percentage, Date (`dd-mmm-yyyy`). Excel uses the Windows region setting for lakh style grouping (`12,34,567`). Choose the English (India) region or add a custom format such as `[>=10000000]##\,##\,##\,##0;[>=100000]##\,##\,##0;##,##0`.
+
+**How Excel stores dates.** Excel counts days from 30 December 1899.
+
+- Day 1 = 1 January 1900.
+- 1 January 2023 = **44927**.
+- Times are fractions of a day: 0.5 = 12:00 noon, 0.75 = 6 PM.
+
+Analogy: a date is like a bus ticket number. The number is the real thing. The printed date is just how it is shown.
+
+That is why `=C3-C2` gives the number of days between two dates, and `=C2+30` gives a date 30 days later.
+
+<FormulaCard title="Date arithmetic">
+days between = later date - earlier date. date after N days = date + N. 1 Jan 2023 = 44927, so 15 Jan 2023 = 44941.
+</FormulaCard>
+
+**Text versus number traps**
+
+- A green triangle in the corner says "number stored as text".
+- `ISNUMBER(A1)` and `ISTEXT(A1)` test the type. `TYPE(A1)` returns 1 for number, 2 for text, 4 for logical, 16 for error.
+- `VALUE("123")` or `--A1` turns text into a number.
+- Phone numbers and IDs with leading zeros (`09842211958`) should stay text. If you convert them, Excel drops the zero.
+- Text compares differently: `"10"<"9"` is TRUE when both are text.
+
+<Warning>
+Never "fix" a date by retyping it. Convert it with a formula or Text to Columns so the whole column is fixed the same way and you keep an audit trail.
+</Warning>
+
+## Worked examples
+
+<Download href="data/excel/excel-functions.xlsx" label="Download excel-functions.xlsx" />
+<Download href="data/excel/excel-cleaning.xlsx" label="Download excel-cleaning.xlsx" />
+
+**Example 1: see the serial number.** In `excel-functions.xlsx`, sheet `orders`, click `C2` (first order date). Press `Ctrl + Shift + ~` to apply General format. You see **44927**. Press `Ctrl + Z` to restore the date.
+
+**Example 2: days between dates.** Employee 1 was hired on 4 January 2014. In any cell:
+
+```
+=DATE(2024,12,31)-MIN(hr_employees!E2:E2401)
+```
+
+Result: **4014** days. If you see a date instead, format the cell as General.
+
+**Example 3: find out what is text.** In `excel-cleaning.xlsx`, sheet `customers_messy`:
+
+```
+=SUMPRODUCT(--ISTEXT(H2:H1273))
+```
+
+| Test | Count |
+|---|---|
+| ISTEXT on signup_date | 1272 |
+| ISNUMBER on signup_date | 0 |
+
+Every date in this column is text, in five different layouts. You cannot filter by year until you convert them (next lesson).
+
+**Example 4: number format only changes the look.** Type `1234.5678` in a cell and apply the Number format with 2 decimals. It shows `1,234.57`. Now type `=A1*2` in another cell. You get `2469.1356`, not `2469.14`. The value is intact.
+
+## Common mistakes
+
+<CommonMistake>
+Assuming a left-aligned "number" is a number. Check with `ISNUMBER`. Alignment can be changed by hand.
+</CommonMistake>
+
+<CommonMistake>
+Typing dates in a layout that does not match your region. `03/04/2023` can mean 3 April or 4 March. For safety type `3-Apr-2023`.
+</CommonMistake>
+
+<CommonMistake>
+Rounding with the format, then adding up the shown values by hand. The displayed total can look one rupee off. Use `ROUND()` when the rounded value must be the real value.
+</CommonMistake>
+
+<CommonMistake>
+Converting phone numbers or PIN codes to numbers. Leading zeros disappear, and numbers over 15 digits lose precision.
+</CommonMistake>
+
+<CommonMistake>
+Leaving a date cell formatted as General and thinking the data is broken. 44927 is correct; it just needs a date format.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="data-types" module="excel" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What number does Excel store for 1 January 2023?", options: ["20230101", "44927", "1", "2023"], answer: 1, explanation: "Excel counts days from 30 December 1899. 1 January 2023 is day 44927." },
+  { q: "A cell shows 5980.53 but the formula bar shows 5980.529. What is used in calculations?", options: ["5980.53", "5980.529", "5980", "It depends on the zoom"], answer: 1, explanation: "Number formats change only the display. The real value is 5980.529." },
+  { q: "Which function tests whether a cell holds a real number?", options: ["ISTEXT", "ISNUMBER", "VALUE", "TYPE"], answer: 1, explanation: "ISNUMBER returns TRUE for numbers and dates, FALSE for text." },
+  { q: "What is 0.5 as a time in Excel?", options: ["6:00 AM", "12:00 noon", "12:00 midnight", "5:00 PM"], answer: 1, explanation: "Times are fractions of a day. Half a day is noon." },
+  { q: "Why should phone numbers usually stay as text?", options: ["Text is faster", "Numbers lose leading zeros and cannot be formatted as phone numbers", "Excel cannot store 10 digits", "Text is auto-sorted"], answer: 1, explanation: "Converting to number drops leading zeros. You never do maths on a phone number." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+"How does Excel store dates?" is a favourite screening question. Say: as serial numbers, days since 30 December 1899, with time as a fraction.
+</InterviewAlert>
+
+<InterviewQ q="How does Excel store dates and why does it matter?">
+Excel stores a date as a whole number of days since 30 December 1899, and time as a fraction of a day. So 1 January 2023 is 44927. It matters because I can subtract dates to get days, add days to a date, and use dates in COUNTIFS ranges. It also explains why a date shows as a five-digit number when the cell format is General.
+</InterviewQ>
+
+<InterviewQ q="A SUM gives a total lower than expected. What do you check first?">
+I check whether some numbers are stored as text. The green triangle is a clue. I test with `ISNUMBER` or look at the Count on the status bar. If Count is lower than the number of rows, some cells are text. I convert with VALUE, Text to Columns, or multiply by 1.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between changing the format and changing the value?">
+Format changes the display only. The value stays the same in calculations. To change the value use ROUND, INT or another function.
+</InterviewQ>
+
+## Key takeaways
+
+- Excel has numbers, text, dates, logical values and errors.
+- A date is a serial number: 1 January 2023 is 44927.
+- Formats change the look, not the value.
+- Test types with `ISNUMBER`, `ISTEXT` and `TYPE` before analysing.
+- IDs, PIN codes and phone numbers belong in text.
+
+## Further reading
+
+<FurtherReading ids={["excel-support", "chandoo", "excelisfun"]} />

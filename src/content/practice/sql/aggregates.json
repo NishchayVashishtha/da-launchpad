@@ -1,0 +1,218 @@
+[
+ {
+  "id": "sql-aggregates-001",
+  "module": "sql",
+  "topic": "aggregates",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "For Delivered orders, return `delivered_orders` (a row count) and `delivered_value` (sum of `total_amount`, rounded to 2 decimals).",
+  "dataset": "ecommerce",
+  "hint": "WHERE then COUNT and SUM.",
+  "solutionSql": "SELECT COUNT(*) AS delivered_orders, ROUND(SUM(total_amount), 2) AS delivered_value FROM orders WHERE order_status = 'Delivered'",
+  "orderMatters": false,
+  "explanation": "WHERE filters first, then the aggregates summarise what is left. The table has some duplicate order rows, which a later lesson removes.",
+  "commonMistake": "Aggregating before filtering the status.",
+  "interviewFrequency": "high",
+  "estimatedMinutes": 3,
+  "tags": [
+   "aggregates",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "delivered_orders",
+    "delivered_value"
+   ],
+   "rows": [
+    [
+     9357,
+     50325049.47
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-aggregates-002",
+  "module": "sql",
+  "topic": "aggregates",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "Return the earliest and latest `hire_date` in `employees` as `first_hire` and `last_hire`.",
+  "dataset": "hr",
+  "hint": "MIN and MAX work on dates.",
+  "solutionSql": "SELECT MIN(hire_date) AS first_hire, MAX(hire_date) AS last_hire FROM employees",
+  "orderMatters": false,
+  "explanation": "ISO date text sorts correctly, so MIN and MAX give the earliest and latest.",
+  "commonMistake": "Converting dates to numbers first.",
+  "interviewFrequency": "medium",
+  "estimatedMinutes": 3,
+  "tags": [
+   "aggregates",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "first_hire",
+    "last_hire"
+   ],
+   "rows": [
+    [
+     "2014-01-04",
+     "2024-11-28"
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-aggregates-003",
+  "module": "sql",
+  "topic": "aggregates",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "What is the average `amount` of SUCCESS transactions of type 'P2P'? Return `avg_p2p`, rounded to 2 decimals.",
+  "dataset": "fintech",
+  "hint": "Filter, then AVG.",
+  "solutionSql": "SELECT ROUND(AVG(amount), 2) AS avg_p2p FROM transactions WHERE status = 'SUCCESS' AND txn_type = 'P2P'",
+  "orderMatters": false,
+  "explanation": "Two filters in WHERE, then one AVG.",
+  "commonMistake": "Leaving out one of the filters.",
+  "interviewFrequency": "medium",
+  "estimatedMinutes": 3,
+  "tags": [
+   "aggregates",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "avg_p2p"
+   ],
+   "rows": [
+    [
+     1152.25
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-aggregates-004",
+  "module": "sql",
+  "topic": "aggregates",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "How many units (sum of `quantity`) were sold in the 'Home Decor' category? Return `units`.",
+  "dataset": "retail",
+  "hint": "SUM with a filter.",
+  "solutionSql": "SELECT SUM(quantity) AS units FROM sales WHERE category = 'Home Decor'",
+  "orderMatters": false,
+  "explanation": "SUM of quantity gives total units. COUNT would give the number of sale lines.",
+  "commonMistake": "Using COUNT(*) instead of SUM(quantity).",
+  "interviewFrequency": "medium",
+  "estimatedMinutes": 3,
+  "tags": [
+   "aggregates",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "units"
+   ],
+   "rows": [
+    [
+     3330
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-aggregates-005",
+  "module": "sql",
+  "topic": "aggregates",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "From `ad_spend`, return `total_clicks` (sum of clicks) and `total_impressions` (sum of impressions).",
+  "dataset": "marketing",
+  "hint": "Two SUMs.",
+  "solutionSql": "SELECT SUM(clicks) AS total_clicks, SUM(impressions) AS total_impressions FROM ad_spend",
+  "orderMatters": false,
+  "explanation": "Several aggregates can sit in one SELECT.",
+  "commonMistake": "Running two separate queries when one will do.",
+  "interviewFrequency": "low",
+  "estimatedMinutes": 3,
+  "tags": [
+   "aggregates",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "total_clicks",
+    "total_impressions"
+   ],
+   "rows": [
+    [
+     21578,
+     1649170
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-aggregates-006",
+  "module": "sql",
+  "topic": "aggregates",
+  "difficulty": "medium",
+  "language": "sql",
+  "question": "What percentage of all deliveries were Cancelled? Return `cancel_pct`, rounded to 2 decimals.",
+  "dataset": "food_delivery",
+  "hint": "SUM of a true/false test divided by COUNT(*).",
+  "solutionSql": "SELECT ROUND(100.0 * SUM(delivery_status = 'Cancelled') / COUNT(*), 2) AS cancel_pct FROM deliveries",
+  "orderMatters": false,
+  "explanation": "In SQLite a comparison is 1 or 0. The portable form is SUM(CASE WHEN delivery_status = 'Cancelled' THEN 1 ELSE 0 END).",
+  "commonMistake": "Using 100 instead of 100.0 and getting integer division.",
+  "interviewFrequency": "high",
+  "estimatedMinutes": 6,
+  "tags": [
+   "aggregates",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "cancel_pct"
+   ],
+   "rows": [
+    [
+     4.72
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-aggregates-007",
+  "module": "sql",
+  "topic": "aggregates",
+  "difficulty": "medium",
+  "language": "sql",
+  "question": "How many distinct users have at least one `payment_success` event? Some event names are in UPPERCASE, so ignore case. Return `paying_users`.",
+  "dataset": "subscription",
+  "hint": "LOWER the event name, COUNT DISTINCT user_id.",
+  "solutionSql": "SELECT COUNT(DISTINCT user_id) AS paying_users FROM events WHERE LOWER(event_name) = 'payment_success'",
+  "orderMatters": false,
+  "explanation": "Counting distinct users avoids counting repeat events, and LOWER catches the UPPERCASE variants.",
+  "commonMistake": "Counting events instead of distinct users.",
+  "interviewFrequency": "high",
+  "estimatedMinutes": 6,
+  "tags": [
+   "aggregates",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "paying_users"
+   ],
+   "rows": [
+    [
+     1193
+    ]
+   ]
+  }
+ }
+]

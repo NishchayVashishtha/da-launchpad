@@ -1,0 +1,259 @@
+---
+title: "Data modeling: star schema, relationships and the date table"
+description: "Design a star schema with fact and dimension tables, set relationships, cardinality and filter direction, and build a proper date table."
+module: power-bi
+order: 4
+estimatedMinutes: 45
+objectives:
+  - "Tell a fact table from a dimension table"
+  - "Design a star schema for the retail dataset"
+  - "Set relationship cardinality and filter direction correctly"
+  - "Build and mark a date table"
+tags: ["power-bi", "data-modeling", "star-schema", "relationships", "date-table"]
+---
+
+## Learning objectives
+
+- Tell a **fact table** from a **dimension table**.
+- Design a **star schema** for the retail dataset.
+- Set relationship **cardinality** and **filter direction** correctly.
+- Build and mark a **date table**.
+
+## Why this matters for a Data Analyst job
+
+Most wrong numbers in Power BI come from the model, not from DAX. If tables are related badly, a total can double, a slicer can do nothing, or a measure can show the same value in every row. Hiring managers test this with questions like "What is a star schema?" and "Why not one big table?". A clean model also makes DAX shorter and visuals faster.
+
+<RealWorld>
+A retail analyst loads `sales`, `stores` and `targets` and links `sales` directly to `targets` on `store_id`. The report shows sales for a store three times larger than the real value because each sale row is repeated for every target month. After rebuilding the model with a shared `Stores` dimension and a `Calendar`, the numbers match the finance team's totals.
+</RealWorld>
+
+## Concept
+
+### Facts and dimensions
+
+A **fact table** records events and has numbers you add up. Each row is something that happened: a sale, a payment, a UPI transaction. It has many rows, mostly keys and numbers.
+
+A **dimension table** describes the things around the event: who (customer), what (product), where (store), when (date). It has fewer rows and many descriptive columns.
+
+Analogy: a bill at a shop is the fact (items and amounts). The shop name, the product catalogue and the calendar are the dimensions that tell you more about the bill.
+
+### The star schema
+
+In a **star schema**, one fact table sits in the centre, and dimension tables surround it like the points of a star. Each dimension connects directly to the fact. Dimensions do not connect to each other.
+
+Why it is the standard shape:
+
+- Filters flow in one simple direction: from dimensions to the fact.
+- DAX is simpler and faster (the VertiPaq engine is optimised for it).
+- Slicers use dimension columns, so they are clean (one list of cities, not repeated per sale).
+- It matches how business people think: "sales by store, by product, by month".
+
+The opposite is one wide, flat table with everything copied into each row. It is easy to start but bloated, harder to maintain and slow. A variation, the **snowflake schema**, normalises dimensions into sub-dimensions (product to sub-category to category). Flatten them into one dimension when possible.
+
+### The retail model
+
+For the retail dataset the star looks like this. `Sales` and `Targets` are facts (both have a `store_id`), `Stores` and `Calendar` are dimensions. The `Inventory` fact also uses the same `Stores` and `Calendar`.
+
+<Mermaid chart={`erDiagram
+  STORES ||--o{ SALES : "store_id"
+  STORES ||--o{ TARGETS : "store_id"
+  STORES ||--o{ INVENTORY : "store_id"
+  CALENDAR ||--o{ SALES : "Date = sale_date"
+  CALENDAR ||--o{ TARGETS : "Date = month_start"
+  CALENDAR ||--o{ INVENTORY : "Date = snapshot_date"
+  STORES {
+    int store_id PK
+    text store_name
+    text city
+    text region
+    text store_format
+  }
+  SALES {
+    int sale_id PK
+    date sale_date
+    int store_id FK
+    text sku_id
+    text category
+    int quantity
+    decimal net_amount_inr
+  }
+  TARGETS {
+    int target_id PK
+    int store_id FK
+    date month_start
+    decimal target_net_sales_inr
+  }
+  INVENTORY {
+    int inventory_id PK
+    date snapshot_date
+    int store_id FK
+    int stock_on_hand
+  }
+  CALENDAR {
+    date Date PK
+    int Year
+    text Month
+    text YearMonth
+  }`} caption="Star schema for the retail dataset: facts Sales, Targets and Inventory; dimensions Stores and Calendar." />
+
+The retail data has no product table (`sku_id` and `category` are inside `Sales`). In a real job you would ask for a product master and build a `Products` dimension. Until then, `category` can be used from `Sales` directly, or you can create a small `Category` table in Power Query using **Remove other columns > Remove duplicates** on `category`.
+
+### Relationships
+
+A **relationship** links a column in one table to a column in another. Open **Model view** and drag the key column from the dimension to the fact table.
+
+Key properties:
+
+| Property | Meaning | Common choice |
+|----------|---------|---------------|
+| **Cardinality** | How many rows on each side match | One-to-many (1:*) from dimension to fact |
+| **Cross-filter direction** | Which way a filter travels | Single (dimension to fact) |
+| **Active** | Whether Power BI uses it automatically | One active between two tables; others inactive (USERELATIONSHIP) |
+
+**Cardinality types**
+
+- **One-to-many (1:\*)**: one store, many sales. The "one" side must have unique values. This is the one you want.
+- **Many-to-one**: the same thing viewed from the fact side.
+- **One-to-one**: both sides unique. Usually means you can merge the tables.
+- **Many-to-many**: neither side unique. Avoid unless you know why; it can duplicate numbers.
+
+**Filter direction.** With **Single** direction a filter on `Stores[region]` flows to `Sales`, so sales are filtered by region. A filter on `Sales[category]` does not flow back to `Stores`. **Both** (bi-directional) lets filters travel both ways. It is sometimes needed but can cause ambiguity and slow models; use it sparingly.
+
+<Warning>
+If Power BI refuses a one-to-many relationship because the "one" side has duplicates, do not switch to many-to-many to make the error go away. Fix the duplicates in Power Query (for example the 20 duplicate customer rows in the ecommerce data).
+</Warning>
+
+### Two facts, one dimension
+
+When two fact tables (such as `Sales` and `Targets`) both need store attributes, connect both to the shared `Stores` dimension. A visual that uses `Stores[region]` filters both facts. Do **not** link the facts to each other.
+
+### The date table
+
+Time intelligence (year to date, last year, month on month) requires a **date table**. It must:
+
+1. Contain one row per day, with no gaps, for every year the data covers (and a year earlier if you need last-year comparison).
+2. Have a column of unique dates (type Date, no time part).
+3. Be **marked as a date table** (Table tools > Mark as date table).
+4. Be related to the fact table's date column (also a Date, not DateTime).
+
+A DAX calendar:
+
+```dax
+Calendar =
+ADDCOLUMNS (
+    CALENDAR ( DATE ( 2023, 1, 1 ), DATE ( 2024, 12, 31 ) ),
+    "Year", YEAR ( [Date] ),
+    "Month No", MONTH ( [Date] ),
+    "Month", FORMAT ( [Date], "MMM" ),
+    "Year-Month", FORMAT ( [Date], "YYYY-MM" ),
+    "Month Start", DATE ( YEAR ( [Date] ), MONTH ( [Date] ), 1 )
+)
+```
+
+Sort `Month` by `Month No` (Column tools > Sort by column) so months show in calendar order. Also turn off **Auto date/time** in Options so Power BI does not create hidden date tables for every date column.
+
+### Model hygiene checklist
+
+- Facts hold keys and numbers; dimensions hold descriptions.
+- Hide key columns and fact columns that users should not drop on visuals; users use measures.
+- Use clear names: `Sales`, `Stores`, `Calendar`.
+- Remove columns you do not need.
+- Set data types and default summarisation (Do not summarise IDs).
+
+## Worked examples
+
+### Example 1: Classify the HR tables
+
+HR has `departments`, `employees`, `salaries`, `attrition`, `performance_reviews`.
+
+| Table | Role | Why |
+|-------|------|-----|
+| `departments` | Dimension | Describes departments (name, head, location) |
+| `employees` | Dimension (also headcount snapshot) | One row per employee, descriptive attributes |
+| `salaries` | Fact | One row per salary event, with `annual_ctc` and `hike_pct` |
+| `attrition` | Fact | One row per exit event |
+| `performance_reviews` | Fact | One row per review with ratings |
+
+The star: `Departments` 1:* `Employees`, `Employees` 1:* each of the three facts. This is a **snowflake-ish** chain (departments to employees to facts). For simpler DAX many teams flatten department columns into `Employees` in Power Query. Either way filters flow from dimension to fact.
+
+### Example 2: A fintech model
+
+Fact: `Transactions` (amount, status, txn_datetime). Dimensions: `Users` (city, age_group, kyc_status), `Merchants` (category, city), `Calendar`. `Transactions[merchant_id]` is blank for P2P payments. That is fine; blank rows simply do not match a merchant. Relationship `Users[user_id]` 1:* `Transactions[user_id]`. A second user column, `receiver_user_id`, can have an **inactive** relationship to `Users`, used only in measures with `USERELATIONSHIP`.
+
+### Example 3: See the effect of a wrong relationship
+
+Imagine 24 stores, about 24,000 sales rows and 504 target rows (21 stores that have targets x 24 months). If you linked `Sales[store_id]` straight to `Targets[store_id]` with many-to-many, each sale row would match 24 target rows (one per month). A sum of targets next to sales would then be repeated for every matching sale line. With the star schema, each store's monthly target is counted once. The table sizes come from the retail dataset (the 21 stores with targets and 24 months are counted in the data; East region stores have no targets); the repetition is the logical result of that match, not a measured output.
+
+## Common mistakes
+
+<CommonMistake>
+Importing one flat table with customer, product and date columns repeated on every row. Models grow large, slicers show duplicated lists, and you cannot reuse dimensions.
+</CommonMistake>
+
+<CommonMistake>
+Relating two fact tables directly to each other. Use a shared dimension instead.
+</CommonMistake>
+
+<CommonMistake>
+Using bi-directional filtering everywhere. It creates ambiguous paths, slows the model and changes totals unexpectedly.
+</CommonMistake>
+
+<CommonMistake>
+Relating the Calendar to a DateTime column. Only rows at exactly midnight match. Create a pure Date column in Power Query.
+</CommonMistake>
+
+<CommonMistake>
+Forgetting to mark the date table or leaving gaps in dates. Time intelligence functions then give blanks or wrong values.
+</CommonMistake>
+
+<CommonMistake>
+Leaving duplicates in the "one" side. Power BI cannot create a clean one-to-many relationship, and totals may repeat.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="modeling" module="power-bi" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "In a star schema, how do dimension tables connect?", options: ["Directly to each other in a chain", "Directly to the fact table", "Only through a view", "They do not connect"], answer: 1, explanation: "Each dimension connects directly to the central fact table, forming the star." },
+  { q: "Which table is most likely a fact table?", options: ["Stores", "Calendar", "Sales", "Products"], answer: 2, explanation: "Sales records events with numbers to sum. Stores, Calendar and Products are descriptive dimensions." },
+  { q: "What should the cardinality be between Stores and Sales?", options: ["Many-to-many", "One-to-many from Stores to Sales", "One-to-one", "Many-to-one from Stores to Sales"], answer: 1, explanation: "One store has many sales, so Stores is the one side and Sales is the many side." },
+  { q: "Which is NOT required for a good date table?", options: ["No gaps in dates", "Marked as date table", "One row per customer", "Related to the fact table date"], answer: 2, explanation: "A date table has one row per day, not per customer." },
+  { q: "Why avoid many-to-many relationships when starting?", options: ["They are not allowed in Power BI", "They can multiply or misattribute values", "They make the report blue", "They only work in the Service"], answer: 1, explanation: "Without a unique side, values can be repeated and totals become wrong, so use a dimension in the middle." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Be ready to draw a star schema on paper for a business you are given: pick the fact (the event), list dimensions, mark the keys and arrows, and say which direction filters flow. Mention the date table.
+</InterviewAlert>
+
+<InterviewQ q="What is a star schema and why is it recommended in Power BI?">
+A star schema has one central fact table with numeric events and surrounding dimension tables with descriptive attributes, each joined to the fact by a key in a one-to-many relationship. It is recommended because filters flow cleanly from dimensions to the fact, DAX is simpler, the engine compresses and scans it quickly, and slicers use clean lists from the dimensions.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between a fact table and a dimension table?">
+A fact table stores events and measures, with many rows (for example sales lines). A dimension table stores descriptions of business entities (store, product, date) with fewer rows and unique keys. You aggregate facts and slice by dimensions.
+</InterviewQ>
+
+<InterviewQ q="Explain cardinality and filter direction.">
+Cardinality describes how rows match across a relationship: one-to-many is standard, with the unique side on the dimension. Filter direction tells which way filters flow. Single direction sends filters from the dimension to the fact. Both directions also push filters back, which is sometimes needed but can cause ambiguity and slow performance, so I use it only when required.
+</InterviewQ>
+
+<InterviewQ q="Why do you need a separate date table, and how do you create one?">
+Time intelligence functions need a continuous list of dates. I create one with CALENDAR in DAX (or in Power Query), add Year, Month, Month number and other columns, mark it as the date table, and relate it to the date column in each fact table. I also sort Month by Month number.
+</InterviewQ>
+
+## Key takeaways
+
+- Facts hold events and numbers; dimensions describe who, what, where and when.
+- A star schema has a central fact and dimensions joined one-to-many, with dimensions not related to each other.
+- Prefer single-direction filters and avoid many-to-many unless needed.
+- Two facts share dimensions rather than relating to each other.
+- A proper date table (continuous, marked, related on a Date column) is mandatory for time intelligence.
+
+## Further reading
+
+<FurtherReading ids={["power-bi-docs", "dax-guide", "pl300"]} />

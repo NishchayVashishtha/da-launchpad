@@ -1,0 +1,180 @@
+---
+title: "Data cleaning: TRIM, CLEAN, Text to Columns, Remove Duplicates and Flash Fill"
+description: "Clean messy Excel data step by step with TRIM, CLEAN, SUBSTITUTE, PROPER, Text to Columns, Remove Duplicates, Find and Replace and Flash Fill."
+module: excel
+order: 3
+estimatedMinutes: 50
+objectives: ["Remove extra spaces and hidden characters", "Fix casing and split columns", "Remove duplicate rows safely", "Use Find and Replace and Flash Fill", "Convert text dates to real dates"]
+tags: ["excel", "cleaning", "trim", "remove-duplicates"]
+---
+
+## Learning objectives
+
+- Remove extra spaces and invisible characters with TRIM, CLEAN and SUBSTITUTE.
+- Fix upper and lower case with PROPER, UPPER and LOWER.
+- Split one column into many with Text to Columns.
+- Remove duplicate rows without losing data, and use Find and Replace and Flash Fill.
+- Turn text dates into real dates.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+A Bengaluru e-commerce analyst gets a customer file where "Mumbai", "mumbai " and "MUMBAI" count as three cities. The city report is wrong until the data is cleaned. Analysts say they spend most of their time cleaning, and screening tests nearly always include a messy sheet.
+</RealWorld>
+
+Dirty data gives wrong counts. Clean first, analyse second.
+
+## Concept
+
+**Data cleaning** means fixing errors and inconsistencies so the data can be counted and compared correctly. Work on a copy. Never clean your only copy of the raw data.
+
+**The cleaning toolkit**
+
+- `TRIM(text)` removes spaces at the start and end and squeezes repeated spaces inside to one.
+- `CLEAN(text)` removes non-printing characters such as line breaks and control codes.
+- `SUBSTITUTE(text, old, new)` replaces one piece of text with another. Needed for characters TRIM and CLEAN miss: non-breaking space `CHAR(160)`, zero-width space `UNICHAR(8203)`, trademark `UNICHAR(8482)`.
+- `PROPER`, `UPPER`, `LOWER` change casing. `PROPER("mUMBAI")` gives `Mumbai`.
+- **Text to Columns** (Data tab) splits a column by a delimiter such as comma or space, or at fixed widths. It can also convert text to numbers and dates.
+- **Remove Duplicates** (Data tab) deletes repeated rows based on the columns you tick.
+- **Find and Replace** (`Ctrl + H`) changes text across the sheet. Wildcards `*` and `?` work.
+- **Flash Fill** (`Ctrl + E`) learns a pattern from one or two examples that you type and fills the rest.
+
+<Tip>
+After cleaning with formulas, copy the helper column and use Paste Special > Values over the original. Delete the helper columns afterwards.
+</Tip>
+
+**The standard order of cleaning**
+
+1. Copy the raw sheet. Keep the original untouched.
+2. Remove hidden junk: CLEAN, SUBSTITUTE, TRIM.
+3. Fix casing: PROPER or UPPER.
+4. Split or combine columns.
+5. Convert types: text to number, text to date.
+6. Remove duplicates.
+7. Check: counts, blanks, unique values.
+
+<Warning>
+Remove Duplicates deletes rows for good. Tick only the columns that define a duplicate, and always keep a copy of the sheet first.
+</Warning>
+
+<FormulaCard title="One-shot clean for a text cell">
+=TRIM(CLEAN(SUBSTITUTE(A2,CHAR(160)," ")))
+</FormulaCard>
+
+## Worked examples
+
+<Download href="data/excel/excel-cleaning.xlsx" label="Download excel-cleaning.xlsx" />
+
+The workbook has two messy sheets: `customers_messy` (1,272 rows) and `products_messy` (420 rows).
+
+**Example 1: clean city names.** In `customers_messy`, city is column F. In `K2` type:
+
+```
+=PROPER(TRIM(F2))
+```
+
+Fill down. `chennai`, ` mumbai`, `KOLKATA` become `Chennai`, `Mumbai`, `Kolkata`. After cleaning there are 21 distinct values. One of them is `Nan`: 37 rows contain the word "nan", which is a missing value typed as text. Treat it as blank.
+
+```
+=COUNTIF(K2:K1273,"Nan")
+```
+
+Result: **37**.
+
+**Example 2: clean product names.** In `products_messy`, `C2` holds `Masala Mandi Beverage 979` followed by a tab. Other rows have `***` on both sides, a trademark sign, or ` ##` at the end. In `J2`:
+
+```
+=TRIM(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(C2,"*",""),UNICHAR(8482),""),UNICHAR(8203),""),CHAR(160)," "),CHAR(9)," "),"##",""))
+```
+
+| Raw product_name | Clean result |
+|---|---|
+| `Masala Mandi Beverage 979` + tab | Masala Mandi Beverage 979 |
+| `NestWell Storage 656 ***` | NestWell Storage 656 |
+| `UrbanKurta Dresse 196 ***™` | UrbanKurta Dresse 196 |
+| `PureNeem Skincare 312 ##` | PureNeem Skincare 312 |
+| `*** Desi Dhara Beverage 143` | Desi Dhara Beverage 143 |
+
+331 of the 420 names change. All 420 clean names are unique. Check with `=SUMPRODUCT(--NOT(EXACT(C2:C421,J2:J421)))`.
+
+**Example 3: Remove Duplicates.** Click inside `customers_messy`, go to Data > Remove Duplicates, untick Select All, tick `customer_id` only. Excel says 73 duplicate values removed and **1199 unique values remain**. 72 rows were exact copies and one more row had the same ID with different spacing.
+
+**Example 4: Text to Columns and dates.** Select `H2:H1273` (signup_date is text in five layouts: `2023-04-22`, `19/11/2024`, `15-Jun-2023`, `03.12.2022`, `Jun 20, 2024`). Text to Columns can convert one layout at a time (choose Date, then DMY), but with mixed layouts a formula is safer:
+
+```
+=LET(t,TRIM(H2),IF(MID(t,5,1)="-",DATE(LEFT(t,4),MID(t,6,2),RIGHT(t,2)),IF(OR(MID(t,3,1)="/",MID(t,3,1)="."),DATE(RIGHT(t,4),MID(t,4,2),LEFT(t,2)),DATEVALUE(t))))
+```
+
+After converting and de-duplicating, **501** unique customers signed up in 2024.
+
+**Example 5: Flash Fill.** In `customers_messy`, next to `email`, type the first name part of the first email by hand, for example `pooja`. Press `Ctrl + E` and Excel fills the pattern down. Flash Fill gives a value, not a formula, so it does not update when the source changes.
+
+## Common mistakes
+
+<CommonMistake>
+Expecting TRIM to remove all odd spaces. TRIM only handles the normal space (code 32). A non-breaking space (code 160) from a web copy needs SUBSTITUTE first.
+</CommonMistake>
+
+<CommonMistake>
+Ticking every column in Remove Duplicates. Rows that differ only by a stray space are then seen as different, and duplicates survive. Clean with TRIM first, then remove duplicates on the key column.
+</CommonMistake>
+
+<CommonMistake>
+Leaving the word "nan", "N/A" or "-" in a column as if it were real data. Count these and replace them with true blanks.
+</CommonMistake>
+
+<CommonMistake>
+Using DATEVALUE on a mixed set of date text and trusting the result. `03.12.2022` can be read as 12 March in some regions. Check some results by eye.
+</CommonMistake>
+
+<CommonMistake>
+Trusting Flash Fill without checking. It guesses a pattern and can fail on the one odd row.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="cleaning" module="excel" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Which function removes the extra spaces at the start and end of text?", options: ["CLEAN", "TRIM", "PROPER", "VALUE"], answer: 1, explanation: "TRIM removes leading and trailing spaces and squeezes repeated inner spaces to one." },
+  { q: "TRIM does not fix text copied from a web page. Which character is the likely cause?", options: ["Tab at the start", "Non-breaking space, CHAR(160)", "A comma", "A capital letter"], answer: 1, explanation: "Web pages use a non-breaking space that TRIM ignores. Use SUBSTITUTE(A1,CHAR(160),\" \") first." },
+  { q: "Where do you click to delete repeated rows based on one column?", options: ["Home > Find and Select", "Data > Remove Duplicates", "Insert > Table", "View > Freeze Panes"], answer: 1, explanation: "Data > Remove Duplicates, then tick only the column that defines a duplicate." },
+  { q: "What is the shortcut for Flash Fill?", options: ["Ctrl + E", "Ctrl + F", "Ctrl + D", "Ctrl + H"], answer: 0, explanation: "Ctrl + E fills a column using the pattern of the examples you typed." },
+  { q: "After cleaning with formulas, how do you keep only the clean values?", options: ["Delete the raw column first", "Copy the formulas and Paste Special > Values", "Save as PDF", "Use Undo"], answer: 1, explanation: "Paste Special > Values replaces formulas with their results, so you can delete the helper columns." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+A common test task: "Here is a messy customer list. Clean it and tell me how many unique customers there are." Show your steps and keep the raw copy.
+</InterviewAlert>
+
+<InterviewQ q="How do you clean a messy column of city names in Excel?">
+I copy the raw sheet first. In a helper column I use `=PROPER(TRIM(A2))` to fix spaces and casing. Then I check unique values with a PivotTable or UNIQUE, and fix spelling variants with Find and Replace. Placeholders like "nan" become real blanks. Finally I paste values and remove the helper column.
+</InterviewQ>
+
+<InterviewQ q="TRIM did not remove a space. Why?">
+The space is probably a non-breaking space, CHAR(160), which comes from web pages or exports. TRIM only removes the normal space. I use `SUBSTITUTE(A2,CHAR(160)," ")` before TRIM.
+</InterviewQ>
+
+<InterviewQ q="How do you remove duplicates safely?">
+I copy the data, TRIM and standardise the key column, then use Remove Duplicates on the key only (for example customer_id). I compare the row counts before and after and note how many were removed.
+</InterviewQ>
+
+<InterviewQ q="When would you use Flash Fill and when a formula?">
+Flash Fill is quick for one-time jobs like splitting a name. A formula is better when the source data will change, because the formula updates and Flash Fill does not.
+</InterviewQ>
+
+## Key takeaways
+
+- Always clean a copy and keep the raw data.
+- TRIM, CLEAN and SUBSTITUTE remove spaces and hidden characters; PROPER fixes case.
+- Remove Duplicates works on the columns you tick, so tick the key only.
+- Text dates must be converted before you can sort, filter or group by month.
+- Flash Fill gives values, not formulas.
+
+## Further reading
+
+<FurtherReading ids={["excel-support", "chandoo", "excelisfun"]} />

@@ -1,0 +1,370 @@
+---
+title: "Joins II: RIGHT, FULL, SELF, CROSS and anti-joins"
+description: "The rest of the join family, plus the three ways to find rows with no match and the NOT IN NULL trap."
+module: sql
+order: 14
+estimatedMinutes: 60
+objectives:
+  - "Explain RIGHT and FULL OUTER JOIN and rewrite a RIGHT JOIN as a LEFT JOIN"
+  - "Use a SELF JOIN for hierarchies such as employee and manager"
+  - "Use CROSS JOIN to build every combination of two lists"
+  - "Write an anti-join three ways and know which is safest"
+  - "Explain why NOT IN returns nothing when the subquery has a NULL"
+tags: ["sql", "joins", "self-join", "cross-join", "anti-join"]
+---
+
+## Learning objectives
+
+- Describe what `RIGHT JOIN` and `FULL OUTER JOIN` keep.
+- Join a table to itself using two aliases.
+- Create all combinations of two lists with `CROSS JOIN`.
+- Find "rows with no match" using `LEFT JOIN ... IS NULL`, `NOT EXISTS` and `NOT IN`.
+- Explain and avoid the NOT IN NULL trap.
+- Choose the right join type from a business question.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Some of the most valuable business questions are about what is missing: customers who never ordered, products that never sold, merchants with no transactions this month, employees with no manager, campaigns with spend but no conversions. These are all anti-joins. Others ask for comparison across two periods ("who bought in 2023 but not in 2024?"), which is a full outer join. Org-chart questions ("who reports to whom?") need a self join. Reconciliation work in fintech (matching bank records to your ledger) is also full-join thinking.
+</RealWorld>
+
+## Concept
+
+In the last lesson you learned `INNER JOIN` and `LEFT JOIN`. Here are the other shapes.
+
+### RIGHT JOIN: the mirror of LEFT JOIN
+
+A `RIGHT JOIN` keeps every row of the **right** table and fills the left columns with NULL where nothing matches. `A RIGHT JOIN B` gives exactly the same result as `B LEFT JOIN A`. Because we read left to right, most analysts always write `LEFT JOIN` and simply swap the table order. You will still meet `RIGHT JOIN` in other people's code, so you must be able to read it. (Older SQLite versions did not support it. The playground here does.)
+
+### FULL OUTER JOIN: keep everything from both sides
+
+Think of the two wedding guest lists again. A `FULL OUTER JOIN` returns everyone on either list: matched pairs once, bride-only guests with groom columns NULL, and groom-only guests with bride columns NULL.
+
+| Join | Matched rows | Left-only rows | Right-only rows |
+|---|---|---|---|
+| `INNER` | yes | no | no |
+| `LEFT` | yes | yes | no |
+| `RIGHT` | yes | no | yes |
+| `FULL OUTER` | yes | yes | yes |
+
+MySQL does not support `FULL OUTER JOIN`. There you combine a `LEFT JOIN` and a `RIGHT JOIN` with `UNION`. PostgreSQL, SQL Server, Oracle and modern SQLite support it directly.
+
+### SELF JOIN: a table joined to itself
+
+Some tables point to themselves. In `employees`, the column `manager_id` holds the `employee_id` of the person's manager, who is also a row in `employees`. To get both names in one row, use the same table twice with **different aliases**:
+
+```sql
+FROM employees AS e
+LEFT JOIN employees AS m ON m.employee_id = e.manager_id
+```
+
+Read it as two copies: `e` is the employee copy and `m` is the manager copy. A self join is not a special keyword. It is an ordinary join where both sides happen to be the same table. Use `LEFT JOIN` if some rows (the top bosses) have no manager and you do not want to lose them.
+
+### CROSS JOIN: every combination
+
+A `CROSS JOIN` has no `ON`. It pairs every left row with every right row. 5 apps and 4 transaction types give 5 x 4 = 20 rows. It is useful for building a complete grid (every city for every month) so that missing combinations show up as zero instead of being absent. It is dangerous on big tables: 10,000 rows crossed with 10,000 rows is 100 million rows.
+
+### The anti-join: rows with no match
+
+An **anti-join** returns rows from table A that have **no** match in table B. SQL has no `ANTI JOIN` keyword. There are three standard patterns.
+
+**Pattern 1: LEFT JOIN with IS NULL**
+
+```sql
+SELECT a.*
+FROM a
+LEFT JOIN b ON b.key = a.key
+WHERE b.key IS NULL;
+```
+
+**Pattern 2: NOT EXISTS**
+
+```sql
+SELECT a.*
+FROM a
+WHERE NOT EXISTS (SELECT 1 FROM b WHERE b.key = a.key);
+```
+
+**Pattern 3: NOT IN**
+
+```sql
+SELECT a.*
+FROM a
+WHERE a.key NOT IN (SELECT key FROM b);
+```
+
+All three express "in A but not in B", but they behave differently when `b.key` contains NULL.
+
+### The NOT IN NULL trap
+
+`x NOT IN (1, 2, NULL)` expands to `x <> 1 AND x <> 2 AND x <> NULL`. The last part, `x <> NULL`, is neither true nor false. It is **unknown**. And `true AND true AND unknown` is unknown, which `WHERE` treats as not true. So **if the subquery returns even one NULL, `NOT IN` returns zero rows**. No error, no warning. The query just returns an empty result, and a careless analyst reports "every user has received a payment".
+
+Safe habits:
+
+1. Prefer `NOT EXISTS` or `LEFT JOIN ... IS NULL`. Both handle NULLs correctly.
+2. If you use `NOT IN`, add `WHERE key IS NOT NULL` inside the subquery.
+
+<Warning>
+`NOT IN` with a nullable column in the subquery is one of the most common silent bugs in analyst SQL. It is also a favourite interview trap.
+</Warning>
+
+### Which anti-join should I use?
+
+| Pattern | Handles NULLs | Readability | Notes |
+|---|---|---|---|
+| `LEFT JOIN ... IS NULL` | yes | good | Can repeat left rows if the right key is not unique, so use `DISTINCT` or `COUNT(DISTINCT ...)` |
+| `NOT EXISTS` | yes | good | Never multiplies rows; my default choice |
+| `NOT IN` | **no** (breaks on NULL) | best for short lists | Safe only if the subquery column has no NULLs |
+
+## Worked examples
+
+### Example 1: RIGHT JOIN, products that never sold
+
+We want every product, with an order item if there is one. Starting from `order_items` and right joining `products` keeps all products.
+
+<SqlPlayground dataset="ecommerce" query={`SELECT p.product_id, p.product_name, p.category
+FROM order_items AS oi
+RIGHT JOIN products AS p ON p.product_id = oi.product_id
+WHERE oi.order_item_id IS NULL
+ORDER BY p.product_id
+LIMIT 5;`} title="Products that never sold (RIGHT JOIN)" />
+
+**Output:**
+
+| product_id | product_name | category |
+|---|---|---|
+| 32 | Rasoi Plus Storage 838 | Home & Kitchen |
+| 36 | Kolhapuri Kraft Sneaker 945 | Footwear |
+| 38 | Pustak Ghar Exam Prep 434 | Books |
+| 53 | Lakshmi Home Cookware 758 | Home & Kitchen |
+| 64 | Sahitya Hub Fiction 919 | Books |
+
+
+The rule `oi.order_item_id IS NULL` keeps only products that found no order item. The same query written as `products LEFT JOIN order_items` returns the same 22 products in total. Prefer that form because it reads left to right.
+
+### Example 2: FULL OUTER JOIN, customers across two years
+
+Which customers ordered in both 2023 and 2024, only in 2023 (lost), or only in 2024 (new)? Each side is a small list of distinct customer ids built with a subquery in `FROM` (the next lesson covers subqueries fully; read each one as a temporary table).
+
+<SqlPlayground dataset="ecommerce" query={`SELECT CASE WHEN a.cust IS NOT NULL AND b.cust IS NOT NULL THEN 'Ordered in both years'
+            WHEN a.cust IS NOT NULL THEN 'Only 2023'
+            ELSE 'Only 2024' END AS pattern,
+       COUNT(*) AS customers
+FROM (SELECT DISTINCT customer_id AS cust FROM orders WHERE order_date LIKE '2023%') AS a
+FULL OUTER JOIN
+     (SELECT DISTINCT customer_id AS cust FROM orders WHERE order_date LIKE '2024%') AS b
+  ON a.cust = b.cust
+GROUP BY pattern
+ORDER BY customers DESC;`} title="Customer pattern across two years (FULL OUTER JOIN)" />
+
+**Output:**
+
+| pattern | customers |
+|---|---|
+| Only 2024 | 990 |
+| Ordered in both years | 928 |
+| Only 2023 | 304 |
+
+
+This is a mini retention analysis in one query. 928 customers ordered in both years. 304 ordered only in 2023 and never came back. 990 are new in 2024. A `LEFT JOIN` alone would have missed the "only 2024" group, and an `INNER JOIN` would have shown only the 928. Only `FULL OUTER JOIN` sees all three groups. The `CASE` tells us which side was NULL.
+
+### Example 3: SELF JOIN, employee and manager
+
+<SqlPlayground dataset="hr" query={`SELECT e.employee_id, e.full_name AS employee, m.full_name AS manager
+FROM employees AS e
+LEFT JOIN employees AS m ON m.employee_id = e.manager_id
+ORDER BY e.employee_id
+LIMIT 5;`} title="Employee and manager from one table" />
+
+**Output:**
+
+| employee_id | employee | manager |
+|---|---|---|
+| 1 | Nandini Sandhu | Karan Gupta |
+| 2 | Swati Bansal | Imran Yadav |
+| 3 | Venkat Chatterjee | Pranav Nair |
+| 4 | Tarun Patil | Shruti Patil |
+| 5 | Amit Kurup | Diya Hegde |
+
+
+We used `LEFT JOIN` so that the 118 top-level people with a NULL `manager_id` still appear (with a NULL manager). Now count direct reports. A manager's reports are the employee rows whose `manager_id` equals the manager's id:
+
+<SqlPlayground dataset="hr" query={`SELECT m.employee_id, m.full_name AS manager,
+       COUNT(DISTINCT e.employee_id) AS direct_reports
+FROM employees AS e
+INNER JOIN employees AS m ON m.employee_id = e.manager_id
+GROUP BY m.employee_id, m.full_name
+ORDER BY direct_reports DESC, m.employee_id
+LIMIT 5;`} title="Managers with the most direct reports" />
+
+**Output:**
+
+| employee_id | manager | direct_reports |
+|---|---|---|
+| 1201 | Amit Gill | 10 |
+| 1450 | Pranav Qureshi | 10 |
+| 312 | Ravi Sen | 9 |
+| 868 | Deepak Saxena | 9 |
+| 1271 | Karthik Sandhu | 9 |
+
+
+We wrote `COUNT(DISTINCT e.employee_id)` because the `employees` table has 12 exact duplicate rows. A plain `COUNT(*)` could count a report twice.
+
+### Example 4: CROSS JOIN to build a complete grid
+
+For a heat-map of payment apps by transaction type, we want all 20 combinations, even if one had zero transactions. A `CROSS JOIN` builds the grid, and a `LEFT JOIN` brings in the counts.
+
+<SqlPlayground dataset="fintech" query={`SELECT a.payment_app, t.txn_type, COUNT(x.txn_id) AS txns
+FROM (SELECT DISTINCT payment_app FROM transactions) AS a
+CROSS JOIN (SELECT DISTINCT txn_type FROM transactions) AS t
+LEFT JOIN transactions AS x
+       ON x.payment_app = a.payment_app AND x.txn_type = t.txn_type
+GROUP BY a.payment_app, t.txn_type
+ORDER BY txns, a.payment_app, t.txn_type
+LIMIT 6;`} title="Every app x type combination (CROSS JOIN)" />
+
+**Output:**
+
+| payment_app | txn_type | txns |
+|---|---|---|
+| RupeeRocket | Recharge | 202 |
+| SabPay | Recharge | 220 |
+| NammaPay | Recharge | 283 |
+| RupeeRocket | Bill Pay | 363 |
+| SabPay | Bill Pay | 371 |
+| NammaPay | Bill Pay | 438 |
+
+
+The lowest cells are shown first. Every combination has transactions in this data, so there are no zeros here. In a smaller slice (one city, one week) zeros would appear, and because the grid was built first they would show as `0` instead of silently missing from the chart. We used `COUNT(x.txn_id)`, not `COUNT(*)`, so an empty combination counts as 0 and not 1.
+
+### Example 5: three anti-joins and the NULL trap
+
+Business question: which users have never **received** a P2P payment? `transactions.receiver_user_id` is filled only for P2P rows and is NULL for the rest, so it contains many NULLs. Watch what each pattern does.
+
+<SqlPlayground dataset="fintech" query={`SELECT COUNT(DISTINCT u.user_id) AS never_received
+FROM users AS u
+LEFT JOIN transactions AS t ON t.receiver_user_id = u.user_id
+WHERE t.txn_id IS NULL;`} title="Anti-join with LEFT JOIN ... IS NULL" />
+
+**Output:**
+
+| never_received |
+|---|
+| 1047 |
+
+
+<SqlPlayground dataset="fintech" query={`SELECT COUNT(DISTINCT u.user_id) AS never_received
+FROM users AS u
+WHERE NOT EXISTS (SELECT 1 FROM transactions AS t
+                  WHERE t.receiver_user_id = u.user_id);`} title="Anti-join with NOT EXISTS" />
+
+**Output:**
+
+| never_received |
+|---|
+| 1047 |
+
+
+Both agree: 1,047 users. Now `NOT IN` written naively:
+
+<SqlPlayground dataset="fintech" query={`SELECT COUNT(DISTINCT user_id) AS never_received
+FROM users
+WHERE user_id NOT IN (SELECT receiver_user_id FROM transactions);`} title="The NOT IN trap" />
+
+**Output:**
+
+| never_received |
+|---|
+| 0 |
+
+
+Zero! The subquery `SELECT receiver_user_id FROM transactions` includes NULLs, so `NOT IN` can never be true. A report built on this would claim every user has received a payment, which is wrong. Remove the NULLs inside the subquery:
+
+<SqlPlayground dataset="fintech" query={`SELECT COUNT(DISTINCT user_id) AS never_received
+FROM users
+WHERE user_id NOT IN (SELECT receiver_user_id
+                      FROM transactions
+                      WHERE receiver_user_id IS NOT NULL);`} title="NOT IN with the NULLs removed" />
+
+**Output:**
+
+| never_received |
+|---|
+| 1047 |
+
+
+Now it matches 1,047 again. Rule of thumb: default to `NOT EXISTS`.
+
+## Common mistakes
+
+<CommonMistake>
+**Using NOT IN on a nullable column.** One NULL in the subquery makes the whole `NOT IN` return zero rows (we saw 0 instead of 1,047). Use `NOT EXISTS`, or filter `IS NOT NULL` inside the subquery.
+</CommonMistake>
+
+<CommonMistake>
+**Forgetting aliases in a self join.** `FROM employees JOIN employees ON ...` fails with an ambiguous name error. Give each copy its own alias (`e` and `m`) and prefix every column.
+</CommonMistake>
+
+<CommonMistake>
+**Using INNER JOIN in a self join and losing the top of the hierarchy.** Employees with no manager (NULL `manager_id`) disappear. Use `LEFT JOIN` if you need them.
+</CommonMistake>
+
+<CommonMistake>
+**CROSS JOIN on large tables.** Crossing 24,000 sales rows with 4,000 users makes 96 million rows and can freeze the browser or a shared server. Cross join only small lists, for example `SELECT DISTINCT` values.
+</CommonMistake>
+
+<CommonMistake>
+**Counting duplicates in an anti-join.** `LEFT JOIN ... IS NULL` from a table with duplicate rows (such as `users`) returns the duplicate again. Use `DISTINCT` or `COUNT(DISTINCT id)`.
+</CommonMistake>
+
+<CommonMistake>
+**Putting the filter in WHERE for a FULL OUTER JOIN.** A condition such as `WHERE b.cust IS NOT NULL` throws away all the left-only rows and turns the join into a LEFT or INNER join. Filter inside the subqueries, or use CASE on both sides as we did.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="joins-advanced" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Which statement is equivalent to A RIGHT JOIN B?", options: ["A LEFT JOIN B", "B LEFT JOIN A", "A INNER JOIN B", "A FULL JOIN B"], answer: 1, explanation: "A RIGHT JOIN B keeps all rows of B, which is exactly what B LEFT JOIN A does. Only the order of the columns may differ." },
+  { q: "Which join returns matched rows, left-only rows and right-only rows?", options: ["INNER JOIN", "LEFT JOIN", "RIGHT JOIN", "FULL OUTER JOIN"], answer: 3, explanation: "FULL OUTER JOIN keeps everything from both tables, filling NULLs on whichever side has no match." },
+  { q: "A CROSS JOIN of a 5-row table and a 4-row table returns:", options: ["4 rows", "5 rows", "9 rows", "20 rows"], answer: 3, explanation: "A cross join pairs every row with every row: 5 x 4 = 20." },
+  { q: "SELECT * FROM users WHERE id NOT IN (SELECT user_id FROM logins) returns no rows, though many users never logged in. What is the most likely cause?", options: ["The logins table is empty", "logins.user_id contains at least one NULL", "NOT IN needs an ORDER BY", "users.id is not unique"], answer: 1, explanation: "If the subquery returns any NULL, id <> NULL is unknown, so NOT IN can never be true and the result is empty." },
+  { q: "Which anti-join pattern is safe when the right-hand key may contain NULLs?", options: ["NOT IN (subquery)", "NOT EXISTS (correlated subquery)", "Both are always safe", "Neither is safe"], answer: 1, explanation: "NOT EXISTS tests whether a matching row exists and is not affected by NULLs. NOT IN is the one that breaks." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+"Find customers who never ordered" is among the most asked SQL interview questions. Interviewers expect you to give an answer, then explain the NULL trap with NOT IN, then compare with NOT EXISTS and LEFT JOIN. A self join (employees earning more than their manager) and a full outer join comparison are the other favourites.
+</InterviewAlert>
+
+<InterviewQ q="How do you find customers who have never placed an order? Give more than one way.">
+Three ways. First, `customers LEFT JOIN orders ON ... WHERE orders.customer_id IS NULL`. Second, `WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.customer_id)`. Third, `WHERE customer_id NOT IN (SELECT customer_id FROM orders)`. I would choose NOT EXISTS or the LEFT JOIN because NOT IN returns an empty result if `orders.customer_id` ever contains a NULL. If the customers table can contain duplicates, I would also use DISTINCT.
+</InterviewQ>
+
+<InterviewQ q="Why does NOT IN return nothing when the subquery has a NULL?">
+`x NOT IN (a, b, NULL)` is `x <> a AND x <> b AND x <> NULL`. Comparing anything with NULL gives unknown, and a chain of ANDs that includes unknown can never be true. WHERE only keeps rows where the condition is true, so every row is removed. The fix is to filter NULLs in the subquery or use NOT EXISTS.
+</InterviewQ>
+
+<InterviewQ q="When would you use a self join? Give an example.">
+When a table has a relationship to itself, such as employees and managers, categories and parent categories, or comparing a row with other rows in the same table (for example, pairs of orders from the same customer). In `employees`, I join `employees e` to `employees m ON m.employee_id = e.manager_id` to show each employee next to their manager's name. I use a LEFT JOIN so that people without a manager are kept.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between FULL OUTER JOIN and UNION?">
+A FULL OUTER JOIN puts matching rows side by side in one wider row, so you can compare columns from both tables for the same key. A UNION stacks rows from two queries into one longer result with the same columns. Use a full join to compare two sets; use a union to combine them.
+</InterviewQ>
+
+## Key takeaways
+
+- `RIGHT JOIN` mirrors `LEFT JOIN`; `FULL OUTER JOIN` keeps matched, left-only and right-only rows. MySQL lacks FULL, so emulate it with UNION.
+- A self join is a normal join using two aliases of one table. Use LEFT JOIN so top-level rows are not lost.
+- `CROSS JOIN` makes every combination (rows multiply: 5 x 4 = 20). Use it for small grids, never for big tables.
+- An anti-join finds rows with no match: `LEFT JOIN ... IS NULL`, `NOT EXISTS` or `NOT IN`.
+- A single NULL in the subquery makes `NOT IN` return nothing. Default to `NOT EXISTS`.
+
+## Further reading
+
+<FurtherReading ids={["sqlbolt", "mode-sql", "sqlite-docs", "postgres-docs"]} />

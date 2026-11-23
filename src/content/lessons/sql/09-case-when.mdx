@@ -1,0 +1,316 @@
+---
+title: "CASE WHEN: if-then logic in SQL"
+description: "Create labels, buckets and conditional aggregates with CASE expressions."
+module: sql
+order: 9
+estimatedMinutes: 40
+objectives:
+  - "Write searched and simple CASE expressions"
+  - "Bucket numbers into labelled ranges"
+  - "Clean messy categories with CASE"
+  - "Build conditional aggregates with SUM(CASE WHEN ...)"
+tags: ["sql", "case-when", "bucketing", "conditional-aggregation"]
+---
+
+## Learning objectives
+
+- Write a `CASE WHEN ... THEN ... ELSE ... END` expression.
+- Create buckets (bands) from numbers.
+- Standardise messy categories.
+- Count or sum **conditionally** inside one query.
+- Use CASE inside `GROUP BY` and `ORDER BY`.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Managers think in labels: "small / medium / large orders", "new / returning customers", "late / on-time deliveries". Raw tables have numbers and codes. `CASE WHEN` converts one into the other. And conditional aggregation, such as "orders and failed orders side by side in one row", is one of the top SQL interview patterns.
+</RealWorld>
+
+## Concept
+
+`CASE` is SQL's if-else. It is an **expression**: it returns a value, so it can appear almost anywhere an expression can.
+
+```sql
+CASE
+  WHEN condition1 THEN result1
+  WHEN condition2 THEN result2
+  ELSE default_result
+END
+```
+
+Rules:
+
+- Conditions are checked top to bottom. The **first** true one wins. So order matters.
+- If no condition is true and there is no `ELSE`, the result is `NULL`.
+- All results should be of a compatible type (all text or all numbers).
+- Always end with `END`. Give the result an alias.
+
+### Simple CASE
+
+When comparing one column to exact values:
+
+```sql
+CASE payment_mode
+  WHEN 'UPI' THEN 'Digital'
+  WHEN 'Card' THEN 'Digital'
+  ELSE 'Other'
+END
+```
+
+### Bucketing
+
+Because the first true condition wins, bucketing is easy to write with `<` checks in increasing order:
+
+```sql
+CASE
+  WHEN amount < 500 THEN 'Small'
+  WHEN amount < 5000 THEN 'Medium'
+  ELSE 'Large'
+END
+```
+
+The second branch automatically means "500 up to 5,000" because smaller values were caught by the first.
+
+### Conditional aggregation
+
+Put `CASE` inside an aggregate to count or sum only some rows:
+
+```sql
+SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END)   -- count of failed
+SUM(CASE WHEN status = 'SUCCESS' THEN amount ELSE 0 END)  -- value of successes
+COUNT(CASE WHEN status = 'FAILED' THEN 1 END)  -- same count; COUNT ignores NULLs
+```
+
+This gives several measures per group in one pass, and it is the standard way to **pivot** data (turn row values into columns).
+
+<FormulaCard title="Rate with conditional aggregation">
+rate % = 100.0 * SUM(CASE WHEN condition THEN 1 ELSE 0 END) / COUNT(*)
+</FormulaCard>
+
+<Tip>
+Using CASE in `GROUP BY`: you can group by the bucket itself. Write the CASE in both SELECT and GROUP BY, or group by the alias or position where your database allows it (SQLite does).
+</Tip>
+
+## Worked examples
+
+### Example 1: bucketing order value
+
+<SqlPlayground dataset="ecommerce" query={`SELECT order_id,
+       total_amount,
+       CASE
+         WHEN total_amount < 500 THEN 'Small'
+         WHEN total_amount < 5000 THEN 'Medium'
+         ELSE 'Large'
+       END AS order_size
+FROM orders
+WHERE order_status = 'Delivered'
+ORDER BY order_id
+LIMIT 6;`} title="Order size labels" />
+
+**Output:**
+
+| order_id | total_amount | order_size |
+|---|---|---|
+| 2 | 339.68 | Small |
+| 3 | 2599.2 | Medium |
+| 4 | 5124.48 | Large |
+| 5 | 2419.57 | Medium |
+| 6 | 28346.72 | Large |
+| 7 | 516.04 | Medium |
+
+
+### Example 2: group by a bucket
+
+How many orders and what revenue in each size band?
+
+<SqlPlayground dataset="ecommerce" query={`SELECT CASE
+         WHEN total_amount < 500 THEN '1 Small'
+         WHEN total_amount < 5000 THEN '2 Medium'
+         ELSE '3 Large'
+       END AS order_size,
+       COUNT(*) AS orders,
+       ROUND(SUM(total_amount), 0) AS revenue
+FROM orders
+WHERE order_status = 'Delivered'
+GROUP BY order_size
+ORDER BY order_size;`} title="Orders by size band" />
+
+**Output:**
+
+| order_size | orders | revenue |
+|---|---|---|
+| 1 Small | 1082 | 337688.0 |
+| 2 Medium | 5302 | 11480421.0 |
+| 3 Large | 2973 | 38506941.0 |
+
+
+The numbers `1`, `2`, `3` in front of the labels are a small trick to make the sort order natural.
+
+### Example 3: cleaning messy categories
+
+Retail `payment_mode` has many spellings of the same thing. Map them to clean groups with `LOWER` and `TRIM` inside CASE.
+
+<SqlPlayground dataset="retail" query={`SELECT CASE
+         WHEN payment_mode IS NULL THEN 'Unknown'
+         WHEN LOWER(TRIM(payment_mode)) = 'upi' THEN 'UPI'
+         WHEN LOWER(TRIM(payment_mode)) = 'card' THEN 'Card'
+         WHEN LOWER(TRIM(payment_mode)) = 'cash' THEN 'Cash'
+         WHEN LOWER(TRIM(payment_mode)) = 'wallet' THEN 'Wallet'
+         ELSE 'Other'
+       END AS payment_clean,
+       COUNT(*) AS sales
+FROM sales
+GROUP BY payment_clean
+ORDER BY sales DESC;`} title="Clean payment modes" />
+
+**Output:**
+
+| payment_clean | sales |
+|---|---|
+| UPI | 12164 |
+| Card | 5952 |
+| Cash | 4320 |
+| Wallet | 1707 |
+| Unknown | 207 |
+
+
+Now there are five tidy groups instead of more than twenty messy ones.
+
+### Example 4: conditional aggregation (pivot)
+
+For each delivery city: total orders, late orders (delay above 10 minutes) and the late percentage, all in one row.
+
+<SqlPlayground dataset="food_delivery" query={`SELECT LOWER(TRIM(city)) AS city,
+       COUNT(*) AS delivered_orders,
+       SUM(CASE WHEN delay_minutes > 10 THEN 1 ELSE 0 END) AS late_orders,
+       ROUND(100.0 * SUM(CASE WHEN delay_minutes > 10 THEN 1 ELSE 0 END) / COUNT(*), 1) AS late_pct
+FROM deliveries
+WHERE delivery_status = 'Delivered'
+GROUP BY LOWER(TRIM(city))
+ORDER BY late_pct DESC
+LIMIT 6;`} title="Late delivery rate by city" />
+
+**Output:**
+
+| city | delivered_orders | late_orders | late_pct |
+|---|---|---|---|
+| mumbai | 2462 | 503 | 20.4 |
+| kolkata | 1219 | 236 | 19.4 |
+| ahmedabad | 837 | 162 | 19.4 |
+| chennai | 1371 | 263 | 19.2 |
+| bengaluru | 2098 | 403 | 19.2 |
+| pune | 1077 | 205 | 19.0 |
+
+
+### Example 5: pivoting statuses into columns
+
+Transactions per payment app, with success, failed and pending in separate columns.
+
+<SqlPlayground dataset="fintech" query={`SELECT payment_app,
+       SUM(CASE WHEN status = 'SUCCESS' THEN 1 ELSE 0 END) AS success,
+       SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) AS failed,
+       SUM(CASE WHEN status = 'PENDING' THEN 1 ELSE 0 END) AS pending,
+       ROUND(SUM(CASE WHEN status = 'SUCCESS' THEN amount ELSE 0 END), 0) AS success_value
+FROM transactions
+GROUP BY payment_app
+ORDER BY payment_app;`} title="Status pivot by app" />
+
+**Output:**
+
+| payment_app | success | failed | pending | success_value |
+|---|---|---|---|---|
+| NammaPay | 3445 | 105 | 18 | 4537081.0 |
+| PayZippy | 7057 | 190 | 22 | 9875284.0 |
+| QuickPaisa | 5331 | 179 | 25 | 7147188.0 |
+| RupeeRocket | 2637 | 72 | 5 | 3765669.0 |
+| SabPay | 2909 | 83 | 10 | 3982216.0 |
+
+
+### Example 6: hiring-era band for HR
+
+<SqlPlayground dataset="hr" query={`SELECT CASE
+         WHEN hire_date >= '2023-01-01' THEN 'Hired 2023 or later'
+         WHEN hire_date >= '2020-01-01' THEN 'Hired 2020 to 2022'
+         ELSE 'Hired before 2020'
+       END AS tenure_band,
+       COUNT(DISTINCT employee_id) AS employees
+FROM employees
+GROUP BY tenure_band
+ORDER BY employees DESC;`} title="Hiring-era bands" />
+
+**Output:**
+
+| tenure_band | employees |
+|---|---|
+| Hired 2023 or later | 934 |
+| Hired 2020 to 2022 | 744 |
+| Hired before 2020 | 722 |
+
+
+The dates are written as fixed strings here. A date-based version that always stays current comes in the date lesson.
+
+## Common mistakes
+
+<CommonMistake>
+**Wrong order of WHEN branches.** `WHEN x < 5000 ... WHEN x < 500` never reaches the second branch. Put the most specific (smallest) first.
+</CommonMistake>
+
+<CommonMistake>
+**Forgetting ELSE.** Unmatched rows become NULL, which then vanish from counts or break averages. Decide the default on purpose.
+</CommonMistake>
+
+<CommonMistake>
+**Forgetting END** or using a comma between WHEN branches. Branches are separated by spaces and newlines, not commas.
+</CommonMistake>
+
+<CommonMistake>
+**Mixing types in results.** One branch returns text and another a number. Databases such as PostgreSQL will raise an error.
+</CommonMistake>
+
+<CommonMistake>
+**Overlapping bucket edges.** With `BETWEEN 0 AND 500` and `BETWEEN 500 AND 1000`, 500 matches both (the first wins). Use `<` chains to avoid double meaning.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="case-when" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What does CASE return if no WHEN is true and there is no ELSE?", options: ["0", "An empty string", "NULL", "An error"], answer: 2, explanation: "Without ELSE, unmatched rows get NULL." },
+  { q: "For CASE WHEN x < 10 THEN 'A' WHEN x < 100 THEN 'B' ELSE 'C' END, what is x = 50?", options: ["A", "B", "C", "NULL"], answer: 1, explanation: "50 is not below 10, but it is below 100, so the second branch gives B." },
+  { q: "Which gives the count of failed rows?", options: ["SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END)", "COUNT(status = 'FAILED')", "SUM(status)", "CASE(status = 'FAILED')"], answer: 0, explanation: "The CASE returns 1 for failed rows and 0 for the rest, and SUM adds the ones." },
+  { q: "What is conditional aggregation mainly used for?", options: ["Sorting results", "Computing several filtered measures in one query (pivot)", "Joining tables", "Deleting rows"], answer: 1, explanation: "It lets one GROUP BY query show different filtered counts or sums side by side." },
+  { q: "COUNT(CASE WHEN status = 'FAILED' THEN 1 END) works because:", options: ["COUNT ignores NULL, and unmatched rows give NULL", "CASE returns text", "FAILED is a keyword", "COUNT always counts failed rows"], answer: 0, explanation: "Without ELSE the other rows become NULL, and COUNT(expr) skips NULLs." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+"Pivot this table using SQL" or "show total and failed side by side" is answered with `SUM(CASE WHEN ...)`. Practise writing it from memory.
+</InterviewAlert>
+
+<InterviewQ q="How do you create a pivot table in SQL without a PIVOT keyword?">
+Group by the row dimension and use conditional aggregation for each column: `SUM(CASE WHEN month = 'Jan' THEN sales ELSE 0 END) AS jan`, and so on. This works in every database, while the `PIVOT` keyword exists only in some, such as SQL Server and Oracle.
+</InterviewQ>
+
+<InterviewQ q="Is the order of WHEN conditions important?">
+Yes. A `CASE` stops at the first true condition. In bucketing with `<` checks, the smallest threshold must come first. Reversing the order makes later branches unreachable.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between COUNT(CASE WHEN x THEN 1 END) and SUM(CASE WHEN x THEN 1 ELSE 0 END)?">
+They return the same number when there is at least one row. Without `ELSE`, non-matching rows are NULL, which `COUNT` skips. The `SUM` form returns 0 for no matches in a group of rows, while over an empty set it returns NULL. Both are fine, but be consistent.
+</InterviewQ>
+
+## Key takeaways
+
+- `CASE WHEN ... THEN ... ELSE ... END` is an expression that returns one value per row.
+- The first true `WHEN` wins, so order buckets carefully. No `ELSE` means NULL.
+- Use CASE to bucket numbers and to standardise messy text.
+- `SUM(CASE WHEN ...)` gives conditional counts and sums, and pivots rows into columns.
+- You can group and sort by a CASE expression.
+
+## Further reading
+
+<FurtherReading ids={["sqlbolt", "mode-sql", "sqlite-docs"]} />

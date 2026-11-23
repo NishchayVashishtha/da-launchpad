@@ -1,0 +1,97 @@
+[
+  {
+    "id": "sh-tool-001",
+    "module": "start-here",
+    "topic": "tool-setup",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "Make a checklist of the six tools in this lesson and mark which week of the plan you need each one.",
+    "dataset": "none",
+    "hint": "See the table in the lesson.",
+    "solution": "**Model answer:**\n- [ ] Excel: week 1\n- [ ] VS Code: week 1\n- [ ] Git and GitHub: week 1\n- [ ] Power BI Desktop: week 5\n- [ ] Python: week 6\n- [ ] Jupyter: week 6",
+    "explanation": "Knowing the week stops you from wasting time on tools you do not need yet.",
+    "commonMistake": "Installing everything on day 1 and getting overwhelmed.",
+    "interviewFrequency": "low",
+    "estimatedMinutes": 3,
+    "tags": [
+      "tool-setup",
+      "career"
+    ]
+  },
+  {
+    "id": "sh-tool-002",
+    "module": "start-here",
+    "topic": "tool-setup",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "Write the commands, in order, to save a new file named notes.txt to GitHub from a cloned repository.",
+    "dataset": "none",
+    "hint": "Add, commit, push.",
+    "solution": "**Model answer:**\n```bash\ngit add notes.txt\ngit commit -m \"Add notes\"\ngit push\n```",
+    "explanation": "The three commands stage, record and upload your change.",
+    "commonMistake": "Forgetting git add, so nothing is committed.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "tool-setup",
+      "career"
+    ]
+  },
+  {
+    "id": "sh-tool-003",
+    "module": "start-here",
+    "topic": "tool-setup",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "You use a Mac. Write your plan for the Power BI weeks, with a first choice and a backup.",
+    "dataset": "none",
+    "hint": "See the Mac options in the lesson.",
+    "solution": "**Model answer:** First choice: use a Windows PC in the college computer lab for Power BI practice, three hours a day in weeks 5 to 6. Backup: Parallels or another virtual machine with Windows if my laptop has enough memory. Meanwhile I practise the same visual ideas in Tableau Public at home.",
+    "explanation": "Power BI Desktop runs on Windows only, so you plan access in advance.",
+    "commonMistake": "Discovering the problem in week 5.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 6,
+    "tags": [
+      "tool-setup",
+      "career"
+    ]
+  },
+  {
+    "id": "sh-tool-004",
+    "module": "start-here",
+    "topic": "tool-setup",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "Explain why you would use a virtual environment for a project, and write the commands to create one, activate it on your system and install pandas.",
+    "dataset": "none",
+    "hint": "Isolation of package versions.",
+    "solution": "**Model answer:** A virtual environment keeps each project's packages separate so versions do not conflict.\n```bash\npython -m venv .venv\nsource .venv/bin/activate   # Windows: .venv\\Scripts\\activate\npip install pandas\n```",
+    "explanation": "Isolation also makes projects reproducible.",
+    "commonMistake": "Installing packages without activating the venv.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "tool-setup",
+      "career"
+    ]
+  },
+  {
+    "id": "sh-tool-005",
+    "module": "start-here",
+    "topic": "tool-setup",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "Design the folder structure and first README for your Project 1 repository, and list five things you must not commit to a public repo.",
+    "dataset": "none",
+    "hint": "Think of data, notebooks, results, privacy.",
+    "solution": "**Model answer:** Structure: `project-1-loan-analysis/` with `README.md`, `data/`, `notebooks/`, `sql/`, `images/`. README: business problem, dataset description, tools, key findings with 3 numbers, how to run, next steps. Never commit: passwords, API keys, personal or real customer data, very large files, and employer data.",
+    "explanation": "A clear structure and README make a project easy for a recruiter to read.",
+    "commonMistake": "Uploading a messy folder with no README.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 12,
+    "tags": [
+      "tool-setup",
+      "career"
+    ]
+  }
+]

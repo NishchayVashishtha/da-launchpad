@@ -1,0 +1,41 @@
+[
+  {
+    "id": "pbi-performance-001",
+    "module": "power-bi",
+    "topic": "performance",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "Why is a measure usually better than a calculated column for something like `Net Sales per Unit`?",
+    "dataset": "none",
+    "hint": "Think when each is calculated and stored.",
+    "solution": "A **calculated column** is computed row by row at refresh time and stored in the model, so it increases model size. A **measure** is calculated at query time, only for the cells shown, and uses no extra storage. Net Sales per Unit is a ratio that must be re-evaluated for every filter combination, so it must be a measure; a column would just store a number that cannot be correctly aggregated.",
+    "explanation": "Ratios must be measures because summing or averaging stored ratios gives wrong totals.",
+    "commonMistake": "Creating columns for ratios and then averaging them.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "measures",
+      "calculated-columns"
+    ]
+  },
+  {
+    "id": "pbi-performance-002",
+    "module": "power-bi",
+    "topic": "performance",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "Your report with 24,000 sales rows and a `sale_datetime` column loads slowly after you add 5 more years of data. List four concrete things you would check or change, and how you would find the slow visual.",
+    "dataset": "retail",
+    "hint": "Performance Analyzer and cardinality are the keywords.",
+    "solution": "Find the slow visual with **Performance Analyzer** (View, Performance analyzer, Start recording, Refresh visuals) and look at DAX query vs visual display time. Then: (1) split `sale_datetime` into a date column and a separate time column (or drop the time) to reduce cardinality; (2) remove unused columns and tables in Power Query; (3) use a proper star schema with single-direction relationships instead of bi-directional ones; (4) replace calculated columns with measures, and use integer keys instead of text. Also reduce the number of visuals per page.",
+    "explanation": "High-cardinality columns such as full timestamps compress poorly in the VertiPaq engine.",
+    "commonMistake": "Importing every column 'just in case'.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "performance",
+      "cardinality",
+      "performance-analyzer"
+    ]
+  }
+]

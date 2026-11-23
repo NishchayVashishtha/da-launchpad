@@ -1,0 +1,97 @@
+[
+  {
+    "id": "sh-rday-001",
+    "module": "start-here",
+    "topic": "role-day",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "In your own words, write a two-sentence answer to \"What does a Data Analyst do?\" as if explaining to a relative who is not technical.",
+    "dataset": "none",
+    "hint": "Think: question, data, answer.",
+    "solution": "**Model answer:** A Data Analyst helps a company make decisions by looking at its data. For example, I might find out which city has the most late loan payments, and show it in a simple chart so the team knows where to act.",
+    "explanation": "A good answer names the input (data), the work (analysis) and the outcome (a decision).",
+    "commonMistake": "Using jargon such as ETL or regression that the listener will not understand.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "role-day",
+      "career"
+    ]
+  },
+  {
+    "id": "sh-rday-002",
+    "module": "start-here",
+    "topic": "role-day",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "A manager says: \"Sales look bad this month, check why.\" List four clarifying questions you would ask before writing any SQL.",
+    "dataset": "none",
+    "hint": "Ask about the metric, the period, the comparison and the segment.",
+    "solution": "**Model answer:**\n1. Which sales number: revenue, orders or units?\n2. Bad compared to what: last month, same month last year, or target?\n3. Which products, cities or channels are you worried about?\n4. What decision will you take from the answer, and by when?",
+    "explanation": "Clarifying questions turn a vague worry into a measurable task and show you think about the business.",
+    "commonMistake": "Starting to query data without defining the metric, then delivering the wrong number.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "role-day",
+      "career"
+    ]
+  },
+  {
+    "id": "sh-rday-003",
+    "module": "start-here",
+    "topic": "role-day",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "Look at three job posts you find on a portal today (or imagine them). For each, note the title, three required skills, and whether it is mostly reporting, analysis or documentation. Then write which one you would apply to first and why.",
+    "dataset": "none",
+    "hint": "Read the description, not only the title.",
+    "solution": "**Model answer (fictional posts):**\n- *Reporting Analyst*: Excel, SQL, Power BI. Mostly reporting.\n- *Business Analyst*: documentation, stakeholder meetings, SQL basics. Mostly documentation.\n- *Junior Data Analyst*: SQL, dashboards, analysis. Mostly analysis.\n\nI would apply to the Junior Data Analyst post first because it matches my SQL and dashboard practice and offers real analysis work. I would also apply to the reporting role as a backup since it is also a good entry point.",
+    "explanation": "Comparing posts by actual tasks makes your applications focused.",
+    "commonMistake": "Choosing only by title or by the company's name.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 10,
+    "tags": [
+      "role-day",
+      "career"
+    ]
+  },
+  {
+    "id": "sh-rday-004",
+    "module": "start-here",
+    "topic": "role-day",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "Draw a table of your own typical day as a junior analyst, from 9:30 to 5:30, with at least six activities, the tool for each, and one activity where communication matters more than technical skill.",
+    "dataset": "none",
+    "hint": "Use the day-in-the-life table in the lesson as a guide but change the business.",
+    "solution": "**Model answer (e-commerce, fictional):**\n| Time | Activity | Tool |\n|---|---|---|\n| 9:30 | Check morning sales dashboard refresh | Power BI |\n| 10:15 | Query returned orders by pincode | SQL |\n| 12:00 | Clean duplicate rows in courier file | Excel |\n| 14:00 | Build chart on delivery delays | Excel |\n| 15:30 | Explain the delay finding to the operations manager | Meeting |\n| 17:00 | Update weekly report | Excel |\n\nThe 15:30 explanation matters more than technical skill: if the manager does not understand the result, nothing changes.",
+    "explanation": "The exercise helps you imagine real work and shows which skills matter.",
+    "commonMistake": "Listing only technical tasks and ignoring meetings, checks and documentation.",
+    "interviewFrequency": "low",
+    "estimatedMinutes": 10,
+    "tags": [
+      "role-day",
+      "career"
+    ]
+  },
+  {
+    "id": "sh-rday-005",
+    "module": "start-here",
+    "topic": "role-day",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "Interview simulation: \"Walk me through how you would answer the question: why did UPI payment failures increase last weekend?\" Write a six-step plan from clarification to recommendation.",
+    "dataset": "none",
+    "hint": "Use the six-step analyst path from the lesson.",
+    "solution": "**Model answer:**\n1. **Clarify:** failure rate or failure count? Which weekend, compared to what baseline?\n2. **Get data:** payment attempts with status, bank, time, app version.\n3. **Check quality:** duplicates, missing statuses, a changed status code.\n4. **Analyse:** failure rate by bank, hour, device and app version versus the previous four weekends.\n5. **Present:** a simple chart of failure rate by bank over time and a three-line summary.\n6. **Recommend:** e.g. raise the issue with the partner bank, set an alert if the rate crosses a threshold, and re-check next weekend.",
+    "explanation": "This answer shows structure. Interviewers value a clear method more than a clever guess.",
+    "commonMistake": "Jumping straight to a conclusion such as \"the bank is down\" without data.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 10,
+    "tags": [
+      "role-day",
+      "career"
+    ]
+  }
+]

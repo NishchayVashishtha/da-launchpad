@@ -1,0 +1,336 @@
+[
+ {
+  "id": "sql-strings-001",
+  "module": "sql",
+  "topic": "strings",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "How many different email domains (the text after '@') do customers have? Ignore customers with no email. Return `domains`.",
+  "dataset": "ecommerce",
+  "hint": "SUBSTR and INSTR.",
+  "solutionSql": "SELECT COUNT(DISTINCT SUBSTR(email, INSTR(email, '@') + 1)) AS domains FROM customers WHERE email IS NOT NULL",
+  "orderMatters": false,
+  "explanation": "INSTR finds @, plus 1 moves past it, SUBSTR takes the rest. In PostgreSQL use SPLIT_PART(email, '@', 2).",
+  "commonMistake": "Forgetting the + 1 and keeping the @ in the domain.",
+  "interviewFrequency": "medium",
+  "estimatedMinutes": 3,
+  "tags": [
+   "strings",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "domains"
+   ],
+   "rows": [
+    [
+     5
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-strings-002",
+  "module": "sql",
+  "topic": "strings",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "How many distinct cities exist in `employees` after cleaning (lower case, trimmed)? NULL does not count. Return `clean_cities`.",
+  "dataset": "hr",
+  "hint": "COUNT(DISTINCT LOWER(TRIM(city))).",
+  "solutionSql": "SELECT COUNT(DISTINCT LOWER(TRIM(city))) AS clean_cities FROM employees",
+  "orderMatters": false,
+  "explanation": "Cleaning before counting distinct values removes the messy variants.",
+  "commonMistake": "Counting distinct raw values.",
+  "interviewFrequency": "high",
+  "estimatedMinutes": 3,
+  "tags": [
+   "strings",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "clean_cities"
+   ],
+   "rows": [
+    [
+     6
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-strings-003",
+  "module": "sql",
+  "topic": "strings",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "How many merchants have 'Biryani' anywhere in `merchant_name`? Return `biryani_merchants`.",
+  "dataset": "fintech",
+  "hint": "LIKE with % on both sides.",
+  "solutionSql": "SELECT COUNT(*) AS biryani_merchants FROM merchants WHERE merchant_name LIKE '%Biryani%'",
+  "orderMatters": false,
+  "explanation": "LIKE in SQLite ignores case for ASCII letters. In PostgreSQL use ILIKE for the same behaviour.",
+  "commonMistake": "Forgetting the % wildcards.",
+  "interviewFrequency": "medium",
+  "estimatedMinutes": 3,
+  "tags": [
+   "strings",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "biryani_merchants"
+   ],
+   "rows": [
+    [
+     16
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-strings-004",
+  "module": "sql",
+  "topic": "strings",
+  "difficulty": "medium",
+  "language": "sql",
+  "question": "Per cleaned store city (lower case, trimmed), count stores. Return `city` and `stores`, ordered by `stores` descending then `city`.",
+  "dataset": "retail",
+  "hint": "Group by the cleaned city.",
+  "solutionSql": "SELECT LOWER(TRIM(city)) AS city, COUNT(*) AS stores FROM stores GROUP BY LOWER(TRIM(city)) ORDER BY stores DESC, city",
+  "orderMatters": true,
+  "explanation": "Cleaning the key merges the variants into one group.",
+  "commonMistake": "Grouping by the raw city.",
+  "interviewFrequency": "medium",
+  "estimatedMinutes": 6,
+  "tags": [
+   "strings",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "city",
+    "stores"
+   ],
+   "rows": [
+    [
+     "bengaluru",
+     2
+    ],
+    [
+     "delhi",
+     2
+    ],
+    [
+     "mumbai",
+     2
+    ],
+    [
+     "pune",
+     2
+    ],
+    [
+     "ahmedabad",
+     1
+    ],
+    [
+     "bhopal",
+     1
+    ],
+    [
+     "chandigarh",
+     1
+    ],
+    [
+     "chennai",
+     1
+    ],
+    [
+     "coimbatore",
+     1
+    ],
+    [
+     "guwahati",
+     1
+    ],
+    [
+     "hyderabad",
+     1
+    ],
+    [
+     "indore",
+     1
+    ],
+    [
+     "jaipur",
+     1
+    ],
+    [
+     "kochi",
+     1
+    ],
+    [
+     "kolkata",
+     1
+    ],
+    [
+     "lucknow",
+     1
+    ],
+    [
+     "nagpur",
+     1
+    ],
+    [
+     "patna",
+     1
+    ],
+    [
+     "surat",
+     1
+    ],
+    [
+     "visakhapatnam",
+     1
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-strings-005",
+  "module": "sql",
+  "topic": "strings",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "The `sku` values look like 'SKU100000'. For the first 5 products by `product_id`, return `sku` and `sku_number`, the text after the first 3 characters.",
+  "dataset": "ecommerce",
+  "hint": "SUBSTR(x, 4) starts at position 4.",
+  "solutionSql": "SELECT sku, SUBSTR(sku, 4) AS sku_number FROM products ORDER BY product_id LIMIT 5",
+  "orderMatters": true,
+  "explanation": "SUBSTR is 1-based. Leaving out the length returns everything to the end. MySQL and others use SUBSTRING.",
+  "commonMistake": "Starting at 3 and keeping the last letter of the prefix.",
+  "interviewFrequency": "medium",
+  "estimatedMinutes": 3,
+  "tags": [
+   "strings",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "sku",
+    "sku_number"
+   ],
+   "rows": [
+    [
+     "SKU100000",
+     "100000"
+    ],
+    [
+     "SKU100007",
+     "100007"
+    ],
+    [
+     "SKU100014",
+     "100014"
+    ],
+    [
+     "SKU100021",
+     "100021"
+    ],
+    [
+     "SKU100028",
+     "100028"
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-strings-006",
+  "module": "sql",
+  "topic": "strings",
+  "difficulty": "easy",
+  "language": "sql",
+  "question": "Return the 3 campaigns with the longest `campaign_name`: `campaign_name` and `name_length`. Order by `name_length` descending then `campaign_name`.",
+  "dataset": "marketing",
+  "hint": "LENGTH in ORDER BY.",
+  "solutionSql": "SELECT campaign_name, LENGTH(campaign_name) AS name_length FROM campaigns ORDER BY name_length DESC, campaign_name LIMIT 3",
+  "orderMatters": true,
+  "explanation": "LENGTH counts characters in SQLite and PostgreSQL. MySQL uses CHAR_LENGTH, SQL Server uses LEN.",
+  "commonMistake": "Assuming LENGTH is the same in every database.",
+  "interviewFrequency": "low",
+  "estimatedMinutes": 3,
+  "tags": [
+   "strings",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "campaign_name",
+    "name_length"
+   ],
+   "rows": [
+    [
+     "Independence Day Display Retarget",
+     33
+    ],
+    [
+     "Diwali Dhamaka 2024 - WhatsApp",
+     30
+    ],
+    [
+     "Winter Retarget 2024 - Display",
+     30
+    ]
+   ]
+  }
+ },
+ {
+  "id": "sql-strings-007",
+  "module": "sql",
+  "topic": "strings",
+  "difficulty": "hard",
+  "language": "sql",
+  "question": "Take the last word of `full_name` as the surname (the text after the first space). Count unique employees per surname, and return the top 5 as `surname` and `employees`, ordered by `employees` descending then `surname`.",
+  "dataset": "hr",
+  "hint": "Find the space with INSTR, take the rest, then group.",
+  "solutionSql": "SELECT SUBSTR(full_name, INSTR(full_name, ' ') + 1) AS surname, COUNT(DISTINCT employee_id) AS employees FROM employees GROUP BY surname ORDER BY employees DESC, surname LIMIT 5",
+  "orderMatters": true,
+  "explanation": "The surname is built with SUBSTR and INSTR, then used as a grouping key. This assumes names have exactly two words.",
+  "commonMistake": "Forgetting to count distinct employee ids and counting duplicate rows.",
+  "interviewFrequency": "medium",
+  "estimatedMinutes": 10,
+  "tags": [
+   "strings",
+   "sql"
+  ],
+  "expectedOutput": {
+   "columns": [
+    "surname",
+    "employees"
+   ],
+   "rows": [
+    [
+     "Ansari",
+     66
+    ],
+    [
+     "Mishra",
+     63
+    ],
+    [
+     "Deshmukh",
+     61
+    ],
+    [
+     "Shetty",
+     61
+    ],
+    [
+     "Bhatia",
+     59
+    ]
+   ]
+  }
+ }
+]

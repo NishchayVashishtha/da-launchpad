@@ -1,0 +1,79 @@
+[
+  {
+    "id": "excel-excel-tests-001",
+    "module": "excel",
+    "topic": "excel-tests",
+    "difficulty": "easy",
+    "language": "excel",
+    "question": "In `excel-test-practice.xlsx` (sheet `food_orders`), count the cancelled deliveries and give the formula. Then count them by `cuisine` and name the top two.",
+    "dataset": "none",
+    "hint": "Use COUNTIFS on delivery_status and cuisine.",
+    "solution": "**Total:** `=COUNTIF(tbl_food_orders[delivery_status],\"Cancelled\")` = 84.\n**By cuisine:** `=COUNTIFS(tbl_food_orders[cuisine],A2,tbl_food_orders[delivery_status],\"Cancelled\")`.\n\n**Expected result:** North Indian 17; South Indian 16; Chinese 8; Biryani 7; Desserts 7; Gujarati Thali 7; Mughlai 6; Burgers 4; Pizza 4; Healthy 3; Street Food 3; Bengali 2. Top two: North Indian and South Indian.",
+    "explanation": "COUNTIFS counts rows that meet all conditions.",
+    "commonMistake": "Typing the number instead of using a formula.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "countifs",
+      "tests"
+    ]
+  },
+  {
+    "id": "excel-excel-tests-002",
+    "module": "excel",
+    "topic": "excel-tests",
+    "difficulty": "medium",
+    "language": "excel",
+    "question": "In `excel-test-practice.xlsx` (sheet `food_orders`), add a column `distance_band` using IFS: Short below 3 km, Medium from 3 to 6 km (inclusive), Long above 6 km. How many orders are in each band?",
+    "dataset": "none",
+    "hint": "IFS checks in order. Finish with TRUE for the last band.",
+    "solution": "**Formula:** `=IFS([@[distance_km]]<3,\"Short\",[@[distance_km]]<=6,\"Medium\",TRUE,\"Long\")`.\n\n**Expected result:** Short 690; Medium 998; Long 312 (total 2,000). Check with COUNTIF on the new column.",
+    "explanation": "IFS stops at the first true test, so order matters.",
+    "commonMistake": "Writing the tests in the wrong order, e.g. `<=6` first, which makes everything under 3 'Medium'.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "ifs",
+      "tests"
+    ]
+  },
+  {
+    "id": "excel-excel-tests-003",
+    "module": "excel",
+    "topic": "excel-tests",
+    "difficulty": "medium",
+    "language": "excel",
+    "question": "In `excel-test-practice.xlsx` (sheet `food_orders`), find the average `order_value_inr` of Delivered orders for each `payment_mode`. Which mode has the highest average?",
+    "dataset": "none",
+    "hint": "AVERAGEIFS with two criteria.",
+    "solution": "**Formula:** `=AVERAGEIFS(tbl_food_orders[order_value_inr],tbl_food_orders[payment_mode],A2,tbl_food_orders[delivery_status],\"Delivered\")`.\n\n**Expected result:** Card 585.88; Cash On Delivery 517.79; UPI 449.08; Wallet 423.48. Card is highest.",
+    "explanation": "AVERAGEIFS averages only rows that satisfy all conditions.",
+    "commonMistake": "Forgetting the Delivered condition, which adds cancelled orders and changes the averages.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "averageifs",
+      "tests"
+    ]
+  },
+  {
+    "id": "excel-excel-tests-004",
+    "module": "excel",
+    "topic": "excel-tests",
+    "difficulty": "hard",
+    "language": "excel",
+    "question": "In `excel-test-practice.xlsx` (sheet `food_orders`), for every `restaurant_city` compute the on-time rate among Delivered orders (delay_minutes <= 0). Write the formula, give the three best and three worst cities, and also find the total `order_value_inr` of Delivered orders in Delhi when weather is Rain or Heavy Rain.",
+    "dataset": "none",
+    "hint": "Use COUNTIFS twice. For the second part use SUMIFS twice and add, or SUM of SUMIFS with an array constant.",
+    "solution": "**On-time rate:** `=COUNTIFS(city_col,H2,status_col,\"Delivered\",delay_col,\"<=0\")/COUNTIFS(city_col,H2,status_col,\"Delivered\")`.\n\n**Expected result:** Best: Lucknow 57.5% (42/73), Hyderabad 49.8% (109/219), Pune 47.0% (62/132). Worst: Kolkata 38.5% (55/143), Bengaluru 39.0% (103/264), Ahmedabad 39.4% (37/94). Others: Chennai 46.1%, Delhi 45.8%, Mumbai 45.1%, Jaipur 44.3%.\n\n**Delhi rain value:** `=SUM(SUMIFS(tbl_food_orders[order_value_inr],tbl_food_orders[restaurant_city],\"Delhi\",tbl_food_orders[delivery_status],\"Delivered\",tbl_food_orders[weather],{\"Rain\",\"Heavy Rain\"}))` = **₹10,615**.",
+    "explanation": "The first COUNTIFS is the numerator; the second is the denominator. The array constant adds two SUMIFS in one formula.",
+    "commonMistake": "Dividing by all orders of the city instead of Delivered orders only.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 15,
+    "tags": [
+      "countifs",
+      "sumifs",
+      "tests"
+    ]
+  }
+]

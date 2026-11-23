@@ -1,0 +1,300 @@
+---
+title: "Guided dashboard 3: UPI transaction health"
+description: "Build a UPI transaction health dashboard: failure rate by bank, hour and failure code, with cleaning, model, 10 measures, layout and verified insights."
+module: power-bi
+order: 18
+estimatedMinutes: 90
+objectives:
+  - "Define success rate and failure rate for payments"
+  - "Clean and model transactions, users, merchants and failures"
+  - "Write 10 measures including peak-hour and benchmark measures"
+  - "Build a three-page dashboard with verified, careful insights"
+tags: ["power-bi", "walkthrough", "fintech", "upi", "dashboard"]
+---
+
+## Learning objectives
+
+- Define the main payment health metrics (failure rate, success rate, retry recovery, GMV).
+- Prepare transaction data in Power Query, including duplicates and mixed formats.
+- Use `ALL` for benchmarks and `CALCULATE` for segment rates.
+- Present failure patterns by bank, hour and failure code as insights with actions.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+The payments product head at "SabPay", a fictional UPI app, says: "Our payment failure rate is around 3%. That sounds small, but every failed payment is a frustrated user who may switch apps. Where do failures come from, and which ones can we fix?" Fintech is the top target industry for Indian freshers, and "transaction health" dashboards are standard at payment companies.
+</RealWorld>
+
+A good fintech analyst knows that a small percentage on millions of transactions is a lot of unhappy people, and also knows which failures are the bank's fault, the network's fault or the user's fault.
+
+## Concept
+
+### The brief and the business questions
+
+1. How many transactions and how much value flow through, and what is the failure rate?
+2. Which banks and apps fail the most?
+3. When do failures happen (hour of day, month-start, outages)?
+4. Why do payments fail, and which failures recover on retry?
+5. What should the product and bank-partnership teams do first?
+
+### Download the data
+
+<Download href="/data/zip/fintech.zip" label="fintech.zip" />
+
+Four CSV files: `users` (about 4,000), `merchants` (400), `transactions` (about 22,000 over 2023 and 2024) and `failed_transactions` (about 630 failure records with codes and retry result).
+
+<Warning>
+The data has deliberate problems: about 90 duplicate transaction rows, duplicate users, amounts as text like "₹1,250", dates as DD-MM-YYYY, inconsistent city casing, and a few extreme amounts. P2P rows have no merchant, and non-P2P rows have no receiver user, and that is by design, not an error.
+</Warning>
+
+### Metric definitions
+
+<FormulaCard title="Payment health metrics">
+Failure rate % = FAILED transactions / all transactions
+Success rate % = SUCCESS transactions / all transactions
+Retry recovery % = failed payments that succeeded on retry / failed payments that were retried
+GMV (successful) = sum of amount where status = SUCCESS
+</FormulaCard>
+
+The `PENDING` status (80 rows, 0.4%) stays in the denominator in this walkthrough. State this in a footnote.
+
+### Step 1: Clean in Power Query
+
+**Transactions**
+
+1. Remove Duplicates on `txn_id` (leaves 22,000).
+2. `amount`: remove "₹" and ",", then set type to Decimal.
+3. `txn_datetime`: convert using the English (India) locale so DD-MM-YYYY HH:MM:SS parses.
+4. Add `txn_date = DateTime.Date([txn_datetime])` and `txn_hour = Time.Hour(DateTime.Time([txn_datetime]))`. Remove `txn_datetime` to keep cardinality low, or keep it in a separate query for reference.
+5. Add `Is Peak Hour`:
+
+```m
+= Table.AddColumn(Source, "Is Peak Hour", each List.Contains({9,10,18,19,20}, [txn_hour]), type logical)
+```
+
+6. Add `Is Salary Window` for days 1 to 3 of the month:
+
+```m
+= Table.AddColumn(Source, "Is Salary Window", each Date.Day([txn_date]) <= 3, type logical)
+```
+
+7. Leave null `merchant_id` for P2P; do not replace.
+8. Check extreme amounts: filter `amount` above, say, 100000 and review them as suspect outliers; document your decision.
+
+**Users, merchants**: remove duplicate users, trim and proper-case city.
+
+**Failed_transactions**: remove duplicates; convert `failed_at` using the Indian locale. `retry_succeeded` is null when `retried = 0`; keep null.
+
+**Date table**: Create with `CALENDAR` for 2023 to 2024, add Year, Month No, Month name, Weekday and `Is Weekend`, and mark as date table.
+
+### Step 2: Model
+
+| One side | Many side | Key |
+|---|---|---|
+| Users | Transactions | user_id |
+| Merchants | Transactions | merchant_id |
+| Date | Transactions | Date[Date] to Transactions[txn_date] |
+| Transactions | Failed_transactions | txn_id (one to many, direction Transactions to Failed) |
+
+If you want to analyse receivers, add a second relationship from Users to `receiver_user_id` and keep it **inactive**, using `USERELATIONSHIP` when needed.
+
+### Step 3: The 10 measures
+
+```dax
+Total Txns = COUNTROWS(Transactions)
+
+Failed Txns = CALCULATE([Total Txns], Transactions[status] = "FAILED")
+
+Failure Rate % = DIVIDE([Failed Txns], [Total Txns])
+
+Success Rate % =
+DIVIDE(CALCULATE([Total Txns], Transactions[status] = "SUCCESS"), [Total Txns])
+
+GMV (Successful) =
+CALCULATE(SUM(Transactions[amount]), Transactions[status] = "SUCCESS")
+
+Avg Ticket =
+DIVIDE([GMV (Successful)], CALCULATE([Total Txns], Transactions[status] = "SUCCESS"))
+
+Overall Failure Rate % = CALCULATE([Failure Rate %], ALL(Transactions[bank]))
+
+Gap vs Overall (pp) = ([Failure Rate %] - [Overall Failure Rate %]) * 100
+
+Peak Hour Failure Rate % =
+CALCULATE([Failure Rate %], Transactions[Is Peak Hour] = TRUE())
+
+Retry Recovery % =
+DIVIDE(
+  SUM(Failed_transactions[retry_succeeded]),
+  SUM(Failed_transactions[retried])
+)
+```
+
+Notes:
+
+- `Overall Failure Rate %` removes only the bank filter, so each bank can be compared with the all-bank benchmark but date and slicers still apply.
+- `SUM` ignores nulls, so `retry_succeeded` null for non-retried failures is safe.
+- Use `Failure Rate %` in a measure table with format 0.00%.
+
+### Step 4: Page-by-page layout
+
+**Page 1, Health overview.** Title: "UPI failure rate is 2.85%, and failed payments were worth about ₹9.2 lakh".
+
+- Slicers: Year, Transaction type.
+- Cards: Total Txns, GMV (Successful), Failure Rate %, Retry Recovery %.
+- Line chart: Total Txns by month, with Failure Rate % as a second small chart below.
+- Column chart: Total Txns by hour of day.
+
+**Page 2, Where failures concentrate.** Title: "Kaveri Co-op Bank fails 8.1% of payments, about 3 times most banks".
+
+- Bar: Failure Rate % by bank (sorted), Kaveri highlighted.
+- Bar: Failure Rate % by payment app.
+- Column chart: Failure Rate % by hour, and a second series for Kaveri only (use a measure).
+- Matrix: Bank by Is Peak Hour with Failure Rate %.
+
+**Page 3, Why payments fail.** Title: "Server timeouts are 53% of Kaveri failures; network errors recover on retry, empty wallets do not".
+
+- Bar: Failed Txns by `failure_code`.
+- Bar: Retry Recovery % by `failure_code`.
+- Card: value of failed payments.
+- Table: top banks, Failed Txns, Failure Rate %, Gap vs Overall (pp).
+- Text box: Recommended actions.
+
+## Worked examples
+
+All numbers below are computed from the cleaned data (22,000 unique transactions, 627 failed).
+
+### Insight 1: The headline
+
+- Total transactions: **22,000**; GMV on successful payments: **₹2.91 crore** (₹29,120,824).
+- Failure rate: **2.85%** (627 failed), and about 0.4% pending. Successful average ticket is about ₹1,368.
+- Value of failed payments is about **₹9.2 lakh**. Roughly 52% of failed payments were retried and **55.6%** of those retries succeeded.
+- Volume grew from 9,463 transactions in 2023 to 12,537 in 2024 (+32%), while the failure rate stayed flat at about 2.8 to 2.9%. October 2024 was the busiest month at 1,327 transactions. Weekend days run about 10% busier than weekdays.
+
+### Insight 2: One bank stands out
+
+| Bank | Transactions | Failure rate |
+|---|---|---|
+| Kaveri Co-op Bank | 1,770 | 8.1% |
+| PayNova Small Finance Bank | 758 | 4.1% |
+| Coromandel Bank | 1,967 | 2.9% |
+| Bharat Union Bank | 5,170 | 2.4% |
+| Himalaya Trust Bank | 2,985 | 2.3% |
+| Sundaram Bank | 4,517 | 2.2% |
+| Rajdhani National Bank | 3,535 | 2.2% |
+| Malabar Savings Bank | 1,298 | 1.9% |
+
+Kaveri Co-op Bank handles 8% of transactions but about **23% of failures** (143 of 627), which is **+5.2 points** above the overall rate.
+
+Payment apps differ little: QuickPaisa 3.3% to RupeeRocket 2.7%. Android is 2.9% against iOS 2.5%. The differences are small, so the real story is the bank, not the app.
+
+### Insight 3: Peak hours hurt Kaveri most
+
+Using peak hours of 9 to 10 and 18 to 20:
+
+| Group | Peak-hour failure rate | Other hours |
+|---|---|---|
+| Kaveri Co-op Bank | 14.9% | 3.6% |
+| All other banks | 2.6% | 2.3% |
+
+Between 18:00 and 20:59 Kaveri fails **15.6%** against about 2.7% for other banks. Of Kaveri's failures, **76 of 143** carry the code `BANK_SERVER_TIMEOUT`, which points to the bank's servers under load. Evening 18 to 20 is also the busiest period, with about 25% of all transactions.
+
+### Insight 4: Why payments fail and what recovers
+
+| Failure code | Failures | Retry success |
+|---|---|---|
+| INSUFFICIENT_FUNDS | 163 | 19.7% |
+| BANK_DECLINED | 119 | 59.6% |
+| NETWORK_ERROR | 90 | 64.8% |
+| INCORRECT_PIN | 89 | 86.1% |
+| BANK_SERVER_TIMEOUT | 75 | 62.3% |
+| LIMIT_EXCEEDED | 70 | 67.9% |
+| UPI_SYSTEM_DOWN | 21 | 61.5% |
+
+Technical failures (network, timeout) recover on retry about 62 to 65% of the time, wrong PIN recovers 86% of the time, but insufficient funds recovers only about 20%. An automatic or one-tap retry would help the first group; a balance-low nudge could help the second.
+
+### Insight 5: Outages and salary days
+
+On the two Diwali-evening outage windows (12 Nov 2023 and 31 Oct 2024, 18:00 to 21:59) there are only 25 transactions in this extract, but **84%** of them failed, and `UPI_SYSTEM_DOWN` appears on 21 failures. On the 1st to 3rd of each month the failure rate is **3.6%** against 2.8% on other days, about 30% higher, as many people pay bills and salaries at once.
+
+<Tip>
+For a small sample such as 25 transactions, tell the reader the sample size. Put the count in a tooltip so readers do not over-trust a percentage.
+</Tip>
+
+### Insight 6: A note on fraud flags
+
+Only 19 transactions (0.09%) carry `is_flagged = 1` in this extract, all for ordinary amounts. Do not build a fraud story from them; mention it as a data limitation and a topic for a deeper project.
+
+### Recommendations
+
+1. Escalate to Kaveri Co-op Bank with the evidence: 8.1% failure rate and peak-hour timeouts. Consider routing or a "try another account" prompt.
+2. Add one-tap retry for network errors and timeouts.
+3. Show a balance reminder when insufficient-funds failure is likely.
+4. Add capacity alerts for the evening peak and the first three days of each month.
+5. Track the failure rate weekly by bank in this dashboard.
+
+## Common mistakes
+
+<CommonMistake>
+Counting duplicate `txn_id` rows. Failure rate and volume are both wrong, and duplicates inflate GMV.
+</CommonMistake>
+
+<CommonMistake>
+Using `ALL(Transactions)` for a benchmark. It removes every filter, including date and type slicers. Use `ALL(Transactions[bank])` to remove only the bank filter.
+</CommonMistake>
+
+<CommonMistake>
+Not saying whether PENDING is in the denominator. Another analyst may exclude it and get a slightly different rate.
+</CommonMistake>
+
+<CommonMistake>
+Over-reading tiny samples. The outage windows have only 25 transactions; say so.
+</CommonMistake>
+
+<CommonMistake>
+Filling in missing merchant ids for P2P rows. They are null by design.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="walkthrough-fintech" module="power-bi" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What is the overall failure rate in the cleaned data?", options: ["About 0.5%", "About 2.85%", "About 15%", "About 40%"], answer: 1, explanation: "627 failed out of 22,000 transactions is about 2.85%." },
+  { q: "Which bank has the highest failure rate?", options: ["Bharat Union Bank", "Sundaram Bank", "Kaveri Co-op Bank", "Malabar Savings Bank"], answer: 2, explanation: "Kaveri Co-op Bank fails about 8.1% of payments." },
+  { q: "Why use ALL(Transactions[bank]) instead of ALL(Transactions)?", options: ["It is shorter", "It removes only the bank filter and keeps other slicers", "It is required for COUNTROWS", "It speeds up refresh"], answer: 1, explanation: "A benchmark should keep the date and type context." },
+  { q: "Which failure code recovers least on retry?", options: ["INCORRECT_PIN", "NETWORK_ERROR", "INSUFFICIENT_FUNDS", "BANK_SERVER_TIMEOUT"], answer: 2, explanation: "Only about 20% of insufficient-funds retries succeed." },
+  { q: "How should you treat null merchant_id on P2P transactions?", options: ["Delete the rows", "Fill with zero", "Leave null, it is by design", "Replace with the user id"], answer: 2, explanation: "P2P payments have no merchant, so null is correct." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Fintech interviews love failure-rate questions: "How would you define it? How would you investigate a spike?" Show a method: define, segment by bank, hour, code, then compare to a benchmark.
+</InterviewAlert>
+
+<InterviewQ q="How would you investigate a rise in UPI failure rate?">
+First confirm the definition and the data (duplicates, pending). Then segment: by bank, payment app, device, hour and failure code, and compare to a benchmark. In my project, one bank (Kaveri Co-op) had 8.1% against 2.9% overall, concentrated in peak hours with server-timeout codes. That tells me it is a bank capacity issue, not an app bug. I would then check recent changes, outages and month-start effects.
+</InterviewQ>
+
+<InterviewQ q="Why use CALCULATE with ALL for a benchmark measure?">
+CALCULATE changes the filter context, and ALL on the bank column removes only the bank filter. The measure then returns the all-bank rate even in a visual split by bank, so I can compute a gap in points for each bank.
+</InterviewQ>
+
+<InterviewQ q="Which failures can the product team fix?">
+Technical failures, like network errors and timeouts, recover on retry about 62 to 65% of the time, so automatic or one-tap retry helps. Insufficient funds recovers only about 20%, so a low balance nudge is better. Bank-side timeouts need escalation to the bank.
+</InterviewQ>
+
+## Key takeaways
+
+- Define failure rate and say how PENDING is treated.
+- Clean duplicates, text amounts and mixed date formats before measuring.
+- Use ALL on one column for benchmarks, and CALCULATE for segment rates.
+- One bank (8.1%) drove a disproportionate share of failures, concentrated at peak hours.
+- Retry recovery differs by failure code, so recommendations should too.
+
+## Further reading
+
+<FurtherReading ids={["power-bi-docs", "dax-guide", "pl300"]} />

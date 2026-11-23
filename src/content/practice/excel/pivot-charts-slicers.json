@@ -1,0 +1,40 @@
+[
+  {
+    "id": "excel-pivot-charts-slicers-001",
+    "module": "excel",
+    "topic": "pivot-charts-slicers",
+    "difficulty": "easy",
+    "language": "excel",
+    "question": "A manager wants to see the monthly sales trend for two years and compare category sizes. Name the pivot chart types you would choose for each question and give one reason each.",
+    "dataset": "none",
+    "hint": "Trend over time and comparison of categories need different charts.",
+    "solution": "**Model answer:** Monthly trend: **line chart** (shows change over time, one point per month). Category sizes: **sorted bar chart** (bar length is easy to compare, labels are readable). Avoid pie charts for six categories and 3D charts.",
+    "explanation": "Choose the chart from the question being asked.",
+    "commonMistake": "Using one chart type for every question.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "pivot-chart",
+      "chart-choice"
+    ]
+  },
+  {
+    "id": "excel-pivot-charts-slicers-002",
+    "module": "excel",
+    "topic": "pivot-charts-slicers",
+    "difficulty": "medium",
+    "language": "excel",
+    "question": "In `excel-sales-analysis.xlsx` (sheet `sales`), build a pivot chart of net sales by `category`, add a `store_region` slicer and a `sale_date` timeline. Select West and 2024 only. What are the total net sales and number of transactions shown?",
+    "dataset": "none",
+    "hint": "Add Count of sale_id to the pivot to see transactions. Use the timeline's Quarters view and select Q1 to Q4 of 2024.",
+    "solution": "**Steps:** Pivot with Rows = `category`, Values = Sum of `net_amount_inr` and Count of `sale_id`. Insert Slicer > `store_region`. Insert Timeline > `sale_date`. Click West; in the timeline drag from Jan 2024 to Dec 2024.\n\n**Expected result:** net sales ₹9,05,725 from 663 transactions (the grand total row of the pivot).",
+    "explanation": "Slicers and timelines apply filters to the pivot, and the chart follows.",
+    "commonMistake": "Forgetting to clear slicers before saving the file.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "slicer",
+      "timeline"
+    ]
+  }
+]

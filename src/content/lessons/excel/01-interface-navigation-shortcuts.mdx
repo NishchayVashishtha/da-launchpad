@@ -1,0 +1,171 @@
+---
+title: "Excel interface, navigation and the 25 shortcuts that matter"
+description: "Learn the Excel screen, move around big sheets fast and use the 25 shortcuts analysts use every day."
+module: excel
+order: 1
+estimatedMinutes: 35
+objectives: ["Name the main parts of the Excel window", "Move and select across thousands of rows in seconds", "Use 25 core shortcuts on Windows and Mac", "Read quick totals from the status bar"]
+tags: ["excel", "shortcuts", "navigation"]
+---
+
+## Learning objectives
+
+- Name the parts of the Excel window: ribbon, Name Box, formula bar, grid, sheet tabs and status bar.
+- Jump to the end of a table and select whole blocks of data with the keyboard.
+- Use the 25 shortcuts in this lesson on Windows and Mac.
+- Freeze panes, use Go To Special and read the status bar for a fast sanity check.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+In a screening test you often get 30 to 45 minutes and a sheet with thousands of rows. The candidate who reaches the last row with one key press, instead of dragging the scroll bar, finishes first. Interviewers watch your hands as much as your answers.
+</RealWorld>
+
+Almost every analyst job in India lists Excel. Even teams that use SQL and Power BI still receive data as `.xlsx` files from sales, finance and operations. Speed with the keyboard tells the interviewer you have used Excel for real work.
+
+## Concept
+
+An Excel file is a **workbook**. A workbook has many **sheets** (tabs at the bottom). A sheet is a grid of **cells**. A cell has an address such as `B7` (column B, row 7). A group of cells is a **range**, written `B2:B9`.
+
+Think of a workbook as a notebook, a sheet as one page, and a cell as one box on graph paper.
+
+**The window, top to bottom**
+
+- **Ribbon**: tabs such as Home, Insert, Data, View. Each tab holds buttons.
+- **Name Box** (left of the formula bar): shows the selected cell. Type an address here and press Enter to jump there.
+- **Formula bar**: shows the real content of the cell. A cell can show `5,980.53` while the bar shows `5980.529`.
+- **Status bar** (bottom): shows Sum, Average and Count of whatever you select. Right-click it to add more.
+
+<Tip>
+The status bar is a free calculator. Select a column of numbers and read the answer without writing a formula.
+</Tip>
+
+**The 25 shortcuts that matter most**
+
+Mac note: on a Mac, `Ctrl` in the Windows column is usually `Cmd`. Where the Mac key differs, it is shown. Some Mac keyboards need the `Fn` key for the F-keys.
+
+| # | What it does | Windows | Mac |
+|---|---|---|---|
+| 1 | Copy | Ctrl + C | Cmd + C |
+| 2 | Paste | Ctrl + V | Cmd + V |
+| 3 | Paste Special | Ctrl + Alt + V | Cmd + Ctrl + V |
+| 4 | Undo | Ctrl + Z | Cmd + Z |
+| 5 | Redo | Ctrl + Y | Cmd + Y |
+| 6 | Save | Ctrl + S | Cmd + S |
+| 7 | Find | Ctrl + F | Cmd + F |
+| 8 | Find and Replace | Ctrl + H | Ctrl + H |
+| 9 | Jump to edge of data | Ctrl + Arrow | Cmd + Arrow |
+| 10 | Select to edge of data | Ctrl + Shift + Arrow | Cmd + Shift + Arrow |
+| 11 | Go to A1 | Ctrl + Home | Fn + Ctrl + Left Arrow |
+| 12 | Go to last used cell | Ctrl + End | Fn + Ctrl + Right Arrow |
+| 13 | Select whole table or sheet region | Ctrl + A | Cmd + A |
+| 14 | Select entire column | Ctrl + Space | Ctrl + Space |
+| 15 | Select entire row | Shift + Space | Shift + Space |
+| 16 | Go To (and Go To Special) | Ctrl + G or F5 | Ctrl + G |
+| 17 | Edit the cell | F2 | Ctrl + U |
+| 18 | Cycle absolute and relative reference ($) | F4 | Cmd + T |
+| 19 | AutoSum | Alt + = | Cmd + Shift + T |
+| 20 | Fill down | Ctrl + D | Ctrl + D |
+| 21 | Insert a table | Ctrl + T | Ctrl + T |
+| 22 | Turn filters on or off | Ctrl + Shift + L | Cmd + Shift + F |
+| 23 | Insert today's date | Ctrl + ; | Ctrl + ; |
+| 24 | Switch to next sheet | Ctrl + Page Down | Fn + Ctrl + Down Arrow |
+| 25 | Show formulas instead of results | Ctrl + ` (backtick) | Ctrl + ` |
+
+Shortcut 9 and 10 are the big time savers. `Ctrl + Arrow` moves to the last filled cell before a blank. Combined with Shift it selects everything on the way.
+
+**Freeze panes**: View > Freeze Panes > Freeze Top Row keeps the header visible while you scroll. To freeze both the header and the first column, select `B2` first and choose Freeze Panes.
+
+<FormulaCard title="Reading a cell address">
+A1 = column A, row 1. $A$1 is locked on both column and row. A$1 locks only the row. $A1 locks only the column. Press F4 while editing to cycle through these.
+</FormulaCard>
+
+## Worked examples
+
+<Download href="data/excel/excel-functions.xlsx" label="Download excel-functions.xlsx" />
+
+Open the `orders` sheet. It has 2,000 orders in columns A to M.
+
+**Example 1: reach the last row.** Click `A1` and press `Ctrl + Down Arrow`. The cursor lands on `A2001`. That is order 9999. One header plus 2,000 data rows equals row 2001.
+
+**Example 2: a quick total with no formula.** Click `J2` and press `Ctrl + Shift + Down Arrow`. The status bar shows:
+
+| Status bar item | Value |
+|---|---|
+| Count | 2000 |
+| Sum | 10,886,866.45 |
+| Average | 5,443.43 |
+
+That is about 1.09 crore rupees of order value in the sample.
+
+**Example 3: find the blanks.** Select `G2:G2001` (the coupon column). Press `Ctrl + G`, click Special, pick Blanks. Excel highlights 1,647 empty cells. Only 353 orders used a coupon.
+
+**Example 4: show formulas.** Press ``Ctrl + ` `` (the backtick key, above Tab) on any sheet with formulas. Every cell now shows its formula. Press it again to return. This is the fastest way to audit a sheet someone else built.
+
+## Common mistakes
+
+<CommonMistake>
+Selecting a whole column (click on the letter) when you only need the data. Formulas then include a million empty cells and become slow. Select the data block with `Ctrl + Shift + Arrow` instead.
+</CommonMistake>
+
+<CommonMistake>
+Pressing Ctrl + Arrow on a column with a blank in the middle and thinking you reached the end. The cursor stops at the blank. Press it again, or check with `Ctrl + End`.
+</CommonMistake>
+
+<CommonMistake>
+Typing over a formula by accident. Press F2 to edit the cell instead of typing directly, or press Esc to cancel.
+</CommonMistake>
+
+<CommonMistake>
+Hiding rows to "delete" them. Hidden rows are still counted by many formulas. Delete them or filter, and know which one you did.
+</CommonMistake>
+
+<CommonMistake>
+Not saving versions. Use Save As with a date in the name (`sales_2025-01-10.xlsx`) before big clean-up work.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="interface" module="excel" />
+
+<PracticeSet topic="data-types" module="excel" difficulty="easy" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Which shortcut jumps to the last filled cell below your current cell in a column of data?", options: ["Ctrl + Down Arrow", "Ctrl + Page Down", "Alt + Down Arrow", "Shift + Space"], answer: 0, explanation: "Ctrl + Arrow jumps to the edge of a block of data. Ctrl + Page Down switches sheets." },
+  { q: "What does the Name Box do?", options: ["Names the workbook file", "Shows the selected cell and lets you jump to an address", "Lists all sheet names", "Stores your username"], answer: 1, explanation: "Type an address such as J2001 in the Name Box and press Enter to go there." },
+  { q: "You want to see the sum of a selected column quickly without a formula. Where do you look?", options: ["Ribbon", "Status bar", "Sheet tab", "Name Box"], answer: 1, explanation: "The status bar shows Sum, Average and Count of the selection." },
+  { q: "What does pressing F4 while editing the reference A1 do?", options: ["Deletes it", "Cycles through $A$1, A$1, $A1 and A1", "Copies the cell", "Adds a sheet"], answer: 1, explanation: "F4 toggles absolute and relative references. On Mac use Cmd + T." },
+  { q: "To keep the header row visible while scrolling you use...", options: ["Split Text", "Freeze Panes", "Protect Sheet", "Hide Rows"], answer: 1, explanation: "View > Freeze Panes > Freeze Top Row keeps row 1 in sight." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+In a live Excel test, speed is judged silently. Use the keyboard, avoid scroll bars, and say what you are doing out loud.
+</InterviewAlert>
+
+<InterviewQ q="How do you quickly check a column total in Excel without writing a formula?">
+Select the column data and read Sum, Count and Average on the status bar. It is instant and does not change the sheet. I still write a proper formula afterwards if the number goes into a report.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between relative and absolute references?">
+A relative reference such as `B2` changes when you copy the formula to another cell. An absolute reference such as `$B$2` stays fixed. I use F4 to switch. For example a tax rate stored in one cell must be locked with `$` when I fill the formula down.
+</InterviewQ>
+
+<InterviewQ q="Name three shortcuts you use daily and why.">
+`Ctrl + Shift + Arrow` to select data blocks quickly, `Ctrl + T` to turn data into a Table so formulas expand automatically, and `Alt + =` for AutoSum. Each one saves many mouse clicks on large data.
+</InterviewQ>
+
+## Key takeaways
+
+- The Name Box, formula bar and status bar are your cockpit instruments.
+- `Ctrl + Arrow` and `Ctrl + Shift + Arrow` are the two most useful navigation shortcuts.
+- On a Mac, Ctrl usually becomes Cmd, with a few exceptions such as F2 (Ctrl + U) and F4 (Cmd + T).
+- Freeze the header row on every large sheet.
+- Select only the data you need, not the whole column, when writing heavy formulas.
+
+## Further reading
+
+<FurtherReading ids={["excel-support", "chandoo", "excelisfun"]} />

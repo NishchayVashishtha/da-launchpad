@@ -1,0 +1,59 @@
+[
+  {
+    "id": "excel-what-if-001",
+    "module": "excel",
+    "topic": "what-if",
+    "difficulty": "easy",
+    "language": "excel",
+    "question": "A loan of ₹5,00,000 at 10.5% a year for 36 months. Write the Excel formula for the monthly EMI and give the result and the total interest.",
+    "dataset": "none",
+    "hint": "Use PMT with a monthly rate. Put a minus sign in front.",
+    "solution": "**Formula:** `=-PMT(10.5%/12,36,500000)` = **₹16,251.22**. Total payable = 16,251.22 x 36 = ₹5,85,044. Total interest = ₹85,044.",
+    "explanation": "PMT returns a negative number for cash paid out, so a minus makes it positive.",
+    "commonMistake": "Using the annual rate without dividing by 12.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "emi",
+      "pmt"
+    ]
+  },
+  {
+    "id": "excel-what-if-002",
+    "module": "excel",
+    "topic": "what-if",
+    "difficulty": "medium",
+    "language": "excel",
+    "question": "In `excel-whatif.xlsx`, sheet `loan_emi`, use Goal Seek to find the loan amount that gives an EMI of exactly ₹15,000 at 10.5% for 36 months.",
+    "dataset": "none",
+    "hint": "Set cell = the EMI cell B8, To value = 15000, By changing cell = B3.",
+    "solution": "**Steps:** Data > What-If Analysis > Goal Seek. Set cell: B8. To value: 15000. By changing cell: B3. OK.\n\n**Expected result:** loan of about **₹4,61,504**. Cross-check: `=PV(10.5%/12,36,-15000)` gives the same number. Put B3 back to 5,00,000 afterwards.",
+    "explanation": "Goal Seek varies one input until a formula cell hits the target.",
+    "commonMistake": "Choosing the loan cell as the Set cell. It must be the formula cell (EMI).",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "goal-seek",
+      "emi"
+    ]
+  },
+  {
+    "id": "excel-what-if-003",
+    "module": "excel",
+    "topic": "what-if",
+    "difficulty": "hard",
+    "language": "excel",
+    "question": "In `excel-whatif.xlsx`, sheet `pricing_model`, find the price change percent (cell B3) that makes net profit (B18) exactly ₹20,00,000 with unit cost change 0 and fixed costs ₹2,50,000. Then create three scenarios (Base, Price -5%, Cost +5%) and give the net profit for each.",
+    "dataset": "none",
+    "hint": "Use Goal Seek on B18 by changing B3. Then Scenario Manager with changing cells B3:B4 and result B18.",
+    "solution": "**Goal Seek:** Set cell B18, To value 2000000, By changing B3. Result: price change of about **+1.77%** (the base profit is ₹18,88,699).\n\n**Scenarios** (Data > What-If > Scenario Manager > Add, then Summary with result cell B18): Base (B3 0, B4 0) = ₹18,88,699; Price -5% (B3 -5%, B4 0) = ₹15,74,072; Cost +5% (B3 0, B4 5%) = ₹16,81,007.",
+    "explanation": "Goal Seek finds one input; Scenario Manager stores and compares named cases.",
+    "commonMistake": "Forgetting to reset B3 after Goal Seek, so later scenarios start from the wrong base.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 12,
+    "tags": [
+      "goal-seek",
+      "scenario-manager"
+    ]
+  }
+]

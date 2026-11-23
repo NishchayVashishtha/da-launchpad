@@ -1,0 +1,277 @@
+---
+title: "SQL dialect differences: SQLite, MySQL, PostgreSQL, SQL Server"
+description: "A practical comparison table of the four most common SQL dialects, and what the playground's SQLite supports."
+module: sql
+order: 12
+estimatedMinutes: 35
+objectives:
+  - "Explain why SQL has dialects"
+  - "Translate common syntax (LIMIT/TOP, concat, dates, IFNULL) between four databases"
+  - "Know what the playground's SQLite supports and what it does not"
+  - "Answer interview questions about portability"
+tags: ["sql", "dialects", "mysql", "postgresql", "sql-server", "sqlite"]
+---
+
+## Learning objectives
+
+- Understand why every database speaks a slightly different SQL.
+- Use a comparison table to translate syntax.
+- Know which features the playground (SQLite) supports.
+- Write more portable SQL when you can.
+- Answer "which SQL do you know?" in an interview.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+You learn on SQLite in this course. Your first job may use PostgreSQL, MySQL, SQL Server, or a cloud warehouse such as BigQuery or Snowflake. About 80% of what you know carries over. The other 20% (dates, strings, limits) is where beginners lose time and fail technical tests. Knowing the differences makes you look like someone who has worked on real systems.
+</RealWorld>
+
+## Concept
+
+### Why dialects exist
+
+**SQL** is a standard (ANSI/ISO), but each database vendor added its own features and sometimes its own names. A **dialect** is one database's version of SQL. The core is the same everywhere: `SELECT`, `FROM`, `WHERE`, `GROUP BY`, `JOIN`. The differences show up at the edges.
+
+### The four dialects in this lesson
+
+| Database | Where you meet it |
+|---|---|
+| **SQLite** | embedded in apps and phones; our browser playground; quick learning |
+| **MySQL** (and MariaDB) | web apps, startups, many Indian product companies |
+| **PostgreSQL** | modern analytics, fintech, startups; very standards-friendly |
+| **SQL Server** (T-SQL) | large enterprises, banks, consulting clients using Microsoft tools |
+
+Cloud warehouses (BigQuery, Snowflake, Redshift) are closest to PostgreSQL-style SQL with their own extras. Oracle uses PL/SQL and has its own habits too, such as `FETCH FIRST` and `ROWNUM`.
+
+### Comparison table
+
+| Feature | SQLite | MySQL | PostgreSQL | SQL Server |
+|---|---|---|---|---|
+| Limit rows | `LIMIT n` | `LIMIT n` | `LIMIT n` | `SELECT TOP n` or `OFFSET ... FETCH` |
+| Skip rows | `LIMIT n OFFSET k` | `LIMIT n OFFSET k` | `LIMIT n OFFSET k` | `ORDER BY ... OFFSET k ROWS FETCH NEXT n ROWS ONLY` |
+| String concat | `a \|\| b` | `CONCAT(a, b)` | `a \|\| b` | `a + b` or `CONCAT(a, b)` |
+| Substring | `SUBSTR(x, s, n)` | `SUBSTRING(x, s, n)` | `SUBSTRING(x, s, n)` | `SUBSTRING(x, s, n)` |
+| String length | `LENGTH(x)` | `CHAR_LENGTH(x)` | `LENGTH(x)` | `LEN(x)` |
+| Case-insensitive match | `LIKE` (ASCII) | `LIKE` (default collation) | `ILIKE` | `LIKE` (default collation) |
+| Default text equality | case-sensitive | usually case-insensitive | case-sensitive | usually case-insensitive |
+| Current date | `date('now')` | `CURDATE()` | `CURRENT_DATE` | `CAST(GETDATE() AS DATE)` |
+| Month bucket | `strftime('%Y-%m', d)` | `DATE_FORMAT(d, '%Y-%m')` | `DATE_TRUNC('month', d)` | `DATETRUNC(month, d)` or `FORMAT` |
+| Extract year | `strftime('%Y', d)` | `YEAR(d)` | `EXTRACT(YEAR FROM d)` | `YEAR(d)` |
+| Add days | `date(d, '+7 days')` | `DATE_ADD(d, INTERVAL 7 DAY)` | `d + INTERVAL '7 days'` | `DATEADD(day, 7, d)` |
+| Days between | `julianday(b) - julianday(a)` | `DATEDIFF(b, a)` | `b - a` (dates) | `DATEDIFF(day, a, b)` |
+| NULL replacement | `COALESCE`, `IFNULL` | `COALESCE`, `IFNULL` | `COALESCE` | `COALESCE`, `ISNULL` |
+| Boolean type | none (0 and 1; `TRUE`/`FALSE` words work) | `BOOLEAN` is `TINYINT(1)` | real `BOOLEAN` | `BIT` (0 and 1) |
+| Integer division `7/2` | `3` | `3.5000` | `3` | `3` |
+| Auto-increment key | `INTEGER PRIMARY KEY` (AUTOINCREMENT) | `AUTO_INCREMENT` | `SERIAL` or `GENERATED ... AS IDENTITY` | `IDENTITY(1,1)` |
+| Identifier quotes | `"name"` or `[name]` | `` `name` `` | `"name"` | `[name]` or `"name"` |
+| INNER and LEFT JOIN | yes | yes | yes | yes |
+| RIGHT JOIN | yes (3.39+) | yes | yes | yes |
+| FULL OUTER JOIN | yes (3.39+) | **no** (emulate with UNION) | yes | yes |
+| Window functions | yes (3.25+) | yes (8.0+) | yes | yes (2005+; fuller from 2012) |
+| CTEs (WITH) | yes (3.8.3+) | yes (8.0+) | yes | yes |
+| Recursive CTE | yes | yes (8.0+) | yes (`WITH RECURSIVE`) | yes (no `RECURSIVE` keyword) |
+| Strict GROUP BY | no, lenient | strict by default (8.0) | strict | strict |
+| Pivot keyword | no (use CASE) | no | no (use `FILTER` or CASE) | `PIVOT` |
+| Top-N per group helper | window functions | window functions | window functions, `DISTINCT ON` | window functions, `CROSS APPLY` |
+
+<Warning>
+Version numbers matter. For example, `FULL OUTER JOIN` and `RIGHT JOIN` arrived in SQLite only in version 3.39 (2022), and MySQL only gained window functions and CTEs in 8.0. Older servers at a company may lack them. When in doubt, ask for the version: `SELECT sqlite_version();`, `SELECT VERSION();` (MySQL, PostgreSQL) or `SELECT @@VERSION;` (SQL Server).
+</Warning>
+
+### What the playground supports
+
+The playground runs **SQLite compiled to WebAssembly (sql.js)** in your browser. In practice:
+
+- **Works:** all the basics from lessons 1 to 11, `||`, `SUBSTR`, `INSTR`, `strftime`, `julianday`, `COALESCE`, `IFNULL`, `CASE`, `LIKE`, `GLOB`, window functions, CTEs, subqueries, `UNION`, `INTERSECT`, `EXCEPT`, `INNER` and `LEFT JOIN`. Newer builds also support `RIGHT` and `FULL JOIN`, but check with `SELECT sqlite_version();`.
+- **Does not work:** `ILIKE`, `TOP`, `LEFT()`, `RIGHT()` (the functions), `CONCAT`, `LEN`, `DATEDIFF`, `DATEADD`, `DATE_TRUNC`, `EXTRACT`, `SPLIT_PART`, `ISNULL`, `STRING_AGG` (SQLite uses `GROUP_CONCAT`), `PIVOT`, stored procedures, `ALTER TABLE ... ALTER COLUMN`.
+- **Quirks:** weak typing (a column can hold text even if declared INTEGER), `LIKE` is case-insensitive for ASCII, lenient `GROUP BY`, no real DATE or BOOLEAN type, and integer division.
+
+Our practice questions flag these in their explanations, so you can convert answers to your target database.
+
+### Writing portable SQL
+
+- Prefer standard functions: `COALESCE`, `CASE`, `CAST`, `UPPER`, `LOWER`, `TRIM`, `SUBSTRING`, `COUNT`.
+- Always write every `GROUP BY` column properly, so strict databases accept your query.
+- Be explicit about decimals: `x * 1.0 / y`.
+- Wrap dialect-specific date logic in one place and comment it.
+
+<Tip>
+In a job test, the first line of your answer can say: "I will write this in PostgreSQL syntax; the date function would be X in SQL Server." Interviewers like that awareness.
+</Tip>
+
+## Worked examples
+
+### Example 1: which SQLite version is this?
+
+<SqlPlayground dataset="none" query={`SELECT sqlite_version() AS version;`} title="Check the version" />
+
+**Output:**
+
+| version |
+|---|
+| 3.50.2 |
+
+
+The version decides whether newer features (like `FULL JOIN`) are available. Run this once whenever you meet a new SQLite.
+
+### Example 2: LIKE is case-insensitive here, = is not
+
+<SqlPlayground dataset="retail" query={`SELECT SUM(city = 'mumbai') AS equals_lowercase,
+       SUM(city LIKE 'mumbai') AS like_lowercase,
+       SUM(LOWER(TRIM(city)) = 'mumbai') AS cleaned_equals
+FROM stores;`} title="Equality versus LIKE" />
+
+**Output:**
+
+| equals_lowercase | like_lowercase | cleaned_equals |
+|---|---|---|
+| 0 | 2 | 2 |
+
+
+In PostgreSQL, the `LIKE` result would be 0 and you would use `ILIKE`. In MySQL or SQL Server with the default collation, even plain `=` would match `Mumbai` to `mumbai`.
+
+### Example 3: integer division and booleans
+
+<SqlPlayground dataset="none" query={`SELECT 7 / 2 AS int_division,
+       7 / 2.0 AS decimal_division,
+       (5 > 3) AS true_is,
+       (5 < 3) AS false_is,
+       typeof(5 > 3) AS comparison_type;`} title="Division and booleans" />
+
+**Output:**
+
+| int_division | decimal_division | true_is | false_is | comparison_type |
+|---|---|---|---|---|
+| 3 | 3.5 | 1 | 0 | integer |
+
+
+SQLite has no boolean type: true is `1` and false is `0`. That is why `SUM(condition)` works in the playground.
+
+### Example 4: the same question in four dialects
+
+"Latest 5 deliveries, with the order month." First, SQLite in the playground:
+
+<SqlPlayground dataset="food_delivery" query={`SELECT delivery_id,
+       order_date,
+       strftime('%Y-%m', order_date) AS order_month
+FROM deliveries
+ORDER BY order_date DESC, delivery_id DESC
+LIMIT 5;`} title="SQLite version" />
+
+**Output:**
+
+| delivery_id | order_date | order_month |
+|---|---|---|
+| 15000 | 2024-12-31 | 2024-12 |
+| 14999 | 2024-12-31 | 2024-12 |
+| 14998 | 2024-12-31 | 2024-12 |
+| 14997 | 2024-12-31 | 2024-12 |
+| 14996 | 2024-12-31 | 2024-12 |
+
+
+The same logic in the other three (read only; they do not run in the playground):
+
+```sql
+-- MySQL
+SELECT delivery_id, order_date, DATE_FORMAT(order_date, '%Y-%m') AS order_month
+FROM deliveries
+ORDER BY order_date DESC, delivery_id DESC
+LIMIT 5;
+
+-- PostgreSQL
+SELECT delivery_id, order_date, TO_CHAR(order_date, 'YYYY-MM') AS order_month
+FROM deliveries
+ORDER BY order_date DESC, delivery_id DESC
+LIMIT 5;
+
+-- SQL Server
+SELECT TOP 5 delivery_id, order_date, FORMAT(order_date, 'yyyy-MM') AS order_month
+FROM deliveries
+ORDER BY order_date DESC, delivery_id DESC;
+```
+
+### Example 5: GROUP_CONCAT, the SQLite string aggregate
+
+Listing values in one cell is common in reports. SQLite uses `GROUP_CONCAT`. PostgreSQL and SQL Server use `STRING_AGG`, and MySQL also has `GROUP_CONCAT`.
+
+<SqlPlayground dataset="hr" query={`SELECT COUNT(*) AS big_departments,
+       GROUP_CONCAT(department_name, ', ') AS names
+FROM departments
+WHERE annual_budget_inr >= 120000000;`} title="GROUP_CONCAT" />
+
+**Output:**
+
+| big_departments | names |
+|---|---|
+| 4 | Engineering, Sales, Customer Support, Operations |
+
+
+## Common mistakes
+
+<CommonMistake>
+**Assuming one dialect's functions exist everywhere.** `LEN`, `ISNULL` and `TOP` are SQL Server only. `ILIKE` is PostgreSQL only. Check the table above.
+</CommonMistake>
+
+<CommonMistake>
+**Writing lenient GROUP BY** that SQLite accepts but PostgreSQL or SQL Server rejects. List all non-aggregated columns.
+</CommonMistake>
+
+<CommonMistake>
+**Forgetting integer division differences.** The same `a / b` gives different answers in MySQL and others. Multiply by `1.0` or cast.
+</CommonMistake>
+
+<CommonMistake>
+**Expecting case rules to be the same.** Text comparison can be case-sensitive (SQLite, PostgreSQL) or not (MySQL, SQL Server default). Always normalise with `LOWER`.
+</CommonMistake>
+
+<CommonMistake>
+**Ignoring the version.** Features like window functions and FULL JOIN depend on it. Ask or check before relying on them.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="dialects" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Which database does NOT support FULL OUTER JOIN natively?", options: ["PostgreSQL", "SQL Server", "MySQL", "Modern SQLite"], answer: 2, explanation: "MySQL has no FULL OUTER JOIN. You emulate it with a LEFT JOIN UNION a RIGHT JOIN." },
+  { q: "How do you limit to 10 rows in SQL Server?", options: ["LIMIT 10", "SELECT TOP 10 ...", "ROWNUM <= 10", "FIRST 10"], answer: 1, explanation: "SQL Server uses TOP (or OFFSET FETCH). LIMIT is used by SQLite, MySQL and PostgreSQL." },
+  { q: "Which is the case-insensitive pattern match in PostgreSQL?", options: ["LIKE", "ILIKE", "GLOB", "MATCHES"], answer: 1, explanation: "ILIKE is PostgreSQL's case-insensitive LIKE." },
+  { q: "What does SQLite use for string aggregation?", options: ["STRING_AGG", "GROUP_CONCAT", "LISTAGG", "CONCAT_WS"], answer: 1, explanation: "GROUP_CONCAT is the SQLite function. PostgreSQL and SQL Server use STRING_AGG." },
+  { q: "In SQLite, what is the value of (5 > 3)?", options: ["TRUE as a boolean type", "1", "'true'", "NULL"], answer: 1, explanation: "SQLite has no boolean type. Comparisons return 1 for true and 0 for false." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+"Which database do you know?" is common. A good answer: "Mostly SQLite and PostgreSQL-style SQL; I know the differences in dates, strings and limits and can adapt quickly." Then be ready to name three differences.
+</InterviewAlert>
+
+<InterviewQ q="What are the main differences between MySQL and PostgreSQL that matter to an analyst?">
+PostgreSQL follows the SQL standard more closely: real `BOOLEAN`, `FULL OUTER JOIN`, `DATE_TRUNC`, `ILIKE`, `DISTINCT ON`, `STRING_AGG`, and strict `GROUP BY`. MySQL has `CONCAT`, `GROUP_CONCAT`, `DATE_FORMAT`, backtick quoting, no `FULL JOIN`, and (before 8.0) no window functions or CTEs. Default text comparison is case-insensitive in MySQL and case-sensitive in PostgreSQL.
+</InterviewQ>
+
+<InterviewQ q="How do you emulate FULL OUTER JOIN in MySQL?">
+Take a `LEFT JOIN` of A to B, and `UNION` it with a `LEFT JOIN` of B to A (keeping only rows where A's key is NULL if you want to avoid duplicates, or let `UNION` remove duplicates). The result has all rows from both tables, matched where possible.
+</InterviewQ>
+
+<InterviewQ q="How do you get the top 5 rows in SQL Server, and how is it different from other databases?">
+`SELECT TOP 5 ... ORDER BY ...`. Other databases put `LIMIT 5` at the end. SQL Server (2012+) also supports the standard `ORDER BY ... OFFSET 0 ROWS FETCH NEXT 5 ROWS ONLY`. `TOP` without `ORDER BY` returns arbitrary rows, just like `LIMIT` without `ORDER BY`.
+</InterviewQ>
+
+<InterviewQ q="Why does the same query sometimes give different results in different databases?">
+Reasons: integer division, case sensitivity of text, how NULLs sort, default collation, how dates are stored and compared, and lenient or strict `GROUP BY`. To protect yourself, write explicit casts, normalise text with `LOWER`, add `NULLS FIRST/LAST` or `COALESCE` where order matters, and list all grouped columns.
+</InterviewQ>
+
+## Key takeaways
+
+- Core SQL is the same everywhere. Differences live in limits, strings, dates, NULL helpers and joins.
+- The playground is SQLite: no `ILIKE`, `TOP`, `CONCAT`, `LEN`, `DATEDIFF`, `DATE_TRUNC`, `EXTRACT`.
+- SQLite has no boolean or date types, and its `LIKE` is case-insensitive for ASCII.
+- MySQL lacks `FULL JOIN`. SQL Server uses `TOP` and `+`. PostgreSQL has `ILIKE` and `DATE_TRUNC`.
+- Check versions, write explicit casts, and name the dialect in interview answers.
+
+## Further reading
+
+<FurtherReading ids={["sqlite-docs", "postgres-docs", "mysql-docs", "sqlserver-docs"]} />

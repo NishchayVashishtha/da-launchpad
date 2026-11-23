@@ -1,0 +1,338 @@
+---
+title: "Window functions III: frames, running totals, moving averages"
+description: "Control exactly which rows a window sees: ROWS vs RANGE, cumulative sums, moving averages and percent of total."
+module: sql
+order: 20
+estimatedMinutes: 55
+objectives:
+  - "Explain what a window frame is and read ROWS BETWEEN clauses"
+  - "Build running totals and year-to-date totals"
+  - "Calculate moving averages and understand partial windows at the start"
+  - "Explain the difference between ROWS and RANGE when values tie"
+  - "Compute percent of total and cumulative percent with SUM() OVER ()"
+tags: ["sql", "window-functions", "frames", "running-total", "moving-average"]
+---
+
+## Learning objectives
+
+- Explain what a window frame is and read ROWS BETWEEN clauses
+- Build running totals and year-to-date totals
+- Calculate moving averages and understand partial windows at the start
+- Explain the difference between ROWS and RANGE when values tie
+- Compute percent of total and cumulative percent with SUM() OVER ()
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Dashboards are full of running totals ("revenue so far this year"), moving averages ("7-day average of UPI transactions, to smooth the weekend dips") and shares ("which category brings what percent of sales"). These are the exact tasks behind Power BI and Excel visuals, and you will often compute them in SQL first. Understanding frames is also what separates someone who copies window syntax from someone who can debug it when the numbers look wrong.
+</RealWorld>
+
+## Concept
+
+### What is a frame?
+
+A window function has two layers of grouping:
+
+1. The **partition**: which rows belong together (set by `PARTITION BY`).
+2. The **frame**: for the current row, which rows **inside the partition** the function actually uses.
+
+Analogy: a long train. The partition is one train. The frame is the set of coaches the TTE checks while standing at your coach, for example "your coach and the two before it".
+
+```sql
+function(...) OVER (
+    PARTITION BY g
+    ORDER BY d
+    ROWS BETWEEN <start> AND <end>
+)
+```
+
+### Frame boundaries
+
+| Boundary | Meaning |
+|---|---|
+| `UNBOUNDED PRECEDING` | the first row of the partition |
+| `n PRECEDING` | n rows before the current row |
+| `CURRENT ROW` | the current row |
+| `n FOLLOWING` | n rows after the current row |
+| `UNBOUNDED FOLLOWING` | the last row of the partition |
+
+Common frames:
+
+- Running total: `ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`
+- 3-period moving average: `ROWS BETWEEN 2 PRECEDING AND CURRENT ROW`
+- Centred average: `ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING`
+- Whole partition: `ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING`
+
+### Default frame (read this twice)
+
+- If the window has **no** `ORDER BY`, the frame is the **whole partition**. That is why `SUM(x) OVER (PARTITION BY g)` gives the group total on every row.
+- If the window **has** an `ORDER BY` and no frame, the default is `RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW`. That is why `SUM(x) OVER (ORDER BY d)` gives a running total.
+
+### ROWS versus RANGE
+
+- `ROWS` counts physical rows. "2 PRECEDING" means exactly two rows before.
+- `RANGE` works on **values** of the ORDER BY column. Rows that have the same ORDER BY value are called **peers**, and `RANGE ... CURRENT ROW` includes **all peers**, not just the current row.
+
+So with a running total ordered by date, if five orders happened on the same date, `RANGE` gives all five rows the same total (the total at the end of that day). `ROWS` gives a growing total inside the day, which depends on the arbitrary order within the day.
+
+<Tip>
+For running totals over a date column that has many rows per date, either aggregate to one row per day first, or write `ROWS` explicitly and add a unique tie-breaker to the `ORDER BY`. Be deliberate about it.
+</Tip>
+
+### Moving averages and partial windows
+
+A 3-month moving average on the first month only has one month of data. SQL still returns an average over what exists (1 value for month 1, 2 values for month 2, then 3 values). If you want to report only full windows, count the rows in the frame too (`COUNT(*) OVER (same frame)`) and keep rows where the count equals the window size.
+
+A second trap: `ROWS 6 PRECEDING` means 7 **rows**, which is 7 days only if every day has a row. If some days are missing, the frame stretches over a longer period. Generate the missing dates, or use a `RANGE` frame on a day number.
+
+### Percent of total
+
+`SUM(x) OVER ()` (empty parentheses) is the grand total repeated on every row. So:
+
+<FormulaCard title="Share of total">
+`share % = 100.0 * x / SUM(x) OVER ()`
+
+Inside a group: `100.0 * x / SUM(x) OVER (PARTITION BY g)`
+</FormulaCard>
+
+You can even use a window on top of a `GROUP BY`: `SUM(SUM(x)) OVER ()` means "sum the group sums". The inner `SUM` runs first as the aggregate, the outer one as the window.
+
+### Cumulative percent (Pareto)
+
+Sort categories from biggest to smallest, take the running total and divide by the grand total. If the first two categories reach 80 percent, you have found the "80/20" story that managers love.
+
+## Worked examples
+
+### Example 1: monthly revenue, running total, YTD and 3-month average
+
+Monthly net revenue of store 1 (duplicates and the 100x outliers removed). We calculate: a running total from the start, a year-to-date total that restarts every January, and a 3-month moving average. `n_months` shows how many months were really in each average.
+
+<SqlPlayground dataset="retail" query={`WITH s AS (
+    SELECT DISTINCT sale_id, sale_datetime, net_amount_inr
+    FROM sales
+    WHERE store_id = 1 AND net_amount_inr < 100000
+),
+m AS (
+    SELECT strftime('%Y-%m', sale_datetime) AS month,
+           ROUND(SUM(net_amount_inr)) AS revenue
+    FROM s
+    GROUP BY 1
+)
+SELECT month,
+       revenue,
+       SUM(revenue) OVER (ORDER BY month) AS running_total,
+       SUM(revenue) OVER (PARTITION BY substr(month, 1, 4) ORDER BY month) AS ytd,
+       ROUND(AVG(revenue) OVER (ORDER BY month ROWS BETWEEN 2 PRECEDING AND CURRENT ROW)) AS ma_3m,
+       COUNT(*)   OVER (ORDER BY month ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) AS n_months
+FROM m
+ORDER BY month;`} title="Running total and moving average" />
+
+**Output:**
+
+| month | revenue | running_total | ytd | ma_3m | n_months |
+|---|---|---|---|---|---|
+| 2023-01 | 106125.0 | 106125.0 | 106125.0 | 106125.0 | 1 |
+| 2023-02 | 65362.0 | 171487.0 | 171487.0 | 85744.0 | 2 |
+| 2023-03 | 78561.0 | 250048.0 | 250048.0 | 83349.0 | 3 |
+| 2023-04 | 71804.0 | 321852.0 | 321852.0 | 71909.0 | 3 |
+| 2023-05 | 108764.0 | 430616.0 | 430616.0 | 86376.0 | 3 |
+| 2023-06 | 73731.0 | 504347.0 | 504347.0 | 84766.0 | 3 |
+| 2023-07 | 84271.0 | 588618.0 | 588618.0 | 88922.0 | 3 |
+| 2023-08 | 106912.0 | 695530.0 | 695530.0 | 88305.0 | 3 |
+| 2023-09 | 98008.0 | 793538.0 | 793538.0 | 96397.0 | 3 |
+| 2023-10 | 113069.0 | 906607.0 | 906607.0 | 105996.0 | 3 |
+| 2023-11 | 128736.0 | 1035343.0 | 1035343.0 | 113271.0 | 3 |
+| 2023-12 | 102310.0 | 1137653.0 | 1137653.0 | 114705.0 | 3 |
+| 2024-01 | 147470.0 | 1285123.0 | 147470.0 | 126172.0 | 3 |
+| 2024-02 | 68306.0 | 1353429.0 | 215776.0 | 106029.0 | 3 |
+
+Showing the first 14 of 24 rows.
+
+Look at the first two rows: `n_months` is 1 and 2, so the 'moving average' there is not a true 3-month average. Also see the `ytd` column drop back to the month's own revenue in January 2024 because of `PARTITION BY` year. February 2024 is a dip, and the moving average smooths it into a gentler curve.
+
+### Example 2: ROWS versus RANGE with tied dates
+
+The first 13 orders of the first two days of January 2023. Many orders share an order date, so those rows are peers. `rows_total` grows row by row. `range_total` jumps to the end-of-day total for every order of that day.
+
+<SqlPlayground dataset="ecommerce" query={`WITH o AS (
+    SELECT DISTINCT order_id, order_date, total_amount
+    FROM orders
+    WHERE order_date <= '2023-01-02' AND total_amount < 100000
+)
+SELECT order_id,
+       order_date,
+       total_amount,
+       ROUND(SUM(total_amount) OVER (
+           ORDER BY order_date, order_id
+           ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW), 2) AS rows_total,
+       ROUND(SUM(total_amount) OVER (
+           ORDER BY order_date
+           RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW), 2) AS range_total
+FROM o
+ORDER BY order_date, order_id
+LIMIT 13;`} title="ROWS vs RANGE on the same date" />
+
+**Output:**
+
+| order_id | order_date | total_amount | rows_total | range_total |
+|---|---|---|---|---|
+| 1 | 2023-01-01 | 5542.95 | 5542.95 | 60688.49 |
+| 2 | 2023-01-01 | 339.68 | 5882.63 | 60688.49 |
+| 3 | 2023-01-01 | 2599.2 | 8481.83 | 60688.49 |
+| 4 | 2023-01-01 | 5124.48 | 13606.31 | 60688.49 |
+| 5 | 2023-01-01 | 2419.57 | 16025.88 | 60688.49 |
+| 6 | 2023-01-01 | 28346.72 | 44372.6 | 60688.49 |
+| 7 | 2023-01-01 | 516.04 | 44888.64 | 60688.49 |
+| 8 | 2023-01-01 | 3381.6 | 48270.24 | 60688.49 |
+| 9 | 2023-01-01 | 5419.56 | 53689.8 | 60688.49 |
+| 10 | 2023-01-01 | 4256.12 | 57945.92 | 60688.49 |
+| 11 | 2023-01-01 | 2742.57 | 60688.49 | 60688.49 |
+| 12 | 2023-01-02 | 15495.64 | 76184.13 | 142049.2 |
+| 13 | 2023-01-02 | 5038.34 | 81222.47 | 142049.2 |
+
+All the 1 January orders show the same `range_total` (the day's complete total), while `rows_total` increases order by order. For a daily running total chart you normally want one point per day, so `RANGE`, or aggregating to daily rows first, is the right choice. For 'running total in order of arrival', use `ROWS` with a unique tie-breaker.
+
+### Example 3: 7-day moving average of daily transactions
+
+Successful transactions per day around Diwali 2024, with a trailing 7-day average. The raw numbers jump around from day to day. The moving average shows the underlying festive climb.
+
+<SqlPlayground dataset="fintech" query={`WITH d AS (
+    SELECT date(txn_datetime) AS day,
+           COUNT(DISTINCT txn_id) AS txns
+    FROM transactions
+    WHERE status = 'SUCCESS'
+      AND txn_datetime >= '2024-10-20' AND txn_datetime < '2024-11-10'
+    GROUP BY 1
+)
+SELECT day,
+       txns,
+       ROUND(AVG(txns) OVER (ORDER BY day ROWS BETWEEN 6 PRECEDING AND CURRENT ROW), 1) AS ma_7d,
+       COUNT(*)  OVER (ORDER BY day ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS days_in_avg
+FROM d
+ORDER BY day;`} title="7-day moving average" />
+
+**Output:**
+
+| day | txns | ma_7d | days_in_avg |
+|---|---|---|---|
+| 2024-10-20 | 34 | 34.0 | 1 |
+| 2024-10-21 | 36 | 35.0 | 2 |
+| 2024-10-22 | 37 | 35.7 | 3 |
+| 2024-10-23 | 36 | 35.8 | 4 |
+| 2024-10-24 | 49 | 38.4 | 5 |
+| 2024-10-25 | 32 | 37.3 | 6 |
+| 2024-10-26 | 47 | 38.7 | 7 |
+| 2024-10-27 | 52 | 41.3 | 7 |
+| 2024-10-28 | 59 | 44.6 | 7 |
+| 2024-10-29 | 60 | 47.9 | 7 |
+| 2024-10-30 | 60 | 51.3 | 7 |
+| 2024-10-31 | 49 | 51.3 | 7 |
+
+Showing the first 12 of 21 rows.
+
+Every date has a row in this data, so 6 PRECEDING really equals 7 calendar days. The first six rows have fewer than 7 days in the average, which is why we show `days_in_avg`.
+
+### Example 4: percent of total and a Pareto curve
+
+What share of revenue does each category bring, and how fast do the top categories add up? `SUM(SUM(net_amount_inr)) OVER ()` is the grand total over the group sums, and the running version gives the cumulative share.
+
+<SqlPlayground dataset="retail" query={`WITH s AS (
+    SELECT DISTINCT sale_id, category, net_amount_inr
+    FROM sales
+    WHERE net_amount_inr < 100000
+)
+SELECT category,
+       ROUND(SUM(net_amount_inr)) AS revenue,
+       ROUND(100.0 * SUM(net_amount_inr) / SUM(SUM(net_amount_inr)) OVER (), 1) AS pct_of_total,
+       ROUND(100.0 * SUM(SUM(net_amount_inr)) OVER (ORDER BY SUM(net_amount_inr) DESC)
+             / SUM(SUM(net_amount_inr)) OVER (), 1) AS cumulative_pct
+FROM s
+GROUP BY category
+ORDER BY revenue DESC;`} title="Category share and cumulative share" />
+
+**Output:**
+
+| category | revenue | pct_of_total | cumulative_pct |
+|---|---|---|---|
+| Home & Kitchen | 8204736.0 | 27.1 | 27.1 |
+| Grocery & Staples | 7032271.0 | 23.2 | 50.3 |
+| Apparel | 6811086.0 | 22.5 | 72.8 |
+| Personal Care | 3364571.0 | 11.1 | 83.9 |
+| Electronics Accessories | 3221962.0 | 10.6 | 94.6 |
+| Home Decor | 1640752.0 | 5.4 | 100.0 |
+
+The top three categories bring about 73 percent of revenue, and Home Decor, the overstocked slow mover, only about 5 percent. This one table is often the first slide of a category review.
+
+## Common mistakes
+
+<CommonMistake>
+**Believing the default frame is the whole partition.** It is only the whole partition when there is no `ORDER BY`. With `ORDER BY` it ends at the current row (and includes peers). Write the frame when it matters.
+</CommonMistake>
+
+<CommonMistake>
+**Using RANGE with tied dates and expecting row-by-row totals.** All rows with the same date get the same value. If you want a strict row-by-row total, use `ROWS` and a unique ORDER BY.
+</CommonMistake>
+
+<CommonMistake>
+**'7-day' average that is not 7 days.** `ROWS 6 PRECEDING` counts rows. With missing dates the window covers more than a week. Fill the gaps first, or check `COUNT(*)` of the frame.
+</CommonMistake>
+
+<CommonMistake>
+**Reporting partial windows as if they were full.** The first rows of a moving average use fewer values. Either drop them or label them.
+</CommonMistake>
+
+<CommonMistake>
+**Integer division in percent of total.** `100 * x / SUM(x) OVER ()` can truncate when x is an integer. Use `100.0 *` and `ROUND`.
+</CommonMistake>
+
+<CommonMistake>
+**Forgetting that duplicates inflate totals.** Running totals and shares add every row, so duplicate rows give wrong sums. Deduplicate and remove outliers first.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="window-frames" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Which frame produces a running total?", options: ["ROWS BETWEEN 1 PRECEDING AND CURRENT ROW", "ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW", "ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING", "ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING"], answer: 1, explanation: "A running total sums from the first row up to the current row." },
+  { q: "What is the frame of SUM(x) OVER (PARTITION BY g) with no ORDER BY?", options: ["Only the current row", "The whole partition", "Rows before the current row", "It is an error"], answer: 1, explanation: "Without ORDER BY the frame is the entire partition, so every row sees the group total." },
+  { q: "Five orders share one date. With ORDER BY date and RANGE ... CURRENT ROW, what do they get?", options: ["Five growing totals", "The same total for all five", "NULL", "An error"], answer: 1, explanation: "RANGE treats rows with the same ORDER BY value as peers and includes all of them." },
+  { q: "What does ROWS BETWEEN 6 PRECEDING AND CURRENT ROW cover?", options: ["Exactly 7 calendar days", "Up to 7 rows including the current one", "6 rows before only", "The previous week by date"], answer: 1, explanation: "ROWS counts rows, not dates. It equals 7 days only when every day has a row." },
+  { q: "Which expression gives percent of total on every row?", options: ["x / SUM(x)", "100.0 * x / SUM(x) OVER ()", "100 * x OVER SUM()", "SUM(x) OVER x"], answer: 1, explanation: "SUM(x) OVER () is the grand total repeated on each row; multiply by 100.0 to avoid integer division." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Running totals, moving averages and percent of total show up in nearly every analytics SQL round. Interviewers often follow up with 'what is the default frame?' or 'what if a date is missing?'. Being able to answer both tells them you understand windows, not just copy them.
+</InterviewAlert>
+
+<InterviewQ q="How would you compute a running total of daily sales?">
+Aggregate to one row per day, then `SUM(daily_sales) OVER (ORDER BY day ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW)`. To restart each month or year I add `PARTITION BY` that period. I aggregate first so tied dates cannot give inconsistent totals.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between ROWS and RANGE?">
+ROWS defines the frame by physical row counts relative to the current row. RANGE defines it by the value of the ORDER BY column, so all rows tied with the current row are included. It matters whenever the ORDER BY column has duplicates, like several orders on one date.
+</InterviewQ>
+
+<InterviewQ q="How do you calculate a 7-day moving average and what can go wrong?">
+`AVG(x) OVER (ORDER BY day ROWS BETWEEN 6 PRECEDING AND CURRENT ROW)`. Problems: the first six days have partial windows, and missing days make 7 rows span more than 7 days. I check the number of rows in the frame and fill date gaps if needed.
+</InterviewQ>
+
+<InterviewQ q="Write the SQL for percent of total by category.">
+`SELECT category, SUM(rev) AS rev, 100.0 * SUM(rev) / SUM(SUM(rev)) OVER () AS pct FROM t GROUP BY category`. The inner SUM is the group aggregate and the outer SUM OVER () is the grand total across groups.
+</InterviewQ>
+
+## Key takeaways
+
+- A frame decides which rows inside the partition each row's function uses.
+- No ORDER BY means the whole partition. With ORDER BY the default ends at the current row, including ties.
+- Running total is UNBOUNDED PRECEDING to CURRENT ROW. Moving average is n PRECEDING to CURRENT ROW.
+- ROWS counts rows, RANGE groups tied values. Missing dates make 'n PRECEDING' wrong as a day count.
+- Percent of total is `100.0 * x / SUM(x) OVER ()`. Clean duplicates and outliers first.
+
+## Further reading
+
+<FurtherReading ids={["sqlbolt", "mode-sql", "sqlite-docs"]} />

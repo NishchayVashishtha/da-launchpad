@@ -1,0 +1,192 @@
+---
+title: "Tableau vs Power BI: a comparison for analysts"
+description: "Concept mapping between Tableau and Power BI, how companies choose, and how to use Tableau Public for a portfolio."
+module: power-bi
+order: 15
+estimatedMinutes: 30
+objectives:
+  - "Map Power BI concepts to Tableau concepts"
+  - "Explain when companies choose each tool"
+  - "Use Tableau Public for a portfolio"
+  - "Answer the common interview question: Tableau or Power BI?"
+tags: ["power-bi", "tableau", "comparison", "portfolio"]
+---
+
+## Learning objectives
+
+- Translate between Power BI and Tableau terms.
+- List the strengths and trade-offs of each tool.
+- Decide which to learn first and how to show both in a portfolio.
+- Give a balanced answer in an interview.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Job posts in India often say "Power BI or Tableau". A hiring manager at a consulting firm may ask, "We use Tableau. You only know Power BI. Can you work with us?" If you can map concepts quickly, the answer is yes: the thinking transfers, only the buttons change.
+</RealWorld>
+
+Both tools do the same job: connect to data, clean it a little, build visuals, share with business users. Once you master one, the second takes days or weeks, not months.
+
+## Concept
+
+### Concept mapping table
+
+| Idea | Power BI | Tableau |
+|---|---|---|
+| Desktop authoring tool | Power BI Desktop | Tableau Desktop (or Tableau Public Desktop) |
+| Cloud sharing | Power BI Service | Tableau Cloud / Server |
+| Free public sharing | Publish to web (limited) | Tableau Public |
+| Data cleaning | Power Query (M language) | Tableau Prep, or the data source tab |
+| Data model | Star schema with relationships | Relationships (logical layer) and joins |
+| One visual | Visual | Sheet (worksheet) |
+| A page of visuals | Report page | Dashboard |
+| A story of pages | Bookmarks/story with buttons | Story |
+| Row-level calculation | Calculated column | Calculated field (row level) |
+| Aggregate calculation | Measure (DAX) | Calculated field with aggregation |
+| Calculation language | DAX | Tableau calc language and LOD expressions |
+| Fixed-scope aggregate | `CALCULATE` with `ALL` | `{FIXED ...}` LOD expression |
+| Filter control | Slicer | Filter shown as a quick filter |
+| Drill-through | Drill-through page | Dashboard action (filter or go to sheet) |
+| Hierarchies | Hierarchy (drag fields) | Hierarchy in data pane |
+| Tooltips | Report page tooltip | Viz in Tooltip |
+| Row-level security | RLS roles in model | User filters, data source filters, entitlement tables |
+| Parameters | What-if parameter, field parameter | Parameter |
+| Scheduled data refresh | Scheduled refresh with gateway | Extract refresh with Bridge |
+| File types | `.pbix` | `.twb` / `.twbx` |
+
+### How the tools feel different
+
+| Aspect | Power BI | Tableau |
+|---|---|---|
+| Strength | Modelling, DAX, tight Microsoft integration (Excel, Teams, Azure) | Fast, flexible visual exploration and polished visuals |
+| Learning style | Model first, then visuals | Drag and drop to explore first |
+| Cost | Desktop free; Pro licence for sharing (usually cheaper) | Creator licence is usually more expensive |
+| Platform | Desktop is Windows only | Windows and Mac |
+| Data prep | Power Query built in | Prep is a separate product |
+| Typical users | Corporates, banks, fintechs on Microsoft stack | Consulting, media, product companies, analytics teams |
+
+These are generalisations; every company is different.
+
+### When companies use which
+
+- **Power BI** is common where the company already uses Microsoft 365 or Azure, where costs matter, and where finance and operations teams use Excel heavily.
+- **Tableau** is common where analysts explore data a lot, where visual polish matters, or where a team started with it years ago.
+- Large organisations often have both. Many candidates say "I know Power BI well and have used Tableau Public".
+
+### Tableau Public for portfolios
+
+**Tableau Public** is a free version of Tableau where all your work is published publicly on a profile page. Good for portfolios because:
+
+- recruiters can open a link without logging in,
+- it supports Windows and Mac,
+- there is a public gallery for inspiration.
+
+Limits: all work is public, so use only open or fictional data. It does not connect to all databases; use CSV or Excel files.
+
+## Worked examples
+
+### Example 1: Translating a DAX measure into a Tableau calculation
+
+Power BI measure:
+
+```dax
+Failure Rate % =
+DIVIDE(
+  CALCULATE(COUNTROWS(Transactions), Transactions[status] = "FAILED"),
+  COUNTROWS(Transactions)
+)
+```
+
+Tableau calculated field:
+
+```text
+SUM(IF [Status] = "FAILED" THEN 1 ELSE 0 END) / COUNT([Txn Id])
+```
+
+Both give about 2.85% on the cleaned fintech data. Note that in Tableau you also need to remove duplicate `txn_id` rows yourself before using this.
+
+### Example 2: A fixed total (benchmark)
+
+Power BI: the overall rate regardless of the bank filter:
+
+```dax
+Overall Rate = CALCULATE([Failure Rate %], ALL(Transactions[bank]))
+```
+
+Tableau: a LOD expression that ignores the bank dimension:
+
+```text
+{ FIXED : SUM(IF [Status]="FAILED" THEN 1 ELSE 0 END) / COUNT([Txn Id]) }
+```
+
+Both give the same benchmark you can compare each bank with.
+
+### Example 3: Choosing a tool for your portfolio
+
+You have 8 weeks. Plan: build the main project in Power BI since most Indian analyst job posts mention it. When it is done, rebuild just the main page in Tableau Public, which takes a day. In your resume, say: "Dashboards in Power BI and Tableau". In interviews you can discuss the differences with real experience.
+
+### Example 4: Answering "Tableau or Power BI?"
+
+A sample answer: "I started with Power BI because it is free and I could model data with relationships and DAX. I have also built a dashboard in Tableau Public and found drag-and-drop exploration quicker, while Power BI is stronger for modelling. I am comfortable picking up whichever the team uses."
+
+## Common mistakes
+
+<CommonMistake>
+Saying one tool is "better" in an interview. Each wins on different things. A balanced answer shows maturity.
+</CommonMistake>
+
+<CommonMistake>
+Learning tool features without learning the thinking: data modelling, choosing charts, telling a story. The thinking transfers; button clicks do not.
+</CommonMistake>
+
+<CommonMistake>
+Publishing real company or personal data on Tableau Public. Everything there is public.
+</CommonMistake>
+
+<CommonMistake>
+Assuming terms are identical. A Tableau "dashboard" is not a Power BI "dashboard"; the closest Power BI match is a report page.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="tableau" module="power-bi" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What is the closest Tableau equivalent of a Power BI report page?", options: ["Sheet", "Dashboard", "Story only", "Parameter"], answer: 1, explanation: "A Tableau dashboard is a page that combines sheets, like a report page." },
+  { q: "Which Tableau feature compares to CALCULATE with ALL for fixed totals?", options: ["Quick filter", "FIXED LOD expression", "Story", "Extract"], answer: 1, explanation: "FIXED LOD expressions compute at a set level independent of the view." },
+  { q: "Which statement is generally true?", options: ["Tableau Desktop is free and Windows only", "Power BI Desktop is free but Windows only", "Tableau Public keeps work private", "Both have no free version"], answer: 1, explanation: "Power BI Desktop is free on Windows; Tableau Public is free but public." },
+  { q: "What is Tableau Public good for?", options: ["Secret company data", "Free public portfolios", "On-premises refresh", "Row-level security"], answer: 1, explanation: "It lets you publish dashboards publicly with a profile link." },
+  { q: "What replaces Power Query in the Tableau family?", options: ["Tableau Prep", "DAX Studio", "Bookmarks", "Gateway"], answer: 0, explanation: "Tableau Prep is the dedicated data preparation tool." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+The "Tableau or Power BI?" question tests honesty and flexibility, not loyalty. Mention the one you know well, show awareness of the other, and say you can pick up either.
+</InterviewAlert>
+
+<InterviewQ q="What are the key differences between Tableau and Power BI?">
+Power BI is stronger in data modelling with relationships and DAX, integrates with the Microsoft stack, and is usually cheaper. Tableau is known for fast visual exploration and polished visuals, and runs on Mac too. Concepts map closely: measure to calculated field, slicer to filter, report page to dashboard.
+</InterviewQ>
+
+<InterviewQ q="If the company uses Tableau and you only know Power BI, what do you do?">
+I would map concepts I already know: connect to data, model, calculations, filters, dashboards. I would spend a few days on Tableau's calculated fields and LOD expressions, and build a small dashboard on public data first.
+</InterviewQ>
+
+<InterviewQ q="How would you build a portfolio that covers both tools?">
+I would build one end-to-end project in Power BI with cleaning, modelling and DAX, and publish one dashboard on Tableau Public using public or fictional data, with a README linking both and listing my insights.
+</InterviewQ>
+
+## Key takeaways
+
+- Both tools connect, shape, visualise and share data; concepts map closely.
+- Power BI shines at modelling, DAX and Microsoft integration.
+- Tableau shines at visual exploration and runs on Mac.
+- Tableau Public is a free place for public portfolios.
+- In interviews, be balanced and say you can learn either quickly.
+
+## Further reading
+
+<FurtherReading ids={["tableau-public", "power-bi-docs", "pl300"]} />

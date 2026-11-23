@@ -1,0 +1,40 @@
+[
+  {
+    "id": "pbi-practical-test-001",
+    "module": "power-bi",
+    "topic": "practical-test",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "In the practical test (marketing data), the `ad_spend` table has 6 exact duplicates and 3 rows 100x too high. Describe how you clean these in Power Query without losing audit trail, and how you tell the reviewer.",
+    "dataset": "marketing",
+    "hint": "Remove duplicates, flag outliers, document.",
+    "solution": "Remove duplicates with **Remove Duplicates** on the full row (or on `ad_spend_id`). For outliers, add a custom column `spend_per_click = spend_inr / clicks` and a flag column such as `is_outlier` for rows with an extreme value; create `spend_clean` that divides flagged values by 100 (or excludes them), and keep the original column. Write a short 'Data notes' text box on the last report page: '6 duplicates removed; 3 rows with spend 100x the normal range corrected, listed in the Outliers query'.",
+    "explanation": "Evaluators reward visible, reproducible cleaning decisions.",
+    "commonMistake": "Silently deleting rows without telling anyone.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "cleaning",
+      "power-query"
+    ]
+  },
+  {
+    "id": "pbi-practical-test-002",
+    "module": "power-bi",
+    "topic": "practical-test",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "Your test story: 'Influencer Mega Reach Oct-24' spent about 36 thousand rupees and produced zero revenue, while Search produced more than half of all revenue. Write the executive summary headline and two recommendations.",
+    "dataset": "marketing",
+    "hint": "Be specific with numbers and a caution on small bases.",
+    "solution": "Headline: 'Search drives 56% of revenue at about 5.8x ROAS, while one influencer campaign spent ₹36K with no revenue'. Recommendations: (1) pause or cap influencer spend until a tracked test shows conversions; (2) shift part of that budget to Search and to Email/WhatsApp, where cost per purchase is low. Caution: Email and WhatsApp have very small spend, so their very high ROAS may not scale.",
+    "explanation": "Good summaries combine the number, the comparison and the action; they also flag limits.",
+    "commonMistake": "Recommending scaling a tiny channel based on ROAS alone.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "storytelling",
+      "marketing"
+    ]
+  }
+]

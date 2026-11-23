@@ -1,0 +1,210 @@
+---
+title: "Aggregate functions: COUNT, SUM, AVG, MIN, MAX"
+description: "Summarise many rows into one number and learn how aggregates treat NULLs and duplicates."
+module: sql
+order: 6
+estimatedMinutes: 35
+objectives:
+  - "Use COUNT, SUM, AVG, MIN and MAX"
+  - "Tell COUNT(*), COUNT(col) and COUNT(DISTINCT col) apart"
+  - "Combine WHERE with aggregates"
+  - "Use conditional counting and sanity-check aggregates for outliers"
+tags: ["sql", "aggregates", "count", "sum", "avg"]
+---
+
+## Learning objectives
+
+- Use `COUNT`, `SUM`, `AVG`, `MIN` and `MAX`.
+- Know the three flavours of `COUNT`.
+- Filter rows first with `WHERE`, then aggregate.
+- Count conditionally with the `SUM(condition)` trick.
+- Spot when outliers or duplicates distort an aggregate.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Almost every dashboard number is an aggregate: total sales, average order value, number of active users, highest salary, earliest signup. If you can write correct aggregates, you can answer most "how much / how many" questions on the spot.
+</RealWorld>
+
+## Concept
+
+An **aggregate function** takes many rows and returns **one value**. Without `GROUP BY` (next lesson), the whole table, or all rows left after `WHERE`, becomes a single group and you get a single output row.
+
+| Function | Returns |
+|---|---|
+| `COUNT(*)` | number of rows |
+| `COUNT(col)` | number of rows where col is not NULL |
+| `COUNT(DISTINCT col)` | number of different non-NULL values |
+| `SUM(col)` | total |
+| `AVG(col)` | average (mean) of non-NULL values |
+| `MIN(col)` / `MAX(col)` | smallest / largest (also work on text and dates) |
+
+### Key behaviours
+
+1. **NULLs are ignored** by all of them except `COUNT(*)`.
+2. **Order of work:** `WHERE` filters rows first, then the aggregate runs on what is left.
+3. **You cannot mix** an aggregate and a plain column in the same `SELECT` without `GROUP BY`. `SELECT city, COUNT(*) FROM t` is not valid in standard SQL. (SQLite allows it and gives a random city, which is a trap. Do not rely on it.)
+4. **Empty input:** `COUNT` gives 0. `SUM`, `AVG`, `MIN` and `MAX` give NULL.
+5. `AVG` of integers gives a decimal in SQLite. `SUM` of integers stays an integer.
+
+<FormulaCard title="Average order value (AOV)">
+AOV = total revenue / number of orders = SUM(total_amount) / COUNT(order_id)
+</FormulaCard>
+
+### Conditional counting
+
+A comparison returns 1 (true) or 0 (false) in SQLite, so `SUM(status = 'FAILED')` counts failed rows. A portable version that works everywhere is `SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END)` (CASE lesson).
+
+Rates are easy with this: `100.0 * SUM(condition) / COUNT(*)`.
+
+<Tip>
+Always sanity-check an aggregate with `MIN` and `MAX` next to it. A `MAX` that is 100 times larger than usual is a loud sign of a data-entry error.
+</Tip>
+
+## Worked examples
+
+### Example 1: basic summary
+
+<SqlPlayground dataset="ecommerce" query={`SELECT COUNT(*) AS orders,
+       ROUND(SUM(total_amount), 2) AS total_value,
+       ROUND(AVG(total_amount), 2) AS avg_order_value,
+       MIN(order_date) AS first_order,
+       MAX(order_date) AS last_order
+FROM orders
+WHERE order_status = 'Delivered';`} title="Delivered order summary" />
+
+**Output:**
+
+| orders | total_value | avg_order_value | first_order | last_order |
+|---|---|---|---|---|
+| 9357 | 50325049.47 | 5378.33 | 2023-01-01 | 2024-12-31 |
+
+
+Only delivered orders are counted, because `WHERE` ran first. (This table has about 100 duplicated order rows, so in real work you would dedupe first. We will learn how later.)
+
+### Example 2: three kinds of COUNT
+
+<SqlPlayground dataset="subscription" query={`SELECT COUNT(*) AS rows_in_users,
+       COUNT(email) AS with_email,
+       COUNT(DISTINCT city) AS distinct_city_values
+FROM users;`} title="COUNT flavours" />
+
+**Output:**
+
+| rows_in_users | with_email | distinct_city_values |
+|---|---|---|
+| 5208 | 4897 | 113 |
+
+
+`distinct_city_values` is bigger than the real number of cities, because `Delhi`, `delhi` and ` DELHI ` count as different values. Aggregates cannot fix messy text for you.
+
+### Example 3: a success rate with conditional counting
+
+<SqlPlayground dataset="fintech" query={`SELECT COUNT(*) AS total_txns,
+       SUM(status = 'FAILED') AS failed,
+       ROUND(100.0 * SUM(status = 'FAILED') / COUNT(*), 2) AS failure_rate_pct
+FROM transactions
+WHERE txn_type = 'P2M';`} title="Failure rate for merchant payments" />
+
+**Output:**
+
+| total_txns | failed | failure_rate_pct |
+|---|---|---|
+| 12159 | 343 | 2.82 |
+
+
+### Example 4: spotting an outlier with MIN and MAX
+
+<SqlPlayground dataset="hr" query={`SELECT MIN(annual_ctc) AS min_ctc,
+       ROUND(AVG(annual_ctc), 0) AS avg_ctc,
+       MAX(annual_ctc) AS max_ctc
+FROM salaries;`} title="CTC range" />
+
+**Output:**
+
+| min_ctc | avg_ctc | max_ctc |
+|---|---|---|
+| 184000.0 | 1526031.0 | 427800000.0 |
+
+
+The `max_ctc` is huge compared with the average. A few rows were typed 100 times too large (for example 12 crore instead of 12 lakh). The average is pulled up by them. Now compare with the outliers removed:
+
+<SqlPlayground dataset="hr" query={`SELECT ROUND(AVG(annual_ctc), 0) AS avg_ctc_clean,
+       MAX(annual_ctc) AS max_ctc_clean
+FROM salaries
+WHERE annual_ctc < 10000000;`} title="CTC range without outliers" />
+
+**Output:**
+
+| avg_ctc_clean | max_ctc_clean |
+|---|---|
+| 1326551.0 | 7751000.0 |
+
+
+Business sense decided the cut-off: nobody in this company earns above ₹1 crore (10,000,000). Always write your cleaning rule down for the reader.
+
+## Common mistakes
+
+<CommonMistake>
+**Using `COUNT(col)` for "number of rows".** If `col` has NULLs, you undercount. Use `COUNT(*)`.
+</CommonMistake>
+
+<CommonMistake>
+**Selecting a plain column next to an aggregate** without GROUP BY. The result is meaningless even if SQLite does not complain.
+</CommonMistake>
+
+<CommonMistake>
+**Using an aggregate in WHERE.** `WHERE SUM(x) > 10` is invalid. Aggregates are filtered with `HAVING` (lesson 8).
+</CommonMistake>
+
+<CommonMistake>
+**Trusting AVG when outliers or duplicates exist.** Check MIN, MAX and duplicate counts first.
+</CommonMistake>
+
+<CommonMistake>
+**Integer division in rates.** `100 * failed / total` with all integers can truncate. Use `100.0 *`.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="aggregates" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Which aggregate counts rows even when columns contain NULL?", options: ["COUNT(col)", "COUNT(*)", "SUM(col)", "AVG(col)"], answer: 1, explanation: "COUNT(*) counts rows. The others skip NULL values." },
+  { q: "What does SUM return when no rows match the WHERE?", options: ["0", "NULL", "An error", "1"], answer: 1, explanation: "SUM over zero rows is NULL. COUNT is the one that returns 0." },
+  { q: "Values are 5, 5, NULL, 10. What is COUNT(DISTINCT col)?", options: ["2", "3", "4", "1"], answer: 0, explanation: "Distinct non-NULL values are 5 and 10, so the count is 2." },
+  { q: "Where do you filter on an aggregate such as SUM(amount) > 1000?", options: ["WHERE", "HAVING", "ORDER BY", "FROM"], answer: 1, explanation: "HAVING filters after aggregation. WHERE runs before." },
+  { q: "100.0 * SUM(flag) / COUNT(*) gives:", options: ["A count", "A percentage", "An average rank", "A syntax error"], answer: 1, explanation: "If flag is 1 or 0, the sum counts the ones, so this is the percentage of rows with flag = 1." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers test whether you know what happens with NULLs and duplicates. After you write an aggregate, say what you checked: "I looked at MIN and MAX and checked for duplicate IDs."
+</InterviewAlert>
+
+<InterviewQ q="How would you calculate average order value, and what can go wrong?">
+`SUM(order_value) / COUNT(DISTINCT order_id)`, or `AVG(order_value)` if each order is one row. Things that go wrong: duplicate order rows, cancelled or test orders mixed in, outliers from entry errors, and integer division. I would filter to valid orders, check MIN and MAX, and remove duplicates before reporting.
+</InterviewQ>
+
+<InterviewQ q="Can you use an aggregate function in the WHERE clause?">
+No. `WHERE` runs before groups are formed, so aggregate values do not exist yet. Use `HAVING` for conditions on aggregates, or a subquery.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between AVG(col) and SUM(col)/COUNT(*)?">
+`AVG(col)` divides by the number of non-NULL values. `SUM(col)/COUNT(*)` divides by all rows, so it is lower when `col` has NULLs. They are equal only when there are no NULLs.
+</InterviewQ>
+
+## Key takeaways
+
+- Aggregates collapse many rows into one value.
+- `COUNT(*)` counts rows. `COUNT(col)` and the other aggregates ignore NULLs.
+- `WHERE` filters first, then the aggregate runs.
+- `SUM(condition)` is a quick way to count matching rows and compute rates.
+- Always check MIN, MAX and duplicates before trusting an average.
+
+## Further reading
+
+<FurtherReading ids={["sqlbolt", "mode-sql", "sqlite-docs"]} />

@@ -1,0 +1,332 @@
+---
+title: "Interview pattern: month-over-month growth"
+description: "Compare each month with the previous one using LAG, strftime month buckets and a calendar table to handle missing months."
+module: sql
+order: 29
+estimatedMinutes: 45
+objectives:
+  - "Turn dates into month buckets with strftime"
+  - "Use LAG to bring the previous month onto the current row"
+  - "Calculate percent growth safely, with NULLIF and rounding"
+  - "Handle months that have no rows by building a calendar"
+tags: ["sql", "interview", "window-functions", "lag", "growth"]
+---
+
+## Learning objectives
+
+- Recognise "growth", "change from last month" and "MoM %" questions.
+- Bucket dates by month with `strftime('%Y-%m', date)`.
+- Use `LAG(value) OVER (ORDER BY month)` to read the previous row.
+- Avoid division by zero and the first-month NULL.
+- Fix the silent bug that happens when a month has no data.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+"Orders grew 6.4% over last month." "UPI volume fell 3% in February." Every weekly business review has a growth line. Computing it correctly, especially when a month is missing from the data, is a fresher-level test of care.
+</RealWorld>
+
+## Concept
+
+### The recognition cue
+
+When you see **"growth", "change vs previous month", "MoM", "increase/decrease from last period"**, think: *aggregate to one row per month, then `LAG`.*
+
+Analogy: a report card that shows this term's marks next to last term's marks. `LAG` is "look one row up".
+
+### The formula
+
+<FormulaCard title="Month-over-month growth percent">
+growth % = (this month - last month) / last month x 100
+
+In SQL: `100.0 * (cur - prev) / NULLIF(prev, 0)`
+</FormulaCard>
+
+### The template
+
+```sql
+WITH monthly AS (
+  SELECT strftime('%Y-%m', order_date) AS month,
+         COUNT(*) AS orders
+  FROM orders
+  GROUP BY month
+)
+SELECT month, orders,
+       LAG(orders) OVER (ORDER BY month) AS prev_orders,
+       ROUND(100.0 * (orders - LAG(orders) OVER (ORDER BY month))
+             / NULLIF(LAG(orders) OVER (ORDER BY month), 0), 1) AS mom_pct
+FROM monthly;
+```
+
+Key points:
+
+- `strftime('%Y-%m', d)` gives text like `2024-03`. It sorts correctly as text. (MySQL: `DATE_FORMAT`; PostgreSQL: `DATE_TRUNC('month', d)`; SQL Server: `FORMAT` or `EOMONTH`.)
+- `LAG(x)` returns the previous row's `x`, or `NULL` for the first row. `LAG(x, 1, 0)` gives a default.
+- `NULLIF(prev, 0)` turns a zero into NULL so you never divide by zero.
+- `100.0` forces decimal division. `100 * 5 / 8` in integer arithmetic loses decimals.
+
+### The missing-month trap
+
+`LAG` looks at the **previous row**, not the previous month. If a month has no rows (for example, zero terminations in March), that month does not exist in your `GROUP BY` result. The "previous row" for April is then February, and your growth number is wrong without any error.
+
+Fix: build a **calendar** of every month, `LEFT JOIN` your data to it and use `COALESCE(x, 0)`. In SQLite a recursive CTE can generate the months.
+
+<Tip>
+Ask yourself: "Could a month be missing?" For high-volume metrics like orders, no. For rare events such as fraud flags, layoffs or failed payments, yes.
+</Tip>
+
+## Worked examples
+
+### Example 1: monthly orders with LAG
+
+How did delivered orders grow month over month in 2024? De-duplicate first because the orders table has repeated rows.
+
+<SqlPlayground dataset="ecommerce" query={`WITH o AS (SELECT DISTINCT * FROM orders),
+monthly AS (
+  SELECT strftime('%Y-%m', order_date) AS month,
+         COUNT(*) AS orders
+  FROM o
+  WHERE order_status = 'Delivered' AND order_date >= '2024-01-01'
+  GROUP BY month
+)
+SELECT month, orders,
+       LAG(orders) OVER (ORDER BY month) AS prev_orders,
+       ROUND(100.0 * (orders - LAG(orders) OVER (ORDER BY month))
+             / NULLIF(LAG(orders) OVER (ORDER BY month), 0), 1) AS mom_pct
+FROM monthly
+ORDER BY month;`} title="Month-over-month growth with LAG" />
+
+**Output:**
+
+| month | orders | prev_orders | mom_pct |
+|---|---|---|---|
+| 2024-01 | 414 | NULL | NULL |
+| 2024-02 | 327 | 414 | -21.0 |
+| 2024-03 | 378 | 327 | 15.6 |
+| 2024-04 | 375 | 378 | -0.8 |
+| 2024-05 | 383 | 375 | 2.1 |
+| 2024-06 | 414 | 383 | 8.1 |
+| 2024-07 | 387 | 414 | -6.5 |
+| 2024-08 | 461 | 387 | 19.1 |
+| 2024-09 | 448 | 461 | -2.8 |
+| 2024-10 | 567 | 448 | 26.6 |
+| 2024-11 | 496 | 567 | -12.5 |
+| 2024-12 | 423 | 496 | -14.7 |
+
+January has no previous month in this filtered table, so its growth is NULL. That is honest. Do not replace it with 0, because zero would claim "no growth".
+
+### Example 2: the missing-month bug, then the fix
+
+HR tracks employees dismissed for conduct (`exit_type = 'Termination'`). In some months nobody was dismissed, so those months are absent after `GROUP BY`. First the naive result.
+
+<SqlPlayground dataset="hr" query={`WITH monthly AS (
+  SELECT strftime('%Y-%m', exit_date) AS month, COUNT(*) AS exits
+  FROM attrition
+  WHERE exit_type = 'Termination' AND exit_date < '2024-01-01'
+  GROUP BY month
+)
+SELECT month, exits,
+       LAG(month) OVER (ORDER BY month) AS compared_with,
+       LAG(exits) OVER (ORDER BY month) AS prev_exits
+FROM monthly
+ORDER BY month;`} title="Naive LAG skips empty months" />
+
+**Output:**
+
+| month | exits | compared_with | prev_exits |
+|---|---|---|---|
+| 2023-01 | 1 | NULL | NULL |
+| 2023-02 | 1 | 2023-01 | 1 |
+| 2023-03 | 1 | 2023-02 | 1 |
+| 2023-05 | 3 | 2023-03 | 1 |
+| 2023-06 | 1 | 2023-05 | 3 |
+| 2023-07 | 3 | 2023-06 | 1 |
+| 2023-08 | 1 | 2023-07 | 3 |
+| 2023-10 | 2 | 2023-08 | 1 |
+| 2023-11 | 2 | 2023-10 | 2 |
+| 2023-12 | 1 | 2023-11 | 2 |
+
+Look at the `compared_with` column: when a month is missing, the row is compared with a month two or more steps back. The fix is a calendar of all months.
+
+<SqlPlayground dataset="hr" query={`WITH RECURSIVE cal(month_start) AS (
+  SELECT '2023-01-01'
+  UNION ALL
+  SELECT date(month_start, '+1 month') FROM cal WHERE month_start < '2023-12-01'
+),
+monthly AS (
+  SELECT strftime('%Y-%m', exit_date) AS month, COUNT(*) AS exits
+  FROM attrition
+  WHERE exit_type = 'Termination'
+  GROUP BY month
+),
+full AS (
+  SELECT strftime('%Y-%m', c.month_start) AS month,
+         COALESCE(m.exits, 0) AS exits
+  FROM cal c
+  LEFT JOIN monthly m ON m.month = strftime('%Y-%m', c.month_start)
+)
+SELECT month, exits,
+       LAG(exits) OVER (ORDER BY month) AS prev_exits,
+       ROUND(100.0 * (exits - LAG(exits) OVER (ORDER BY month))
+             / NULLIF(LAG(exits) OVER (ORDER BY month), 0), 1) AS mom_pct
+FROM full
+ORDER BY month;`} title="Calendar fix with a recursive CTE" />
+
+**Output:**
+
+| month | exits | prev_exits | mom_pct |
+|---|---|---|---|
+| 2023-01 | 1 | NULL | NULL |
+| 2023-02 | 1 | 1 | 0.0 |
+| 2023-03 | 1 | 1 | 0.0 |
+| 2023-04 | 0 | 1 | -100.0 |
+| 2023-05 | 3 | 0 | NULL |
+| 2023-06 | 1 | 3 | -66.7 |
+| 2023-07 | 3 | 1 | 200.0 |
+| 2023-08 | 1 | 3 | -66.7 |
+| 2023-09 | 0 | 1 | -100.0 |
+| 2023-10 | 2 | 0 | NULL |
+| 2023-11 | 2 | 2 | 0.0 |
+| 2023-12 | 1 | 2 | -50.0 |
+
+Now every month appears, the empty ones show `0`, and growth after a zero month is `NULL` (division by zero avoided with `NULLIF`). That is the right answer: going from 0 to 2 is undefined as a percent.
+
+### Example 3: growth for each segment
+
+Use `PARTITION BY` to calculate growth separately inside each group. Here, successful transaction counts per payment app in the last three months of 2024. We filter in an outer query so the first rows keep their previous values.
+
+<SqlPlayground dataset="fintech" query={`WITH monthly AS (
+  SELECT payment_app,
+         strftime('%Y-%m', txn_datetime) AS month,
+         COUNT(DISTINCT txn_id) AS txns
+  FROM transactions
+  WHERE status = 'SUCCESS' AND txn_datetime >= '2024-01-01'
+  GROUP BY payment_app, month
+),
+g AS (
+  SELECT payment_app, month, txns,
+         LAG(txns) OVER (PARTITION BY payment_app ORDER BY month) AS prev_txns
+  FROM monthly
+)
+SELECT payment_app, month, txns, prev_txns,
+       ROUND(100.0 * (txns - prev_txns) / NULLIF(prev_txns, 0), 1) AS mom_pct
+FROM g
+WHERE month >= '2024-10'
+ORDER BY payment_app, month;`} title="MoM growth per payment app" />
+
+**Output:**
+
+| payment_app | month | txns | prev_txns | mom_pct |
+|---|---|---|---|---|
+| NammaPay | 2024-10 | 203 | 189 | 7.4 |
+| NammaPay | 2024-11 | 191 | 203 | -5.9 |
+| NammaPay | 2024-12 | 175 | 191 | -8.4 |
+| PayZippy | 2024-10 | 401 | 334 | 20.1 |
+| PayZippy | 2024-11 | 376 | 401 | -6.2 |
+| PayZippy | 2024-12 | 317 | 376 | -15.7 |
+| QuickPaisa | 2024-10 | 335 | 258 | 29.8 |
+| QuickPaisa | 2024-11 | 252 | 335 | -24.8 |
+| QuickPaisa | 2024-12 | 284 | 252 | 12.7 |
+| RupeeRocket | 2024-10 | 163 | 140 | 16.4 |
+| RupeeRocket | 2024-11 | 148 | 163 | -9.2 |
+| RupeeRocket | 2024-12 | 139 | 148 | -6.1 |
+
+Showing the first 12 of 15 rows.
+
+`PARTITION BY payment_app` means each app is compared only with itself. If we had put `WHERE month >= '2024-10'` inside the first CTE, October would have no previous month and show NULL.
+
+### Example 4: the same thing without LAG
+
+Older MySQL versions have no `LAG`. A self-join on "month minus one" gives the same answer.
+
+<SqlPlayground dataset="ecommerce" query={`WITH o AS (SELECT DISTINCT * FROM orders),
+m AS (
+  SELECT strftime('%Y-%m', order_date) AS month, COUNT(*) AS orders
+  FROM o
+  WHERE order_status = 'Delivered'
+  GROUP BY month
+)
+SELECT cur.month, cur.orders, prev.orders AS prev_orders,
+       ROUND(100.0 * (cur.orders - prev.orders) / prev.orders, 1) AS mom_pct
+FROM m cur
+LEFT JOIN m prev
+  ON prev.month = strftime('%Y-%m', date(cur.month || '-01', '-1 month'))
+WHERE cur.month >= '2024-01'
+ORDER BY cur.month
+LIMIT 6;`} title="Self-join alternative" />
+
+**Output:**
+
+| month | orders | prev_orders | mom_pct |
+|---|---|---|---|
+| 2024-01 | 414 | 411 | 0.7 |
+| 2024-02 | 327 | 414 | -21.0 |
+| 2024-03 | 378 | 327 | 15.6 |
+| 2024-04 | 375 | 378 | -0.8 |
+| 2024-05 | 383 | 375 | 2.1 |
+| 2024-06 | 414 | 383 | 8.1 |
+
+This version joins on the actual previous **calendar** month, so it is immune to the missing-row problem (an absent month gives NULL, not a wrong comparison).
+
+## Common mistakes
+
+<CommonMistake>
+**Integer division.** `(cur - prev) / prev * 100` with whole numbers gives 0 for any growth under 100%. Multiply by `100.0` first.
+</CommonMistake>
+<CommonMistake>
+**Grouping by month name or by `%m` only.** January 2023 and January 2024 merge into one group. Always use `%Y-%m`.
+</CommonMistake>
+<CommonMistake>
+**Trusting LAG when months are missing.** The query runs without error but compares the wrong months. Build a calendar for rare events.
+</CommonMistake>
+<CommonMistake>
+**Filtering the first month out too early.** A `WHERE month >= '2024-10'` inside the aggregation CTE leaves October with no previous row. Calculate `LAG` first, filter in the outer query.
+</CommonMistake>
+<CommonMistake>
+**Replacing the first-month NULL with 0%.** It reports "no change" when the truth is "no comparison possible".
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="pattern-mom" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What does LAG(orders) OVER (ORDER BY month) return for the first row?", options: ["0", "NULL", "The same value", "An error"], answer: 1, explanation: "There is no previous row, so LAG returns NULL unless you give a default value." },
+  { q: "Why use NULLIF(prev, 0) in a growth formula?", options: ["To round the number", "To avoid division by zero", "To remove duplicates", "To sort rows"], answer: 1, explanation: "NULLIF turns 0 into NULL, so the division returns NULL instead of an error." },
+  { q: "A month has no rows after GROUP BY. What happens to LAG for the next month?", options: ["It returns NULL", "It compares with the last month that has data", "It returns 0", "SQL raises an error"], answer: 1, explanation: "LAG reads the previous row, not the previous calendar month, so it silently skips the empty month." },
+  { q: "Which SQLite expression gives '2024-03' from a date?", options: ["strftime('%Y-%m', d)", "MONTH(d)", "DATE_TRUNC('month', d)", "FORMAT(d, 'yyyy-MM')"], answer: 0, explanation: "SQLite uses strftime. The others are MySQL, PostgreSQL and SQL Server syntax." },
+  { q: "Orders go from 80 to 100. What is the MoM growth?", options: ["20%", "25%", "80%", "125%"], answer: 1, explanation: "(100 - 80) / 80 = 0.25, which is 25%. The base is last month, not this month." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers often start with plain MoM growth and then ask "what if a month has no data?" The follow-up is the real test. Mention the calendar fix before they ask.
+</InterviewAlert>
+
+<InterviewQ q="Write a query for the month-over-month percent growth in orders. Explain it as you go.">
+"I will first aggregate to one row per month, using `strftime('%Y-%m', order_date)`, in a CTE, because LAG needs one row per period. Then I use `LAG(orders) OVER (ORDER BY month)` to bring last month's count next to this month's. Growth is this minus last, divided by last, times 100. I use 100.0 to avoid integer division and NULLIF on the denominator for safety. The first month will be NULL because there is nothing to compare with, and I will leave it NULL. If some months could have no rows, I would left join to a calendar first."
+</InterviewQ>
+<InterviewQ q="What is wrong with LAG when a month has no data?">
+LAG goes back one row, not one month. If March is missing from the grouped result, April is compared with February and the percent is wrong, with no error message. I would generate a calendar of all months with a recursive CTE, left join the data, and COALESCE missing counts to 0. For a self-join version, join on `date(month, '-1 month')`, which compares the true previous month.
+</InterviewQ>
+<InterviewQ q="How do you compute MoM growth per category in one query?">
+Use `PARTITION BY category ORDER BY month` in the LAG, so each category is compared only with its own previous month. Without PARTITION BY the first month of Category B would be compared with the last month of Category A.
+</InterviewQ>
+<InterviewQ q="MoM growth looks huge in one month. How do you check it is real?">
+Check the base: a small previous month makes the percent large (from 2 to 6 is +200%). Look at absolute numbers next to the percent. Then check for a one-off cause: a festival like Diwali, a promotion, a data load that doubled rows, or duplicates. I would also compare with the same month last year, which is the YoY view.
+</InterviewQ>
+
+## Key takeaways
+
+- Cue: "growth", "vs last month", "MoM" means aggregate to months, then `LAG`.
+- Growth % = (cur - prev) / prev x 100. Use `100.0` and `NULLIF(prev, 0)`.
+- Use `%Y-%m`, not just the month number.
+- `LAG` is row-based. Missing months need a calendar or a self-join on the previous calendar month.
+- Leave the first month NULL, and show the absolute numbers next to the percent.
+
+## Further reading
+
+<FurtherReading ids={["mode-sql", "sqlite-docs", "datalemur"]} />

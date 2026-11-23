@@ -1,0 +1,272 @@
+[
+  {
+    "id": "sql-pattern-percent-total-001",
+    "module": "sql",
+    "topic": "pattern-percent-total",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "For successful payments only (`payment_status = 'Success'`), show how the money splits across payment methods. Return `payment_method`, `total_amount` (sum of `amount`, rounded to 2 decimals) and `pct_of_total` (share of the grand total, rounded to 1 decimal), ordered by `total_amount` descending, then `payment_method`.",
+    "dataset": "ecommerce",
+    "hint": "SUM(amount) per method, then divide by SUM(SUM(amount)) OVER ().",
+    "solutionSql": "SELECT payment_method, ROUND(SUM(amount), 2) AS total_amount, ROUND(100.0 * SUM(amount) / SUM(SUM(amount)) OVER (), 1) AS pct_of_total FROM payments WHERE payment_status = 'Success' GROUP BY payment_method ORDER BY total_amount DESC, payment_method",
+    "expectedOutput": {
+      "columns": [
+        "payment_method",
+        "total_amount",
+        "pct_of_total"
+      ],
+      "rows": [
+        [
+          "UPI",
+          20527685.03,
+          41.1
+        ],
+        [
+          "COD",
+          10029836.81,
+          20.1
+        ],
+        [
+          "Credit Card",
+          7718240.76,
+          15.5
+        ],
+        [
+          "Debit Card",
+          5948798.18,
+          11.9
+        ],
+        [
+          "Netbanking",
+          2932311.75,
+          5.9
+        ],
+        [
+          "Wallet",
+          2745035.72,
+          5.5
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "GROUP BY first makes one total per method. SUM(SUM(amount)) OVER () then adds those totals into the grand total across all groups, because window functions run after grouping. Dividing and multiplying by 100.0 (not 100) avoids integer division.",
+    "commonMistake": "Writing 100 * SUM(amount) / SUM(amount) OVER (). Without grouping the window total is not the grand total of the groups and SQL raises an error, or if you use 100 with integers you get 0 for every row.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "percent of total",
+      "window",
+      "group by"
+    ]
+  },
+  {
+    "id": "sql-pattern-percent-total-002",
+    "module": "sql",
+    "topic": "pattern-percent-total",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "The regional head wants to see how much each store contributes to its own region. Using `sales` (ignore exact duplicate rows) joined to `stores`, return `region`, `store_name`, `net_sales` (sum of `net_amount_inr`, rounded to 0 decimals) and `pct_of_region` (store share of its region total, rounded to 1 decimal). Order by `region`, then `net_sales` descending, then `store_name`.",
+    "dataset": "retail",
+    "hint": "Window SUM with PARTITION BY region on top of a GROUP BY store.",
+    "solutionSql": "WITH s AS (SELECT DISTINCT sale_id, store_id, net_amount_inr FROM sales) SELECT st.region, st.store_name, ROUND(SUM(s.net_amount_inr), 0) AS net_sales, ROUND(100.0 * SUM(s.net_amount_inr) / SUM(SUM(s.net_amount_inr)) OVER (PARTITION BY st.region), 1) AS pct_of_region FROM s JOIN stores st ON st.store_id = s.store_id GROUP BY st.region, st.store_name ORDER BY st.region, net_sales DESC, st.store_name",
+    "expectedOutput": {
+      "columns": [
+        "region",
+        "store_name",
+        "net_sales",
+        "pct_of_region"
+      ],
+      "rows": [
+        [
+          "East",
+          "Vasudha Supermarket - Six Mile",
+          1374128,
+          40.4
+        ],
+        [
+          "East",
+          "Vasudha Supermarket - Salt Lake",
+          1310863,
+          38.5
+        ],
+        [
+          "East",
+          "Vasudha Express - Boring Road",
+          716319,
+          21.1
+        ],
+        [
+          "North",
+          "Vasudha Hypermarket - Dwarka",
+          2431026,
+          40.6
+        ],
+        [
+          "North",
+          "Vasudha Supermarket - Malviya Nagar",
+          1360203,
+          22.7
+        ],
+        [
+          "North",
+          "Vasudha Supermarket - Gomti Nagar",
+          805132,
+          13.4
+        ],
+        [
+          "North",
+          "Vasudha Express - Sector 17",
+          736147,
+          12.3
+        ],
+        [
+          "North",
+          "Vasudha Express - Rohini",
+          656900,
+          11
+        ],
+        [
+          "South",
+          "Vasudha Hypermarket - Whitefield",
+          2325389,
+          27
+        ],
+        [
+          "South",
+          "Vasudha Supermarket - Kukatpally",
+          1328011,
+          15.4
+        ],
+        [
+          "South",
+          "Vasudha Supermarket - RS Puram",
+          1285679,
+          15
+        ],
+        [
+          "South",
+          "Vasudha Supermarket - Jayanagar",
+          1184301,
+          13.8
+        ],
+        [
+          "South",
+          "Vasudha Supermarket - Velachery",
+          937528,
+          10.9
+        ],
+        [
+          "South",
+          "Vasudha Express - MVP Colony",
+          772503,
+          9
+        ],
+        [
+          "South",
+          "Vasudha Express - Kakkanad",
+          765769,
+          8.9
+        ],
+        [
+          "West",
+          "Vasudha Hypermarket - Andheri",
+          2560239,
+          20.4
+        ],
+        [
+          "West",
+          "Vasudha Hypermarket - Satellite",
+          2530901,
+          20.2
+        ],
+        [
+          "West",
+          "Vasudha Supermarket - Thane",
+          1348347,
+          10.8
+        ],
+        [
+          "West",
+          "Vasudha Supermarket - MP Nagar",
+          1301600,
+          10.4
+        ],
+        [
+          "West",
+          "Vasudha Supermarket - Aundh",
+          1284283,
+          10.2
+        ],
+        [
+          "West",
+          "Vasudha Supermarket - Dharampeth",
+          1282469,
+          10.2
+        ],
+        [
+          "West",
+          "Vasudha Supermarket - Vijay Nagar",
+          1229047,
+          9.8
+        ],
+        [
+          "West",
+          "Vasudha Express - Kharadi",
+          536917,
+          4.3
+        ],
+        [
+          "West",
+          "Vasudha Express - Adajan",
+          463431,
+          3.7
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "After grouping by store, SUM(...) OVER (PARTITION BY region) adds up the stores that share a region, which is the denominator for that store's share. The shares within each region add up to 100. Deduplicating sales first protects against the repeated sale rows.",
+    "commonMistake": "Dividing by the overall grand total (OVER ()) instead of the region total. The shares then add to 100 across the whole company, not within each region, so they answer a different question.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 10,
+    "tags": [
+      "percent of total",
+      "partition",
+      "join"
+    ]
+  },
+  {
+    "id": "sql-pattern-percent-total-003",
+    "module": "sql",
+    "topic": "pattern-percent-total",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "A risk lead asks how concentrated merchant volume is. Using successful merchant payments (`status = 'SUCCESS'`, `merchant_id` not NULL, ignore exact duplicate rows), rank merchants by total `amount`, and report how many merchants are needed to reach 80 percent of the total value. Return `merchants_for_80pct`, `total_merchants` and `pct_of_merchants` (the first divided by the second times 100, rounded to 1 decimal).",
+    "dataset": "fintech",
+    "hint": "Compute each merchant's total, a running SUM in descending order, and the running share. The count is the first row whose running share reaches 0.80.",
+    "solutionSql": "WITH t AS (SELECT DISTINCT txn_id, merchant_id, amount FROM transactions WHERE status = 'SUCCESS' AND merchant_id IS NOT NULL), m AS (SELECT merchant_id, SUM(amount) AS amt FROM t GROUP BY merchant_id), c AS (SELECT merchant_id, amt, SUM(amt) OVER (ORDER BY amt DESC, merchant_id) AS running, SUM(amt) OVER () AS total, ROW_NUMBER() OVER (ORDER BY amt DESC, merchant_id) AS rk FROM m) SELECT MIN(rk) AS merchants_for_80pct, (SELECT COUNT(*) FROM m) AS total_merchants, ROUND(100.0 * MIN(rk) / (SELECT COUNT(*) FROM m), 1) AS pct_of_merchants FROM c WHERE running >= 0.8 * total",
+    "expectedOutput": {
+      "columns": [
+        "merchants_for_80pct",
+        "total_merchants",
+        "pct_of_merchants"
+      ],
+      "rows": [
+        [
+          106,
+          400,
+          26.5
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "This is the Pareto (80/20) pattern. A running SUM in descending order of value gives the cumulative amount after each merchant, and dividing by the total gives the cumulative share. The smallest rank where the cumulative share reaches 80 percent is the number of merchants that make up 80 percent of value. The ORDER BY inside the window needs a tie-breaker so the running total is stable.",
+    "commonMistake": "Taking the top 20 percent of merchants by count and assuming they hold 80 percent. The real concentration is a result you must measure, and it is rarely exactly 80/20.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 16,
+    "tags": [
+      "pareto",
+      "running sum",
+      "percent of total"
+    ]
+  }
+]

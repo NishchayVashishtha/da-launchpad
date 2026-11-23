@@ -1,0 +1,239 @@
+---
+title: "Databases, tables, keys and how SQL thinks"
+description: "Understand what a database is, how tables and keys connect data, and the mindset behind every SQL query."
+module: sql
+order: 1
+estimatedMinutes: 30
+objectives:
+  - "Explain what a database, table, row and column are"
+  - "Tell a primary key from a foreign key"
+  - "Describe SQL as a declarative language"
+  - "Name the 7 practice datasets and their main tables"
+tags: ["sql", "basics", "keys", "tables"]
+---
+
+## Learning objectives
+
+- Explain what a database, a table, a row and a column are.
+- Tell a **primary key** from a **foreign key** and say why both exist.
+- Explain why SQL is called a *declarative* language.
+- Know the 7 practice datasets you will use through this course.
+- Run your first queries in the playground.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+In most companies, the numbers you need (orders, payments, users, exits) live in a database, not in Excel. A Data Analyst who can ask the database a question directly is much faster than one who waits for someone to export a file. In interviews for fintech, health and consulting analyst roles, a SQL round is almost always part of the process. It all starts with understanding tables and keys.
+</RealWorld>
+
+## Concept
+
+### What is a database?
+
+A **database** is an organised store of data that many people and programs can read and update safely. Think of a big office cupboard. Each drawer holds one kind of paper: one for customers, one for orders, one for payments.
+
+A **relational database** keeps data in **tables**. SQL (Structured Query Language, said "sequel" or "S-Q-L") is the language you use to talk to it. Popular relational databases are MySQL, PostgreSQL, SQL Server, Oracle and SQLite. The SQL you learn here works, with small changes, in all of them.
+
+### Tables, rows and columns
+
+A **table** is a grid, like an Excel sheet.
+
+- A **column** (also called a field) holds one kind of fact, such as `city`. Every column has a **data type**: number (`INTEGER`, `REAL`), text (`TEXT`), date, and so on.
+- A **row** (also called a record) is one thing, such as one customer.
+
+Here is a tiny example of a `customers` table:
+
+| customer_id | full_name | city |
+|---|---|---|
+| 1 | Rohan Patel | Bengaluru |
+| 2 | Ramesh Patel | Chennai |
+| 3 | Komal Patel | Delhi |
+
+### Keys: how tables connect
+
+Why not keep everything in one giant table? Because then a customer's name and city would repeat on every order. That wastes space and causes mistakes (change the city in one row, forget another). So we split data into separate tables and link them with keys.
+
+- A **primary key (PK)** is a column whose value is unique for each row and never empty. `customer_id` is the primary key of `customers`. It is like an Aadhaar number: it identifies one person.
+- A **foreign key (FK)** is a column in one table that points to the primary key of another. `orders.customer_id` points to `customers.customer_id`. It says "this order belongs to that customer".
+
+<Mermaid chart={`erDiagram
+  CUSTOMERS ||--o{ ORDERS : places
+  ORDERS ||--o{ ORDER_ITEMS : contains
+  PRODUCTS ||--o{ ORDER_ITEMS : "appears in"
+  ORDERS ||--o{ PAYMENTS : "paid by"`} caption="The ecommerce dataset: one customer places many orders; each order has many items and payments." />
+
+The line with `||--o{` reads "one to many". One customer, many orders.
+
+### How SQL thinks
+
+Most programming languages are **imperative**: you write the steps. SQL is **declarative**: you describe *what result you want*, and the database decides how to get it.
+
+In Python you would loop over every customer, check the city, and append to a list. In SQL you write:
+
+```sql
+SELECT full_name FROM customers WHERE city = 'Pune';
+```
+
+You say "give me names of customers in Pune". You do not say how to scan or search.
+
+Two more habits to build from day one:
+
+1. **A query returns a table.** Always. Even `SELECT 1` returns a table with one row and one column. This is why you can put one query inside another later.
+2. **Think in sets of rows, not one row at a time.** `SELECT price * 2 FROM products` doubles every row at once.
+
+<Tip>
+SQL keywords are not case sensitive (`select` = `SELECT`). Writing keywords in CAPITALS and column names in lowercase makes queries easier to read. Text *values* such as `'Pune'` are case sensitive in most databases, including SQLite when you use `=`.
+</Tip>
+
+### The 7 practice datasets
+
+All examples and practice questions use fictional but realistic Indian business data. Each dataset is a small SQLite database that runs right in your browser. Full column lists live on the [datasets page](/datasets/).
+
+| Dataset | Business | Main tables |
+|---|---|---|
+| `ecommerce` | Online shop | customers, products, orders, order_items, payments, returns |
+| `food_delivery` | Food delivery app | restaurants, delivery_partners, deliveries, ratings, promo_usage |
+| `fintech` | UPI payments app | users, merchants, transactions, failed_transactions |
+| `hr` | Company HR data | departments, employees, salaries, attrition, performance_reviews |
+| `retail` | Supermarket chain | stores, sales, inventory, targets |
+| `subscription` | Streaming/SaaS app | users, subscriptions, events |
+| `marketing` | Ad campaigns | campaigns, ad_spend, clicks, conversions, ab_test_results |
+
+<Warning>
+The data is deliberately **messy**, like real company data. You will find city names like `mumbai` or ` Delhi `, NULL (missing) values, and a few duplicate rows. This is on purpose. Cleaning it is part of the job, and the lessons will teach you how.
+</Warning>
+
+## Worked examples
+
+### Example 1: what tables exist?
+
+Every SQLite database has a built-in table called `sqlite_master` that lists its tables.
+
+<SqlPlayground dataset="ecommerce" query={`SELECT name
+FROM sqlite_master
+WHERE type = 'table'
+ORDER BY name;`} title="List the tables" />
+
+**Output:**
+
+| name |
+|---|
+| customers |
+| order_items |
+| orders |
+| payments |
+| products |
+| returns |
+
+
+### Example 2: peek at a table
+
+The first thing you do with any new table: look at a few rows.
+
+<SqlPlayground dataset="fintech" query={`SELECT *
+FROM users
+LIMIT 5;`} title="Peek at fintech users" />
+
+**Output:**
+
+| user_id | full_name | phone | city | state | age_group | kyc_status | primary_bank | preferred_app | upi_id | signup_date |
+|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | Vivaan Mishra | 8157578200 | Bengaluru | Karnataka | 45-60 | Full KYC | Rajdhani National Bank | SabPay | 8157578200@rnb | 2022-01-01 |
+| 2 | Pallavi Singh | 9310727627 | Coimbatore | Tamil Nadu | 35-44 | Full KYC | Rajdhani National Bank | SabPay | 9310727627@rnb | 2022-01-01 |
+| 3 | Harpreet Shetty | 9571738952 | NULL | Madhya Pradesh | 18-24 | Full KYC | Sundaram Bank | PayZippy | 9571738952@sdm | 2022-01-01 |
+| 4 | Gaurav Patel | 9173927834 | Chandigarh | Chandigarh | 25-34 | Full KYC | Bharat Union Bank | SabPay | 9173927834@bub | 2022-01-01 |
+| 5 | Bhavna Menon | 9551991578 | Delhi | Delhi | 60+ | Min KYC | Sundaram Bank | QuickPaisa | 9551991578@sdm | 2022-01-01 |
+
+
+`*` means "all columns". `LIMIT 5` means "only 5 rows". Together they make a safe, fast peek.
+
+### Example 3: how many rows?
+
+<SqlPlayground dataset="hr" query={`SELECT COUNT(*) AS total_rows
+FROM employees;`} title="Row count of employees" />
+
+**Output:**
+
+| total_rows |
+|---|
+| 2412 |
+
+
+### Example 4: is the primary key really unique?
+
+The HR cheat sheet says the `employees` table has some duplicate rows. Let us test whether `employee_id` is unique by comparing total rows to distinct ids.
+
+<SqlPlayground dataset="hr" query={`SELECT COUNT(*) AS total_rows,
+       COUNT(DISTINCT employee_id) AS distinct_ids
+FROM employees;`} title="Check key uniqueness" />
+
+**Output:**
+
+| total_rows | distinct_ids |
+|---|---|
+| 2412 | 2400 |
+
+
+The two numbers differ, so `employee_id` is **not** unique here: a few employees are repeated. In a clean database the primary key is enforced. In real analytics work, you often meet tables where it is not, so always check.
+
+## Common mistakes
+
+<CommonMistake>
+**Assuming an ID column is unique.** Always test with `COUNT(*)` versus `COUNT(DISTINCT id)` before you trust it. Duplicate keys silently inflate counts and totals.
+</CommonMistake>
+
+<CommonMistake>
+**Using double quotes for text.** In standard SQL, `'Pune'` (single quotes) is text, and `"city"` (double quotes) is a column name. Some databases forgive double quotes for text, but not all.
+</CommonMistake>
+
+<CommonMistake>
+**Forgetting that a query result is a copy.** `SELECT` never changes the stored table. It only reads. That is why you can experiment freely.
+</CommonMistake>
+
+<CommonMistake>
+**Starting with a huge query.** Look at the table first (`SELECT * ... LIMIT 5`), then build step by step.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="basics" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What does a primary key guarantee?", options: ["Each row has a unique, non-empty value in that column", "The column holds only numbers", "The table has no foreign keys", "The column is sorted"], answer: 0, explanation: "A primary key identifies each row uniquely and cannot be NULL. It does not have to be a number or sorted." },
+  { q: "In orders.customer_id, which kind of key is it?", options: ["Primary key of orders", "Foreign key pointing to customers", "A duplicate key", "A composite index"], answer: 1, explanation: "orders.customer_id refers to customers.customer_id, so it is a foreign key." },
+  { q: "Why is SQL called declarative?", options: ["You describe the result you want, not the steps", "It only works with declarations", "It cannot loop", "It must be written in capitals"], answer: 0, explanation: "In SQL you state what you want and the database engine decides how to compute it." },
+  { q: "What does SELECT * FROM customers LIMIT 5 return?", options: ["All customers", "The first 5 columns", "At most 5 rows with all columns", "Only the customer count"], answer: 2, explanation: "* means all columns and LIMIT 5 caps the rows at 5." },
+  { q: "Does a SELECT query change the data stored in the table?", options: ["Yes, it sorts the table", "Yes, it removes duplicates", "No, it only reads data", "Only if it has WHERE"], answer: 2, explanation: "SELECT only reads. INSERT, UPDATE and DELETE change data." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers often start with simple concept checks: "What is a primary key?", "What is the difference between a primary and a foreign key?". Answer in one clear sentence and add a small example from a business you know.
+</InterviewAlert>
+
+<InterviewQ q="What is the difference between a primary key and a foreign key?">
+A **primary key** uniquely identifies each row in its own table and cannot be NULL, for example `customers.customer_id`. A **foreign key** is a column in another table that stores a primary key value to link rows, for example `orders.customer_id`. A table has one primary key but can have many foreign keys. Foreign keys are what let us join tables later.
+</InterviewQ>
+
+<InterviewQ q="Why do we split data into many tables instead of one big table?">
+To avoid repeating data (called **redundancy**) and the mistakes that follow. A customer's city is stored once in `customers`, not on every order. Updates are easier and data stays consistent. The cost is that we must **join** tables when we need information from both.
+</InterviewQ>
+
+<InterviewQ q="What does it mean that SQL is declarative?">
+You tell the database what result you want, and its **query optimiser** chooses how to run it (which indexes to use, in which order to read tables). This is different from Python or Java, where you write each step yourself.
+</InterviewQ>
+
+## Key takeaways
+
+- A database stores data in tables made of rows (records) and columns (fields).
+- A primary key is unique and never empty. A foreign key links a row to another table's primary key.
+- SQL is declarative: describe the result, not the steps. Every query returns a table.
+- Never trust that an ID is unique. Check it with `COUNT(*)` versus `COUNT(DISTINCT ...)`.
+- Our 7 practice datasets are messy on purpose, to teach real-world habits.
+
+## Further reading
+
+<FurtherReading ids={["sqlbolt", "mode-sql", "sqlite-docs"]} />

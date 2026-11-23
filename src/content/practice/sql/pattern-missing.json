@@ -1,0 +1,250 @@
+[
+  {
+    "id": "sql-pattern-missing-001",
+    "module": "sql",
+    "topic": "pattern-missing",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "Marketing wants to run a win-back campaign for people who signed up but never bought anything. Count the distinct customers in `customers` who have no row in `orders`. Return one column, `never_ordered`.",
+    "dataset": "ecommerce",
+    "hint": "Use NOT EXISTS (or LEFT JOIN with IS NULL). Count DISTINCT ids because customers has duplicate rows.",
+    "solutionSql": "SELECT COUNT(DISTINCT c.customer_id) AS never_ordered FROM customers c WHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.customer_id)",
+    "expectedOutput": {
+      "columns": [
+        "never_ordered"
+      ],
+      "rows": [
+        [
+          2278
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "NOT EXISTS keeps a customer only when the subquery finds no matching order. This is the anti-join pattern. COUNT(DISTINCT ...) is needed because the customers table contains a few exact duplicate rows that would otherwise be counted twice.",
+    "commonMistake": "Using INNER JOIN with orders and then counting. An inner join returns only customers who DID order, so you get the opposite answer.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "anti-join",
+      "not exists",
+      "missing"
+    ]
+  },
+  {
+    "id": "sql-pattern-missing-002",
+    "module": "sql",
+    "topic": "pattern-missing",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "The category team wants to clean the catalogue. List products that have never been sold, meaning no row in `order_items`. Return `product_id`, `product_name`, `category`, `is_active`, ordered by `product_id`, first 15 rows only.",
+    "dataset": "ecommerce",
+    "hint": "LEFT JOIN order_items and keep rows where the joined key IS NULL, or use NOT EXISTS.",
+    "solutionSql": "SELECT p.product_id, p.product_name, p.category, p.is_active FROM products p LEFT JOIN order_items i ON i.product_id = p.product_id WHERE i.order_item_id IS NULL ORDER BY p.product_id LIMIT 15",
+    "expectedOutput": {
+      "columns": [
+        "product_id",
+        "product_name",
+        "category",
+        "is_active"
+      ],
+      "rows": [
+        [
+          32,
+          "Rasoi Plus Storage 838",
+          "Home & Kitchen",
+          0
+        ],
+        [
+          36,
+          "Kolhapuri Kraft Sneaker 945",
+          "Footwear",
+          0
+        ],
+        [
+          38,
+          "Pustak Ghar Exam Prep 434",
+          "Books",
+          0
+        ],
+        [
+          53,
+          "Lakshmi Home Cookware 758",
+          "Home & Kitchen",
+          0
+        ],
+        [
+          64,
+          "Sahitya Hub Fiction 919",
+          "Books",
+          0
+        ],
+        [
+          78,
+          "Desi Dhara Dry Fruit 276",
+          "Grocery",
+          0
+        ],
+        [
+          122,
+          "Sahitya Hub Exam Prep 200",
+          "Books",
+          0
+        ],
+        [
+          126,
+          "Annapurna Snack 398",
+          "Grocery",
+          0
+        ],
+        [
+          174,
+          "VoltEdge Headphone 213",
+          "Electronics",
+          0
+        ],
+        [
+          183,
+          "Rangrez Dresse 301",
+          "Fashion",
+          0
+        ],
+        [
+          225,
+          "PureNeem Makeup 488",
+          "Beauty",
+          0
+        ],
+        [
+          251,
+          "Vastra Co Dresse 167",
+          "Fashion",
+          0
+        ],
+        [
+          281,
+          "Padukas Sandal 979",
+          "Footwear",
+          0
+        ],
+        [
+          298,
+          "Masala Mandi Snack 487",
+          "Grocery",
+          0
+        ],
+        [
+          329,
+          "Vastra Co Jean 487",
+          "Fashion",
+          0
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "LEFT JOIN keeps every product and fills NULLs when no order item matches. Filtering on a right-table column IS NULL leaves only the unmatched products. Showing is_active tells you whether a never-sold product is still on the shelf or already retired.",
+    "commonMistake": "Putting the IS NULL test on a left-table column such as p.product_id. That column is never NULL, so the query returns zero rows.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 7,
+    "tags": [
+      "anti-join",
+      "left join",
+      "catalogue"
+    ]
+  },
+  {
+    "id": "sql-pattern-missing-003",
+    "module": "sql",
+    "topic": "pattern-missing",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Growth wants to know where weak signups come from. For each `acquisition_source`, count distinct users who have no `trial_start` event at all. Event names are messy, so compare with `LOWER(event_name)`. Return `acquisition_source`, `no_trial_users`, ordered by `no_trial_users` descending, then `acquisition_source`.",
+    "dataset": "subscription",
+    "hint": "NOT EXISTS with a correlated subquery on events, then GROUP BY the source.",
+    "solutionSql": "SELECT u.acquisition_source, COUNT(DISTINCT u.user_id) AS no_trial_users FROM users u WHERE NOT EXISTS (SELECT 1 FROM events e WHERE e.user_id = u.user_id AND LOWER(e.event_name) = 'trial_start') GROUP BY u.acquisition_source ORDER BY no_trial_users DESC, u.acquisition_source",
+    "expectedOutput": {
+      "columns": [
+        "acquisition_source",
+        "no_trial_users"
+      ],
+      "rows": [
+        [
+          "Organic",
+          575
+        ],
+        [
+          "Google Ads",
+          470
+        ],
+        [
+          "Instagram",
+          367
+        ],
+        [
+          "Referral",
+          212
+        ],
+        [
+          "Play Store Feature",
+          141
+        ],
+        [
+          "Influencer",
+          127
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The subquery looks for a trial_start event for this user, with the name lower-cased so TRIAL_START is also found. NOT EXISTS keeps users with no such event. The outer GROUP BY then counts them per source. The event condition sits inside the subquery, which is where it must be for an anti-join.",
+    "commonMistake": "Filtering events WHERE event_name <> 'trial_start' and joining. That keeps any user who has some other event, so nearly everyone qualifies and the counts are wildly inflated.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 9,
+    "tags": [
+      "anti-join",
+      "not exists",
+      "funnel"
+    ]
+  },
+  {
+    "id": "sql-pattern-missing-004",
+    "module": "sql",
+    "topic": "pattern-missing",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Retention wants to know how many 2023 buyers disappeared in 2024. Using orders with `order_status = 'Delivered'` (ignore exact duplicate rows), find customers who ordered in 2023 and did not order in 2024. Split by `is_prime`. Return `is_prime`, `lapsed_customers`, `buyers_2023`, and `lapsed_pct` (lapsed divided by buyers_2023 times 100, rounded to 1 decimal), ordered by `is_prime`.",
+    "dataset": "ecommerce",
+    "hint": "Per customer, use conditional MAX or SUM flags for each year, then aggregate. Dedupe customers when joining to get is_prime.",
+    "solutionSql": "WITH o AS (SELECT DISTINCT order_id, customer_id, order_date FROM orders WHERE order_status = 'Delivered'), flags AS (SELECT customer_id, MAX(order_date LIKE '2023%') AS in_2023, MAX(order_date LIKE '2024%') AS in_2024 FROM o GROUP BY customer_id), c AS (SELECT DISTINCT customer_id, is_prime FROM customers) SELECT c.is_prime, SUM(f.in_2024 = 0) AS lapsed_customers, COUNT(*) AS buyers_2023, ROUND(100.0 * SUM(f.in_2024 = 0) / COUNT(*), 1) AS lapsed_pct FROM flags f JOIN c ON c.customer_id = f.customer_id WHERE f.in_2023 = 1 GROUP BY c.is_prime ORDER BY c.is_prime",
+    "expectedOutput": {
+      "columns": [
+        "is_prime",
+        "lapsed_customers",
+        "buyers_2023",
+        "lapsed_pct"
+      ],
+      "rows": [
+        [
+          0,
+          252,
+          872,
+          28.9
+        ],
+        [
+          1,
+          62,
+          325,
+          19.1
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The flags CTE gives one row per customer with a 1 or 0 for each year. Customers with in_2023 = 1 and in_2024 = 0 are the lapsed ones. Because SQLite treats a true comparison as 1, SUM(in_2024 = 0) counts them. This 'in A but not in B' question is the same anti-join idea, written with flags instead of NOT EXISTS.",
+    "commonMistake": "Filtering WHERE order_date LIKE '2023%' AND order_date NOT LIKE '2024%' on order rows. Each single row is either 2023 or 2024, so the second condition is always true and every 2023 buyer is reported as lapsed.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 14,
+    "tags": [
+      "anti-join",
+      "retention",
+      "flags"
+    ]
+  }
+]

@@ -11,6 +11,7 @@
     "preview": "astro preview",
     "validate": "node scripts/validate.mjs",
     "audit": "node scripts/audit.mjs",
+    "lint:quality": "node scripts/lint-quality.mjs",
     "check": "astro check"
   },
   "dependencies": {

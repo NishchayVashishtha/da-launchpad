@@ -1,0 +1,191 @@
+---
+title: "Text and date functions: LEFT, MID, FIND, TEXT, TEXTJOIN, EOMONTH, NETWORKDAYS, DATEDIF"
+description: "Cut, join and format text, and do date maths with the functions analysts use every day."
+module: excel
+order: 7
+estimatedMinutes: 50
+objectives: ["Extract parts of text with LEFT, RIGHT, MID, FIND and SEARCH", "Join and format values with CONCAT, TEXTJOIN and TEXT", "Build dates with DATE and find month ends with EOMONTH", "Count working days and ages with NETWORKDAYS and DATEDIF", "Find the day of the week with WEEKDAY"]
+tags: ["excel", "text", "dates", "datedif", "networkdays"]
+---
+
+## Learning objectives
+
+- Pull pieces out of text with `LEFT`, `RIGHT`, `MID`, `FIND`, `SEARCH` and `LEN`.
+- Join text with `&`, `CONCAT` and `TEXTJOIN`, and format values with `TEXT`.
+- Work with dates using `DATE`, `YEAR`, `MONTH`, `DAY`, `EOMONTH`, `WEEKDAY`.
+- Count working days with `NETWORKDAYS` and ages or tenures with `DATEDIF`.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+An HR analyst at a Hyderabad IT firm needs each employee's age and months of service as of 31 December, and the number of working days between a request and its approval. Text and date functions give those numbers in a few formulas.
+</RealWorld>
+
+Real data is full of codes like `SKU100063`, names that need splitting, and dates that need grouping by month. These functions solve that.
+
+## Concept
+
+**Text functions** (a string is a piece of text)
+
+- `LEFT(text, n)` first n characters. `RIGHT(text, n)` last n. `MID(text, start, n)` n characters from a start position.
+- `LEN(text)` length. `FIND(find, within)` position of text, case-sensitive. `SEARCH` is the same but not case-sensitive and allows wildcards.
+- `&` joins text: `=B2&" "&C2`. `CONCAT(a,b,...)` does the same. `TEXTJOIN(delimiter, ignore_empty, range)` joins a whole range with a separator and can skip blanks (Excel 2019 and Microsoft 365).
+- `TEXT(value, format)` shows a number or date in a format of your choice, as text: `TEXT(A1,"dd-mmm-yyyy")`.
+- `VALUE(text)` turns number-looking text into a number.
+
+Analogy: LEFT, MID and RIGHT are scissors; `&` and TEXTJOIN are glue; TEXT is a stamp that decides how something looks.
+
+**Splitting at a position.** To get the first word: `=LEFT(A2, FIND(" ",A2)-1)`. FIND returns where the first space is, minus one gives the letters before it.
+
+**Date functions**
+
+- `DATE(year, month, day)` builds a real date. `YEAR`, `MONTH`, `DAY` read the parts.
+- `EOMONTH(date, months)` returns the last day of a month. `EOMONTH(date,0)` is the end of the same month, `EOMONTH(date,-1)+1` is the first day of the same month.
+- `WEEKDAY(date, 2)` gives 1 for Monday up to 7 for Sunday.
+- `NETWORKDAYS(start, end, [holidays])` counts Monday to Friday days, both ends included. It does not know Indian holidays unless you provide a list.
+- `DATEDIF(start, end, unit)` counts complete units: `"Y"` years, `"M"` months, `"D"` days. It is a hidden function: it works but is not in the list while typing.
+- `TODAY()` and `NOW()` change every day. Avoid them in reports that must stay fixed.
+
+**TEXT format codes**: `d` day, `dd` two-digit day, `ddd` Mon, `dddd` Monday, `m`/`mm` month number, `mmm` Jan, `mmmm` January, `yy`, `yyyy`, `0.00` two decimals, `#,##0` thousands separator.
+
+<FormulaCard title="Age in complete years">
+=DATEDIF(date_of_birth, as_of_date, "Y"). Do not use (as_of - dob)/365: leap years make it drift.
+</FormulaCard>
+
+<Warning>
+`TEXT()` returns text, not a date. You cannot subtract or group by it. Keep the real date column and use TEXT only for display or labels such as month names.
+</Warning>
+
+## Worked examples
+
+<Download href="data/excel/excel-functions.xlsx" label="Download excel-functions.xlsx" />
+
+**Example 1: RIGHT and VALUE.** In `products`, `C2` is `Masala Mandi Beverage 979`.
+
+```
+=VALUE(RIGHT(C2,3))
+```
+
+Result: **979**.
+
+**Example 2: first word and join.**
+
+```
+=LEFT(C2,FIND(" ",C2)-1)
+```
+
+Result: `Masala`. To rebuild a label: `=D2&" - "&F2` joins category and brand. For a list of all brands in one cell: `=TEXTJOIN(", ",TRUE,F2:F6)`.
+
+**Example 3: TEXT.** In `orders`, `C2` is the date 1 January 2023.
+
+```
+=TEXT(C2,"mmm-yyyy")
+=TEXT(C2,"dddd")
+```
+
+Results: `Jan-2023` and `Sunday`.
+
+**Example 4: weekend orders.**
+
+```
+=SUMPRODUCT(--(WEEKDAY(orders!C2:C2001,2)>5))
+```
+
+Result: **662** orders placed on a Saturday or Sunday (about one-third of orders).
+
+**Example 5: NETWORKDAYS.** Order 1004 (row 3 of `orders`) was placed on Sunday 2 April 2023 and delivered on Wednesday 5 April.
+
+```
+=orders!K3-orders!C3
+=NETWORKDAYS(orders!C3,orders!K3)
+```
+
+Results: **3** calendar days and **3** working days (Mon 3, Tue 4, Wed 5).
+
+**Example 6: DATEDIF and EOMONTH.** Employee 1 in `hr_employees` was born 25 April 1981 and hired 4 January 2014.
+
+```
+=DATEDIF(hr_employees!D2,DATE(2024,12,31),"Y")
+=DATEDIF(hr_employees!E2,DATE(2024,12,31),"M")
+=EOMONTH(hr_employees!E2,0)
+```
+
+Results: **43** years, **131** months, and `31-Jan-2014` (shown as 41670 until formatted as a date).
+
+**Example 7: average days to deliver.** Only orders with a delivery date should count:
+
+```
+=AVERAGE(IF(orders!K2:K2001<>"",orders!K2:K2001-orders!C2:C2001))
+```
+
+Result: **3.05** days across **1,825** orders. In Excel 2019 and older, confirm with `Ctrl + Shift + Enter`.
+
+## Common mistakes
+
+<CommonMistake>
+Using TEXT to build a month column and then trying to sort it. `Apr-2023` sorts before `Jan-2023` alphabetically. Sort on the real date or a numeric yyyymm.
+</CommonMistake>
+
+<CommonMistake>
+Forgetting `-1` in `LEFT(A2,FIND(" ",A2)-1)`. The result then includes the space. Use TRIM to hide it, but fix the logic.
+</CommonMistake>
+
+<CommonMistake>
+Subtracting dates and getting a date back. Format the answer cell as General or Number.
+</CommonMistake>
+
+<CommonMistake>
+Using `WEEKDAY(date)` without the `,2` and testing `>5` for the weekend. Default numbering starts on Sunday, so you catch Friday and Saturday.
+</CommonMistake>
+
+<CommonMistake>
+Subtracting blank date cells. A blank is 0, which is the year 1900, and gives a huge wrong gap. Test for blank first.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="text-date" module="excel" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What does =MID(\"INV20250115\",4,4) return?", options: ["INV2", "2025", "0115", "V202"], answer: 1, explanation: "MID starts at the 4th character and takes 4 characters: 2025." },
+  { q: "Which function returns the last day of the month for a date?", options: ["EOMONTH", "WORKDAY", "DATEDIF", "EDATE"], answer: 0, explanation: "EOMONTH(date,0) returns the last day of that date's month." },
+  { q: "What does WEEKDAY(date,2) return for a Sunday?", options: ["0", "1", "6", "7"], answer: 3, explanation: "With return type 2 Monday is 1 and Sunday is 7." },
+  { q: "What kind of value does TEXT(A1,\"dd-mmm-yyyy\") return?", options: ["A real date", "A number", "Text", "A boolean"], answer: 2, explanation: "TEXT always returns text. You cannot do date maths on the result." },
+  { q: "Best way to get a person's age in full years?", options: ["(TODAY()-dob)/365", "DATEDIF(dob, TODAY(), \"Y\")", "YEAR(dob)", "MONTH(TODAY())"], answer: 1, explanation: "DATEDIF with unit Y counts complete years and is not thrown by leap years." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Date questions are popular for HR, finance and delivery data: ages, tenure, working days, month-end closing, aging buckets.
+</InterviewAlert>
+
+<InterviewQ q="How do you split a full name into first and last name?">
+For the first name: `=LEFT(A2,FIND(" ",A2)-1)`. For the last name: `=MID(A2,FIND(" ",A2)+1,100)`. If names can have more than two words, I use Text to Columns or, in Microsoft 365, TEXTSPLIT. Flash Fill is the quick option for a one-time job.
+</InterviewQ>
+
+<InterviewQ q="How do you calculate age or tenure in Excel?">
+`DATEDIF(start, as_of, "Y")` for complete years and `"M"` for complete months. Dividing days by 365 is wrong because of leap years.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between NETWORKDAYS and a plain date subtraction?">
+Subtraction gives calendar days. NETWORKDAYS counts only Monday to Friday and can skip a holiday list, which matters for SLA and delivery time calculations. It counts both start and end dates.
+</InterviewQ>
+
+<InterviewQ q="FIND versus SEARCH?">
+FIND is case-sensitive and does not allow wildcards. SEARCH ignores case and allows `?` and `*`. Both return an error if the text is missing, so wrap them in IFERROR where needed.
+</InterviewQ>
+
+## Key takeaways
+
+- LEFT, MID and RIGHT cut text; FIND and SEARCH tell you where to cut.
+- `&`, CONCAT and TEXTJOIN join; TEXT formats but returns text.
+- Dates are numbers, so subtraction, EOMONTH and DATEDIF work on them.
+- `WEEKDAY(date,2)` gives Monday = 1, so weekends are 6 and 7.
+- Use DATEDIF for age; NETWORKDAYS for working days (add a holiday list for India).
+
+## Further reading
+
+<FurtherReading ids={["excel-support", "chandoo", "excelisfun"]} />

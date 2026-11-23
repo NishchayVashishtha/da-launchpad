@@ -1,0 +1,262 @@
+---
+title: "Interview pattern: year-over-year comparison"
+description: "Compare a period with the same period last year using CASE pivots, LAG with an offset of 12 and self-joins, and avoid unfair comparisons."
+module: sql
+order: 30
+estimatedMinutes: 40
+objectives:
+  - "Recognise YoY and 'same month last year' questions"
+  - "Build a YoY table with a CASE pivot and with LAG(value, 12)"
+  - "Compare like for like: same months, same filters"
+  - "Explain why YoY removes seasonality that MoM cannot"
+tags: ["sql", "interview", "window-functions", "yoy", "pivot"]
+---
+
+## Learning objectives
+
+- Spot "versus same period last year" in a question.
+- Pivot years into columns with `CASE WHEN` and compute YoY percent.
+- Use `LAG(value, 12)` on a complete monthly series.
+- Compare like for like and explain why that matters.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Indian businesses live on festivals. October sales will always beat September because of Diwali, so MoM growth tells you little. "October 2024 versus October 2023" is the fair question, and it is the one the boss asks. Year-over-year (YoY) is the standard way to remove seasonality.
+</RealWorld>
+
+## Concept
+
+### The recognition cue
+
+When you see **"YoY", "vs same period last year", "compared to last Diwali", "this year against last year"**, think: *line up the same month of two years, either side by side (pivot) or one row below (LAG 12).*
+
+Analogy: comparing your marks in this year's October exam with last year's October exam, not with last month's quiz.
+
+<FormulaCard title="Year-over-year growth percent">
+YoY % = (this year - same period last year) / same period last year x 100
+</FormulaCard>
+
+### Template A: CASE pivot (years as columns)
+
+```sql
+SELECT strftime('%m', d) AS month_no,
+       SUM(CASE WHEN strftime('%Y', d) = '2023' THEN amount END) AS y2023,
+       SUM(CASE WHEN strftime('%Y', d) = '2024' THEN amount END) AS y2024
+FROM t
+GROUP BY month_no;
+```
+
+You can add the YoY percent by wrapping this in a CTE. It is easy to read and has no window functions, which is why interviewers like it.
+
+### Template B: LAG with offset 12
+
+```sql
+LAG(revenue, 12) OVER (ORDER BY month) AS same_month_last_year
+```
+
+`LAG(x, 12)` reads the row 12 rows above. That is exactly "same month last year" **only if there are 12 rows per year and no month is missing**. Check for gaps first, exactly as in the MoM lesson.
+
+### Template C: self-join
+
+Join the table to itself on `year + 1` and the same month number. It always compares true calendar periods.
+
+### Like for like
+
+If this year is only 9 months old, compare it with the **first 9 months** of last year, not the whole of last year. Also use the same filters (status, channel) on both sides.
+
+<Tip>
+Show the absolute numbers next to YoY %. A "+300%" on a base of 4 orders is not a headline.
+</Tip>
+
+## Worked examples
+
+### Example 1: pivot years into columns
+
+Delivered revenue by calendar month, 2023 against 2024, with the YoY percent.
+
+<SqlPlayground dataset="ecommerce" query={`WITH o AS (SELECT DISTINCT * FROM orders),
+pivoted AS (
+  SELECT strftime('%m', order_date) AS month_no,
+         ROUND(SUM(CASE WHEN strftime('%Y', order_date) = '2023' THEN total_amount END), 0) AS rev_2023,
+         ROUND(SUM(CASE WHEN strftime('%Y', order_date) = '2024' THEN total_amount END), 0) AS rev_2024
+  FROM o
+  WHERE order_status = 'Delivered'
+  GROUP BY month_no
+)
+SELECT month_no, rev_2023, rev_2024,
+       ROUND(100.0 * (rev_2024 - rev_2023) / NULLIF(rev_2023, 0), 1) AS yoy_pct
+FROM pivoted
+ORDER BY month_no;`} title="YoY with a CASE pivot" />
+
+**Output:**
+
+| month_no | rev_2023 | rev_2024 | yoy_pct |
+|---|---|---|---|
+| 01 | 1891351.0 | 2177042.0 | 15.1 |
+| 02 | 1672373.0 | 2594640.0 | 55.1 |
+| 03 | 1370181.0 | 1952587.0 | 42.5 |
+| 04 | 1679260.0 | 2010858.0 | 19.7 |
+| 05 | 1847753.0 | 2011182.0 | 8.8 |
+| 06 | 1594534.0 | 2356236.0 | 47.8 |
+| 07 | 1945220.0 | 2544531.0 | 30.8 |
+| 08 | 2105201.0 | 2544467.0 | 20.9 |
+| 09 | 1777927.0 | 2172132.0 | 22.2 |
+| 10 | 2356485.0 | 2661384.0 | 12.9 |
+| 11 | 2075133.0 | 2591559.0 | 24.9 |
+| 12 | 1910326.0 | 2059545.0 | 7.8 |
+
+Each row is one calendar month. A `CASE` without `ELSE` returns NULL for the other year, and `SUM` ignores NULL, so each column totals only its own year.
+
+### Example 2: LAG with offset 12
+
+The same idea on a long monthly list. Compute the previous-year value in a first step, filter in an outer query.
+
+<SqlPlayground dataset="ecommerce" query={`WITH o AS (SELECT DISTINCT * FROM orders),
+monthly AS (
+  SELECT strftime('%Y-%m', order_date) AS month,
+         COUNT(*) AS orders
+  FROM o
+  WHERE order_status = 'Delivered'
+  GROUP BY month
+),
+g AS (
+  SELECT month, orders,
+         LAG(orders, 12) OVER (ORDER BY month) AS orders_last_year
+  FROM monthly
+)
+SELECT month, orders, orders_last_year,
+       ROUND(100.0 * (orders - orders_last_year) / NULLIF(orders_last_year, 0), 1) AS yoy_pct
+FROM g
+WHERE month >= '2024-01'
+ORDER BY month;`} title="YoY with LAG(value, 12)" />
+
+**Output:**
+
+| month | orders | orders_last_year | yoy_pct |
+|---|---|---|---|
+| 2024-01 | 414 | 332 | 24.7 |
+| 2024-02 | 327 | 295 | 10.8 |
+| 2024-03 | 378 | 284 | 33.1 |
+| 2024-04 | 375 | 332 | 13.0 |
+| 2024-05 | 383 | 330 | 16.1 |
+| 2024-06 | 414 | 320 | 29.4 |
+| 2024-07 | 387 | 356 | 8.7 |
+| 2024-08 | 461 | 374 | 23.3 |
+| 2024-09 | 448 | 353 | 26.9 |
+| 2024-10 | 567 | 404 | 40.3 |
+| 2024-11 | 496 | 404 | 22.8 |
+| 2024-12 | 423 | 411 | 2.9 |
+
+This works because every month from 2023-01 to 2024-12 has orders. The first 12 months of any series have `NULL` for `LAG(.., 12)`, so we only display 2024. If your data has gaps, use the pivot or a self-join instead.
+
+### Example 3: YoY by category, and why volume and value differ
+
+Retail wants units and revenue per category, 2024 against 2023. Prices rose about 6% in 2024 for every product, so value growth hides volume growth. We calculate both and skip the 6 outlier sales lines.
+
+<SqlPlayground dataset="retail" query={`SELECT category,
+       SUM(CASE WHEN sale_datetime < '2024-01-01' THEN quantity END) AS units_2023,
+       SUM(CASE WHEN sale_datetime >= '2024-01-01' THEN quantity END) AS units_2024,
+       ROUND(100.0 * (SUM(CASE WHEN sale_datetime >= '2024-01-01' THEN quantity END)
+             - SUM(CASE WHEN sale_datetime < '2024-01-01' THEN quantity END))
+             / SUM(CASE WHEN sale_datetime < '2024-01-01' THEN quantity END), 1) AS units_yoy_pct,
+       ROUND(100.0 * (SUM(CASE WHEN sale_datetime >= '2024-01-01' THEN net_amount_inr END)
+             - SUM(CASE WHEN sale_datetime < '2024-01-01' THEN net_amount_inr END))
+             / SUM(CASE WHEN sale_datetime < '2024-01-01' THEN net_amount_inr END), 1) AS value_yoy_pct
+FROM sales
+WHERE net_amount_inr < 100000
+GROUP BY category
+ORDER BY category;`} title="Units and value YoY per category" />
+
+**Output:**
+
+| category | units_2023 | units_2024 | units_yoy_pct | value_yoy_pct |
+|---|---|---|---|---|
+| Apparel | 4730 | 5277 | 11.6 | 15.8 |
+| Electronics Accessories | 3374 | 3654 | 8.3 | 11.1 |
+| Grocery & Staples | 9148 | 10733 | 17.3 | 23.1 |
+| Home & Kitchen | 4688 | 5258 | 12.2 | 22.8 |
+| Home Decor | 1503 | 1824 | 21.4 | 27.1 |
+| Personal Care | 6142 | 7125 | 16.0 | 17.9 |
+
+In each category the value growth is higher than the unit growth because of the price rise. A good analyst reports both and names the price effect.
+
+### Example 4: like for like with a partial year
+
+Suppose the report is run on 30 September 2024. Compare signups for January to September in both years, never 9 months against 12.
+
+<SqlPlayground dataset="subscription" query={`SELECT CASE WHEN signup_date < '2024-01-01' THEN 2023 ELSE 2024 END AS yr,
+       COUNT(DISTINCT user_id) AS signups_jan_to_sep
+FROM users
+WHERE strftime('%m-%d', signup_date) <= '09-30'
+GROUP BY yr
+ORDER BY yr;`} title="Same-period comparison of signups" />
+
+**Output:**
+
+| yr | signups_jan_to_sep |
+|---|---|
+| 2023 | 1569 |
+| 2024 | 2205 |
+
+`strftime('%m-%d', date) <= '09-30'` keeps only dates up to 30 September in each year. That is a like-for-like cut. The comparison of full 2024 against partial 2023 (or the other way) would be misleading.
+
+## Common mistakes
+
+<CommonMistake>
+**Comparing unequal periods.** Nine months of this year versus twelve months of last year always looks like a fall. Use the same date window on both sides.
+</CommonMistake>
+<CommonMistake>
+**Using `LAG(x, 12)` with missing months.** It then reaches back to the wrong month. Check that the series is complete.
+</CommonMistake>
+<CommonMistake>
+**Dividing by the new year.** The base is last year's value. `(new - old) / new` understates growth.
+</CommonMistake>
+<CommonMistake>
+**Mixing filters.** Delivered orders in one year and all orders in the other is not a fair comparison.
+</CommonMistake>
+<CommonMistake>
+**Reporting a huge percent on a tiny base.** Show the counts too.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="pattern-yoy" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Why is YoY better than MoM for festive businesses?", options: ["It is faster to compute", "It removes seasonality by comparing the same month", "It needs no dates", "It always shows growth"], answer: 1, explanation: "Comparing October with last October holds the festival effect constant on both sides." },
+  { q: "SUM(CASE WHEN year = '2023' THEN amt END) returns what for rows from 2024?", options: ["0", "NULL, which SUM ignores", "An error", "The amount"], answer: 1, explanation: "CASE with no ELSE returns NULL, and SUM skips NULLs, so only 2023 rows are added." },
+  { q: "LAG(revenue, 12) over a monthly series gives:", options: ["Next year's value", "The value 12 rows earlier", "The yearly average", "The previous month"], answer: 1, explanation: "The second argument is the offset: how many rows back to look." },
+  { q: "Revenue was 200 last October and 250 this October. YoY growth?", options: ["20%", "25%", "50%", "125%"], answer: 1, explanation: "(250 - 200) / 200 = 25%." },
+  { q: "It is 30 September. What is the fair YoY comparison for this year's sales so far?", options: ["Full last year", "Last September only", "January to 30 September of last year", "The last quarter of last year"], answer: 2, explanation: "Compare the same window, from 1 January to 30 September, in both years." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+After MoM, "now compare with the same month last year" is the usual next question. They want to see you pick a method that is safe with missing months and a fair comparison window.
+</InterviewAlert>
+
+<InterviewQ q="Compare monthly revenue of 2024 with 2023. How would you build it?">
+"I would aggregate to month and then compare the same calendar month across years. The simplest readable way is a CASE pivot: one column per year, grouped by month number, then compute (2024 - 2023) / 2023 as the YoY percent. An alternative is `LAG(revenue, 12)` on a monthly series, but that relies on no missing months. I would apply the same filters to both years, such as delivered orders only, and show absolute numbers next to the percent."
+</InterviewQ>
+<InterviewQ q="When is YoY better than MoM, and when is it worse?">
+YoY is better when the business is seasonal (festivals, weddings, exam season), since it compares like with like. It is worse for spotting a recent change: it reacts slowly and can hide a sharp fall last month. Analysts usually show both. YoY is also unreliable for new businesses with little history, or if last year had a one-off event.
+</InterviewQ>
+<InterviewQ q="This year's data is incomplete. How do you compare?">
+Pick the same cutoff in both years, for example 1 January to 30 September, and compare those windows. I filter with `strftime('%m-%d', date) <= '09-30'`. In MySQL or PostgreSQL I would use month and day extraction. I state the cutoff in the report title.
+</InterviewQ>
+
+## Key takeaways
+
+- Cue: "same period last year", "YoY" means line up the same month in two years.
+- Pivot with `CASE`, or use `LAG(x, 12)` only when the monthly series is complete.
+- YoY % = (this year - last year) / last year x 100, with last year as the base.
+- Compare like for like: same window, same filters.
+- Report absolute values and separate price from volume where relevant.
+
+## Further reading
+
+<FurtherReading ids={["mode-sql", "sqlite-docs", "sqlbolt"]} />

@@ -1,0 +1,202 @@
+---
+title: "Row-level security, publishing, refresh and sharing a portfolio report"
+description: "Control who sees which rows, publish to the Power BI Service, schedule refresh, share through apps, and publish a portfolio report safely."
+module: power-bi
+order: 12
+estimatedMinutes: 45
+objectives:
+  - "Create static and dynamic row-level security roles"
+  - "Publish a report to the Power BI Service and understand workspaces"
+  - "Share through apps and schedule refresh"
+  - "Know when a gateway is needed"
+  - "Publish a portfolio report publicly and know the caveats"
+tags: ["power-bi", "rls", "service", "publish", "gateway"]
+---
+
+## Learning objectives
+
+- Define RLS and build a static role and a dynamic role with `USERPRINCIPALNAME()`.
+- Publish a report and describe workspaces, apps and sharing.
+- Set a scheduled refresh and explain when a gateway is required.
+- Publish to web for a portfolio, and list the risks.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+In an Indian bank, the Mumbai branch head must see only Mumbai data, while the national head sees everything. One report, many audiences. That is row-level security. If you cannot explain it, you cannot be trusted with real company data.
+</RealWorld>
+
+Building a report is half the job. The other half is getting it to the right people, safely, and keeping it fresh. This lesson covers that.
+
+## Concept
+
+### Row-level security (RLS)
+
+**Row-level security** restricts which rows of data a user can see. It is defined on the dataset (semantic model). The report is the same for everyone; the data changes with the viewer.
+
+Think of a library: everyone uses the same catalogue, but each member's card only opens certain shelves.
+
+**Static RLS.** You create a role and write a fixed filter. Example for the HR model:
+
+```dax
+[department_name] = "Customer Support"
+```
+
+You then add members to that role. Disadvantage: one role per group, so many roles to maintain.
+
+**Dynamic RLS.** You create one role and the filter uses the signed-in user's identity:
+
+```dax
+[manager_email] = USERPRINCIPALNAME()
+```
+
+`USERPRINCIPALNAME()` returns the user's login (an email). Each manager now sees only rows where `manager_email` equals their email. Often a small security table maps users to regions or departments: `Security[email] = USERPRINCIPALNAME()`, related to the dimension table.
+
+Steps in Desktop:
+
+1. Modeling tab, Manage roles, Create.
+2. Pick the table, write the DAX filter, Save.
+3. Test with **View as** and choose the role (and for dynamic RLS, "Other user" with an email).
+4. Publish.
+5. In the Service, open the dataset, Security, add people or groups to the role.
+
+<Warning>
+RLS applies to viewers. Workspace members with Admin, Member or Contributor roles can see all data, bypassing RLS. Use apps or Viewer access for people who must be restricted.
+</Warning>
+
+### Publishing and the Service
+
+The **Power BI Service** is the cloud site (app.powerbi.com) where reports live after you publish from Desktop. Home, Publish asks for a destination workspace.
+
+- A **workspace** is a shared folder for reports, datasets and dashboards. Teams collaborate here.
+- An **app** is a packaged, read-only bundle of content from a workspace, with its own navigation and audience. Best practice for sharing with many business users.
+- **Share** gives direct access to one report or dashboard to a person or group.
+- A **dashboard** in the Service is a one-page canvas of pinned tiles from reports; a **report** is the multi-page file from Desktop. People often mix these up.
+
+Many features such as sharing and workspace apps require a Power BI Pro licence (or Premium capacity). Free accounts have limits. Check the current licensing page, since terms change.
+
+### Scheduled refresh and gateways
+
+A published report holds a copy of the data from the last refresh. To keep it fresh you set **scheduled refresh** (Dataset, Settings, Scheduled refresh) for a time such as 6 am daily.
+
+- If the source is a cloud service (SharePoint Online, Azure SQL, a web URL), the Service can reach it directly.
+- If the source is **on-premises** (a SQL Server inside the company network, or a CSV on a local drive), you need an **on-premises data gateway**. A gateway is a small program installed on a machine inside the network that carries data to the Service securely.
+- A **personal gateway** is for one person's use; a **standard gateway** is for shared, enterprise use.
+- You can also refresh manually or trigger refresh from other tools.
+
+### Publish to web for a portfolio
+
+**Publish to web** creates a public link or embed code. Anyone with the link can see the report, with no sign-in.
+
+Steps: open the report in the Service, File, Embed report, Publish to web (public), create embed code, copy the link.
+
+Caveats:
+
+1. **Everything is public.** RLS does not apply. Only use public or fictional data. Never publish employer data or personal data.
+2. The link is searchable by anyone who has it; deleting the embed code takes the link down.
+3. Some tenants disable it, and it needs a work or school account.
+4. The report is a snapshot; changes take time to show.
+5. Some visuals and features are not supported.
+
+Alternatives for portfolios: screenshots plus a short screen recording, a PDF export, a GitHub README with screenshots, and Tableau Public (see lesson 15). Many fresher learners put an embed link plus 4 screenshots on GitHub.
+
+## Worked examples
+
+### Example 1: Static RLS for the retail report
+
+Goal: a region manager for the South sees only South stores. In Desktop, Manage roles, create role `South`, table `Stores`, filter:
+
+```dax
+[region] = "South"
+```
+
+Use View as, Role `South`. Total net sales shown to this viewer becomes about ₹84.7 lakh instead of ₹3.0 crore, since only the South region (28% of sales) is visible.
+
+### Example 2: Dynamic RLS for HR managers
+
+Add a small `Security` table with columns `email` and `department_id`, related to `Departments`. In Manage roles, create role `DepartmentHead` on the `Security` table:
+
+```dax
+[email] = USERPRINCIPALNAME()
+```
+
+Make sure the relationship from `Security` to `Departments` filters Departments. Now each department head logs in and sees only their own department's attrition. You add the group once; adding a new manager just needs a row in the security table.
+
+### Example 3: A refresh plan for a fresher project
+
+For a project built on CSV files in a cloud folder (OneDrive or SharePoint), publish to your workspace and set the data source credentials. Schedule refresh to daily at 7 am. For a CSV on your own laptop you would need a gateway, which is why many learners use cloud storage.
+
+### Example 4: Publishing a portfolio report publicly
+
+1. Build the report on a public or fictional dataset like the one from this site.
+2. Publish to a workspace, open it in the Service.
+3. File, Embed report, Publish to web.
+4. Accept the warning, copy the link.
+5. Add it to your resume and GitHub README, together with 3 screenshots in case the link breaks.
+6. Add a short line "Data is fictional" on the report.
+
+## Common mistakes
+
+<CommonMistake>
+Testing RLS only as the author. As the owner you always see all rows. Always use View as a role, and test with the Service's "Test as role" too.
+</CommonMistake>
+
+<CommonMistake>
+Giving business users Contributor or Member access to the workspace. They then bypass RLS and can edit content. Share with an app or Viewer role.
+</CommonMistake>
+
+<CommonMistake>
+Using Publish to web for anything private. The link is public and cannot be restricted.
+</CommonMistake>
+
+<CommonMistake>
+Forgetting data source credentials after publishing, so scheduled refresh fails every night. Check refresh history regularly.
+</CommonMistake>
+
+<CommonMistake>
+Hard-coding one static role per person. Use dynamic RLS with USERPRINCIPALNAME and a security table instead.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="rls-publishing" module="power-bi" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Which DAX function returns the signed-in user's login for dynamic RLS?", options: ["USERNAME() only", "USERPRINCIPALNAME()", "TODAY()", "SELECTEDVALUE()"], answer: 1, explanation: "USERPRINCIPALNAME returns the user's UPN, usually an email, ideal for dynamic RLS." },
+  { q: "When is an on-premises gateway needed?", options: ["Always", "When the data source is inside a private network and the Service must refresh it", "Never for refresh", "Only for Publish to web"], answer: 1, explanation: "Cloud services can be reached directly; on-premises sources need a gateway." },
+  { q: "Which statement about Publish to web is correct?", options: ["It respects RLS", "Anyone with the link can see the data", "It is private by default", "It requires a gateway"], answer: 1, explanation: "Publish to web is public and ignores RLS." },
+  { q: "What is an app in Power BI?", options: ["A mobile phone game", "A packaged read-only bundle of content from a workspace", "A DAX function", "A data source"], answer: 1, explanation: "Apps are the recommended way to share curated content with many users." },
+  { q: "Who bypasses RLS?", options: ["Viewers", "Workspace Admin, Member and Contributor roles", "Nobody", "App audience"], answer: 1, explanation: "Users with edit rights in a workspace can see all data; restrict through viewer access or apps." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Expect a scenario: "A manager must see only their team's data. How do you set it up?" The expected answer is dynamic RLS with USERPRINCIPALNAME, testing with View as, and adding members in the Service.
+</InterviewAlert>
+
+<InterviewQ q="What is the difference between static and dynamic RLS?">
+**Static** RLS uses a fixed filter such as `[region] = "South"` in one role per group. **Dynamic** RLS uses the viewer's identity, such as `[manager_email] = USERPRINCIPALNAME()`, so a single role works for everyone and rows change per user. Dynamic is easier to maintain when there are many users.
+</InterviewQ>
+
+<InterviewQ q="What does a gateway do?">
+It is software installed inside a company network that lets the Power BI Service securely refresh data from on-premises sources, like a local SQL Server or files on a server. Cloud sources do not need it.
+</InterviewQ>
+
+<InterviewQ q="How would you share your portfolio dashboard with recruiters, and what are the risks?">
+I would publish to web using only fictional or public data and add screenshots as a backup. The risk is that the link is public: no login, no RLS, so I never include private or employer data.
+</InterviewQ>
+
+## Key takeaways
+
+- RLS filters rows by user; test it with View as.
+- Dynamic RLS uses USERPRINCIPALNAME and a security table.
+- Workspaces are for builders; apps are for readers.
+- Scheduled refresh keeps data fresh; on-premises sources need a gateway.
+- Publish to web is public: only use public or fictional data.
+
+## Further reading
+
+<FurtherReading ids={["power-bi-docs", "pl300", "power-bi-download"]} />

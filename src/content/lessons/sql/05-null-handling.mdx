@@ -1,0 +1,285 @@
+---
+title: "NULL handling: missing data done right"
+description: "Understand NULL, test for it with IS NULL, replace it with COALESCE, and avoid the classic NULL traps."
+module: sql
+order: 5
+estimatedMinutes: 40
+objectives:
+  - "Explain what NULL means and how it differs from 0 or empty text"
+  - "Test for NULL with IS NULL and IS NOT NULL"
+  - "Replace NULLs with COALESCE and turn values into NULL with NULLIF"
+  - "Predict how NULL behaves in comparisons, arithmetic and aggregates"
+tags: ["sql", "null", "coalesce", "nullif"]
+---
+
+## Learning objectives
+
+- Explain what `NULL` means and how it differs from `0` or an empty string.
+- Test with `IS NULL` and `IS NOT NULL`.
+- Replace missing values with `COALESCE`, and avoid divide-by-zero with `NULLIF`.
+- Predict NULL behaviour in comparisons, arithmetic, joins of text and aggregates.
+- Know the `NOT IN` plus NULL trap.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+A customer table where 8% of emails are missing. An HR table where exit interview scores are blank for 30% of leavers. If you average the score, who is included? If you count customers with `email <> 'x'`, are the missing ones counted? NULL mistakes quietly change KPIs. Interviewers love NULL questions because they separate people who memorised syntax from people who have worked with real data.
+</RealWorld>
+
+## Concept
+
+### What is NULL?
+
+`NULL` means **unknown or missing**. It is not zero, not an empty string, not "N/A". It is the absence of a value.
+
+- A salary of `0` is a known amount (zero).
+- A salary of `NULL` means we do not know it.
+
+Imagine a form where one field was left blank. That blank is a NULL.
+
+### The golden rule: NULL is contagious
+
+Any comparison or calculation with an unknown gives unknown (NULL):
+
+| Expression | Result |
+|---|---|
+| `NULL = NULL` | NULL (not true!) |
+| `NULL <> 5` | NULL |
+| `5 + NULL` | NULL |
+| `'Asha' \|\| NULL` | NULL |
+| `NULL AND 0` | 0 (false) |
+| `NULL OR 1` | 1 (true) |
+
+`WHERE` keeps a row only when the condition is **true**. A NULL (unknown) result is treated like false, so the row is dropped.
+
+### IS NULL and IS NOT NULL
+
+Because `= NULL` is never true, use the special tests:
+
+```sql
+WHERE email IS NULL
+WHERE email IS NOT NULL
+```
+
+### Beware: NULL rows vanish from comparisons
+
+`WHERE gender <> 'Male'` does **not** return rows where gender is NULL. Those rows have unknown gender, so the comparison is unknown, and they are dropped. If you want them, say so:
+
+```sql
+WHERE gender <> 'Male' OR gender IS NULL
+```
+
+### COALESCE
+
+`COALESCE(a, b, c)` returns the first value that is not NULL.
+
+```sql
+SELECT COALESCE(city, 'Unknown') FROM customers;
+```
+
+Use it to put a default in reports. It works in SQLite, MySQL, PostgreSQL and SQL Server. (MySQL and SQLite also have `IFNULL(a, b)`; SQL Server has `ISNULL(a, b)`.)
+
+### NULLIF
+
+`NULLIF(a, b)` returns NULL if `a = b`, otherwise `a`. The most common use: avoid dividing by zero.
+
+```sql
+revenue / NULLIF(orders, 0)
+```
+
+If `orders` is 0, the divisor becomes NULL, and the result is NULL instead of an error. It is also used to turn "empty-looking" values such as `''` into real NULLs: `NULLIF(TRIM(phone), '')`.
+
+### NULLs in aggregates
+
+- `COUNT(*)` counts rows, including those with NULLs.
+- `COUNT(column)` counts only non-NULL values.
+- `SUM`, `AVG`, `MIN`, `MAX` **ignore** NULLs.
+- So `AVG(col)` is the average of the known values only. This is different from treating NULL as zero.
+
+<FormulaCard title="NULL in AVG">
+AVG(col) = SUM(col) / COUNT(col)   (NULLs are left out of both)
+</FormulaCard>
+
+### NOT IN and NULL
+
+`x NOT IN (1, 2, NULL)` is never true. For a value 3 the database checks `3<>1 AND 3<>2 AND 3<>NULL`, and the last part is unknown, so the whole thing is not true. If a subquery list can contain NULL, filter it out or use `NOT EXISTS` (joins lesson).
+
+## Worked examples
+
+### Example 1: counting missing values
+
+How many customers have no email, and what share is that?
+
+<SqlPlayground dataset="ecommerce" query={`SELECT COUNT(*) AS total_customers,
+       COUNT(email) AS with_email,
+       COUNT(*) - COUNT(email) AS missing_email,
+       ROUND(100.0 * SUM(email IS NULL) / COUNT(*), 1) AS missing_pct
+FROM customers;`} title="Missing emails" />
+
+**Output:**
+
+| total_customers | with_email | missing_email | missing_pct |
+|---|---|---|---|
+| 4520 | 4192 | 328 | 7.3 |
+
+
+`COUNT(email)` skips NULLs, so the difference with `COUNT(*)` is the number of missing emails.
+
+### Example 2: the NULL trap in a comparison
+
+Customers whose gender is not 'Male'. Look at what the plain version misses.
+
+<SqlPlayground dataset="ecommerce" query={`SELECT
+  SUM(gender <> 'Male') AS plain_not_male,
+  SUM(gender <> 'Male' OR gender IS NULL) AS not_male_or_unknown,
+  SUM(gender IS NULL) AS unknown_gender
+FROM customers;`} title="NULL and <>" />
+
+**Output:**
+
+| plain_not_male | not_male_or_unknown | unknown_gender |
+|---|---|---|
+| 1905 | 2100 | 195 |
+
+
+The plain version leaves out the unknown-gender customers. Which one is "right" depends on the business question, but you must choose on purpose.
+
+### Example 3: COALESCE for report-ready labels
+
+<SqlPlayground dataset="hr" query={`SELECT employee_id,
+       full_name,
+       COALESCE(city, 'Unknown') AS city,
+       manager_id,
+       COALESCE(manager_id, 0) AS manager_or_zero
+FROM employees
+WHERE city IS NULL OR manager_id IS NULL
+ORDER BY employee_id
+LIMIT 6;`} title="COALESCE defaults" />
+
+**Output:**
+
+| employee_id | full_name | city | manager_id | manager_or_zero |
+|---|---|---|---|---|
+| 33 | Ramesh Deshmukh | Unknown | 630 | 630 |
+| 37 | Sanjay Ansari | Pune | NULL | 0 |
+| 40 | Ishaan Rathore | Delhi | NULL | 0 |
+| 78 | Aishwarya Kulkarni | Chennai | NULL | 0 |
+| 119 | Fatima Ghosh | Unknown | 18 | 18 |
+| 122 | Usha Yadav | bengaluru | NULL | 0 |
+
+
+A NULL `manager_id` is meaningful here: it marks a top-level manager. So replacing it by 0 in a real report would be misleading. Use COALESCE only when the replacement makes sense.
+
+### Example 4: NULL in averages
+
+Exit interview scores are missing for about 30% of exits. Compare the average that ignores NULLs with one that wrongly treats them as zero.
+
+<SqlPlayground dataset="hr" query={`SELECT COUNT(*) AS exits,
+       COUNT(exit_interview_score) AS with_score,
+       ROUND(AVG(exit_interview_score), 2) AS avg_ignoring_null,
+       ROUND(AVG(COALESCE(exit_interview_score, 0)), 2) AS avg_null_as_zero
+FROM attrition;`} title="AVG with NULLs" />
+
+**Output:**
+
+| exits | with_score | avg_ignoring_null | avg_null_as_zero |
+|---|---|---|---|
+| 544 | 372 | 2.82 | 1.93 |
+
+
+The second average is lower only because we invented zeros that were never given. That is a wrong answer.
+
+### Example 5: NULLIF to avoid divide by zero
+
+Average distance per delivery minute, safely. Here `NULLIF` guards against `actual_minutes = 0`.
+
+<SqlPlayground dataset="food_delivery" query={`SELECT delivery_id,
+       distance_km,
+       actual_minutes,
+       ROUND(distance_km / NULLIF(actual_minutes, 0), 3) AS km_per_min
+FROM deliveries
+ORDER BY delivery_id
+LIMIT 5;`} title="NULLIF guard" />
+
+**Output:**
+
+| delivery_id | distance_km | actual_minutes | km_per_min |
+|---|---|---|---|
+| 1 | 3.5 | 49 | 0.071 |
+| 2 | 3.3 | 30 | 0.11 |
+| 3 | 4.2 | 35 | 0.12 |
+| 4 | 1.6 | 29 | 0.055 |
+| 5 | 2.8 | 30 | 0.093 |
+
+
+Cancelled deliveries have NULL minutes, so their `km_per_min` is NULL as well. NULL in, NULL out.
+
+## Common mistakes
+
+<CommonMistake>
+**Writing `WHERE col = NULL`** or `col != NULL`. They return nothing. Use `IS NULL` and `IS NOT NULL`.
+</CommonMistake>
+
+<CommonMistake>
+**Forgetting NULL rows disappear from `<>` and `NOT IN`.** Decide whether NULLs belong in your answer and add `OR col IS NULL` if they do.
+</CommonMistake>
+
+<CommonMistake>
+**Replacing NULL with 0 before averaging.** It drags the average down. Use plain `AVG` if "unknown" means "not measured".
+</CommonMistake>
+
+<CommonMistake>
+**Using `COUNT(col)` when you meant `COUNT(*)`.** If `col` has NULLs, the count is smaller than the row count.
+</CommonMistake>
+
+<CommonMistake>
+**Concatenating a NULL.** `first_name || ' ' || last_name` is NULL if either is NULL. Wrap with `COALESCE`.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="nulls" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What does NULL = NULL return?", options: ["TRUE", "FALSE", "NULL (unknown)", "An error"], answer: 2, explanation: "Comparing two unknowns gives unknown. Use IS NULL to test for NULL." },
+  { q: "A column has values 10, 20, NULL. What is AVG(col)?", options: ["10", "15", "30", "NULL"], answer: 1, explanation: "AVG ignores NULL: (10 + 20) / 2 = 15." },
+  { q: "What does COALESCE(a, b, 'x') return?", options: ["The last argument", "The first non-NULL argument", "NULL always", "The largest value"], answer: 1, explanation: "COALESCE scans left to right and returns the first value that is not NULL." },
+  { q: "What is 100 / NULLIF(0, 0)?", options: ["0", "100", "NULL", "Division by zero error"], answer: 2, explanation: "NULLIF(0,0) is NULL, and anything divided by NULL is NULL, so there is no error." },
+  { q: "Which counts all rows, even with NULLs in some columns?", options: ["COUNT(email)", "COUNT(DISTINCT email)", "COUNT(*)", "SUM(email)"], answer: 2, explanation: "COUNT(*) counts rows. COUNT(col) counts only non-NULL values of col." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+NULL is a favourite trap topic. Be ready for: `COUNT(*)` versus `COUNT(col)`, `NOT IN` with NULL, `NULL = NULL`, and "does AVG include NULLs?".
+</InterviewAlert>
+
+<InterviewQ q="What is the difference between COUNT(*), COUNT(col) and COUNT(DISTINCT col)?">
+`COUNT(*)` counts all rows. `COUNT(col)` counts rows where `col` is not NULL. `COUNT(DISTINCT col)` counts the different non-NULL values. Example: for emails `a, a, NULL`, they give 3, 2 and 1.
+</InterviewQ>
+
+<InterviewQ q="Why does WHERE col <> 'x' not return rows where col is NULL?">
+For a NULL value, `NULL <> 'x'` is unknown, not true. `WHERE` keeps only rows where the condition is true, so these rows are dropped. To include them, use `WHERE col <> 'x' OR col IS NULL`.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between COALESCE and NULLIF?">
+`COALESCE(a, b)` replaces NULL with the next non-NULL value, so it removes NULLs. `NULLIF(a, b)` does the reverse: it returns NULL when `a` equals `b`, so it creates NULLs. Typical uses: `COALESCE(discount, 0)` for defaults, and `x / NULLIF(y, 0)` to avoid divide-by-zero.
+</InterviewQ>
+
+<InterviewQ q="How do aggregates treat NULL?">
+`SUM`, `AVG`, `MIN` and `MAX` skip NULLs. `COUNT(col)` skips them; `COUNT(*)` does not. If every value is NULL, `SUM` and `AVG` return NULL, not 0.
+</InterviewQ>
+
+## Key takeaways
+
+- NULL means unknown. It is not zero and not an empty string.
+- Test with `IS NULL` and `IS NOT NULL`. `= NULL` never works.
+- Comparisons with NULL are unknown, so `WHERE` drops those rows. Remember this with `<>` and `NOT IN`.
+- `COALESCE` fills in defaults. `NULLIF` turns a chosen value into NULL (great for divide-by-zero).
+- `COUNT(*)` counts rows. Other aggregates ignore NULLs.
+
+## Further reading
+
+<FurtherReading ids={["sqlbolt", "mode-sql", "sqlite-docs"]} />

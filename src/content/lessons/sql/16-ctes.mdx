@@ -1,0 +1,336 @@
+---
+title: "CTEs: WITH, chaining and recursive CTEs"
+description: "Name each step of a query with WITH, chain steps together, and build a date series with a recursive CTE."
+module: sql
+order: 16
+estimatedMinutes: 55
+objectives:
+  - "Write a CTE with WITH and use it like a table"
+  - "Chain several CTEs, each building on the last"
+  - "Choose between a CTE, a subquery and a temp table"
+  - "Write a simple recursive CTE that generates a date series"
+  - "Use CTEs to de-duplicate messy data before analysing it"
+tags: ["sql", "cte", "with", "recursive"]
+---
+
+## Learning objectives
+
+- Define a **CTE** (common table expression) and write one with `WITH`.
+- Chain CTEs so a long query reads like numbered steps.
+- Use the same CTE twice in one query.
+- Compare CTEs, subqueries and temporary tables.
+- Write a **recursive CTE** and explain its two parts.
+- Generate a continuous date series and join data to it.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Real analyst queries are rarely five lines. A cohort report might first clean raw orders, then find each customer's first order month, then count active customers per month, and finally divide. Written as nested subqueries, this becomes unreadable and no teammate dares to touch it. Written as CTEs, each step has a name, and a reviewer can read it top to bottom like a recipe. Hiring managers read SQL tests looking for exactly this: clean, named, step-by-step queries.
+</RealWorld>
+
+## Concept
+
+### What is a CTE?
+
+A **CTE** is a named temporary result that exists only for the duration of one query. You define it at the top with `WITH`, then use it in the main query as if it were a table.
+
+```sql
+WITH clean_orders AS (
+  SELECT DISTINCT * FROM orders
+)
+SELECT COUNT(*) FROM clean_orders;
+```
+
+Think of cooking. A subquery is chopping the onions while you stand at the stove. A CTE is the mise en place: onions chopped and kept in a bowl with a label before you light the gas. The recipe (main query) then reads simply: "add the chopped onions".
+
+The CTE vanishes when the query ends. It is not stored in the database.
+
+### Chaining CTEs
+
+Separate several CTEs with commas. Each CTE can use the ones **defined before it**.
+
+```sql
+WITH step1 AS (...),
+     step2 AS (SELECT ... FROM step1),
+     step3 AS (SELECT ... FROM step2)
+SELECT ... FROM step3;
+```
+
+Rules to remember: only one `WITH` at the start, commas between CTEs (no comma after the last), and each CTE name works like a table name.
+
+### Using one CTE twice
+
+If you need the same intermediate result in two places (for example, per-bank rates and the overall rate), a CTE is defined once and referenced twice. With subqueries you would have to copy the text.
+
+### CTE vs subquery vs temp table
+
+| | Subquery | CTE | Temp table |
+|---|---|---|---|
+| Lives for | one query | one query | the whole session |
+| Readability for many steps | poor | very good | good |
+| Reusable across several queries | no | no | yes |
+| Can be indexed | no | no | yes |
+| Stored on disk or memory | no | usually not (the engine decides) | yes |
+| Best for | one short inner step | multi-step logic in one query | very large intermediate data reused many times |
+
+A temp table is created with `CREATE TEMP TABLE name AS SELECT ...` (SQLite, PostgreSQL, MySQL) or `SELECT ... INTO #name` (SQL Server). Use one when the intermediate result is big, expensive to compute and reused by several queries.
+
+<Tip>
+In most databases a CTE is just a readability tool. The optimiser may treat it exactly like a subquery. PostgreSQL before version 12 always computed it separately (an "optimisation fence"); newer versions inline it. Do not assume a CTE is faster, or slower. Choose it for clarity.
+</Tip>
+
+### Recursive CTEs: an introduction
+
+A **recursive CTE** refers to itself. It is how SQL walks hierarchies (org charts, category trees) and generates sequences (numbers, dates). It has two parts joined by `UNION ALL`:
+
+1. The **anchor**: a normal query that gives the starting row(s).
+2. The **recursive step**: a query that reads the CTE's previous row and produces the next one.
+
+The database runs the anchor once, then keeps running the recursive step on the newest rows until it returns nothing.
+
+```sql
+WITH RECURSIVE days(d) AS (
+  SELECT '2024-10-21'                       -- anchor: first day
+  UNION ALL
+  SELECT date(d, '+1 day')                  -- recursive step: next day
+  FROM days
+  WHERE d < '2024-10-27'                    -- stop condition
+)
+SELECT d FROM days;
+```
+
+The **stop condition** (`WHERE d < '2024-10-27'`) is essential. Without it the query never ends. Most databases also have a recursion limit as a safety net.
+
+Syntax notes: SQLite, PostgreSQL and MySQL write `WITH RECURSIVE`. SQL Server and Oracle write only `WITH` (no word `RECURSIVE`). Date arithmetic differs by database: SQLite uses `date(d, '+1 day')`, PostgreSQL uses `d + INTERVAL '1 day'`, SQL Server uses `DATEADD(day, 1, d)`.
+
+Why a date series? Many reports need a row for every day, even days with no activity. A normal `GROUP BY order_date` skips days with zero orders, which makes line charts look wrong. A date series plus a `LEFT JOIN` fills the gaps with zero.
+
+## Worked examples
+
+### Example 1: a CTE to remove duplicates first
+
+The `orders` table has about 100 exact duplicate rows. A CTE with `SELECT DISTINCT *` gives us a clean version to analyse.
+
+<SqlPlayground dataset="ecommerce" query={`WITH clean_orders AS (
+  SELECT DISTINCT * FROM orders
+)
+SELECT strftime('%Y-%m', order_date) AS month,
+       COUNT(*) AS orders
+FROM clean_orders
+GROUP BY strftime('%Y-%m', order_date)
+ORDER BY month
+LIMIT 6;`} title="Monthly orders from a de-duplicated CTE" />
+
+**Output:**
+
+| month | orders |
+|---|---|
+| 2023-01 | 356 |
+| 2023-02 | 309 |
+| 2023-03 | 305 |
+| 2023-04 | 353 |
+| 2023-05 | 351 |
+| 2023-06 | 351 |
+
+
+The main query is now short and simple, and the cleaning logic sits in one named place. If a rule about cleaning changes, you edit only the CTE.
+
+### Example 2: chained CTEs, segmenting customers
+
+Question: how much of our delivered revenue comes from one-time buyers versus frequent buyers? Four steps: clean orders, count orders and spend per customer, label each customer, summarise by label.
+
+<SqlPlayground dataset="ecommerce" query={`WITH clean_orders AS (
+  SELECT DISTINCT * FROM orders WHERE order_status = 'Delivered'
+),
+per_customer AS (
+  SELECT customer_id, COUNT(*) AS orders, SUM(total_amount) AS spend
+  FROM clean_orders
+  GROUP BY customer_id
+),
+segmented AS (
+  SELECT customer_id, spend,
+         CASE WHEN orders >= 5 THEN '5+ orders'
+              WHEN orders >= 2 THEN '2-4 orders'
+              ELSE '1 order' END AS segment
+  FROM per_customer
+)
+SELECT segment,
+       COUNT(*) AS customers,
+       ROUND(SUM(spend), 0) AS spend_inr,
+       ROUND(100.0 * SUM(spend) / (SELECT SUM(spend) FROM segmented), 1) AS spend_share_pct
+FROM segmented
+GROUP BY segment
+ORDER BY spend_inr DESC;`} title="Chained CTEs: customer segments by spend" />
+
+**Output:**
+
+| segment | customers | spend_inr | spend_share_pct |
+|---|---|---|---|
+| 5+ orders | 606 | 34272037.0 | 68.7 |
+| 2-4 orders | 832 | 11915700.0 | 23.9 |
+| 1 order | 728 | 3714172.0 | 7.4 |
+
+
+Customers with five or more delivered orders are only 606 of 2,166 buyers, but they contribute about 69 percent of the spend. This is the "small group drives most of the revenue" pattern that marketing teams use to justify a loyalty programme. Notice how the query reads in four named steps. The same logic as nested subqueries would be four levels deep. We also used a scalar subquery on the last CTE to get the total spend for the percentage.
+
+### Example 3: one CTE used twice
+
+Which banks fail more than the platform average? We need each bank's rate (grouped) and the overall rate (not grouped). Computing the two as separate CTEs and combining them keeps both clear.
+
+<SqlPlayground dataset="fintech" query={`WITH bank_stats AS (
+  SELECT bank,
+         COUNT(*) AS txns,
+         ROUND(100.0 * SUM(status = 'FAILED') / COUNT(*), 2) AS fail_pct
+  FROM transactions
+  GROUP BY bank
+),
+overall AS (
+  SELECT ROUND(100.0 * SUM(status = 'FAILED') / COUNT(*), 2) AS overall_pct
+  FROM transactions
+)
+SELECT b.bank, b.txns, b.fail_pct, o.overall_pct,
+       ROUND(b.fail_pct - o.overall_pct, 2) AS gap
+FROM bank_stats AS b
+CROSS JOIN overall AS o
+ORDER BY gap DESC, b.bank
+LIMIT 5;`} title="Bank failure rate against the overall rate" />
+
+**Output:**
+
+| bank | txns | fail_pct | overall_pct | gap |
+|---|---|---|---|---|
+| Kaveri Co-op Bank | 1779 | 8.09 | 2.85 | 5.24 |
+| PayNova Small Finance Bank | 760 | 4.08 | 2.85 | 1.23 |
+| Coromandel Bank | 1973 | 2.84 | 2.85 | -0.01 |
+| Bharat Union Bank | 5188 | 2.41 | 2.85 | -0.44 |
+| Himalaya Trust Bank | 3002 | 2.3 | 2.85 | -0.55 |
+
+
+Kaveri Co-op Bank fails 8.09 percent of the time against an overall 2.85 percent. That is a gap of 5.24 percentage points, so it needs attention from the payments partnership team. We used `CROSS JOIN` because `overall` has just one row; each bank row gets the same overall number attached.
+
+### Example 4: a recursive CTE builds a date series
+
+First, look at the series on its own. The anchor gives 21 October 2024, and each step adds a day until 27 October.
+
+<SqlPlayground dataset="ecommerce" query={`WITH RECURSIVE days(d) AS (
+  SELECT '2024-10-21'
+  UNION ALL
+  SELECT date(d, '+1 day') FROM days WHERE d < '2024-10-27'
+)
+SELECT d FROM days;`} title="A date series with a recursive CTE" />
+
+**Output:**
+
+| d |
+|---|
+| 2024-10-21 |
+| 2024-10-22 |
+| 2024-10-23 |
+| 2024-10-24 |
+| 2024-10-25 |
+| 2024-10-26 |
+| 2024-10-27 |
+
+
+Now join real data onto the series. This is the festive week before Diwali in 2024, when orders are climbing.
+
+<SqlPlayground dataset="ecommerce" query={`WITH RECURSIVE days(d) AS (
+  SELECT '2024-10-21'
+  UNION ALL
+  SELECT date(d, '+1 day') FROM days WHERE d < '2024-10-27'
+)
+SELECT days.d AS day,
+       COUNT(DISTINCT o.order_id) AS orders
+FROM days
+LEFT JOIN orders AS o ON o.order_date = days.d
+GROUP BY days.d
+ORDER BY days.d;`} title="Daily orders with no missing days" />
+
+**Output:**
+
+| day | orders |
+|---|---|
+| 2024-10-21 | 9 |
+| 2024-10-22 | 8 |
+| 2024-10-23 | 12 |
+| 2024-10-24 | 29 |
+| 2024-10-25 | 28 |
+| 2024-10-26 | 33 |
+| 2024-10-27 | 28 |
+
+
+The series guarantees one row for every day. If a day had no orders it would appear with `0`, because of the `LEFT JOIN`. Without the series, the missing day would not appear in the chart at all. Here, we also see order volume jumping from 12 on 23 October to 29 on 24 October, the start of the Diwali window.
+
+## Common mistakes
+
+<CommonMistake>
+**A recursive CTE with no stop condition.** `WHERE d < '2024-10-27'` (or an equivalent) is the only thing that ends the loop. Forget it and the query runs until the engine's recursion limit or memory runs out. Always add the condition and test with a short range first.
+</CommonMistake>
+
+<CommonMistake>
+**Using `UNION` instead of `UNION ALL` in a recursive CTE, or forgetting the `RECURSIVE` keyword.** PostgreSQL, MySQL and SQLite need `WITH RECURSIVE`. Without it you get an error about an unknown table (the CTE name inside itself).
+</CommonMistake>
+
+<CommonMistake>
+**Putting a comma after the last CTE, or a second WITH.** Write `WITH a AS (...), b AS (...) SELECT ...`. A trailing comma before the main `SELECT`, or a second `WITH` keyword, is a syntax error.
+</CommonMistake>
+
+<CommonMistake>
+**Thinking a CTE is saved or is always faster.** It exists only for that one query, and often runs exactly like a subquery. If you need an intermediate result across several queries, create a temp table.
+</CommonMistake>
+
+<CommonMistake>
+**Referencing a CTE defined later.** CTEs can only use CTEs defined **above** them. Moving a step lower than the step that uses it gives "no such table".
+</CommonMistake>
+
+<CommonMistake>
+**Counting duplicates because you skipped the cleaning CTE.** If the raw table has repeated rows, every later step inherits them (for example, orders counted twice). Make de-duplication the first CTE.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="ctes" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "How long does a CTE exist?", options: ["Until the session ends", "Until the database restarts", "For the duration of the single query that defines it", "Forever, like a view"], answer: 2, explanation: "A CTE is a named temporary result for one statement only. Use a view or a temp table for something longer lasting." },
+  { q: "Which is the correct way to define two CTEs?", options: ["WITH a AS (...); WITH b AS (...) SELECT ...", "WITH a AS (...), b AS (...) SELECT ...", "WITH a AS (...) AND b AS (...) SELECT ...", "WITH a, b AS (...) SELECT ..."], answer: 1, explanation: "One WITH, CTEs separated by commas, and the main query follows the last one with no comma." },
+  { q: "What are the two parts of a recursive CTE?", options: ["SELECT and WHERE", "An anchor query and a recursive step joined by UNION ALL", "A view and a table", "A join and a subquery"], answer: 1, explanation: "The anchor provides the starting rows and the recursive step builds new rows from the previous ones, until it returns nothing." },
+  { q: "Why join a date series to your data?", options: ["To make the query shorter", "To get a row for days that have no activity", "To sort the results", "To remove duplicates"], answer: 1, explanation: "GROUP BY on the data alone skips empty days. A series plus LEFT JOIN returns every day, with 0 where nothing happened." },
+  { q: "When is a temp table better than a CTE?", options: ["When the logic is only 3 lines", "When a large intermediate result is reused by several queries", "When you want the query to run once", "Never"], answer: 1, explanation: "A temp table persists for the session and can be indexed, so it suits large, expensive intermediate results reused many times." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers watch how you structure a long query. Starting with a clean `WITH` step, naming CTEs sensibly (`clean_orders`, `first_order`, `monthly_active`) and building up gradually is a strong signal. Recursive CTEs appear as "generate all dates between two dates" or "list all reports under a manager".
+</InterviewAlert>
+
+<InterviewQ q="What is a CTE and why would you use one instead of a subquery?">
+A common table expression is a named result defined with `WITH` that exists for one query. I use it to break a long query into named steps, to reference the same intermediate result more than once without copying SQL, and to make the query easier to review and debug, since I can run each step on its own. Performance is usually the same as an equivalent subquery.
+</InterviewQ>
+
+<InterviewQ q="CTE versus temp table: how do you choose?">
+A CTE lives for one statement and is best for readability. A temp table is materialised for the session, can be indexed and can be used by many queries. I use a CTE by default and move to a temp table when an intermediate result is large, expensive to compute and reused several times, or when I need to inspect it between steps.
+</InterviewQ>
+
+<InterviewQ q="How would you generate every date between 1 Jan and 31 Dec in SQL?">
+With a recursive CTE: the anchor selects the first date, the recursive step adds one day, and a `WHERE` condition stops at the last date. In SQLite, `date(d, '+1 day')` adds a day; PostgreSQL also offers `generate_series`. Then I `LEFT JOIN` my facts onto that series, so days with no data still appear with a zero.
+</InterviewQ>
+
+<InterviewQ q="What happens if a recursive CTE has no termination condition?">
+It keeps producing rows forever, until it hits the engine's recursion limit (SQL Server defaults to 100 levels) or runs out of memory. So the recursive step must include a condition that eventually returns no rows, such as a date limit, or reaching the end of a hierarchy.
+</InterviewQ>
+
+## Key takeaways
+
+- A CTE (`WITH name AS (...)`) is a named, temporary result for one query. It makes multi-step logic readable.
+- Chain CTEs with commas; each can use the ones above it. Use a CTE twice instead of copying a subquery.
+- A CTE is mostly a clarity tool, not a speed tool. Use a temp table for big results reused across queries.
+- A recursive CTE has an anchor, a recursive step joined by `UNION ALL`, and a stop condition.
+- A date series joined with `LEFT JOIN` guarantees a row for every day, with 0 for quiet days.
+
+## Further reading
+
+<FurtherReading ids={["mode-sql", "sqlite-docs", "postgres-docs", "dbt-docs"]} />
