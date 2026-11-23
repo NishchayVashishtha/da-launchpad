@@ -1,0 +1,228 @@
+[
+  {
+    "id": "sql-set-operations-001",
+    "module": "sql",
+    "topic": "set-operations",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "Where do we operate? Return the distinct list of cleaned city names (`LOWER(TRIM(city))`) found in either `restaurants` or `delivery_partners`, ignoring NULL cities, as one column `city`, ordered alphabetically.",
+    "dataset": "food_delivery",
+    "hint": "Two SELECTs of LOWER(TRIM(city)) joined with UNION.",
+    "solutionSql": "SELECT LOWER(TRIM(city)) AS city FROM restaurants WHERE city IS NOT NULL UNION SELECT LOWER(TRIM(city)) FROM delivery_partners WHERE city IS NOT NULL ORDER BY city",
+    "expectedOutput": {
+      "columns": [
+        "city"
+      ],
+      "rows": [
+        [
+          "ahmedabad"
+        ],
+        [
+          "bengaluru"
+        ],
+        [
+          "chennai"
+        ],
+        [
+          "delhi"
+        ],
+        [
+          "hyderabad"
+        ],
+        [
+          "jaipur"
+        ],
+        [
+          "kolkata"
+        ],
+        [
+          "lucknow"
+        ],
+        [
+          "mumbai"
+        ],
+        [
+          "pune"
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "UNION stacks the two lists and removes duplicates, so each city appears once. Cleaning the text first with LOWER(TRIM()) is what makes 'Pune' and ' pune' the same value. The ORDER BY goes once, at the very end.",
+    "commonMistake": "Using UNION ALL, which returns one row per restaurant and partner (about 1,500 rows) instead of a short city list.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "set-operations",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-set-operations-002",
+    "module": "sql",
+    "topic": "set-operations",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Which restaurants have had both a 'Heavy Rain' delivery and a cancelled delivery? Return `restaurants_with_both`: the count of restaurant ids found in both groups. Use INTERSECT.",
+    "dataset": "food_delivery",
+    "hint": "Two lists of restaurant_id, one per condition, joined with INTERSECT, then count the result in a subquery.",
+    "solutionSql": "SELECT COUNT(*) AS restaurants_with_both FROM (SELECT restaurant_id FROM deliveries WHERE weather = 'Heavy Rain' INTERSECT SELECT restaurant_id FROM deliveries WHERE delivery_status = 'Cancelled')",
+    "expectedOutput": {
+      "columns": [
+        "restaurants_with_both"
+      ],
+      "rows": [
+        [
+          230
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "Each SELECT lists restaurants that meet one condition. INTERSECT keeps only ids present in both lists and removes duplicates, so every restaurant counts once. Wrapping it in a subquery lets us count the rows.",
+    "commonMistake": "Putting both conditions in one WHERE with AND: that finds deliveries that were both rainy and cancelled, a different and much smaller group.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 8,
+    "tags": [
+      "set-operations",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-set-operations-003",
+    "module": "sql",
+    "topic": "set-operations",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Which products have been sold but never returned? Return `never_returned_products`: the count of product ids that appear in `order_items` but never in a returned item (`returns` joined to `order_items` through `order_item_id`). Use EXCEPT.",
+    "dataset": "ecommerce",
+    "hint": "Sold product ids EXCEPT product ids of returned items.",
+    "solutionSql": "SELECT COUNT(*) AS never_returned_products FROM (SELECT product_id FROM order_items EXCEPT SELECT oi.product_id FROM returns r INNER JOIN order_items oi ON oi.order_item_id = r.order_item_id)",
+    "expectedOutput": {
+      "columns": [
+        "never_returned_products"
+      ],
+      "rows": [
+        [
+          101
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "The first query lists products that were sold. The second reaches product ids of returned items through order_items. EXCEPT keeps ids from the first list that are not in the second, and removes duplicates. Order matters: reversing them would answer 'returned but never sold'.",
+    "commonMistake": "Reversing the two queries, which returns zero because every returned item was sold.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 10,
+    "tags": [
+      "set-operations",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-set-operations-004",
+    "module": "sql",
+    "topic": "set-operations",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Operations wants one compact report with two kinds of problem per bank. Return `bank`, `metric` and `txns` where metric is 'Failed' (transactions with status 'FAILED') or 'Pending' (status 'PENDING'), stacked with UNION ALL, for the banks and metrics where the count is at least 15. Order by `bank`, then `metric`.",
+    "dataset": "fintech",
+    "hint": "Two SELECT ... GROUP BY bank queries with a constant label column, stacked with UNION ALL, wrapped in a subquery for the HAVING-style filter.",
+    "solutionSql": "SELECT bank, metric, txns FROM (SELECT bank, 'Failed' AS metric, COUNT(*) AS txns FROM transactions WHERE status = 'FAILED' GROUP BY bank UNION ALL SELECT bank, 'Pending', COUNT(*) FROM transactions WHERE status = 'PENDING' GROUP BY bank) WHERE txns >= 15 ORDER BY bank, metric",
+    "expectedOutput": {
+      "columns": [
+        "bank",
+        "metric",
+        "txns"
+      ],
+      "rows": [
+        [
+          "Bharat Union Bank",
+          "Failed",
+          125
+        ],
+        [
+          "Bharat Union Bank",
+          "Pending",
+          17
+        ],
+        [
+          "Coromandel Bank",
+          "Failed",
+          56
+        ],
+        [
+          "Himalaya Trust Bank",
+          "Failed",
+          69
+        ],
+        [
+          "Kaveri Co-op Bank",
+          "Failed",
+          144
+        ],
+        [
+          "Malabar Savings Bank",
+          "Failed",
+          25
+        ],
+        [
+          "PayNova Small Finance Bank",
+          "Failed",
+          31
+        ],
+        [
+          "Rajdhani National Bank",
+          "Failed",
+          78
+        ],
+        [
+          "Rajdhani National Bank",
+          "Pending",
+          19
+        ],
+        [
+          "Sundaram Bank",
+          "Failed",
+          101
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Each query produces bank, a label and a count, in the same order and with the same types, which is what UNION ALL requires. The constant label tells the rows apart. UNION ALL is right because the two parts are different kinds of rows. Wrapping in a subquery lets one WHERE filter both parts.",
+    "commonMistake": "Using UNION instead of UNION ALL: if two parts ever have identical bank, label and count, UNION would merge them and hide a row.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 15,
+    "tags": [
+      "set-operations",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-set-operations-005",
+    "module": "sql",
+    "topic": "set-operations",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Win-back campaign: find customers who ordered in 2023, did not order in 2024, and have at least one return. Return `winback_customers`: the number of distinct customer ids. Use EXCEPT for the first two conditions and INTERSECT for the return condition.",
+    "dataset": "ecommerce",
+    "hint": "(2023 customers EXCEPT 2024 customers) INTERSECT customers with returns. Compound queries run left to right, so wrap the EXCEPT part in a subquery.",
+    "solutionSql": "SELECT COUNT(*) AS winback_customers FROM (SELECT customer_id FROM (SELECT customer_id FROM orders WHERE order_date LIKE '2023%' EXCEPT SELECT customer_id FROM orders WHERE order_date LIKE '2024%') INTERSECT SELECT o.customer_id FROM returns r INNER JOIN orders o ON o.order_id = r.order_id)",
+    "expectedOutput": {
+      "columns": [
+        "winback_customers"
+      ],
+      "rows": [
+        [
+          86
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "EXCEPT removes anyone who ordered in 2024 from the 2023 list. INTERSECT then keeps only customers who also appear in the returns list, found by joining returns to orders for the customer id. The inner parentheses (a subquery) make the evaluation order explicit instead of relying on left-to-right rules.",
+    "commonMistake": "Using INTERSECT first and EXCEPT second without grouping them: the result changes with the order, and it can include customers who returned something but also ordered in 2024.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 18,
+    "tags": [
+      "set-operations",
+      "sql"
+    ]
+  }
+]

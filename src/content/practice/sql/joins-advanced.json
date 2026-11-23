@@ -1,0 +1,494 @@
+[
+  {
+    "id": "sql-joins-advanced-001",
+    "module": "sql",
+    "topic": "joins-advanced",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "The merchandising team wants to know how many products have never been sold. Return one column `unsold_products`: the number of products with no row in `order_items`.",
+    "dataset": "ecommerce",
+    "hint": "Anti-join: LEFT JOIN products to order_items and keep rows where the item side is NULL.",
+    "solutionSql": "SELECT COUNT(*) AS unsold_products FROM products p LEFT JOIN order_items oi ON oi.product_id = p.product_id WHERE oi.order_item_id IS NULL",
+    "expectedOutput": {
+      "columns": [
+        "unsold_products"
+      ],
+      "rows": [
+        [
+          22
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "A LEFT JOIN keeps every product. A product that was never ordered finds no partner row, so the order_items columns are NULL. Filtering on that NULL counts exactly the unsold products, an anti-join.",
+    "commonMistake": "Using INNER JOIN, which can only return products that did sell, so the answer is 0 instead of 22.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "joins-advanced",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-joins-advanced-002",
+    "module": "sql",
+    "topic": "joins-advanced",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "HR wants to find employees who have never had a performance review. Return `department_id` and `unreviewed` (distinct employees with no review), ordered by `department_id`.",
+    "dataset": "hr",
+    "hint": "Use NOT EXISTS against performance_reviews. Watch for duplicate employee rows.",
+    "solutionSql": "SELECT e.department_id, COUNT(DISTINCT e.employee_id) AS unreviewed FROM employees e WHERE NOT EXISTS (SELECT 1 FROM performance_reviews p WHERE p.employee_id = e.employee_id) GROUP BY e.department_id ORDER BY e.department_id",
+    "expectedOutput": {
+      "columns": [
+        "department_id",
+        "unreviewed"
+      ],
+      "rows": [
+        [
+          1,
+          156
+        ],
+        [
+          2,
+          86
+        ],
+        [
+          3,
+          29
+        ],
+        [
+          4,
+          105
+        ],
+        [
+          5,
+          19
+        ],
+        [
+          6,
+          18
+        ],
+        [
+          7,
+          49
+        ],
+        [
+          8,
+          31
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "NOT EXISTS keeps an employee only when the inner query finds no review row for them. It is safe against NULLs and never multiplies rows. DISTINCT handles the duplicated employee rows, and GROUP BY splits the count by department.",
+    "commonMistake": "Using NOT IN with a column that can contain NULLs. One NULL makes the whole filter return zero rows, so the report wrongly says everyone was reviewed.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "joins-advanced",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-joins-advanced-003",
+    "module": "sql",
+    "topic": "joins-advanced",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Do some employees get hired before their own manager? Return `employees_hired_before_manager`: the count of distinct employees whose `hire_date` is earlier than their manager's `hire_date`.",
+    "dataset": "hr",
+    "hint": "Self join employees with two aliases: employee and manager.",
+    "solutionSql": "SELECT COUNT(DISTINCT e.employee_id) AS employees_hired_before_manager FROM employees e INNER JOIN employees m ON m.employee_id = e.manager_id WHERE e.hire_date < m.hire_date",
+    "expectedOutput": {
+      "columns": [
+        "employees_hired_before_manager"
+      ],
+      "rows": [
+        [
+          1101
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "The same table appears twice: e is the employee, m is the manager found through e.manager_id. Comparing the two hire dates in WHERE answers the question. INNER JOIN is right because employees without a manager cannot be compared, and DISTINCT guards against duplicate rows.",
+    "commonMistake": "Forgetting the second alias and writing `employees JOIN employees`, which fails with an ambiguous column error, or comparing hire_date with itself.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "joins-advanced",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-joins-advanced-004",
+    "module": "sql",
+    "topic": "joins-advanced",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "The planning team wants a complete grid of region and category with zeros kept. Return `region`, `category` and `sale_lines` (distinct sale ids) for every combination of the 4 regions and 6 categories, ordered by `region`, then `category`.",
+    "dataset": "retail",
+    "hint": "CROSS JOIN the distinct regions with the distinct categories, then LEFT JOIN the sales through stores.",
+    "solutionSql": "SELECT r.region, c.category, COUNT(DISTINCT s.sale_id) AS sale_lines FROM (SELECT DISTINCT region FROM stores) r CROSS JOIN (SELECT DISTINCT category FROM sales) c LEFT JOIN stores st ON st.region = r.region LEFT JOIN sales s ON s.store_id = st.store_id AND s.category = c.category GROUP BY r.region, c.category ORDER BY r.region, c.category",
+    "expectedOutput": {
+      "columns": [
+        "region",
+        "category",
+        "sale_lines"
+      ],
+      "rows": [
+        [
+          "East",
+          "Apparel",
+          440
+        ],
+        [
+          "East",
+          "Electronics Accessories",
+          276
+        ],
+        [
+          "East",
+          "Grocery & Staples",
+          837
+        ],
+        [
+          "East",
+          "Home & Kitchen",
+          426
+        ],
+        [
+          "East",
+          "Home Decor",
+          156
+        ],
+        [
+          "East",
+          "Personal Care",
+          538
+        ],
+        [
+          "North",
+          "Apparel",
+          728
+        ],
+        [
+          "North",
+          "Electronics Accessories",
+          543
+        ],
+        [
+          "North",
+          "Grocery & Staples",
+          1478
+        ],
+        [
+          "North",
+          "Home & Kitchen",
+          740
+        ],
+        [
+          "North",
+          "Home Decor",
+          256
+        ],
+        [
+          "North",
+          "Personal Care",
+          990
+        ],
+        [
+          "South",
+          "Apparel",
+          1098
+        ],
+        [
+          "South",
+          "Electronics Accessories",
+          769
+        ],
+        [
+          "South",
+          "Grocery & Staples",
+          2124
+        ],
+        [
+          "South",
+          "Home & Kitchen",
+          1053
+        ],
+        [
+          "South",
+          "Home Decor",
+          345
+        ],
+        [
+          "South",
+          "Personal Care",
+          1440
+        ],
+        [
+          "West",
+          "Apparel",
+          1558
+        ],
+        [
+          "West",
+          "Electronics Accessories",
+          1020
+        ],
+        [
+          "West",
+          "Grocery & Staples",
+          3081
+        ],
+        [
+          "West",
+          "Home & Kitchen",
+          1538
+        ],
+        [
+          "West",
+          "Home Decor",
+          535
+        ],
+        [
+          "West",
+          "Personal Care",
+          2031
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "CROSS JOIN builds all 24 region and category pairs first. The LEFT JOINs then attach the sales that match each pair, so a pair with no sales still appears with 0. COUNT(DISTINCT sale_id) ignores the duplicated sale rows and counts 0 when the sale side is NULL.",
+    "commonMistake": "Joining sales to stores and grouping directly, which silently drops any combination with no sales, so the grid has missing cells instead of zeros.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 12,
+    "tags": [
+      "joins-advanced",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-joins-advanced-005",
+    "module": "sql",
+    "topic": "joins-advanced",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Which restaurants kept delivering across both years? Return `pattern` ('Both years', 'Only 2023' or 'Only 2024') and `restaurants` (count), ordered by `restaurants` descending. Use delivery `order_date` and a FULL OUTER JOIN of the two yearly lists of restaurant ids.",
+    "dataset": "food_delivery",
+    "hint": "Build one list per year with SELECT DISTINCT and FULL OUTER JOIN them on restaurant_id. A CASE on which side is NULL gives the pattern.",
+    "solutionSql": "SELECT CASE WHEN a.rid IS NOT NULL AND b.rid IS NOT NULL THEN 'Both years' WHEN a.rid IS NOT NULL THEN 'Only 2023' ELSE 'Only 2024' END AS pattern, COUNT(*) AS restaurants FROM (SELECT DISTINCT restaurant_id AS rid FROM deliveries WHERE order_date LIKE '2023%') a FULL OUTER JOIN (SELECT DISTINCT restaurant_id AS rid FROM deliveries WHERE order_date LIKE '2024%') b ON a.rid = b.rid GROUP BY pattern ORDER BY restaurants DESC, pattern",
+    "expectedOutput": {
+      "columns": [
+        "pattern",
+        "restaurants"
+      ],
+      "rows": [
+        [
+          "Both years",
+          596
+        ],
+        [
+          "Only 2024",
+          3
+        ],
+        [
+          "Only 2023",
+          1
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Each subquery lists the restaurants active in one year. A FULL OUTER JOIN keeps matched ids (both years), ids only on the left (2023 only) and ids only on the right (2024 only). The CASE reads which side is NULL to label each row. SQLite 3.39 and later supports FULL OUTER JOIN; MySQL does not.",
+    "commonMistake": "Using a LEFT JOIN, which never shows the restaurants that appear only in 2024, so the new-restaurant group is missing from the report.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 12,
+    "tags": [
+      "joins-advanced",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-joins-advanced-006",
+    "module": "sql",
+    "topic": "joins-advanced",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Which age groups do not use P2P transfers? Return `age_group` and `users_without_p2p`: the number of distinct users in that age group with no transaction of `txn_type` 'P2P' as sender (`user_id`). Order by `users_without_p2p` descending, then `age_group`.",
+    "dataset": "fintech",
+    "hint": "NOT EXISTS with the P2P condition inside the subquery. Remember user rows can be duplicated.",
+    "solutionSql": "SELECT u.age_group, COUNT(DISTINCT u.user_id) AS users_without_p2p FROM users u WHERE NOT EXISTS (SELECT 1 FROM transactions t WHERE t.user_id = u.user_id AND t.txn_type = 'P2P') GROUP BY u.age_group ORDER BY users_without_p2p DESC, u.age_group",
+    "expectedOutput": {
+      "columns": [
+        "age_group",
+        "users_without_p2p"
+      ],
+      "rows": [
+        [
+          "25-34",
+          753
+        ],
+        [
+          "35-44",
+          481
+        ],
+        [
+          "18-24",
+          473
+        ],
+        [
+          "45-60",
+          309
+        ],
+        [
+          "60+",
+          82
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The extra condition t.txn_type = 'P2P' sits inside the NOT EXISTS, so the subquery asks 'has this user ever sent a P2P payment?'. Users for whom the answer is no are kept and grouped by age group. Putting the condition in the outer WHERE instead would answer a different question.",
+    "commonMistake": "Joining users to transactions and filtering `txn_type <> 'P2P'`, which keeps any user who also made a non-P2P payment, so users who do use P2P are wrongly included.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 12,
+    "tags": [
+      "joins-advanced",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-joins-advanced-007",
+    "module": "sql",
+    "topic": "joins-advanced",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Which managers lose the most people? For managers with at least 8 distinct direct reports, return `manager` (full name), `direct_reports` (distinct employees) and `exited_reports` (distinct reports with status 'Exited'). Order by `exited_reports` descending, then `direct_reports` descending, then `manager`, and return the top 10.",
+    "dataset": "hr",
+    "hint": "Self join, group by the manager id and name, and use HAVING on the distinct count.",
+    "solutionSql": "SELECT m.full_name AS manager, COUNT(DISTINCT e.employee_id) AS direct_reports, COUNT(DISTINCT CASE WHEN e.employment_status = 'Exited' THEN e.employee_id END) AS exited_reports FROM employees e INNER JOIN employees m ON m.employee_id = e.manager_id GROUP BY m.employee_id, m.full_name HAVING COUNT(DISTINCT e.employee_id) >= 8 ORDER BY exited_reports DESC, direct_reports DESC, manager LIMIT 10",
+    "expectedOutput": {
+      "columns": [
+        "manager",
+        "direct_reports",
+        "exited_reports"
+      ],
+      "rows": [
+        [
+          "Geeta Bose",
+          8,
+          3
+        ],
+        [
+          "Venkat Naidu",
+          8,
+          3
+        ],
+        [
+          "Karthik Sandhu",
+          9,
+          2
+        ],
+        [
+          "Arjun Patel",
+          8,
+          2
+        ],
+        [
+          "Diya Hegde",
+          8,
+          2
+        ],
+        [
+          "Yash Singh",
+          8,
+          2
+        ],
+        [
+          "Dinesh Sen",
+          9,
+          1
+        ],
+        [
+          "Gurpreet Chopra",
+          8,
+          1
+        ],
+        [
+          "Manoj Bose",
+          8,
+          1
+        ],
+        [
+          "Suresh Sen",
+          8,
+          1
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "e is each report and m is that report's manager, so grouping by m gives one row per manager. Distinct counts protect against the duplicate employee rows, and HAVING keeps only managers with enough reports. The CASE inside COUNT(DISTINCT) counts only exited reports.",
+    "commonMistake": "Grouping by manager name alone: two different managers with the same name merge into one row and their reports are added together.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 15,
+    "tags": [
+      "joins-advanced",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-joins-advanced-008",
+    "module": "sql",
+    "topic": "joins-advanced",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Which states are losing customers? Find customers who ordered in 2023 but placed no order in 2024. Return `state` and `lost_customers` (distinct customers) for states with at least 20 such customers, ordered by `lost_customers` descending, then `state`. Ignore customers whose state is NULL.",
+    "dataset": "ecommerce",
+    "hint": "Join customers to a 2023 order list and anti-join 2024 with NOT EXISTS. Group by state and filter with HAVING.",
+    "solutionSql": "SELECT c.state, COUNT(DISTINCT c.customer_id) AS lost_customers FROM customers c WHERE c.state IS NOT NULL AND EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.customer_id AND o.order_date LIKE '2023%') AND NOT EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.customer_id AND o.order_date LIKE '2024%') GROUP BY c.state HAVING COUNT(DISTINCT c.customer_id) >= 20 ORDER BY lost_customers DESC, c.state",
+    "expectedOutput": {
+      "columns": [
+        "state",
+        "lost_customers"
+      ],
+      "rows": [
+        [
+          "Maharashtra",
+          53
+        ],
+        [
+          "Karnataka",
+          45
+        ],
+        [
+          "Delhi",
+          38
+        ],
+        [
+          "Tamil Nadu",
+          30
+        ],
+        [
+          "Gujarat",
+          25
+        ],
+        [
+          "Madhya Pradesh",
+          24
+        ],
+        [
+          "Telangana",
+          24
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "EXISTS finds customers with at least one 2023 order, and NOT EXISTS removes anyone with a 2024 order. That is a 'did A but not B' pattern. Grouping by state shows where churn concentrates, and HAVING hides tiny states.",
+    "commonMistake": "Filtering `order_date LIKE '2023%'` in the outer WHERE of a plain join. That also keeps customers who ordered in 2024, so nobody is ever excluded and the 'lost' count is wrong.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 15,
+    "tags": [
+      "joins-advanced",
+      "sql"
+    ]
+  }
+]

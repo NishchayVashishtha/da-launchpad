@@ -1,0 +1,418 @@
+[
+  {
+    "id": "sql-ctes-001",
+    "module": "sql",
+    "topic": "ctes",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "Management wants the real number of orders per status. Using a CTE named `clean_orders` that removes exact duplicate rows with SELECT DISTINCT *, return `order_status` and `orders`, ordered by `orders` descending.",
+    "dataset": "ecommerce",
+    "hint": "WITH clean_orders AS (SELECT DISTINCT * FROM orders) then group the CTE.",
+    "solutionSql": "WITH clean_orders AS (SELECT DISTINCT * FROM orders) SELECT order_status, COUNT(*) AS orders FROM clean_orders GROUP BY order_status ORDER BY orders DESC, order_status",
+    "expectedOutput": {
+      "columns": [
+        "order_status",
+        "orders"
+      ],
+      "rows": [
+        [
+          "Delivered",
+          9268
+        ],
+        [
+          "Cancelled",
+          566
+        ],
+        [
+          "RTO",
+          166
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The CTE gives the main query a clean version of orders. Counting from it avoids the roughly 100 duplicate rows that would otherwise inflate the totals. The cleaning rule lives in one place and is easy to reuse or change.",
+    "commonMistake": "Counting from the raw orders table with COUNT(*), which includes the duplicated order rows and overstates each status.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "ctes",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-ctes-002",
+    "module": "sql",
+    "topic": "ctes",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Kaveri Co-op Bank has trouble at peak hours. For `bank` = 'Kaveri Co-op Bank', return `hour` (two digits from `txn_datetime`), `txns` and `fail_pct` (percentage with status 'FAILED', 2 decimals) for the 5 hours with the highest failure rate among hours having at least 50 transactions. Order by `fail_pct` descending, then `hour`. Use a CTE.",
+    "dataset": "fintech",
+    "hint": "CTE per hour with strftime('%H', txn_datetime), then filter and sort the CTE.",
+    "solutionSql": "WITH hourly AS (SELECT strftime('%H', txn_datetime) AS hour, COUNT(*) AS txns, ROUND(100.0 * SUM(status = 'FAILED') / COUNT(*), 2) AS fail_pct FROM transactions WHERE bank = 'Kaveri Co-op Bank' GROUP BY strftime('%H', txn_datetime)) SELECT hour, txns, fail_pct FROM hourly WHERE txns >= 50 ORDER BY fail_pct DESC, hour LIMIT 5",
+    "expectedOutput": {
+      "columns": [
+        "hour",
+        "txns",
+        "fail_pct"
+      ],
+      "rows": [
+        [
+          "20",
+          117,
+          16.24
+        ],
+        [
+          "10",
+          144,
+          15.97
+        ],
+        [
+          "18",
+          163,
+          15.34
+        ],
+        [
+          "19",
+          150,
+          15.33
+        ],
+        [
+          "09",
+          128,
+          11.72
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The CTE does the grouping by hour, so the main query only filters and sorts. The `status = 'FAILED'` comparison gives 1 or 0 in SQLite, so summing it counts failures. The minimum of 50 transactions removes hours too quiet to trust. Peak hours around 9 to 10 and 18 to 20 should lead the list.",
+    "commonMistake": "Applying the txns >= 50 filter in WHERE on the raw table, which filters rows instead of hours and changes the rates.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 12,
+    "tags": [
+      "ctes",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-ctes-003",
+    "module": "sql",
+    "topic": "ctes",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Which platform converts trials to paid best? Using de-duplicated users in a CTE, return `platform`, `trial_users` (users with a subscription row), `paid_users` (those with a non-NULL `paid_start_date`) and `paid_pct` (2 decimals), ordered by `paid_pct` descending.",
+    "dataset": "subscription",
+    "hint": "CTE of DISTINCT user_id, platform, then join subscriptions and aggregate.",
+    "solutionSql": "WITH u AS (SELECT DISTINCT user_id, platform FROM users) SELECT u.platform, COUNT(*) AS trial_users, SUM(s.paid_start_date IS NOT NULL) AS paid_users, ROUND(100.0 * SUM(s.paid_start_date IS NOT NULL) / COUNT(*), 2) AS paid_pct FROM u INNER JOIN subscriptions s ON s.user_id = u.user_id GROUP BY u.platform ORDER BY paid_pct DESC, u.platform",
+    "expectedOutput": {
+      "columns": [
+        "platform",
+        "trial_users",
+        "paid_users",
+        "paid_pct"
+      ],
+      "rows": [
+        [
+          "iOS",
+          833,
+          382,
+          45.86
+        ],
+        [
+          "Web",
+          502,
+          199,
+          39.64
+        ],
+        [
+          "Android",
+          1973,
+          612,
+          31.02
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The CTE removes duplicate users so the join is one-to-one. Each subscription row means the user started a trial, and a non-NULL paid_start_date means they converted. Summing that test gives the paid count. iOS should convert noticeably better than Android.",
+    "commonMistake": "Joining the raw users table, which repeats duplicated users and gives them double weight in both counts.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 12,
+    "tags": [
+      "ctes",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-ctes-004",
+    "module": "sql",
+    "topic": "ctes",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Which campaigns return the most revenue per rupee? Build one CTE with total spend per campaign (distinct ad_spend rows, ignoring rows with `spend_inr` of 50,000 or more) and another with total conversion revenue. Return `campaign_name`, `spend_inr`, `revenue_inr` and `roas` (revenue divided by spend, 2 decimals, treat NULL revenue as 0) for the top 5 by `roas`, tie-break by `campaign_name`.",
+    "dataset": "marketing",
+    "hint": "Aggregate spend and revenue separately in CTEs and join them on campaign_id, otherwise the join multiplies rows.",
+    "solutionSql": "WITH spend AS (SELECT campaign_id, SUM(spend_inr) AS spend_inr FROM (SELECT DISTINCT * FROM ad_spend WHERE spend_inr < 50000) GROUP BY campaign_id), rev AS (SELECT campaign_id, SUM(revenue_inr) AS revenue_inr FROM conversions GROUP BY campaign_id) SELECT c.campaign_name, ROUND(s.spend_inr, 0) AS spend_inr, ROUND(COALESCE(r.revenue_inr, 0), 0) AS revenue_inr, ROUND(COALESCE(r.revenue_inr, 0) / s.spend_inr, 2) AS roas FROM campaigns c INNER JOIN spend s ON s.campaign_id = c.campaign_id LEFT JOIN rev r ON r.campaign_id = c.campaign_id ORDER BY roas DESC, c.campaign_name LIMIT 5",
+    "expectedOutput": {
+      "columns": [
+        "campaign_name",
+        "spend_inr",
+        "revenue_inr",
+        "roas"
+      ],
+      "rows": [
+        [
+          "Diwali Dhamaka 2023 - Email",
+          378,
+          57119,
+          151.19
+        ],
+        [
+          "Winter Wardrobe Email Series",
+          458,
+          34319,
+          74.94
+        ],
+        [
+          "Diwali Dhamaka 2024 - WhatsApp",
+          463,
+          34046,
+          73.56
+        ],
+        [
+          "Freedom Sale WhatsApp Blast",
+          420,
+          19455,
+          46.34
+        ],
+        [
+          "Summer Sale WhatsApp",
+          637,
+          20890,
+          32.8
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Spend and revenue come from different tables with many rows per campaign. Summing each in its own CTE gives one row per campaign, so the final join cannot multiply anything. ROAS (return on ad spend) is revenue divided by spend. Filtering the 100x spend outliers and the duplicates keeps the ratio honest.",
+    "commonMistake": "Joining ad_spend and conversions directly on campaign_id: every spend row pairs with every conversion, so both totals are inflated by many times.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 18,
+    "tags": [
+      "ctes",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-ctes-005",
+    "module": "sql",
+    "topic": "ctes",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Management wants month-over-month order growth for the first half of 2024. Using a CTE of monthly orders from de-duplicated orders, return `month`, `orders`, `prev_orders` and `growth_pct` (percentage change from the previous month, 1 decimal) for the months 2024-01 to 2024-06, ordered by `month`. Do not use window functions.",
+    "dataset": "ecommerce",
+    "hint": "A monthly CTE, then join it to itself where the second copy's month is the first month's previous month. date(month || '-01', '-1 month') helps.",
+    "solutionSql": "WITH clean AS (SELECT DISTINCT * FROM orders), monthly AS (SELECT strftime('%Y-%m', order_date) AS month, COUNT(*) AS orders FROM clean GROUP BY strftime('%Y-%m', order_date)) SELECT cur.month, cur.orders, prev.orders AS prev_orders, ROUND(100.0 * (cur.orders - prev.orders) / prev.orders, 1) AS growth_pct FROM monthly cur INNER JOIN monthly prev ON prev.month = strftime('%Y-%m', date(cur.month || '-01', '-1 month')) WHERE cur.month BETWEEN '2024-01' AND '2024-06' ORDER BY cur.month",
+    "expectedOutput": {
+      "columns": [
+        "month",
+        "orders",
+        "prev_orders",
+        "growth_pct"
+      ],
+      "rows": [
+        [
+          "2024-01",
+          454,
+          434,
+          4.6
+        ],
+        [
+          "2024-02",
+          358,
+          454,
+          -21.1
+        ],
+        [
+          "2024-03",
+          415,
+          358,
+          15.9
+        ],
+        [
+          "2024-04",
+          407,
+          415,
+          -1.9
+        ],
+        [
+          "2024-05",
+          411,
+          407,
+          1
+        ],
+        [
+          "2024-06",
+          449,
+          411,
+          9.2
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The first CTE cleans duplicates and the second counts orders per month. Joining the monthly CTE to itself pairs each month with the month before it, so the growth formula (current minus previous, divided by previous) can use both numbers. Inner joining also leaves out January 2023, which has no previous month.",
+    "commonMistake": "Dividing by the current month instead of the previous month, which understates growth and shows 33 percent for what is really a 50 percent rise.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 20,
+    "tags": [
+      "ctes",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-ctes-006",
+    "module": "sql",
+    "topic": "ctes",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "The payments team wants a failure calendar for November 2024 with no missing days. Using a recursive CTE for the 30 dates, return `day` and `failed_txns` (distinct txn ids with status 'FAILED' on that date, 0 when none), ordered by `day`.",
+    "dataset": "fintech",
+    "hint": "WITH RECURSIVE days(d) AS (anchor UNION ALL date(d,'+1 day') ... ) then LEFT JOIN transactions on date(txn_datetime).",
+    "solutionSql": "WITH RECURSIVE days(d) AS (SELECT '2024-11-01' UNION ALL SELECT date(d, '+1 day') FROM days WHERE d < '2024-11-30') SELECT days.d AS day, COUNT(DISTINCT t.txn_id) AS failed_txns FROM days LEFT JOIN transactions t ON date(t.txn_datetime) = days.d AND t.status = 'FAILED' GROUP BY days.d ORDER BY days.d",
+    "expectedOutput": {
+      "columns": [
+        "day",
+        "failed_txns"
+      ],
+      "rows": [
+        [
+          "2024-11-01",
+          6
+        ],
+        [
+          "2024-11-02",
+          2
+        ],
+        [
+          "2024-11-03",
+          4
+        ],
+        [
+          "2024-11-04",
+          0
+        ],
+        [
+          "2024-11-05",
+          0
+        ],
+        [
+          "2024-11-06",
+          1
+        ],
+        [
+          "2024-11-07",
+          0
+        ],
+        [
+          "2024-11-08",
+          2
+        ],
+        [
+          "2024-11-09",
+          0
+        ],
+        [
+          "2024-11-10",
+          2
+        ],
+        [
+          "2024-11-11",
+          2
+        ],
+        [
+          "2024-11-12",
+          2
+        ],
+        [
+          "2024-11-13",
+          0
+        ],
+        [
+          "2024-11-14",
+          1
+        ],
+        [
+          "2024-11-15",
+          1
+        ],
+        [
+          "2024-11-16",
+          1
+        ],
+        [
+          "2024-11-17",
+          2
+        ],
+        [
+          "2024-11-18",
+          1
+        ],
+        [
+          "2024-11-19",
+          1
+        ],
+        [
+          "2024-11-20",
+          4
+        ],
+        [
+          "2024-11-21",
+          2
+        ],
+        [
+          "2024-11-22",
+          1
+        ],
+        [
+          "2024-11-23",
+          1
+        ],
+        [
+          "2024-11-24",
+          1
+        ],
+        [
+          "2024-11-25",
+          1
+        ],
+        [
+          "2024-11-26",
+          0
+        ],
+        [
+          "2024-11-27",
+          0
+        ],
+        [
+          "2024-11-28",
+          3
+        ],
+        [
+          "2024-11-29",
+          2
+        ],
+        [
+          "2024-11-30",
+          3
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The recursive CTE starts at 1 November and adds a day until 30 November. LEFT JOIN keeps a row for every day even when no transaction failed. The FAILED condition is in ON, not WHERE: in WHERE it would remove the NULL rows and the zero-days would vanish. The Diwali outage on 31 October is outside this range.",
+    "commonMistake": "Putting `t.status = 'FAILED'` in WHERE, which deletes the unmatched days and silently returns fewer than 30 rows.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 18,
+    "tags": [
+      "ctes",
+      "sql"
+    ]
+  }
+]

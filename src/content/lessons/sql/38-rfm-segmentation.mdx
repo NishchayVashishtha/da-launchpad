@@ -1,0 +1,338 @@
+---
+title: "RFM segmentation"
+description: "Score customers on recency, frequency and monetary value with NTILE and turn the scores into segment labels."
+module: sql
+order: 38
+estimatedMinutes: 50
+objectives:
+  - "Explain Recency, Frequency and Monetary value in plain words"
+  - "Compute the three RFM measures per customer with a fixed reference date"
+  - "Score each measure with NTILE in the right direction"
+  - "Label segments with an ordered CASE expression"
+  - "Check that the segments make business sense"
+tags: ["sql", "interview-patterns", "rfm", "ntile", "segmentation"]
+---
+
+## Learning objectives
+
+- Define recency, frequency and monetary value.
+- Build the RFM table with `GROUP BY customer`.
+- Score with `NTILE` and keep "higher is better" for all three scores.
+- Create named segments such as Champion and At risk.
+- Validate segments by comparing their average spend.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+A shopping app has 4,500 customers and a marketing budget for 500 messages. Who should get which message? Treat the best buyers differently from the ones about to leave. RFM is the simplest and most popular way to split customers into useful groups, and it runs on a plain orders table. It is a staple of e-commerce, retail and fintech analytics, and a frequent interview case.
+</RealWorld>
+
+## Concept
+
+### The three letters
+
+- **Recency (R):** how many days since the customer last bought. Smaller is better.
+- **Frequency (F):** how many orders in the period. Larger is better.
+- **Monetary (M):** how much money in total. Larger is better.
+
+Think of a neighbourhood kirana shop. The customer who came yesterday, comes every week and spends the most is your best customer. The one who spent a lot once, two years ago, is probably gone.
+
+### The recognition cue
+
+- "segment customers", "RFM", "best customers", "loyal vs at-risk"
+- "score customers from 1 to 5", "quintiles", "deciles"
+
+### Steps
+
+1. **Fix an "as of" date.** Using today's date makes results change daily. Choose the end of the data, such as `2024-12-31`.
+2. **Aggregate per customer:** `MAX(order_date)` for recency, `COUNT(*)` for frequency, `SUM(amount)` for monetary.
+3. **Score** each measure with `NTILE(k)` over the sorted values.
+4. **Label** with a `CASE` that reads the three scores.
+5. **Summarise** each segment: size, average spend.
+
+### NTILE in one minute
+
+`NTILE(5) OVER (ORDER BY x)` splits the sorted rows into 5 buckets of almost equal size and numbers them 1 to 5. The first rows in the sort order go to bucket 1.
+
+So the **direction matters**:
+
+- Frequency and monetary: sort ascending, so the biggest values land in the top bucket.
+- Recency: a **small** number of days is good, so sort **descending** (`ORDER BY recency_days DESC`). The oldest customers go to bucket 1 and the freshest to the top bucket.
+
+<FormulaCard title="RFM template">
+```sql
+WITH rfm AS (
+  SELECT customer_id,
+         CAST(julianday('2024-12-31') - julianday(MAX(order_date)) AS INTEGER) AS recency_days,
+         COUNT(*)          AS frequency,
+         SUM(total_amount) AS monetary
+  FROM orders
+  WHERE order_status = 'Delivered'
+  GROUP BY customer_id
+),
+scored AS (
+  SELECT *,
+         NTILE(5) OVER (ORDER BY recency_days DESC, customer_id) AS r,
+         NTILE(5) OVER (ORDER BY frequency, customer_id)         AS f,
+         NTILE(5) OVER (ORDER BY monetary, customer_id)          AS m
+  FROM rfm
+)
+SELECT * FROM scored;
+```
+</FormulaCard>
+
+### Variations
+
+1. **Fewer buckets.** `NTILE(3)` is easier to explain. `NTILE(5)` is the textbook version.
+2. **Segment labels.** `CASE WHEN r >= 4 AND f >= 4 THEN 'Champion' ... END`. CASE stops at the first match, so put the most specific rule first.
+3. **Combined score.** Concatenate: `r || f || m` (like '545'), or add them.
+4. **Fixed thresholds instead of NTILE.** For example F of 1, 2-3, 4+ using CASE. Often better when frequency has many ties.
+
+### Edge cases
+
+- **Ties:** many customers have exactly 1 order. `NTILE` still forces them into different buckets, which splits identical customers. A tie-breaker such as `customer_id` makes the result stable, but remember the split is arbitrary. For frequency, fixed thresholds may be fairer.
+- **Fewer customers than buckets:** NTILE still works but buckets are tiny.
+- **Customers with no orders** do not appear. RFM only scores buyers.
+- **Cancelled and returned orders:** choose a status filter and state it.
+- **Duplicate order rows:** dedupe before counting.
+- **Outlier amounts:** a 100x data-entry error makes one customer's M huge. Consider capping or checking the top values.
+
+<Tip>
+Say the direction of every score out loud: "5 means best on all three". Interviewers check for the reversed recency mistake.
+</Tip>
+
+## Worked examples
+
+### Example 1: the RFM table
+
+The five biggest spenders among delivered orders, with a fixed as-of date. Exact duplicate order rows are removed first.
+
+<SqlPlayground dataset="ecommerce" query={`WITH o AS (
+  SELECT DISTINCT order_id, customer_id, order_date, total_amount
+  FROM orders
+  WHERE order_status = 'Delivered'
+)
+SELECT customer_id,
+       CAST(julianday('2024-12-31') - julianday(MAX(order_date)) AS INTEGER) AS recency_days,
+       COUNT(*) AS frequency,
+       ROUND(SUM(total_amount), 2) AS monetary
+FROM o
+GROUP BY customer_id
+ORDER BY monetary DESC, customer_id
+LIMIT 5;`} title="RFM table" />
+
+Output:
+
+| customer_id | recency_days | frequency | monetary |
+|---|---|---|---|
+| 2668 | 42 | 6 | 948870.83 |
+| 1183 | 21 | 26 | 448465.24 |
+| 980 | 10 | 67 | 360337.09 |
+| 614 | 4 | 44 | 261324.15 |
+| 1327 | 41 | 37 | 244046.64 |
+
+
+Customer 980 bought 67 times and the top customer by money bought only 6 times, but spent a lot per order. Different customers are strong on different letters, which is why we score them separately.
+
+### Example 2: five recency buckets
+
+<SqlPlayground dataset="ecommerce" query={`WITH o AS (
+  SELECT DISTINCT order_id, customer_id, order_date
+  FROM orders
+  WHERE order_status = 'Delivered'
+),
+rfm AS (
+  SELECT customer_id,
+         CAST(julianday('2024-12-31') - julianday(MAX(order_date)) AS INTEGER) AS recency_days
+  FROM o
+  GROUP BY customer_id
+),
+scored AS (
+  SELECT customer_id, recency_days,
+         NTILE(5) OVER (ORDER BY recency_days DESC, customer_id) AS r_score
+  FROM rfm
+)
+SELECT r_score,
+       COUNT(*) AS customers,
+       MIN(recency_days) AS min_days,
+       MAX(recency_days) AS max_days
+FROM scored
+GROUP BY r_score
+ORDER BY r_score DESC;`} title="Recency quintiles" />
+
+Output:
+
+| r_score | customers | min_days | max_days |
+|---|---|---|---|
+| 5 | 433 | 0 | 36 |
+| 4 | 433 | 36 | 76 |
+| 3 | 433 | 76 | 148 |
+| 2 | 433 | 148 | 291 |
+| 1 | 434 | 291 | 729 |
+
+
+Score 5 holds the freshest customers (a few weeks since their last order) and score 1 holds the ones who bought long ago. Each bucket has the same number of customers, but the day ranges are very different. Printing the min and max per bucket is how you check the direction.
+
+### Example 3: full segments
+
+Three scores from 1 to 3, then labels. The order of the CASE rules decides who is a Champion and who is merely Loyal.
+
+<SqlPlayground dataset="ecommerce" query={`WITH o AS (
+  SELECT DISTINCT order_id, customer_id, order_date, total_amount
+  FROM orders
+  WHERE order_status = 'Delivered'
+),
+rfm AS (
+  SELECT customer_id,
+         CAST(julianday('2024-12-31') - julianday(MAX(order_date)) AS INTEGER) AS recency_days,
+         COUNT(*) AS frequency,
+         SUM(total_amount) AS monetary
+  FROM o
+  GROUP BY customer_id
+),
+sc AS (
+  SELECT customer_id, monetary,
+         NTILE(3) OVER (ORDER BY recency_days DESC, customer_id) AS r,
+         NTILE(3) OVER (ORDER BY frequency, customer_id)         AS f
+  FROM rfm
+),
+seg AS (
+  SELECT monetary,
+         CASE WHEN r = 3 AND f = 3 THEN 'Champion'
+              WHEN f = 3           THEN 'Loyal'
+              WHEN r = 1 AND f >= 2 THEN 'At risk'
+              WHEN r = 3 AND f = 1 THEN 'New or promising'
+              ELSE 'Others' END AS segment
+  FROM sc
+)
+SELECT segment,
+       COUNT(*) AS customers,
+       ROUND(AVG(monetary), 2) AS avg_monetary
+FROM seg
+GROUP BY segment
+ORDER BY avg_monetary DESC;`} title="Segment sizes and spend" />
+
+Output:
+
+| segment | customers | avg_monetary |
+|---|---|---|
+| Champion | 377 | 60034.26 |
+| Loyal | 345 | 40845.04 |
+| At risk | 284 | 13265.15 |
+| Others | 1003 | 8477.48 |
+| New or promising | 157 | 5778.62 |
+
+
+The Champions spend many times more than the Others. That gap is the proof that the segments are meaningful. If every segment had a similar average spend, the segmentation would not be useful.
+
+### Example 4: who to message first
+
+A quick follow-up: the biggest "At risk" customers are the ones worth a personal call.
+
+<SqlPlayground dataset="ecommerce" query={`WITH o AS (
+  SELECT DISTINCT order_id, customer_id, order_date, total_amount
+  FROM orders
+  WHERE order_status = 'Delivered'
+),
+rfm AS (
+  SELECT customer_id,
+         CAST(julianday('2024-12-31') - julianday(MAX(order_date)) AS INTEGER) AS recency_days,
+         COUNT(*) AS frequency,
+         ROUND(SUM(total_amount), 2) AS monetary
+  FROM o
+  GROUP BY customer_id
+),
+sc AS (
+  SELECT *,
+         NTILE(3) OVER (ORDER BY recency_days DESC, customer_id) AS r,
+         NTILE(3) OVER (ORDER BY frequency, customer_id) AS f
+  FROM rfm
+)
+SELECT customer_id, recency_days, frequency, monetary
+FROM sc
+WHERE r = 1 AND f >= 2
+ORDER BY monetary DESC, customer_id
+LIMIT 5;`} title="Top at-risk customers" />
+
+Output:
+
+| customer_id | recency_days | frequency | monetary |
+|---|---|---|---|
+| 1055 | 188 | 15 | 96940.5 |
+| 982 | 267 | 14 | 89126.97 |
+| 545 | 228 | 14 | 84888.49 |
+| 407 | 201 | 11 | 79099.93 |
+| 67 | 204 | 10 | 75668.96 |
+
+
+These customers bought more than once, but not recently, and they carry real money. A retention team would reach out here first.
+
+## Common mistakes
+
+<CommonMistake>
+Sorting recency ascending in `NTILE`. The freshest customers then get score 1, and "Champion" ends up with a low recency score.
+</CommonMistake>
+
+<CommonMistake>
+Using the current date for recency. Results change daily and cannot be checked. Use a fixed as-of date.
+</CommonMistake>
+
+<CommonMistake>
+Putting a general CASE rule before a specific one. If `f = 3` is tested before `r = 3 AND f = 3`, nobody is ever a Champion.
+</CommonMistake>
+
+<CommonMistake>
+Counting duplicate order rows or cancelled orders. Frequency and money are inflated and the segments move.
+</CommonMistake>
+
+<CommonMistake>
+Presenting segments without checking them. Always show size and average spend per segment.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="pattern-rfm" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Which recency value is best?", options: ["The largest number of days", "The smallest number of days", "Zero orders", "The median"], answer: 1, explanation: "Recency is days since the last order. Fewer days means a more recent, more engaged customer." },
+  { q: "To give the most recent customers the top NTILE score, how do you order recency?", options: ["ORDER BY recency_days", "ORDER BY recency_days DESC", "ORDER BY customer_id", "No ORDER BY"], answer: 1, explanation: "Descending order puts the biggest day counts (oldest) in bucket 1, so the freshest land in the top bucket." },
+  { q: "What does NTILE(4) do?", options: ["Takes 4 rows", "Splits sorted rows into 4 buckets of nearly equal size", "Returns the 4th row", "Counts 4 groups"], answer: 1, explanation: "It numbers rows 1 to 4 by position in the sorted order." },
+  { q: "Why is a fixed as-of date used for recency?", options: ["It is faster", "Results become repeatable and checkable", "SQLite requires it", "It removes NULLs"], answer: 1, explanation: "With CURRENT_DATE the answer changes every day." },
+  { q: "In a CASE for segments, why does rule order matter?", options: ["CASE runs all rules and sums them", "CASE returns the first matching rule", "CASE picks the last match", "Order does not matter"], answer: 1, explanation: "CASE stops at the first true condition, so specific rules must come first." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+RFM is both a SQL and a business question. After the query, explain what you would DO with each segment (reward, nudge, win back). That turns a query into an insight.
+</InterviewAlert>
+
+<InterviewQ q="What is RFM and how would you build it in SQL?">
+RFM scores customers on Recency (days since last order), Frequency (number of orders) and Monetary (total spend). I aggregate per customer with `MAX(order_date)`, `COUNT(*)` and `SUM(amount)`, using a fixed as-of date. I score each with `NTILE`, keeping "5 is best" for all three, and label segments with a `CASE`.
+</InterviewQ>
+
+<InterviewQ q="Why can NTILE be misleading for frequency?">
+Many customers share the same frequency (for example, one order). NTILE still splits ties into different buckets, so identical customers get different scores. For skewed measures like frequency I may use fixed thresholds with `CASE` instead.
+</InterviewQ>
+
+<InterviewQ q="How would you check that your segments are useful?">
+I compare size, average spend and order count by segment. Good segments differ clearly, for example Champions spend many times more than Others. I would also check that segments are stable if I change the as-of date slightly.
+</InterviewQ>
+
+<InterviewQ q="What would you do with the At risk segment?">
+They bought repeatedly in the past but not recently. I would send a win-back offer or a reminder, starting with the highest-value customers, and measure whether they order again. Then I would compare the response to a holdout group that gets nothing.
+</InterviewQ>
+
+## Key takeaways
+
+- RFM = days since last order, number of orders, total money, per customer.
+- Use a fixed as-of date, not today's date.
+- `NTILE(k)` scores by position; sort recency descending so a higher score is always better.
+- Order CASE rules from most specific to most general.
+- Validate segments with size and average spend, then say what action each segment gets.
+
+## Further reading
+
+<FurtherReading ids={["mode-sql", "sqlite-docs", "postgres-docs", "stratascratch"]} />

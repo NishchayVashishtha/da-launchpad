@@ -1,0 +1,470 @@
+[
+  {
+    "id": "sql-joins-basic-001",
+    "module": "sql",
+    "topic": "joins-basic",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "The support team wants to call back customers of the very first orders. List `order_id`, `full_name` and `city` for orders 1 to 10, ordered by `order_id`.",
+    "dataset": "ecommerce",
+    "hint": "Join orders to customers on the customer id, then filter on the order id.",
+    "solutionSql": "SELECT o.order_id, c.full_name, c.city FROM orders o INNER JOIN customers c ON c.customer_id = o.customer_id WHERE o.order_id <= 10 ORDER BY o.order_id",
+    "expectedOutput": {
+      "columns": [
+        "order_id",
+        "full_name",
+        "city"
+      ],
+      "rows": [
+        [
+          1,
+          "Sakshi Sen",
+          " surat  "
+        ],
+        [
+          2,
+          "Aarav Agarwal",
+          "Mumbai"
+        ],
+        [
+          3,
+          "Rekha Agarwal",
+          "Lucknow "
+        ],
+        [
+          4,
+          "Sneha Yadav",
+          "Indore"
+        ],
+        [
+          5,
+          "Fatima Das",
+          "Ahmedabad"
+        ],
+        [
+          6,
+          "Nikhil Malhotra",
+          "Indore"
+        ],
+        [
+          7,
+          "Amit Kapoor",
+          "Delhi"
+        ],
+        [
+          8,
+          "Kunal Shah",
+          "Kolkata"
+        ],
+        [
+          9,
+          "Kunal Shah",
+          "Kolkata"
+        ],
+        [
+          10,
+          "Amit Kapoor",
+          "Delhi"
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "orders stores only the customer_id, so the name and city must be fetched from customers. INNER JOIN follows customer_id to the matching customer row, and the WHERE keeps just the first ten orders. Each order has one customer, so we get one row per order.",
+    "commonMistake": "Joining on the wrong pair of columns, for example `o.order_id = c.customer_id`, which runs but pairs orders with unrelated customers and returns wrong names.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "joins-basic",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-joins-basic-002",
+    "module": "sql",
+    "topic": "joins-basic",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "Operations wants to know which cuisines get the most delivery orders. Return `cuisine` and `deliveries` (count of distinct delivery ids), ordered by `deliveries` descending, then `cuisine`.",
+    "dataset": "food_delivery",
+    "hint": "deliveries holds the restaurant id; cuisine lives in restaurants. Some delivery rows are duplicated.",
+    "solutionSql": "SELECT r.cuisine, COUNT(DISTINCT d.delivery_id) AS deliveries FROM deliveries d INNER JOIN restaurants r ON r.restaurant_id = d.restaurant_id GROUP BY r.cuisine ORDER BY deliveries DESC, r.cuisine",
+    "expectedOutput": {
+      "columns": [
+        "cuisine",
+        "deliveries"
+      ],
+      "rows": [
+        [
+          "North Indian",
+          2998
+        ],
+        [
+          "South Indian",
+          2040
+        ],
+        [
+          "Chinese",
+          1357
+        ],
+        [
+          "Biryani",
+          1348
+        ],
+        [
+          "Healthy",
+          1136
+        ],
+        [
+          "Desserts",
+          1067
+        ],
+        [
+          "Pizza",
+          1065
+        ],
+        [
+          "Burgers",
+          996
+        ],
+        [
+          "Gujarati Thali",
+          930
+        ],
+        [
+          "Street Food",
+          842
+        ],
+        [
+          "Mughlai",
+          802
+        ],
+        [
+          "Bengali",
+          419
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "We join each delivery to its restaurant to reach the cuisine column, then group by cuisine. About 120 delivery rows are exact duplicates, so COUNT(DISTINCT delivery_id) gives the true number of orders.",
+    "commonMistake": "Using COUNT(*), which counts the duplicate delivery rows and slightly inflates every cuisine total.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "joins-basic",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-joins-basic-003",
+    "module": "sql",
+    "topic": "joins-basic",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "The regional head asks for net sales by region. Return `region` and `net_sales_inr` (sum of `net_amount_inr`, rounded to 0 decimals), ignoring sale lines with `net_amount_inr` of 100000 or more (data-entry errors). Order by `net_sales_inr` descending.",
+    "dataset": "retail",
+    "hint": "sales has store_id, but region is in stores.",
+    "solutionSql": "SELECT st.region, ROUND(SUM(s.net_amount_inr), 0) AS net_sales_inr FROM sales s INNER JOIN stores st ON st.store_id = s.store_id WHERE s.net_amount_inr < 100000 GROUP BY st.region ORDER BY net_sales_inr DESC",
+    "expectedOutput": {
+      "columns": [
+        "region",
+        "net_sales_inr"
+      ],
+      "rows": [
+        [
+          "West",
+          12579072
+        ],
+        [
+          "South",
+          8602074
+        ],
+        [
+          "North",
+          6068698
+        ],
+        [
+          "East",
+          3458860
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Sales rows only know the store id. Joining to stores brings in the region, and GROUP BY region adds up the sales for each one. The WHERE removes the six 100x outliers before they inflate a region's total.",
+    "commonMistake": "Forgetting the outlier filter, which lets one 100x row add several lakh rupees to a region.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "joins-basic",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-joins-basic-004",
+    "module": "sql",
+    "topic": "joins-basic",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Marketing wants to know which acquisition channels bring customers who never order. Return `acquisition_channel` and `never_ordered` (count of distinct customers with no orders), ordered by `never_ordered` descending, then `acquisition_channel`.",
+    "dataset": "ecommerce",
+    "hint": "Start from customers, LEFT JOIN orders, keep rows where the order side is NULL.",
+    "solutionSql": "SELECT c.acquisition_channel, COUNT(DISTINCT c.customer_id) AS never_ordered FROM customers c LEFT JOIN orders o ON o.customer_id = c.customer_id WHERE o.order_id IS NULL GROUP BY c.acquisition_channel ORDER BY never_ordered DESC, c.acquisition_channel",
+    "expectedOutput": {
+      "columns": [
+        "acquisition_channel",
+        "never_ordered"
+      ],
+      "rows": [
+        [
+          "Organic Search",
+          553
+        ],
+        [
+          "Google Ads",
+          526
+        ],
+        [
+          "Instagram Ads",
+          466
+        ],
+        [
+          "Direct",
+          271
+        ],
+        [
+          "Referral",
+          260
+        ],
+        [
+          "Influencer",
+          202
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "A LEFT JOIN from customers keeps every customer; those with no matching order get NULL in the orders columns. Filtering on `o.order_id IS NULL` leaves only never-buyers. DISTINCT is needed because 20 customers appear twice in the table.",
+    "commonMistake": "Writing `WHERE o.order_id = NULL`, which is never true and returns zero rows, or using an INNER JOIN, which drops exactly the customers you are looking for.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "joins-basic",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-joins-basic-005",
+    "module": "sql",
+    "topic": "joins-basic",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "HR wants a department summary. Return `department_name`, `employees` (distinct employees) and `exited` (distinct employees with status 'Exited'), ordered by `department_name`.",
+    "dataset": "hr",
+    "hint": "Join employees to departments. Use COUNT(DISTINCT ...) with a CASE for the exited count.",
+    "solutionSql": "SELECT d.department_name, COUNT(DISTINCT e.employee_id) AS employees, COUNT(DISTINCT CASE WHEN e.employment_status = 'Exited' THEN e.employee_id END) AS exited FROM employees e INNER JOIN departments d ON d.department_id = e.department_id GROUP BY d.department_name ORDER BY d.department_name",
+    "expectedOutput": {
+      "columns": [
+        "department_name",
+        "employees",
+        "exited"
+      ],
+      "rows": [
+        [
+          "Customer Support",
+          440,
+          148
+        ],
+        [
+          "Engineering",
+          833,
+          140
+        ],
+        [
+          "Finance",
+          103,
+          15
+        ],
+        [
+          "Human Resources",
+          96,
+          16
+        ],
+        [
+          "Marketing",
+          156,
+          26
+        ],
+        [
+          "Operations",
+          275,
+          67
+        ],
+        [
+          "Product",
+          148,
+          23
+        ],
+        [
+          "Sales",
+          349,
+          109
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The join replaces the numeric department_id with a readable name. COUNT(DISTINCT employee_id) removes the duplicate employee rows. The CASE returns the employee id only for exited staff and NULL otherwise, and COUNT ignores NULLs, so the second column counts only exits.",
+    "commonMistake": "Using COUNT(*) for both columns, which counts duplicate employee rows, or SUM of a 0/1 flag without DISTINCT, which double counts the duplicated rows.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "joins-basic",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-joins-basic-006",
+    "module": "sql",
+    "topic": "joins-basic",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "The CMO wants conversions and revenue per ad channel. Return `channel`, `conversions` (count of conversions) and `revenue_inr` (sum of `revenue_inr`, rounded to 0 decimals; NULL revenue is ignored), ordered by `revenue_inr` descending.",
+    "dataset": "marketing",
+    "hint": "conversions has campaign_id; the channel is stored in campaigns.",
+    "solutionSql": "SELECT ca.channel, COUNT(*) AS conversions, ROUND(SUM(cv.revenue_inr), 0) AS revenue_inr FROM conversions cv INNER JOIN campaigns ca ON ca.campaign_id = cv.campaign_id GROUP BY ca.channel ORDER BY revenue_inr DESC",
+    "expectedOutput": {
+      "columns": [
+        "channel",
+        "conversions",
+        "revenue_inr"
+      ],
+      "rows": [
+        [
+          "Google Search",
+          406,
+          550502
+        ],
+        [
+          "Meta Ads",
+          163,
+          177912
+        ],
+        [
+          "Email",
+          71,
+          91438
+        ],
+        [
+          "WhatsApp",
+          50,
+          74391
+        ],
+        [
+          "Affiliate",
+          26,
+          31955
+        ],
+        [
+          "Influencer",
+          33,
+          28967
+        ],
+        [
+          "YouTube",
+          41,
+          24346
+        ],
+        [
+          "Google Display",
+          17,
+          10454
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Each conversion belongs to exactly one campaign, so the join keeps one row per conversion and adds the channel. SUM skips the NULL revenue of Signup and Lead conversions while COUNT(*) still counts them, which is why conversions and revenue are not proportional.",
+    "commonMistake": "Joining campaigns to ad_spend as well in the same query, which repeats every conversion once per spend row and inflates both columns.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 8,
+    "tags": [
+      "joins-basic",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-joins-basic-007",
+    "module": "sql",
+    "topic": "joins-basic",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Product wants to know how many subscriptions exist per signup platform. Return `platform` and `subscriptions` (distinct subscription ids), ordered by `subscriptions` descending.",
+    "dataset": "subscription",
+    "hint": "subscriptions has user_id; platform lives in users, which has duplicate rows.",
+    "solutionSql": "SELECT u.platform, COUNT(DISTINCT s.subscription_id) AS subscriptions FROM subscriptions s INNER JOIN users u ON u.user_id = s.user_id GROUP BY u.platform ORDER BY subscriptions DESC",
+    "expectedOutput": {
+      "columns": [
+        "platform",
+        "subscriptions"
+      ],
+      "rows": [
+        [
+          "Android",
+          1973
+        ],
+        [
+          "iOS",
+          833
+        ],
+        [
+          "Web",
+          502
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "We join each subscription to its user to read the platform. Eight users are duplicated in the users table, so their subscription would be repeated by the join. COUNT(DISTINCT subscription_id) counts each subscription once regardless.",
+    "commonMistake": "Using COUNT(*) after the join, which counts a duplicated user's subscription twice and gives a total larger than the 3,308 real subscriptions.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "joins-basic",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-joins-basic-008",
+    "module": "sql",
+    "topic": "joins-basic",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Do late deliveries get worse delivery ratings? Label a delivery 'Late' if `delay_minutes` is greater than 10, otherwise 'On time'. Return `delivery_type`, `ratings` (number of ratings) and `avg_delivery_rating` (rounded to 2 decimals), ordered by `delivery_type`. Each rating must count once, even though some delivery rows are duplicated.",
+    "dataset": "food_delivery",
+    "hint": "Join ratings to a de-duplicated list of deliveries. SELECT DISTINCT delivery_id, delay_minutes in a subquery works.",
+    "solutionSql": "SELECT CASE WHEN d.delay_minutes > 10 THEN 'Late' ELSE 'On time' END AS delivery_type, COUNT(*) AS ratings, ROUND(AVG(r.delivery_rating), 2) AS avg_delivery_rating FROM ratings r INNER JOIN (SELECT DISTINCT delivery_id, delay_minutes FROM deliveries WHERE delay_minutes IS NOT NULL) d ON d.delivery_id = r.delivery_id GROUP BY delivery_type ORDER BY delivery_type",
+    "expectedOutput": {
+      "columns": [
+        "delivery_type",
+        "ratings",
+        "avg_delivery_rating"
+      ],
+      "rows": [
+        [
+          "Late",
+          1890,
+          3.27
+        ],
+        [
+          "On time",
+          6740,
+          4.44
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "About 120 delivery rows are duplicates, so joining ratings straight to deliveries would count some ratings twice. De-duplicating deliveries in a subquery first keeps the join one-to-one. The CASE then buckets each delivery, and the average rating per bucket shows the effect of lateness. Cancelled deliveries have NULL delay and no rating, so they drop out.",
+    "commonMistake": "Joining ratings directly to the deliveries table, which double-weights ratings of duplicated deliveries and shifts the counts and averages.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 15,
+    "tags": [
+      "joins-basic",
+      "sql"
+    ]
+  }
+]

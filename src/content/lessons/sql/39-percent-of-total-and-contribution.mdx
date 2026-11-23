@@ -1,0 +1,298 @@
+---
+title: "Percent of total and contribution analysis"
+description: "Use window SUM to show each row's share of the whole, its share within a group, and the Pareto 80/20 cut."
+module: sql
+order: 39
+estimatedMinutes: 45
+objectives:
+  - "Recognise share, contribution and Pareto questions"
+  - "Compute percent of total with SUM(...) OVER ()"
+  - "Compute percent within a group with PARTITION BY"
+  - "Build a cumulative share and find the 80 percent cut-off"
+  - "Avoid integer division and wrong denominators"
+tags: ["sql", "interview-patterns", "percent-of-total", "pareto", "window-functions"]
+---
+
+## Learning objectives
+
+- Spot "what share of the total" questions.
+- Add a grand total next to every row with a window function.
+- Compute shares inside each group (for example, each store in its region).
+- Rank by value, add a running total, and apply the 80/20 rule.
+- Avoid the divide-by-integer trap.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+"UPI is 41 percent of our payments." "Five stores make half our regional sales." Managers think in shares, not raw numbers, because a share tells them where to focus. Contribution analysis is behind almost every summary slide, and Pareto (the 80/20 rule) is how you decide which few customers, products or merchants matter most.
+</RealWorld>
+
+## Concept
+
+### The recognition cue
+
+- "percent of total", "share of sales", "contribution", "mix"
+- "what percentage does each category make up"
+- "top customers that make up 80 percent of revenue"
+- "cumulative percentage", "Pareto"
+
+### The big idea
+
+You need two numbers on the same row: the row's value, and the total. The old way used a subquery or a self-join to get the total. The modern way is a window function that puts the total next to every row, without collapsing the rows.
+
+<FormulaCard title="Percent of total">
+```sql
+SELECT category,
+       SUM(amount) AS sales,
+       ROUND(100.0 * SUM(amount) / SUM(SUM(amount)) OVER (), 1) AS pct_of_total
+FROM sales
+GROUP BY category;
+```
+`SUM(SUM(amount)) OVER ()` reads as: first sum per group, then add those group sums across all groups.
+</FormulaCard>
+
+### Percent within a group
+
+Add `PARTITION BY` to restart the total for each group:
+
+```sql
+SUM(SUM(amount)) OVER (PARTITION BY region)
+```
+
+Now every store is compared with the total of its own region, and the shares inside each region add up to 100.
+
+### Cumulative share and Pareto
+
+1. Total per item (customer, merchant, product).
+2. Sort descending by value.
+3. A running `SUM` in that order gives the cumulative value.
+4. Divide by the grand total to get the cumulative share.
+5. Keep rows up to the point where the share reaches 80 percent.
+
+```sql
+SUM(amt) OVER (ORDER BY amt DESC, id)      -- running total, biggest first
+SUM(amt) OVER ()                           -- grand total
+```
+
+### Variations
+
+1. **Share within a group:** `PARTITION BY`.
+2. **Share of a filtered total:** compute the denominator from only some rows with a conditional `SUM(CASE WHEN ... END) OVER ()`.
+3. **Cumulative percent and cut-off** (Pareto).
+4. **Month share of the year:** `PARTITION BY year`.
+5. **Share growth:** compare shares across two periods.
+
+### Edge cases
+
+- **Integer division:** `100 * a / b` with integers can give 0. Use `100.0 *`.
+- **Zero or NULL total:** the division fails or returns NULL. Guard with `NULLIF(total, 0)`.
+- **NULL values:** `SUM` ignores NULLs, so rows with NULL amount count as zero. Decide if that is right.
+- **Rounding:** shares may add to 99.9 or 100.1. That is normal. Round only at the end.
+- **Ties in the running total:** use a tie-breaker in the window's `ORDER BY`, otherwise equal values give the same running total.
+- **Pareto boundary:** include the row that crosses 80 percent. Say which rule you used.
+
+<Tip>
+The window function runs after `GROUP BY`. That is why you can wrap a normal aggregate inside it: `SUM(SUM(x)) OVER ()`.
+</Tip>
+
+## Worked examples
+
+### Example 1: payment mix
+
+How is the money split across payment methods? Only successful payments count.
+
+<SqlPlayground dataset="ecommerce" query={`SELECT payment_method,
+       ROUND(SUM(amount), 2) AS total_amount,
+       ROUND(100.0 * SUM(amount) / SUM(SUM(amount)) OVER (), 1) AS pct_of_total
+FROM payments
+WHERE payment_status = 'Success'
+GROUP BY payment_method
+ORDER BY total_amount DESC, payment_method;`} title="Payment method share" />
+
+Output:
+
+| payment_method | total_amount | pct_of_total |
+|---|---|---|
+| UPI | 20527685.03 | 41.1 |
+| COD | 10029836.81 | 20.1 |
+| Credit Card | 7718240.76 | 15.5 |
+| Debit Card | 5948798.18 | 11.9 |
+| Netbanking | 2932311.75 | 5.9 |
+| Wallet | 2745035.72 | 5.5 |
+
+
+UPI is the largest share and COD is second. The percentages add up to about 100.
+
+### Example 2: share within a region
+
+Each store's contribution to its own region. Exact duplicate sale rows are removed first.
+
+<SqlPlayground dataset="retail" query={`WITH s AS (
+  SELECT DISTINCT sale_id, store_id, net_amount_inr
+  FROM sales
+)
+SELECT st.region,
+       st.store_name,
+       ROUND(SUM(s.net_amount_inr), 0) AS net_sales,
+       ROUND(100.0 * SUM(s.net_amount_inr)
+             / SUM(SUM(s.net_amount_inr)) OVER (PARTITION BY st.region), 1) AS pct_of_region
+FROM s
+JOIN stores st ON st.store_id = s.store_id
+GROUP BY st.region, st.store_name
+ORDER BY st.region, net_sales DESC, st.store_name
+LIMIT 8;`} title="Store share of its region" />
+
+Output:
+
+| region | store_name | net_sales | pct_of_region |
+|---|---|---|---|
+| East | Vasudha Supermarket - Six Mile | 1374128 | 40.4 |
+| East | Vasudha Supermarket - Salt Lake | 1310863 | 38.5 |
+| East | Vasudha Express - Boring Road | 716319 | 21.1 |
+| North | Vasudha Hypermarket - Dwarka | 2431026 | 40.6 |
+| North | Vasudha Supermarket - Malviya Nagar | 1360203 | 22.7 |
+| North | Vasudha Supermarket - Gomti Nagar | 805132 | 13.4 |
+| North | Vasudha Express - Sector 17 | 736147 | 12.3 |
+| North | Vasudha Express - Rohini | 656900 | 11 |
+
+
+The East region has only three stores, so each store's share is large. Inside each region the shares add up to 100. A store with 40 percent of a small region is not necessarily bigger than a store with 15 percent of a big region, so be careful when you compare across regions.
+
+### Example 3: cumulative share of merchants
+
+<SqlPlayground dataset="fintech" query={`WITH t AS (
+  SELECT DISTINCT txn_id, merchant_id, amount
+  FROM transactions
+  WHERE status = 'SUCCESS' AND merchant_id IS NOT NULL
+),
+m AS (
+  SELECT merchant_id, SUM(amount) AS amt
+  FROM t
+  GROUP BY merchant_id
+)
+SELECT ROW_NUMBER() OVER (ORDER BY amt DESC, merchant_id) AS rank_no,
+       merchant_id,
+       ROUND(amt, 0) AS amount,
+       ROUND(100.0 * SUM(amt) OVER (ORDER BY amt DESC, merchant_id)
+             / SUM(amt) OVER (), 1) AS cum_pct
+FROM m
+ORDER BY rank_no
+LIMIT 8;`} title="Cumulative share, biggest first" />
+
+Output:
+
+| rank_no | merchant_id | amount | cum_pct |
+|---|---|---|---|
+| 1 | 339 | 2045919 | 8.8 |
+| 2 | 397 | 1117275 | 13.7 |
+| 3 | 132 | 1059400 | 18.2 |
+| 4 | 103 | 867591 | 22 |
+| 5 | 12 | 826798 | 25.6 |
+| 6 | 239 | 644202 | 28.3 |
+| 7 | 289 | 606923 | 31 |
+| 8 | 57 | 543268 | 33.3 |
+
+
+Each row adds one more merchant, and `cum_pct` shows how much of the total the top merchants cover together. The first few merchants already hold a noticeable share.
+
+### Example 4: how many merchants make 80 percent?
+
+<SqlPlayground dataset="fintech" query={`WITH t AS (
+  SELECT DISTINCT txn_id, merchant_id, amount
+  FROM transactions
+  WHERE status = 'SUCCESS' AND merchant_id IS NOT NULL
+),
+m AS (
+  SELECT merchant_id, SUM(amount) AS amt FROM t GROUP BY merchant_id
+),
+c AS (
+  SELECT amt,
+         SUM(amt) OVER (ORDER BY amt DESC, merchant_id) AS running,
+         SUM(amt) OVER () AS total,
+         ROW_NUMBER() OVER (ORDER BY amt DESC, merchant_id) AS rk
+  FROM m
+)
+SELECT MIN(rk) AS merchants_for_80pct,
+       (SELECT COUNT(*) FROM m) AS total_merchants,
+       ROUND(100.0 * MIN(rk) / (SELECT COUNT(*) FROM m), 1) AS pct_of_merchants
+FROM c
+WHERE running >= 0.8 * total;`} title="Pareto cut-off" />
+
+Output:
+
+| merchants_for_80pct | total_merchants | pct_of_merchants |
+|---|---|---|
+| 106 | 400 | 26.5 |
+
+
+About a quarter of merchants produce 80 percent of value. That is close to, but not exactly, the "80/20" rule of thumb. The real number is something you measure, not assume.
+
+## Common mistakes
+
+<CommonMistake>
+Writing `100 * SUM(x) / SUM(x) OVER ()` without grouping, or `100 * a / b` with integers. You either get an error or a result of 0 for every row. Use `100.0 *` and group first.
+</CommonMistake>
+
+<CommonMistake>
+Using the grand total when the question asks for the share within a group. Without `PARTITION BY` the shares add up to 100 across the whole table, not within each group.
+</CommonMistake>
+
+<CommonMistake>
+Filtering rows in the same `SELECT` that computes the window total. The `WHERE` runs first, so the total only covers the filtered rows, and the top row shows 100 percent. Compute the shares in a CTE, then filter in the outer query.
+</CommonMistake>
+
+<CommonMistake>
+Taking "top 20 percent of customers" by count and assuming they make 80 percent of revenue. Measure the real cut-off with a cumulative share.
+</CommonMistake>
+
+<CommonMistake>
+Running total with no tie-breaker. Equal values receive the same running total, and the cut-off row becomes ambiguous.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="pattern-percent-total" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What does SUM(SUM(amount)) OVER () compute in a grouped query?", options: ["The sum within each group", "The grand total of all group sums", "The maximum group sum", "A running total"], answer: 1, explanation: "The inner SUM makes one total per group. The window SUM over () adds those totals into the grand total." },
+  { q: "How do you get each store's share of its region?", options: ["OVER ()", "OVER (PARTITION BY region)", "GROUP BY region only", "ORDER BY region"], answer: 1, explanation: "PARTITION BY region restarts the total for each region." },
+  { q: "Why write 100.0 instead of 100?", options: ["It is faster", "To avoid integer division returning 0", "SQL requires decimals", "To sort correctly"], answer: 1, explanation: "Integer division truncates, for example 3/10 becomes 0. 100.0 forces decimal arithmetic." },
+  { q: "To find merchants making 80 percent of value, which window do you need?", options: ["ROW_NUMBER only", "A running SUM ordered by value descending", "LAG", "NTILE(2)"], answer: 1, explanation: "A running sum in descending order gives the cumulative amount, which you compare with 80 percent of the total." },
+  { q: "Why compute shares in a CTE and filter in the outer query?", options: ["WHERE runs before windows, so filtering first changes the total", "CTEs are faster", "Windows cannot be used with WHERE at all", "To avoid GROUP BY"], answer: 0, explanation: "A WHERE in the same SELECT removes rows before the window total is computed." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Share questions look easy, but interviewers check the denominator. Always say "share of what?" (grand total, region, month) before you write the query.
+</InterviewAlert>
+
+<InterviewQ q="How do you calculate each product's percentage of total sales?">
+Group by product, then divide each product's sum by the grand total using a window: `100.0 * SUM(sales) / SUM(SUM(sales)) OVER ()`. I use `100.0` to avoid integer division and `ROUND` at the end. If I need a share within a category I add `PARTITION BY category`.
+</InterviewQ>
+
+<InterviewQ q="How do you find the customers who generate 80 percent of revenue?">
+I total revenue per customer, sort descending, take a running `SUM` with `OVER (ORDER BY revenue DESC, customer_id)`, and divide by the grand total from `SUM(...) OVER ()`. I keep rows until the cumulative share first reaches 80 percent, including the row that crosses it.
+</InterviewQ>
+
+<InterviewQ q="What could go wrong with a percent of total query?">
+Integer division giving 0, a zero or NULL total, a filter that changes the denominator, duplicates inflating the numerator, and unclear definitions of the total. I guard with `100.0`, `NULLIF`, a CTE for filtering, and I confirm what the total means.
+</InterviewQ>
+
+<InterviewQ q="What does the Pareto principle tell a business?">
+That a small share of customers, products or merchants usually produces most of the value, so effort should be focused there. The exact split must be measured; it may be 70/30 or 90/10, not always 80/20.
+</InterviewQ>
+
+## Key takeaways
+
+- Percent of total = row value divided by a window total on the same row.
+- Use `SUM(SUM(x)) OVER ()` after grouping, and add `PARTITION BY` for within-group shares.
+- Use `100.0` and guard zero totals with `NULLIF`.
+- Pareto = value per item, sorted descending, running SUM, divide by total, find the 80 percent cut.
+- Say what the denominator is before you write the query.
+
+## Further reading
+
+<FurtherReading ids={["mode-sql", "sqlite-docs", "postgres-docs", "datalemur"]} />

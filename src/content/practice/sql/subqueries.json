@@ -1,0 +1,386 @@
+[
+  {
+    "id": "sql-subqueries-001",
+    "module": "sql",
+    "topic": "subqueries",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "Which stores are bigger than the typical store? Return `store_name` and `carpet_area_sqft` for stores whose area is above the average area of all stores, ordered by `carpet_area_sqft` descending, then `store_name`.",
+    "dataset": "retail",
+    "hint": "Compare against a scalar subquery that computes AVG(carpet_area_sqft).",
+    "solutionSql": "SELECT store_name, carpet_area_sqft FROM stores WHERE carpet_area_sqft > (SELECT AVG(carpet_area_sqft) FROM stores) ORDER BY carpet_area_sqft DESC, store_name",
+    "expectedOutput": {
+      "columns": [
+        "store_name",
+        "carpet_area_sqft"
+      ],
+      "rows": [
+        [
+          "Vasudha Hypermarket - Whitefield",
+          89400
+        ],
+        [
+          "Vasudha Hypermarket - Satellite",
+          62300
+        ],
+        [
+          "Vasudha Hypermarket - Dwarka",
+          60600
+        ],
+        [
+          "Vasudha Hypermarket - Andheri",
+          60500
+        ],
+        [
+          "Vasudha Supermarket - Aundh",
+          28800
+        ],
+        [
+          "Vasudha Supermarket - Malviya Nagar",
+          28700
+        ],
+        [
+          "Vasudha Supermarket - Dharampeth",
+          28500
+        ],
+        [
+          "Vasudha Supermarket - Gomti Nagar",
+          26400
+        ],
+        [
+          "Vasudha Supermarket - Vijay Nagar",
+          26100
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The inner query returns a single number, the average area. The outer query keeps only the stores above that number. Because the average is calculated once from the same table, it automatically follows any change in the data.",
+    "commonMistake": "Writing `WHERE carpet_area_sqft > AVG(carpet_area_sqft)`: aggregates are not allowed in WHERE and the query fails.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "subqueries",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-subqueries-002",
+    "module": "sql",
+    "topic": "subqueries",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "Customer care wants to reach people who have had a cancelled order. Return `cancelled_customers`: the number of distinct customers who have at least one order with status 'Cancelled'. Use an IN subquery.",
+    "dataset": "ecommerce",
+    "hint": "WHERE customer_id IN (SELECT customer_id FROM orders WHERE ...).",
+    "solutionSql": "SELECT COUNT(DISTINCT customer_id) AS cancelled_customers FROM customers WHERE customer_id IN (SELECT customer_id FROM orders WHERE order_status = 'Cancelled')",
+    "expectedOutput": {
+      "columns": [
+        "cancelled_customers"
+      ],
+      "rows": [
+        [
+          436
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "The inner query builds a list of customer ids that have a cancelled order. The outer query keeps customers whose id is in that list. IN never repeats a customer, unlike a join, and DISTINCT handles the duplicated customer rows.",
+    "commonMistake": "Joining and using COUNT(*), which counts a customer once for every cancelled order they have.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "subqueries",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-subqueries-003",
+    "module": "sql",
+    "topic": "subqueries",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Risk wants to know which merchant categories have been used in flagged transactions. Return `category` and `merchants_flagged` (merchants of that category with at least one transaction where `is_flagged` = 1), ordered by `merchants_flagged` descending, then `category`. Use EXISTS.",
+    "dataset": "fintech",
+    "hint": "WHERE EXISTS (SELECT 1 FROM transactions t WHERE t.merchant_id = m.merchant_id AND t.is_flagged = 1).",
+    "solutionSql": "SELECT m.category, COUNT(*) AS merchants_flagged FROM merchants m WHERE EXISTS (SELECT 1 FROM transactions t WHERE t.merchant_id = m.merchant_id AND t.is_flagged = 1) GROUP BY m.category ORDER BY merchants_flagged DESC, m.category",
+    "expectedOutput": {
+      "columns": [
+        "category",
+        "merchants_flagged"
+      ],
+      "rows": [
+        [
+          "Grocery",
+          3
+        ],
+        [
+          "Telecom",
+          3
+        ],
+        [
+          "Entertainment",
+          2
+        ],
+        [
+          "Utilities",
+          2
+        ],
+        [
+          "Food & Beverage",
+          1
+        ],
+        [
+          "Pharmacy",
+          1
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "For every merchant, the inner query asks whether at least one flagged transaction exists. EXISTS only needs a yes or no, so each merchant appears once even if it has many flagged transactions, and the counts are per merchant rather than per transaction.",
+    "commonMistake": "Joining merchants to transactions and counting rows, which counts a merchant once per flagged transaction instead of once.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 8,
+    "tags": [
+      "subqueries",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-subqueries-004",
+    "module": "sql",
+    "topic": "subqueries",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "The pay team wants the current salary picture. Return `employees` (distinct employees) and `avg_latest_ctc` (average `annual_ctc`, rounded to 0 decimals) using only each employee's most recent salary row (latest `effective_date`) and ignoring rows with `annual_ctc` of 10,000,000 or more (outliers).",
+    "dataset": "hr",
+    "hint": "A correlated subquery with MAX(effective_date) for the same employee_id.",
+    "solutionSql": "SELECT COUNT(DISTINCT s.employee_id) AS employees, ROUND(AVG(s.annual_ctc), 0) AS avg_latest_ctc FROM salaries s WHERE s.annual_ctc < 10000000 AND s.effective_date = (SELECT MAX(s2.effective_date) FROM salaries s2 WHERE s2.employee_id = s.employee_id)",
+    "expectedOutput": {
+      "columns": [
+        "employees",
+        "avg_latest_ctc"
+      ],
+      "rows": [
+        [
+          2396,
+          1339555
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "The inner query is correlated: for each salary row it finds the latest date among that employee's rows, and the outer query keeps only the row on that date. Averaging those rows gives the current average, not a mix of old and new salaries.",
+    "commonMistake": "Averaging every salary row, which mixes joining salaries with later hikes and understates what people earn today.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 10,
+    "tags": [
+      "subqueries",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-subqueries-005",
+    "module": "sql",
+    "topic": "subqueries",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "How many orders do customers place? Return `orders_placed` and `customers` for customers with 1 to 5 distinct orders, ordered by `orders_placed`. Use a subquery in FROM that counts distinct orders per customer.",
+    "dataset": "ecommerce",
+    "hint": "First count orders per customer in a derived table, then group the counts.",
+    "solutionSql": "SELECT n AS orders_placed, COUNT(*) AS customers FROM (SELECT customer_id, COUNT(DISTINCT order_id) AS n FROM orders GROUP BY customer_id) AS per_customer WHERE n <= 5 GROUP BY n ORDER BY n",
+    "expectedOutput": {
+      "columns": [
+        "orders_placed",
+        "customers"
+      ],
+      "rows": [
+        [
+          1,
+          721
+        ],
+        [
+          2,
+          391
+        ],
+        [
+          3,
+          254
+        ],
+        [
+          4,
+          187
+        ],
+        [
+          5,
+          133
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The derived table has one row per customer with their order count. The outer query then groups those counts, turning 'orders per customer' into a distribution. This is an aggregate of an aggregate, which cannot be written in one level.",
+    "commonMistake": "Writing COUNT(COUNT(*)) in a single query, which is invalid, or grouping orders directly by customer, which only repeats the per-customer counts.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 10,
+    "tags": [
+      "subqueries",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-subqueries-006",
+    "module": "sql",
+    "topic": "subqueries",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Who are our biggest spenders? Using each customer's total `total_amount` over distinct Delivered orders, return `customer_id` and `spend` (rounded to 0 decimals) for the 10 customers whose spend is above the average spend of all buying customers, highest first (tie-break by `customer_id`). Use subqueries only, no CTE.",
+    "dataset": "ecommerce",
+    "hint": "Derived table of per-customer spend, and a scalar subquery that averages the same derived table.",
+    "solutionSql": "SELECT t.customer_id, ROUND(t.spend, 0) AS spend FROM (SELECT customer_id, SUM(total_amount) AS spend FROM (SELECT DISTINCT * FROM orders WHERE order_status = 'Delivered') GROUP BY customer_id) t WHERE t.spend > (SELECT AVG(spend) FROM (SELECT customer_id, SUM(total_amount) AS spend FROM (SELECT DISTINCT * FROM orders WHERE order_status = 'Delivered') GROUP BY customer_id)) ORDER BY t.spend DESC, t.customer_id LIMIT 10",
+    "expectedOutput": {
+      "columns": [
+        "customer_id",
+        "spend"
+      ],
+      "rows": [
+        [
+          2668,
+          948871
+        ],
+        [
+          1183,
+          448465
+        ],
+        [
+          980,
+          360337
+        ],
+        [
+          614,
+          261324
+        ],
+        [
+          1327,
+          244047
+        ],
+        [
+          1261,
+          241158
+        ],
+        [
+          930,
+          226366
+        ],
+        [
+          942,
+          221288
+        ],
+        [
+          85,
+          218133
+        ],
+        [
+          475,
+          216256
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The innermost query removes the duplicate order rows, the next level totals spend per customer, and the scalar subquery averages those totals. Comparing each customer's total with that average keeps the above-average spenders. The nesting repeats, which is exactly why CTEs are nicer.",
+    "commonMistake": "Averaging raw order amounts instead of per-customer totals, which compares a customer's total with the average single order and keeps almost everybody.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 18,
+    "tags": [
+      "subqueries",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-subqueries-007",
+    "module": "sql",
+    "topic": "subqueries",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Which restaurants have the best food ratings? Return `restaurant_id`, `restaurant_name`, `ratings` and `avg_food_rating` (rounded to 2 decimals) for restaurants with at least 20 ratings, best first, tie-break by `restaurant_id`, top 10. Compute the count and average with correlated subqueries in the SELECT list inside a derived table.",
+    "dataset": "food_delivery",
+    "hint": "SELECT restaurants plus two correlated scalar subqueries on ratings, wrap that in a derived table, then filter on the count.",
+    "solutionSql": "SELECT * FROM (SELECT rs.restaurant_id, rs.restaurant_name, (SELECT COUNT(*) FROM ratings r WHERE r.restaurant_id = rs.restaurant_id) AS ratings, (SELECT ROUND(AVG(r.food_rating), 2) FROM ratings r WHERE r.restaurant_id = rs.restaurant_id) AS avg_food_rating FROM restaurants rs) x WHERE x.ratings >= 20 ORDER BY x.avg_food_rating DESC, x.restaurant_id LIMIT 10",
+    "expectedOutput": {
+      "columns": [
+        "restaurant_id",
+        "restaurant_name",
+        "ratings",
+        "avg_food_rating"
+      ],
+      "rows": [
+        [
+          8,
+          "Madras Corner",
+          24,
+          4.83
+        ],
+        [
+          250,
+          "Biryani Corner",
+          36,
+          4.83
+        ],
+        [
+          231,
+          "Dilli Point",
+          50,
+          4.8
+        ],
+        [
+          3,
+          "Masala Kitchen",
+          22,
+          4.77
+        ],
+        [
+          510,
+          "Dosa Rasoi",
+          34,
+          4.76
+        ],
+        [
+          512,
+          "Tandoor Express",
+          24,
+          4.75
+        ],
+        [
+          580,
+          "Biryani House",
+          41,
+          4.73
+        ],
+        [
+          232,
+          "Saffron Darbar",
+          20,
+          4.7
+        ],
+        [
+          46,
+          "Chaat Kitchen",
+          32,
+          4.66
+        ],
+        [
+          169,
+          "Dosa Villa",
+          20,
+          4.65
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Each correlated subquery looks only at the ratings of the current restaurant, producing a count and an average. Since a column alias cannot be used in WHERE at the same level, the whole thing is wrapped in a derived table so the outer query can filter on ratings. The minimum of 20 ratings stops a single 5-star review from topping the list.",
+    "commonMistake": "Ranking without the minimum-ratings filter: a restaurant with one 5-star rating beats a restaurant with 400 ratings averaging 4.6.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 20,
+    "tags": [
+      "subqueries",
+      "sql"
+    ]
+  }
+]

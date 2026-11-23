@@ -1,0 +1,303 @@
+---
+title: "Query optimisation basics: indexes, EXPLAIN, sargable filters"
+description: "Understand how indexes speed up queries, read EXPLAIN QUERY PLAN in SQLite and write filters the database can use."
+module: sql
+order: 24
+estimatedMinutes: 55
+objectives:
+  - "Explain what an index is using the book-index analogy, and its costs"
+  - "Read EXPLAIN QUERY PLAN output: SCAN versus SEARCH versus COVERING INDEX"
+  - "Write sargable filters that can use an index"
+  - "Explain why SELECT * can cost more than selecting needed columns"
+  - "Think about the logical execution order and filter early"
+tags: ["sql", "performance", "index", "explain", "sargable"]
+---
+
+## Learning objectives
+
+- Explain what an index is using the book-index analogy, and its costs
+- Read EXPLAIN QUERY PLAN output: SCAN versus SEARCH versus COVERING INDEX
+- Write sargable filters that can use an index
+- Explain why SELECT * can cost more than selecting needed columns
+- Think about the logical execution order and filter early
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+On a table of 10,000 rows nothing feels slow. In a real company the same query runs over 50 crore rows, and a careless filter turns a 2-second query into a 40-minute one that blocks the team's dashboard. You are not expected to be a DBA as a fresher, but interviewers ask: 'Why is this query slow? What is an index? What does EXPLAIN show?' Knowing the basics also makes you the analyst who does not get an angry mail from the data engineering team.
+</RealWorld>
+
+## Concept
+
+### How a database finds rows
+
+Without any help, the database must read **every row** of the table to find the ones that match your `WHERE`. This is a **full table scan**. It is fine for 500 rows and painful for 500 million.
+
+### Indexes: the book-index analogy
+
+Imagine a 600-page textbook. To find "Normal distribution":
+
+- **Without an index**: read every page from page 1 (full scan).
+- **With the index at the back**: look up "Normal distribution" alphabetically, read "pages 214, 219", and jump straight there.
+
+A database **index** is that back-of-the-book list for a column. It stores the column's values in sorted order (usually as a B-tree, a balanced tree that finds a value in a handful of steps) along with a pointer to the row. A lookup then needs a few steps instead of millions.
+
+```sql
+CREATE INDEX idx_orders_order_date ON orders(order_date);
+```
+
+### Index costs
+
+An index is not free:
+
+- **Extra storage**: it is a second copy of the column (plus pointers).
+- **Slower writes**: every `INSERT`, `UPDATE` or `DELETE` must also update the index, like re-writing the book's index after adding a chapter.
+- **Not always used**: if your query returns most of the table, scanning is cheaper than jumping around.
+
+So you index columns used often in `WHERE`, `JOIN ... ON` and `ORDER BY`, not every column. Primary keys are indexed automatically. As an analyst you usually do not create indexes on production, but you suggest them and you write queries that can use them.
+
+### EXPLAIN QUERY PLAN
+
+Put `EXPLAIN QUERY PLAN` before a query and SQLite shows how it would run it, without running it. Read the `detail` column:
+
+| Plan text | Meaning |
+|---|---|
+| `SCAN orders` | reads the whole table (slow on big tables) |
+| `SEARCH orders USING INDEX idx_x (col=?)` | uses the index to jump to matching rows (fast) |
+| `SEARCH ... USING COVERING INDEX` | the index alone has all columns needed, so the table is not even read (fastest) |
+| `SCAN ... USING COVERING INDEX` | reads the whole index only (cheaper than the table, but still a full pass) |
+
+Other databases use `EXPLAIN` or `EXPLAIN ANALYZE` (PostgreSQL, MySQL) and graphical execution plans (SQL Server). The words differ (Seq Scan, Index Scan, Index Seek) but the idea is the same. The `id` and `notused` columns in SQLite output are internal numbers. Read `detail`.
+
+### Sargable predicates
+
+**Sargable** means "Search ARGument ABLE": the filter can use an index. A filter is usually **not** sargable when you wrap the column in a function or calculation.
+
+| Not sargable (index ignored) | Sargable rewrite |
+|---|---|
+| `WHERE strftime('%Y', order_date) = '2024'` | `WHERE order_date >= '2024-01-01' AND order_date < '2025-01-01'` |
+| `WHERE LOWER(city) = 'pune'` | store clean data, or compare to the exact stored value |
+| `WHERE total_amount * 1.18 > 5000` | `WHERE total_amount > 5000 / 1.18` |
+| `WHERE col LIKE '%abc'` (leading wildcard) | `LIKE 'abc%'` can use an index; `'%abc'` cannot |
+| `WHERE col + 0 = 5` | `WHERE col = 5` |
+
+Analogy: the book index is sorted by the exact word. Asking "find all words whose third letter is e" means reading the whole index again. Keep the column "bare" on one side of the comparison and move calculations to the other side.
+
+### SELECT * and column choice
+
+`SELECT *` reads and returns every column, even those you do not need. Costs:
+
+- More data read from disk and sent over the network.
+- It blocks **covering indexes**: if an index holds exactly the columns you need, the database never opens the table. `SELECT *` cannot use that.
+- If columns are added later, your query changes silently.
+
+In analysis it is fine to use `SELECT *` with `LIMIT` to peek at a table. In a saved query or dashboard, list the columns.
+
+### Execution-order thinking
+
+Remember the logical order: `FROM/JOIN`, `WHERE`, `GROUP BY`, `HAVING`, `SELECT`, `ORDER BY`, `LIMIT`. Practical rules that follow:
+
+1. **Filter early.** A `WHERE` that removes rows before a join or group means less work later. Move conditions from `HAVING` to `WHERE` when they apply to raw rows.
+2. **Reduce before you join.** Aggregate a big table in a CTE first, then join the small result.
+3. **Join on indexed keys**, and make sure the types match (an integer joined to text can disable the index).
+4. **Avoid `SELECT DISTINCT` as a bandage** for a join that multiplies rows. Fix the join.
+5. **Limit what you sort.** `ORDER BY` on millions of rows is expensive. Use `LIMIT` when you only need the top N.
+6. **Test on a small slice** first, then scale up.
+
+<Warning>
+Do not guess about performance. Check the plan, and measure on realistic data. A query that is fast on 10,000 test rows may behave differently on 10 crore rows.
+</Warning>
+
+### About the playground
+
+The playground database is in memory. `CREATE INDEX` works in it, but disappears when you reload the page, and nothing is saved to the original data files.
+
+## Worked examples
+
+### Example 1: a full scan on an unindexed column
+
+`orders` has no index on `order_date`. Ask SQLite how it would find the orders of one day.
+
+<SqlPlayground dataset="ecommerce" query={`EXPLAIN QUERY PLAN
+SELECT order_id, total_amount
+FROM orders
+WHERE order_date = '2024-03-15';`} title="Plan without an index" />
+
+**Output:**
+
+| id | parent | notused | detail |
+|---|---|---|---|
+| 2 | 0 | 216 | SCAN orders |
+
+Now compare with a lookup on `customer_id`, which already has an index in this database.
+
+<SqlPlayground dataset="ecommerce" query={`EXPLAIN QUERY PLAN
+SELECT order_id, total_amount
+FROM orders
+WHERE customer_id = 123;`} title="Plan for an indexed column" />
+
+**Output:**
+
+| id | parent | notused | detail |
+|---|---|---|---|
+| 3 | 0 | 61 | SEARCH orders USING INDEX idx_orders_customer_id (customer_id=?) |
+
+`SCAN orders` means all 10,100 rows are read to find one day. The second query shows `SEARCH orders USING INDEX idx_orders_customer_id`: the database jumps to the matching rows. For 10,100 rows the difference is invisible, but the pattern is the same at 10 crore rows.
+
+### Example 2: creating an index and checking the plan again
+
+We create an index (in the in-memory copy only) and ask for the plan again. Run it in the playground and refresh the page to undo it.
+
+<SqlPlayground dataset="ecommerce" query={`CREATE INDEX idx_orders_order_date ON orders(order_date);
+EXPLAIN QUERY PLAN
+SELECT order_id, total_amount
+FROM orders
+WHERE order_date = '2024-03-15';`} title="Add an index on order_date" />
+
+**Output:**
+
+| id | parent | notused | detail |
+|---|---|---|---|
+| 3 | 0 | 61 | SEARCH orders USING INDEX idx_orders_order_date (order_date=?) |
+
+The plan changed from `SCAN orders` to `SEARCH orders USING INDEX idx_orders_order_date (order_date=?)`. Same query, same result, much less work on a big table. Remember the cost: every new order inserted must now also update this index.
+
+### Example 3: sargable versus non-sargable
+
+Both queries count the orders of 2024, and with an index on `order_date` they give the same answer. The first one wraps the column in `strftime`. The second compares the bare column to a date range.
+
+<SqlPlayground dataset="ecommerce" query={`CREATE INDEX idx_orders_order_date ON orders(order_date);
+EXPLAIN QUERY PLAN
+SELECT COUNT(*)
+FROM orders
+WHERE strftime('%Y', order_date) = '2024';`} title="Wrapping the column in a function" />
+
+**Output:**
+
+| id | parent | notused | detail |
+|---|---|---|---|
+| 3 | 0 | 210 | SCAN orders USING COVERING INDEX idx_orders_order_date |
+
+The sargable version:
+
+<SqlPlayground dataset="ecommerce" query={`CREATE INDEX idx_orders_order_date ON orders(order_date);
+EXPLAIN QUERY PLAN
+SELECT COUNT(*)
+FROM orders
+WHERE order_date >= '2024-01-01'
+  AND order_date <  '2025-01-01';`} title="Sargable: bare column and a range" />
+
+**Output:**
+
+| id | parent | notused | detail |
+|---|---|---|---|
+| 3 | 0 | 150 | SEARCH orders USING COVERING INDEX idx_orders_order_date (order_date>? AND order_date<?) |
+
+The first plan says `SCAN ... USING COVERING INDEX`: the whole index is read, one entry at a time, and the function is evaluated for each. The second says `SEARCH ... (order_date>? AND order_date<?)`: the database jumps to the start of 2024 and stops at the end of it. The half-open range (`>=` start, `<` next start) also avoids the classic bug of missing the last day when timestamps carry a time part.
+
+### Example 4: SELECT * versus only the columns you need
+
+With an index on `(customer_id, total_amount)`, a query that needs only those two columns can be answered from the index alone. A `SELECT *` still has to visit the table.
+
+<SqlPlayground dataset="ecommerce" query={`CREATE INDEX idx_orders_cust_amt ON orders(customer_id, total_amount);
+EXPLAIN QUERY PLAN
+SELECT customer_id, SUM(total_amount) AS spend
+FROM orders
+WHERE customer_id = 123
+GROUP BY customer_id;`} title="Covering index and SELECT *" />
+
+**Output:**
+
+| id | parent | notused | detail |
+|---|---|---|---|
+| 6 | 0 | 52 | SEARCH orders USING COVERING INDEX idx_orders_cust_amt (customer_id=?) |
+
+The same filter with `SELECT *`:
+
+<SqlPlayground dataset="ecommerce" query={`CREATE INDEX idx_orders_cust_amt ON orders(customer_id, total_amount);
+EXPLAIN QUERY PLAN
+SELECT *
+FROM orders
+WHERE customer_id = 123;`} title="SELECT * on the same filter" />
+
+**Output:**
+
+| id | parent | notused | detail |
+|---|---|---|---|
+| 3 | 0 | 61 | SEARCH orders USING INDEX idx_orders_cust_amt (customer_id=?) |
+
+The first plan uses a `COVERING INDEX`: the table is never opened. The second must fetch full rows from the table, so it is slower, and it returns columns you did not need. In SQLite the planner may choose either of the two indexes on `customer_id` for the second query, so the exact index name you see can differ.
+
+## Common mistakes
+
+<CommonMistake>
+**Wrapping the column in a function in WHERE.** `WHERE YEAR(date) = 2024` or `strftime(...)` or `LOWER(col)` stops the index being used. Rewrite as a range on the bare column.
+</CommonMistake>
+
+<CommonMistake>
+**Indexing every column.** Each index slows writes and uses space. Index only columns used in frequent filters, joins and sorts.
+</CommonMistake>
+
+<CommonMistake>
+**Leading wildcard LIKE.** `LIKE '%kumar'` cannot use a normal index. `LIKE 'kumar%'` can. For contains-search, use a proper full-text feature.
+</CommonMistake>
+
+<CommonMistake>
+**Using SELECT * in dashboards and saved queries.** It moves more data, blocks covering indexes and breaks when columns change. List the columns you need.
+</CommonMistake>
+
+<CommonMistake>
+**Fixing slow queries by guessing.** Check `EXPLAIN` first. Often the problem is a missing filter, a join that multiplies rows, or a function on a column, not the lack of an index.
+</CommonMistake>
+
+<CommonMistake>
+**Using SELECT DISTINCT to hide a join problem.** If rows multiply after a join, DISTINCT adds a slow sort on top and may hide wrong logic. Find why the join fans out.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="optimization" module="sql" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "In the book analogy, what is an index?", options: ["A copy of the whole book", "A sorted list of values pointing to where rows are stored", "A table of contents of table names", "A backup"], answer: 1, explanation: "An index is a sorted lookup structure that points to the rows, like the index at the back of a book." },
+  { q: "Which plan line is usually the most worrying on a big table?", options: ["SEARCH orders USING INDEX idx (col=?)", "SCAN orders", "SEARCH ... USING COVERING INDEX", "SEARCH ... (col>? AND col<?)"], answer: 1, explanation: "SCAN means reading the whole table row by row." },
+  { q: "Which filter is sargable?", options: ["WHERE strftime('%Y', d) = '2024'", "WHERE d >= '2024-01-01' AND d < '2025-01-01'", "WHERE LOWER(city) = 'pune'", "WHERE price * 2 > 100 with a function on price"], answer: 1, explanation: "Comparing the bare column to constants lets the database use an index." },
+  { q: "What is a downside of adding many indexes?", options: ["Reads become slower", "Inserts, updates and deletes become slower and storage grows", "Queries return wrong results", "Indexes cannot be dropped"], answer: 1, explanation: "Every write must update every index on the table." },
+  { q: "Why can SELECT * prevent a covering index?", options: ["It cannot, it always works", "It asks for all columns, so the index alone does not hold everything needed", "It forces a sort", "It locks the table"], answer: 1, explanation: "A covering index must contain every selected column." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers do not expect index internals from a fresher. They want the book analogy, scan versus seek, why functions on columns hurt, and the trade-off of write cost. Saying 'I would check the execution plan first' is the strongest opening line.
+</InterviewAlert>
+
+<InterviewQ q="What is an index and when would you not add one?">
+An index is a sorted structure (usually a B-tree) on one or more columns that lets the database find rows without scanning the table. I would not add one on a column with very few distinct values (like a flag), on small tables, on columns rarely used in filters or joins, or on write-heavy tables where the cost of maintaining it outweighs the read benefit.
+</InterviewQ>
+
+<InterviewQ q="What does 'sargable' mean? Give an example.">
+A predicate is sargable if the engine can use an index to evaluate it. `WHERE order_date >= '2024-01-01' AND order_date < '2025-01-01'` is sargable, while `WHERE YEAR(order_date) = 2024` is not because the function must run on every row. The rule: keep the column bare and put calculations on the other side.
+</InterviewQ>
+
+<InterviewQ q="A query is slow. How do you investigate?">
+I read the execution plan with EXPLAIN (or EXPLAIN ANALYZE) to find scans, big sorts and row-multiplying joins. I check filters for functions on columns, confirm joins use indexed keys of the same type, reduce columns and rows early with CTEs or WHERE, and try the query on a sample. Only then do I suggest an index to the data engineering team.
+</InterviewQ>
+
+<InterviewQ q="Is it always better to use an index?">
+No. If the query returns a large share of the table, scanning sequentially can be cheaper than thousands of random index lookups, and the optimiser knows that. Indexes also add write cost and storage. The right answer is to look at the plan and the data.
+</InterviewQ>
+
+## Key takeaways
+
+- An index is a sorted lookup structure, like the index at the back of a book. It speeds reads and slows writes.
+- `EXPLAIN QUERY PLAN` shows SCAN (whole table), SEARCH (uses an index) and COVERING INDEX (no table access).
+- Sargable filters keep the column bare: use ranges instead of functions.
+- Select only the columns you need. `SELECT *` costs more and blocks covering indexes.
+- Filter early, reduce before joining, and check the plan instead of guessing.
+
+## Further reading
+
+<FurtherReading ids={["sqlbolt", "sqlite-docs", "postgres-docs"]} />

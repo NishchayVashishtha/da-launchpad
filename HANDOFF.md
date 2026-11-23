@@ -26,7 +26,7 @@ Last session: 2026-11-24. Read this first, then CLAUDE.md. The product spec is m
 
 ### Possibly incomplete (4 Sonnet agents were still running when the session ended)
 Check each item with `ls`, audit and validate:
-- SQL 13–17 (joins, subqueries, CTEs, set ops). Practice: joins-basic, joins-advanced, subqueries, ctes, set-operations.
+- DONE: SQL 13–17 (joins, subqueries, CTEs, set ops): 5 lessons + 34 questions (8 easy / 16 medium / 10 hard), validated.
 - SQL 18–25 (window functions, cleaning, dedup, pivot, optimisation, DDL/DML). Practice: window-ranking, window-offset, window-frames, cleaning, dedup, pivot, optimization, ddl-dml.
 - SQL 26–33 patterns (nth-highest, top-n, running-total, mom, yoy, cohort, funnel, streaks). Lessons exist, but at handoff the practice files `pattern-{nth-highest,top-n,running-total,mom,yoy,cohort,funnel,streaks}.json` were missing.
 - SQL 34–42 patterns (duplicates, median, missing, sessions, rfm, percent-total, ab-test, playbook, screening tests). Practice files exist; verify them.
