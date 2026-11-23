@@ -54,3 +54,12 @@ Check each item with `ls`, audit and validate:
 
 ## Git
 Phase 1 is committed. Everything after it is committed as "WIP: Module 0, Excel, Power BI, SQL partial" (the build is not yet green; see item 1).
+
+## Working approach for next phases (user-agreed)
+- **The orchestrator stays in charge.** The main session plans and dispatches and reads only short verdicts. It never touches content directly.
+- **Sonnet writes outlines only** (topics, examples, traps, question specs) in `.work/outlines/`. **Haiku writes all the content** from those outlines. Don't underestimate Haiku, and don't add extra layers.
+- **Selective context:** each agent gets a small task packet (its outline, its dataset's schema only, a rules excerpt, 1 golden example, the gate commands). Start every packet with the same rules text so it can be cached.
+- **Strong gates:** validate, audit and lint, plus an MDX compile check (to be added). Cross-check MCQs blind. Run a sampled Haiku reviewer pass.
+- **Use worktrees** for parallel UI agents. Use reusable templates, briefs and scripts wherever possible.
+- **Add custom agent files or hooks only if they clearly pay for themselves.**
+- **Prefer smart compaction or forking** over fresh sessions. HANDOFF.md alone doesn't carry everything.
