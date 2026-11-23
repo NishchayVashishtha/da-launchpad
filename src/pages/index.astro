@@ -1,0 +1,25 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Dashboard from '../components/react/Dashboard';
+import { MODULES } from '../lib/modules';
+import { getLessons } from '../lib/content';
+import plan from '../data/plan.json';
+import profile from '../data/profile.json';
+import tools from '../data/tools.json';
+const lessons = await getLessons({ includeDrafts: false });
+const practice = (await getCollection('practice')).map((e) => e.data);
+const cards = await getCollection('flashcards');
+const modules = MODULES.map((m) => ({ slug: m.slug, title: m.title, lessonIds: lessons.filter((l) => l.module === m.slug).map((l) => l.id), questionIds: practice.filter((q) => q.module === m.slug).map((q) => q.id) }));
+const quickLinks = [
+  { label: 'Practice SQL', href: '/practice/?module=sql' },
+  { label: 'SQL Playground', href: '/playground/' },
+  { label: 'All practice', href: '/practice/' },
+  { label: 'Datasets', href: '/datasets/' },
+  { label: 'Bookmarks', href: '/bookmarks/' },
+  ...(tools as { title: string; href: string }[]).map((t) => ({ label: t.title, href: t.href })),
+];
+---
+<Base title="Dashboard">
+  <Dashboard client:load modules={modules} flashcardIds={cards.map((c) => c.data.id)} plan={plan} name={profile.name} quickLinks={quickLinks} />
+</Base>

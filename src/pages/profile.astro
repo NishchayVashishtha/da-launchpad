@@ -1,0 +1,12 @@
+---
+import Base from '../layouts/Base.astro';
+import ProfileForm from '../components/react/ProfileForm';
+import profile from '../data/profile.json';
+---
+<Base title="Profile" description="Your profile powers personalised plans, interview answers and your resume draft.">
+  <div style="max-width:48rem;margin:0 auto">
+    <h1 style="margin-top:0">Profile</h1>
+    <p class="muted">These values personalise your interview answers and resume draft. They are saved in this browser. Defaults come from <code>src/data/profile.json</code>.</p>
+    <ProfileForm client:load defaults={profile as Record<string, string | number>} />
+  </div>
+</Base>

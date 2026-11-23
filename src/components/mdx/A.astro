@@ -1,0 +1,6 @@
+---
+import { url } from '../../lib/url';
+const { href, ...rest } = Astro.props;
+const external = /^(https?:)?\/\//.test(href ?? '');
+---
+<a href={href && href.startsWith('/') ? url(href) : href} {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})} {...rest}><slot /></a>

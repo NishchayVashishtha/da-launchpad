@@ -1,0 +1,403 @@
+{
+  "id": "hr",
+  "title": "HR Analytics: Nirmaan Technologies",
+  "description": "Nirmaan Technologies is a fictional 2,400-person Indian tech and services company with eight departments across Bengaluru, Mumbai, Pune, Hyderabad, Chennai and Delhi. The dataset links employees to appraisal-cycle salary changes, half-yearly performance reviews and exits during 2023-2024. Use it to analyse attrition drivers, pay equity, hike policy and workforce planning.",
+  "tables": [
+    {
+      "name": "departments",
+      "rowCount": 8,
+      "description": "Eight departments with budget and head.",
+      "columns": [
+        {
+          "name": "department_id",
+          "type": "INTEGER",
+          "description": "Department identifier (primary key)",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "department_name",
+          "type": "TEXT",
+          "description": "Department name",
+          "nullable": false,
+          "example": "Marketing"
+        },
+        {
+          "name": "department_head",
+          "type": "TEXT",
+          "description": "Name of the department head",
+          "nullable": false,
+          "example": "Sameer Joshi"
+        },
+        {
+          "name": "location",
+          "type": "TEXT",
+          "description": "Main office location",
+          "nullable": false,
+          "example": "Mumbai"
+        },
+        {
+          "name": "annual_budget_inr",
+          "type": "INTEGER",
+          "description": "Annual budget in INR",
+          "nullable": false,
+          "example": "90000000"
+        },
+        {
+          "name": "cost_center_code",
+          "type": "TEXT",
+          "description": "Finance cost-centre code",
+          "nullable": false,
+          "example": "CC120"
+        }
+      ]
+    },
+    {
+      "name": "employees",
+      "rowCount": 2412,
+      "description": "One row per employee ever employed 2023-2024 (12 duplicate rows are deliberate).",
+      "columns": [
+        {
+          "name": "employee_id",
+          "type": "INTEGER",
+          "description": "Employee identifier (duplicated for the duplicate rows)",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "full_name",
+          "type": "TEXT",
+          "description": "Employee name",
+          "nullable": false,
+          "example": "Venkat Chatterjee"
+        },
+        {
+          "name": "gender",
+          "type": "TEXT",
+          "description": "Male/Female with some abbreviated 'M'/'F' values",
+          "nullable": false,
+          "example": "Male"
+        },
+        {
+          "name": "date_of_birth",
+          "type": "DATE",
+          "description": "Date of birth",
+          "nullable": false,
+          "example": "1979-03-07"
+        },
+        {
+          "name": "email",
+          "type": "TEXT",
+          "description": "Work email (NULL for ~4%)",
+          "nullable": true,
+          "example": "venkat.chatterjee998@nirmaan-tech.in"
+        },
+        {
+          "name": "hire_date",
+          "type": "DATE",
+          "description": "Date of joining (2014 to Nov 2024)",
+          "nullable": false,
+          "example": "2014-01-05"
+        },
+        {
+          "name": "department_id",
+          "type": "INTEGER",
+          "description": "FK to departments.department_id",
+          "nullable": false,
+          "example": "8"
+        },
+        {
+          "name": "job_title",
+          "type": "TEXT",
+          "description": "Job title",
+          "nullable": false,
+          "example": "UX Designer"
+        },
+        {
+          "name": "job_level",
+          "type": "TEXT",
+          "description": "Junior, Mid, Senior, Lead or Manager",
+          "nullable": false,
+          "example": "Mid"
+        },
+        {
+          "name": "manager_id",
+          "type": "INTEGER",
+          "description": "FK to employees.employee_id (NULL for top managers)",
+          "nullable": true,
+          "example": "1285"
+        },
+        {
+          "name": "city",
+          "type": "TEXT",
+          "description": "Work city (casing/whitespace issues, ~2% NULL)",
+          "nullable": true,
+          "example": "Bengaluru"
+        },
+        {
+          "name": "employment_type",
+          "type": "TEXT",
+          "description": "Full-time, Contract or Intern",
+          "nullable": false,
+          "example": "Full-time"
+        },
+        {
+          "name": "work_mode",
+          "type": "TEXT",
+          "description": "Hybrid, Office or Remote",
+          "nullable": false,
+          "example": "Hybrid"
+        },
+        {
+          "name": "employment_status",
+          "type": "TEXT",
+          "description": "Active or Exited (matches the attrition table)",
+          "nullable": false,
+          "example": "Active"
+        }
+      ]
+    },
+    {
+      "name": "salaries",
+      "rowCount": 5259,
+      "description": "Salary history: opening/joining CTC and April appraisal revisions.",
+      "columns": [
+        {
+          "name": "salary_id",
+          "type": "INTEGER",
+          "description": "Salary record identifier (primary key)",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "employee_id",
+          "type": "INTEGER",
+          "description": "FK to employees.employee_id",
+          "nullable": false,
+          "example": "1"
+        },
+        {
+          "name": "effective_date",
+          "type": "DATE",
+          "description": "Date the CTC became effective",
+          "nullable": false,
+          "example": "2024-04-01"
+        },
+        {
+          "name": "annual_ctc",
+          "type": "REAL",
+          "description": "Annual cost-to-company in INR (5 rows are 100x outliers)",
+          "nullable": false,
+          "example": "628000.0"
+        },
+        {
+          "name": "hike_pct",
+          "type": "REAL",
+          "description": "Percentage hike versus the previous CTC (NULL for opening/joining rows)",
+          "nullable": true,
+          "example": "3.5"
+        },
+        {
+          "name": "change_reason",
+          "type": "TEXT",
+          "description": "Opening balance, Joining, Annual Appraisal or Promotion",
+          "nullable": false,
+          "example": "Annual Appraisal"
+        }
+      ]
+    },
+    {
+      "name": "attrition",
+      "rowCount": 544,
+      "description": "One row per employee who left in 2023-2024.",
+      "columns": [
+        {
+          "name": "attrition_id",
+          "type": "INTEGER",
+          "description": "Attrition record identifier (primary key)",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "employee_id",
+          "type": "INTEGER",
+          "description": "FK to employees.employee_id",
+          "nullable": false,
+          "example": "669"
+        },
+        {
+          "name": "exit_date",
+          "type": "DATE",
+          "description": "Last working date",
+          "nullable": false,
+          "example": "2023-01-14"
+        },
+        {
+          "name": "exit_type",
+          "type": "TEXT",
+          "description": "Resignation, Termination, Retirement or End of Contract",
+          "nullable": false,
+          "example": "Resignation"
+        },
+        {
+          "name": "exit_reason",
+          "type": "TEXT",
+          "description": "Recorded reason",
+          "nullable": false,
+          "example": "Better compensation"
+        },
+        {
+          "name": "notice_period_days",
+          "type": "INTEGER",
+          "description": "Notice period served in days",
+          "nullable": false,
+          "example": "30"
+        },
+        {
+          "name": "regretted_loss",
+          "type": "INTEGER",
+          "description": "1 if a high performer resigned",
+          "nullable": false,
+          "example": "0"
+        },
+        {
+          "name": "exit_interview_score",
+          "type": "INTEGER",
+          "description": "1-5 exit interview score (NULL for ~30%)",
+          "nullable": true,
+          "example": "3"
+        }
+      ]
+    },
+    {
+      "name": "performance_reviews",
+      "rowCount": 4786,
+      "description": "Half-yearly reviews 2023-H1 to 2024-H1 (10 duplicate rows are deliberate).",
+      "columns": [
+        {
+          "name": "review_id",
+          "type": "INTEGER",
+          "description": "Review identifier (duplicated for duplicate rows)",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "employee_id",
+          "type": "INTEGER",
+          "description": "FK to employees.employee_id",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "review_period",
+          "type": "TEXT",
+          "description": "Period label such as 2023-H1",
+          "nullable": false,
+          "example": "2023-H1"
+        },
+        {
+          "name": "review_date",
+          "type": "DATE",
+          "description": "Date the review was recorded",
+          "nullable": false,
+          "example": "2023-07-24"
+        },
+        {
+          "name": "manager_rating",
+          "type": "INTEGER",
+          "description": "Manager rating 1-5",
+          "nullable": false,
+          "example": "2"
+        },
+        {
+          "name": "self_rating",
+          "type": "INTEGER",
+          "description": "Self-assessment rating 1-5",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "goals_met_pct",
+          "type": "INTEGER",
+          "description": "Percentage of goals met",
+          "nullable": false,
+          "example": "43"
+        },
+        {
+          "name": "avg_monthly_overtime_hours",
+          "type": "REAL",
+          "description": "Average monthly overtime hours in the period",
+          "nullable": false,
+          "example": "4.3"
+        },
+        {
+          "name": "promotion_recommended",
+          "type": "INTEGER",
+          "description": "1 if manager recommended promotion",
+          "nullable": false,
+          "example": "0"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "from": "employees.department_id",
+      "to": "departments.department_id",
+      "type": "many-to-one"
+    },
+    {
+      "from": "employees.manager_id",
+      "to": "employees.employee_id",
+      "type": "many-to-one"
+    },
+    {
+      "from": "salaries.employee_id",
+      "to": "employees.employee_id",
+      "type": "many-to-one"
+    },
+    {
+      "from": "attrition.employee_id",
+      "to": "employees.employee_id",
+      "type": "many-to-one"
+    },
+    {
+      "from": "performance_reviews.employee_id",
+      "to": "employees.employee_id",
+      "type": "many-to-one"
+    }
+  ],
+  "qualityIssues": [
+    "employees: 12 exact duplicate rows (same employee_id twice), so employee_id has no PRIMARY KEY constraint; performance_reviews: 10 exact duplicate rows.",
+    "employees.gender: ~6% of rows use 'M'/'F' instead of 'Male'/'Female'.",
+    "employees.city: ~9% have inconsistent casing/whitespace ('pune', ' Pune'), ~2% NULL; employees.email ~4% NULL.",
+    "employees.manager_id is NULL for top-level managers (~5% of employees).",
+    "salaries.annual_ctc: 5 rows are 100x outliers (e.g. 120,000,000 instead of 1,200,000).",
+    "salaries.hike_pct is NULL for opening-balance and joining rows (about 45% of salary rows).",
+    "attrition.exit_interview_score is NULL for ~30% of exits.",
+    "CSV only - employees.hire_date and employees.date_of_birth: ~20% of rows are DD-MM-YYYY.",
+    "CSV only - salaries.annual_ctc: ~30% of rows are text with rupee symbol and Indian grouping (e.g. '₹12,50,000').",
+    "CSV only - performance_reviews.review_date: ~15% of rows are DD-MM-YYYY."
+  ],
+  "er": "erDiagram\n  departments {\n    INTEGER department_id PK\n    TEXT department_name\n    TEXT department_head\n    TEXT location\n    INTEGER annual_budget_inr\n    TEXT cost_center_code\n  }\n  employees {\n    INTEGER employee_id PK\n    TEXT full_name\n    TEXT gender\n    TEXT date_of_birth\n    TEXT email\n    TEXT hire_date\n    INTEGER department_id FK\n    TEXT job_title\n    TEXT job_level\n    INTEGER manager_id FK\n    TEXT city\n    TEXT employment_type\n    TEXT work_mode\n    TEXT employment_status\n  }\n  salaries {\n    INTEGER salary_id PK\n    INTEGER employee_id FK\n    TEXT effective_date\n    REAL annual_ctc\n    REAL hike_pct\n    TEXT change_reason\n  }\n  attrition {\n    INTEGER attrition_id PK\n    INTEGER employee_id FK\n    TEXT exit_date\n    TEXT exit_type\n    TEXT exit_reason\n    INTEGER notice_period_days\n    INTEGER regretted_loss\n    INTEGER exit_interview_score\n  }\n  performance_reviews {\n    INTEGER review_id PK\n    INTEGER employee_id FK\n    TEXT review_period\n    TEXT review_date\n    INTEGER manager_rating\n    INTEGER self_rating\n    INTEGER goals_met_pct\n    REAL avg_monthly_overtime_hours\n    INTEGER promotion_recommended\n  }\n  departments ||--o{ employees : \"department_id\"\n  employees ||--o{ employees : \"manager_id\"\n  employees ||--o{ salaries : \"employee_id\"\n  employees ||--o{ attrition : \"employee_id\"\n  employees ||--o{ performance_reviews : \"employee_id\"",
+  "downloads": {
+    "sqlite": "data/sqlite/hr.sqlite",
+    "zip": "data/zip/hr.zip",
+    "csv": [
+      "data/csv/hr/departments.csv",
+      "data/csv/hr/employees.csv",
+      "data/csv/hr/salaries.csv",
+      "data/csv/hr/attrition.csv",
+      "data/csv/hr/performance_reviews.csv"
+    ]
+  },
+  "signals": [
+    "[Instructor note] Attrition is driven by (a) low manager ratings, (b) high average overtime (> ~10 h/month), and (c) low appraisal hikes (< ~4%); employees with all three leave at several times the base rate.",
+    "[Instructor note] Customer Support, Sales and Operations have the highest attrition; Finance and HR the lowest; employees with < 2 years tenure leave more.",
+    "[Instructor note] Exits spike in April-June (post-appraisal) and Nov-Jan (post-bonus).",
+    "[Instructor note] Hike % tracks performance (about +3 points per rating step) while Sales gets ~1 point lower hikes.",
+    "[Instructor note] Customer Support has the lowest CTC but the highest overtime; Engineering and Product pay ~25-30% more than average.",
+    "[Instructor note] Overtime-heavy exits cite 'Work-life balance / overtime' far more often in exit_reason.",
+    "[Instructor note] 5 salary outliers (100x) distort average CTC unless excluded."
+  ]
+}

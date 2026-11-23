@@ -1,0 +1,31 @@
+---
+import { render } from 'astro:content';
+import Doc from '../../layouts/Doc.astro';
+import { getLessons, readingMinutes } from '../../lib/content';
+import { moduleTitle } from '../../lib/modules';
+import { mdxComponents } from '../../components/mdx';
+import { CompleteBar, Notes } from '../../components/react/LessonFooter';
+
+export async function getStaticPaths() {
+  const all = await getLessons(); // drafts included only in dev / INCLUDE_DRAFTS=1
+  const nav = all.filter((l) => !l.entry.data.draft);
+  return all.map((l) => {
+    const j = nav.findIndex((x) => x.id === l.id); // prev/next walk across modules in nav order
+    const prev = j > 0 ? nav[j - 1] : null; const next = j >= 0 && j < nav.length - 1 ? nav[j + 1] : null;
+    return { params: { module: l.module, slug: l.slug }, props: { l, prev: prev && { title: prev.title, href: prev.href }, next: next && { title: next.title, href: next.href } } };
+  });
+}
+const { l, prev, next } = Astro.props;
+const { Content, headings } = await render(l.entry);
+const d = l.entry.data;
+---
+<Doc title={d.title} description={d.description} headings={headings}
+  crumbs={[{ label: 'Home', href: '/' }, { label: moduleTitle(l.module), href: `/${l.module}/` }, { label: d.title }]}
+  meta={[`${readingMinutes(l.entry.body)} min read`, `~${d.estimatedMinutes} min with practice`, ...(d.draft ? ['DRAFT'] : []), ...d.tags.slice(0, 4)]}
+  prev={prev} next={next}>
+  <Content components={mdxComponents} />
+  <Fragment slot="after">
+    <CompleteBar client:load lessonId={l.id} />
+    <Notes client:load lessonId={l.id} title={d.title} />
+  </Fragment>
+</Doc>

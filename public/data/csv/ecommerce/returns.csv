@@ -1,0 +1,1910 @@
+return_id,order_item_id,order_id,return_date,return_reason,return_status,refund_amount
+1,17,10,2023-01-06,Defective product,Rejected,
+2,70,35,2023-01-11,Damaged,Refunded,₹976.06
+3,36,21,2023-01-14,Wrong item sent,Refunded,"₹5,758.29"
+4,207,103,2023-01-15,Size / fit issue,Refunded,971.28
+5,71,36,2023-01-16,Not as described,Refunded,3217.06
+6,134,67,2023-01-16,Changed mind,Refunded,"₹29,188.15"
+7,85,44,2023-01-17,Defective product,Refunded,"₹3,886.20"
+8,97,50,2023-01-17,Damaged,Refunded,₹807.20
+9,159,81,2023-01-17,Size / fit issue,Refunded,545.22
+10,100,52,2023-01-18,Size / fit issue,Refunded,2469.93
+11,114,57,2023-01-18,Wrong item sent,Refunded,5606.97
+12,228,116,2023-01-18,Changed mind,Refunded,8066.79
+13,121,61,2023-01-19,Damaged,Pickup Pending,349.14
+14,133,66,2023-01-20,Size / fit issue,Refunded,1888.6
+15,150,75,2023-01-20,Damaged,Refunded,2241.46
+16,241,120,2023-01-20,Size / fit issue,Refunded,2195.28
+17,270,135,2023-01-20,Changed mind,Refunded,"₹2,842.42"
+18,291,147,2023-01-20,Size / fit issue,Refunded,₹599.20
+19,111,56,2023-01-21,Not as described,Refunded,"₹1,835.15"
+20,197,98,2023-01-21,Size / fit issue,Refunded,₹944.30
+21,284,141,2023-01-22,Wrong item sent,Refunded,979.11
+22,196,98,2023-01-24,Damaged,Refunded,2197.13
+23,214,107,2023-01-24,Not as described,Refunded,1521.63
+24,219,109,2023-01-25,Size / fit issue,Refunded,515.14
+25,331,168,2023-01-25,Defective product,Refunded,"₹25,531.66"
+26,186,92,2023-01-26,Size / fit issue,Refunded,₹858.28
+27,304,155,2023-01-26,Changed mind,Refunded,"₹3,156.72"
+28,371,188,2023-01-26,Size / fit issue,Refunded,458.59
+29,266,133,2023-01-27,Not as described,Refunded,2743.2
+30,312,158,2023-01-27,Changed mind,Refunded,₹172.08
+31,277,139,2023-01-28,Wrong item sent,Refunded,1161.17
+32,303,154,2023-01-28,Not as described,Refunded,2770.46
+33,431,220,2023-01-28,Size / fit issue,Refunded,"₹2,870.13"
+34,224,114,2023-01-29,Size / fit issue,Refunded,394.44
+35,240,120,2023-01-29,Damaged,Refunded,"₹1,565.38"
+36,330,167,2023-01-29,Size / fit issue,Refunded,1162.76
+37,490,247,2023-01-29,Not as described,Refunded,"₹5,257.56"
+38,286,143,2023-01-30,Size / fit issue,Refunded,"₹2,276.31"
+39,414,210,2023-01-30,Defective product,Rejected,
+40,513,254,2023-01-30,Size / fit issue,Refunded,269.78
+41,428,219,2023-01-31,Changed mind,Refunded,₹538.84
+42,540,268,2023-01-31,Not as described,Refunded,"₹6,924.84"
+43,305,155,2023-02-01,Wrong item sent,Refunded,"₹11,474.87"
+44,358,182,2023-02-01,Defective product,Rejected,
+45,426,218,2023-02-01,Not as described,Refunded,"₹1,108.03"
+46,470,239,2023-02-03,Size / fit issue,Refunded,1261.98
+47,539,267,2023-02-03,Changed mind,Refunded,"₹1,227.51"
+48,406,207,2023-02-04,Wrong item sent,Pickup Pending,"₹7,057.77"
+49,538,267,2023-02-05,Size / fit issue,Refunded,"₹2,555.10"
+50,584,290,2023-02-05,Size / fit issue,Refunded,"₹1,187.10"
+51,612,304,2023-02-05,Changed mind,Refunded,"₹5,183.30"
+52,676,334,2023-02-05,Changed mind,Refunded,455.24
+53,731,363,2023-02-05,Size / fit issue,Refunded,308.18
+54,573,284,2023-02-06,Defective product,Refunded,40283.98
+55,729,362,2023-02-06,Changed mind,Refunded,₹463.20
+56,658,323,2023-02-07,Changed mind,Refunded,3684.37
+57,730,362,2023-02-07,Defective product,Rejected,
+58,600,297,2023-02-08,Size / fit issue,Refunded,"₹1,489.02"
+59,605,300,2023-02-08,Damaged,Refunded,953.74
+60,617,306,2023-02-08,Size / fit issue,Refunded,2177.1
+61,580,288,2023-02-10,Size / fit issue,Refunded,"₹1,457.19"
+62,690,342,2023-02-10,Changed mind,Refunded,1515.22
+63,755,373,2023-02-10,Not as described,Refunded,1532.58
+64,761,375,2023-02-10,Size / fit issue,Refunded,"₹1,650.87"
+65,606,301,2023-02-11,Defective product,Refunded,"₹1,223.15"
+66,630,312,2023-02-11,Damaged,Refunded,654.36
+67,682,338,2023-02-12,Size / fit issue,Refunded,703.12
+68,695,345,2023-02-12,Not as described,Refunded,₹279.20
+69,768,377,2023-02-12,Not as described,Refunded,461.23
+70,800,395,2023-02-12,Not as described,Refunded,5639.88
+71,829,408,2023-02-12,Size / fit issue,Refunded,5173.5
+72,857,422,2023-02-12,Changed mind,Refunded,"₹29,182.79"
+73,687,341,2023-02-13,Changed mind,Refunded,1572.44
+74,846,417,2023-02-13,Not as described,Refunded,₹706.40
+75,888,437,2023-02-13,Size / fit issue,Refunded,3801.03
+76,764,376,2023-02-14,Size / fit issue,Refunded,"₹3,490.20"
+77,772,379,2023-02-14,Not as described,Refunded,630.99
+78,817,403,2023-02-14,Not as described,Refunded,1650.31
+79,713,354,2023-02-15,Size / fit issue,Refunded,3003.66
+80,741,367,2023-02-15,Not as described,Refunded,₹923.23
+81,743,368,2023-02-15,Changed mind,Refunded,2692.58
+82,919,452,2023-02-15,Not as described,Refunded,2897.16
+83,699,347,2023-02-16,Not as described,Refunded,376.66
+84,848,417,2023-02-16,Not as described,Pickup Pending,784.89
+85,776,383,2023-02-17,Size / fit issue,Refunded,1359.15
+86,841,415,2023-02-17,Size / fit issue,Refunded,317.59
+87,863,426,2023-02-17,Changed mind,Refunded,1385.23
+88,910,449,2023-02-17,Not as described,Refunded,575.2
+89,821,405,2023-02-18,Size / fit issue,Refunded,1621.62
+90,894,440,2023-02-18,Damaged,Rejected,
+91,962,475,2023-02-18,Size / fit issue,Refunded,3412.01
+92,956,471,2023-02-19,Not as described,Refunded,"₹1,254.21"
+93,998,491,2023-02-19,Size / fit issue,Refunded,2481.27
+94,818,403,2023-02-20,Size / fit issue,Refunded,"₹2,804.15"
+95,854,420,2023-02-21,Not as described,Refunded,2805.08
+96,874,432,2023-02-21,Damaged,Refunded,331.01
+97,950,468,2023-02-22,Not as described,Refunded,₹992.53
+98,899,443,2023-02-24,Size / fit issue,Refunded,₹356.44
+99,1039,509,2023-02-24,Damaged,Refunded,"₹8,921.67"
+100,1015,499,2023-02-25,Size / fit issue,Refunded,3421.78
+101,1129,552,2023-02-25,Wrong item sent,Refunded,₹997.12
+102,1029,505,2023-02-26,Size / fit issue,Refunded,1027.54
+103,1047,513,2023-02-26,Size / fit issue,Refunded,₹625.53
+104,1049,513,2023-02-26,Changed mind,Refunded,3127.08
+105,1112,543,2023-02-26,Not as described,Refunded,391.93
+106,1018,501,2023-02-28,Changed mind,Rejected,
+107,1153,567,2023-02-28,Changed mind,Refunded,1916.32
+108,1161,570,2023-02-28,Size / fit issue,Refunded,2206.16
+109,1173,576,2023-02-28,Wrong item sent,Refunded,5677.62
+110,1209,592,2023-02-28,Defective product,Refunded,"₹20,566.57"
+111,1104,540,2023-03-01,Changed mind,Refunded,"₹2,719.98"
+112,1171,574,2023-03-01,Size / fit issue,Rejected,
+113,1102,539,2023-03-02,Size / fit issue,Refunded,884.73
+114,1176,578,2023-03-02,Changed mind,Refunded,₹332.99
+115,1200,589,2023-03-02,Size / fit issue,Refunded,₹284.25
+116,1221,597,2023-03-02,Size / fit issue,Refunded,₹271.51
+117,1241,605,2023-03-02,Not as described,Refunded,₹552.86
+118,1164,571,2023-03-03,Size / fit issue,Refunded,1261.98
+119,1201,589,2023-03-03,Not as described,Refunded,1566.75
+120,1124,549,2023-03-04,Size / fit issue,Refunded,459.42
+121,1134,554,2023-03-04,Size / fit issue,Refunded,2559.21
+122,1144,561,2023-03-04,Damaged,Refunded,"₹1,633.86"
+123,1150,565,2023-03-04,Size / fit issue,Refunded,₹276.29
+124,1152,566,2023-03-04,Size / fit issue,Pickup Pending,₹622.89
+125,1160,569,2023-03-04,Size / fit issue,Refunded,"₹1,200.29"
+126,1236,604,2023-03-04,Not as described,Refunded,₹720.78
+127,1278,623,2023-03-04,Size / fit issue,Refunded,481.68
+128,1314,639,2023-03-04,Not as described,Rejected,
+129,1127,551,2023-03-05,Size / fit issue,Refunded,"₹1,999.26"
+130,1243,606,2023-03-05,Changed mind,Pickup Pending,₹421.74
+131,1346,655,2023-03-05,Size / fit issue,Refunded,1025.24
+132,1205,590,2023-03-06,Size / fit issue,Refunded,"₹1,511.16"
+133,1288,629,2023-03-06,Changed mind,Refunded,4882.02
+134,1162,570,2023-03-07,Changed mind,Refunded,1214.85
+135,1300,632,2023-03-07,Size / fit issue,Refunded,4292.57
+136,1480,722,2023-03-10,Damaged,Refunded,687.2
+137,1299,632,2023-03-11,Size / fit issue,Refunded,3498.39
+138,1329,645,2023-03-11,Size / fit issue,Refunded,477.09
+139,1337,650,2023-03-11,Changed mind,Refunded,"₹2,593.48"
+140,1264,617,2023-03-12,Size / fit issue,Refunded,"₹5,932.28"
+141,1391,680,2023-03-12,Size / fit issue,Refunded,"₹2,549.25"
+142,1422,694,2023-03-12,Size / fit issue,Refunded,"₹7,444.30"
+143,1449,705,2023-03-12,Size / fit issue,Refunded,"₹1,219.85"
+144,1522,748,2023-03-13,Not as described,Refunded,₹402.11
+145,1572,769,2023-03-13,Not as described,Refunded,4756.84
+146,1348,656,2023-03-14,Wrong item sent,Refunded,₹225.18
+147,1357,662,2023-03-14,Not as described,Refunded,₹867.56
+148,1406,685,2023-03-14,Size / fit issue,Refunded,"₹1,434.86"
+149,1442,703,2023-03-15,Damaged,Refunded,1215.24
+150,1591,780,2023-03-15,Size / fit issue,Refunded,1815.42
+151,1457,709,2023-03-16,Not as described,Refunded,"₹2,787.18"
+152,1484,724,2023-03-16,Not as described,Rejected,
+153,1486,725,2023-03-17,Defective product,Refunded,"₹1,299.65"
+154,1497,731,2023-03-17,Not as described,Refunded,1308.15
+155,1411,689,2023-03-18,Damaged,Refunded,₹606.69
+156,1367,668,2023-03-19,Size / fit issue,Refunded,"₹1,019.15"
+157,1540,757,2023-03-19,Size / fit issue,Refunded,₹539.10
+158,1452,706,2023-03-20,Size / fit issue,Refunded,₹594.15
+159,1509,739,2023-03-20,Changed mind,Refunded,₹636.88
+160,1586,776,2023-03-20,Damaged,Refunded,"₹1,087.32"
+161,1570,768,2023-03-21,Size / fit issue,Refunded,4878.4
+162,1614,788,2023-03-21,Not as described,Refunded,"₹1,727.20"
+163,1529,751,2023-03-22,Size / fit issue,Rejected,
+164,1532,753,2023-03-22,Changed mind,Rejected,
+165,1537,756,2023-03-22,Size / fit issue,Refunded,₹940.88
+166,1552,762,2023-03-22,Size / fit issue,Refunded,2347.73
+167,1705,839,2023-03-22,Wrong item sent,Refunded,"₹5,007.20"
+168,1519,745,2023-03-23,Size / fit issue,Refunded,1754.76
+169,1731,851,2023-03-23,Defective product,Refunded,1477.56
+170,1612,788,2023-03-24,Changed mind,Refunded,"₹2,554.58"
+171,1660,815,2023-03-24,Size / fit issue,Refunded,₹704.67
+172,1576,771,2023-03-25,Not as described,Refunded,4318.71
+173,1594,780,2023-03-25,Changed mind,Refunded,6413.22
+174,1655,811,2023-03-25,Damaged,Refunded,482.98
+175,1720,847,2023-03-25,Damaged,Refunded,"₹2,547.27"
+176,1732,852,2023-03-25,Changed mind,Refunded,"₹5,257.56"
+177,1774,876,2023-03-25,Not as described,Refunded,"₹3,546.99"
+178,1600,783,2023-03-26,Not as described,Refunded,"₹8,887.78"
+179,1718,845,2023-03-26,Size / fit issue,Refunded,337.68
+180,1681,824,2023-03-28,Changed mind,Rejected,
+181,1684,827,2023-03-28,Size / fit issue,Refunded,248.14
+182,1798,890,2023-03-28,Size / fit issue,Refunded,"₹1,608.53"
+183,1648,809,2023-03-29,Damaged,Refunded,474.78
+184,1773,876,2023-03-29,Size / fit issue,Refunded,473.37
+185,1746,861,2023-03-31,Changed mind,Refunded,₹386.84
+186,1759,869,2023-04-01,Damaged,Refunded,₹247.79
+187,1860,920,2023-04-01,Size / fit issue,Refunded,"₹1,793.33"
+188,1804,894,2023-04-02,Size / fit issue,Refunded,2617.23
+189,1728,850,2023-04-03,Size / fit issue,Refunded,₹638.78
+190,1801,892,2023-04-03,Damaged,Refunded,"₹1,364.37"
+191,1896,936,2023-04-03,Not as described,Refunded,5257.56
+192,1781,882,2023-04-04,Not as described,Refunded,"₹3,571.92"
+193,1884,929,2023-04-04,Wrong item sent,Refunded,713.64
+194,1907,942,2023-04-04,Changed mind,Refunded,₹670.02
+195,1761,871,2023-04-05,Size / fit issue,Refunded,2410.66
+196,1826,902,2023-04-06,Changed mind,Refunded,1134.32
+197,1909,943,2023-04-06,Size / fit issue,Pickup Pending,"₹1,412.66"
+198,1911,944,2023-04-07,Size / fit issue,Refunded,279.65
+199,1877,926,2023-04-08,Not as described,Refunded,3449.25
+200,1945,960,2023-04-08,Defective product,Refunded,4819.43
+201,2059,1018,2023-04-08,Changed mind,Refunded,"₹3,399.00"
+202,1833,905,2023-04-09,Not as described,Refunded,647.19
+203,1838,908,2023-04-09,Size / fit issue,Refunded,"₹1,007.28"
+204,1922,949,2023-04-09,Size / fit issue,Refunded,"₹1,223.32"
+205,2081,1031,2023-04-09,Changed mind,Refunded,3166.02
+206,1982,979,2023-04-10,Size / fit issue,Refunded,₹391.93
+207,2080,1030,2023-04-11,Size / fit issue,Refunded,494.1
+208,2144,1063,2023-04-12,Damaged,Refunded,3069.61
+209,2020,997,2023-04-13,Size / fit issue,Refunded,"₹1,796.54"
+210,2027,1000,2023-04-13,Changed mind,Refunded,"₹7,037.43"
+211,2094,1038,2023-04-13,Size / fit issue,Refunded,"₹1,591.20"
+212,2166,1073,2023-04-13,Damaged,Refunded,3364.13
+213,1969,972,2023-04-14,Size / fit issue,Pickup Pending,884.73
+214,2014,993,2023-04-14,Not as described,Refunded,559.2
+215,2184,1081,2023-04-14,Defective product,Refunded,"₹2,560.44"
+216,2186,1081,2023-04-14,Changed mind,Refunded,356.44
+217,2187,1082,2023-04-14,Size / fit issue,Refunded,857.22
+218,1968,971,2023-04-16,Size / fit issue,Refunded,"₹3,130.26"
+219,1993,986,2023-04-16,Not as described,Refunded,"₹1,675.89"
+220,2060,1019,2023-04-17,Defective product,Rejected,
+221,2211,1097,2023-04-17,Wrong item sent,Rejected,
+222,2097,1040,2023-04-18,Changed mind,Refunded,2652.63
+223,2174,1077,2023-04-18,Wrong item sent,Refunded,13046.77
+224,2023,998,2023-04-19,Size / fit issue,Pickup Pending,261.51
+225,2035,1003,2023-04-19,Wrong item sent,Refunded,₹980.28
+226,2307,1151,2023-04-19,Changed mind,Refunded,"₹5,760.28"
+227,2198,1090,2023-04-20,Defective product,Pickup Pending,"₹2,315.82"
+228,2118,1050,2023-04-21,Wrong item sent,Refunded,"₹28,220.72"
+229,2221,1103,2023-04-21,Size / fit issue,Refunded,"₹1,374.28"
+230,2256,1120,2023-04-21,Not as described,Refunded,"₹1,360.38"
+231,2279,1134,2023-04-21,Damaged,Refunded,4040.52
+232,2246,1116,2023-04-22,Size / fit issue,Refunded,₹453.69
+233,2254,1119,2023-04-22,Not as described,Refunded,"₹2,922.48"
+234,2320,1158,2023-04-22,Damaged,Refunded,521.13
+235,2308,1152,2023-04-23,Changed mind,Refunded,₹236.06
+236,2172,1076,2023-04-24,Not as described,Refunded,2111.49
+237,2231,1108,2023-04-24,Size / fit issue,Refunded,3807.15
+238,2305,1150,2023-04-25,Changed mind,Refunded,₹684.74
+239,2210,1097,2023-04-26,Not as described,Rejected,
+240,2339,1168,2023-04-26,Size / fit issue,Refunded,₹567.20
+241,2368,1184,2023-04-26,Size / fit issue,Refunded,1173.63
+242,2394,1195,2023-04-26,Defective product,Refunded,"₹9,263.32"
+243,2448,1221,2023-04-26,Changed mind,Refunded,"₹1,052.22"
+244,2359,1179,2023-04-29,Size / fit issue,Refunded,"₹3,412.01"
+245,2493,1246,2023-04-29,Size / fit issue,Refunded,623.2
+246,2315,1155,2023-04-30,Expired / near expiry,Refunded,2680.62
+247,2519,1261,2023-04-30,Size / fit issue,Refunded,"₹1,082.76"
+248,2376,1189,2023-05-01,Not as described,Refunded,"₹4,943.78"
+249,2312,1154,2023-05-02,Not as described,Refunded,₹576.46
+250,2439,1218,2023-05-02,Damaged,Refunded,562.32
+251,2360,1179,2023-05-03,Damaged,Refunded,₹546.76
+252,2361,1179,2023-05-03,Size / fit issue,Refunded,433.78
+253,2416,1207,2023-05-04,Size / fit issue,Refunded,"₹2,805.08"
+254,2435,1218,2023-05-04,Not as described,Refunded,₹920.55
+255,2471,1234,2023-05-04,Size / fit issue,Refunded,507.54
+256,2588,1296,2023-05-04,Size / fit issue,Pickup Pending,"₹2,710.86"
+257,2329,1163,2023-05-05,Size / fit issue,Refunded,319.36
+258,2331,1163,2023-05-05,Damaged,Refunded,"₹1,231.20"
+259,2639,1319,2023-05-05,Wrong item sent,Refunded,"₹5,069.79"
+260,2640,1319,2023-05-05,Size / fit issue,Refunded,₹314.57
+261,2556,1279,2023-05-06,Defective product,Refunded,5633.1
+262,2633,1316,2023-05-06,Defective product,Refunded,"₹3,092.44"
+263,2647,1322,2023-05-06,Damaged,Refunded,367.2
+264,2676,1336,2023-05-06,Damaged,Refunded,474.99
+265,2691,1343,2023-05-06,Damaged,Refunded,"₹1,199.66"
+266,2407,1204,2023-05-07,Size / fit issue,Refunded,3799.84
+267,2673,1334,2023-05-08,Damaged,Refunded,1900.99
+268,2563,1282,2023-05-09,Size / fit issue,Refunded,₹249.00
+269,2604,1304,2023-05-09,Not as described,Refunded,"₹1,401.75"
+270,2611,1307,2023-05-09,Size / fit issue,Refunded,₹457.41
+271,2663,1328,2023-05-10,Damaged,Refunded,"₹2,508.44"
+272,2719,1357,2023-05-10,Not as described,Refunded,₹591.75
+273,2762,1379,2023-05-10,Not as described,Refunded,184.26
+274,2664,1328,2023-05-11,Size / fit issue,Refunded,"₹1,254.89"
+275,2684,1340,2023-05-11,Size / fit issue,Refunded,1921.88
+276,2742,1369,2023-05-12,Not as described,Refunded,"₹2,090.18"
+277,2682,1339,2023-05-13,Damaged,Refunded,554.19
+278,2567,1285,2023-05-14,Not as described,Rejected,
+279,2709,1351,2023-05-14,Allergic / skin reaction,Refunded,"₹1,593.13"
+280,2625,1313,2023-05-15,Not as described,Refunded,₹454.09
+281,2724,1358,2023-05-15,Not as described,Refunded,3757.68
+282,2737,1367,2023-05-15,Not as described,Refunded,"₹1,491.75"
+283,2759,1378,2023-05-15,Changed mind,Refunded,₹468.93
+284,2562,1282,2023-05-16,Damaged,Refunded,1068.39
+285,2731,1362,2023-05-17,Wrong item sent,Refunded,3166.86
+286,2738,1368,2023-05-17,Size / fit issue,Refunded,₹632.72
+287,2882,1433,2023-05-17,Size / fit issue,Rejected,
+288,2799,1397,2023-05-18,Not as described,Refunded,"₹3,032.10"
+289,2829,1408,2023-05-18,Size / fit issue,Refunded,5166.48
+290,2820,1404,2023-05-19,Size / fit issue,Refunded,504.81
+291,2835,1410,2023-05-19,Not as described,Refunded,"₹4,819.43"
+292,2899,1443,2023-05-19,Not as described,Refunded,₹644.14
+293,2950,1469,2023-05-19,Not as described,Refunded,236.98
+294,2848,1417,2023-05-20,Size / fit issue,Refunded,₹422.73
+295,2949,1468,2023-05-20,Size / fit issue,Refunded,460.08
+296,2953,1471,2023-05-20,Size / fit issue,Refunded,1733.87
+297,3000,1491,2023-05-20,Damaged,Refunded,"₹9,674.10"
+298,2945,1465,2023-05-21,Size / fit issue,Rejected,
+299,2979,1483,2023-05-21,Not as described,Refunded,595.56
+300,3017,1501,2023-05-21,Damaged,Refunded,743.07
+301,3032,1507,2023-05-21,Not as described,Refunded,1418.69
+302,2932,1460,2023-05-22,Size / fit issue,Refunded,₹511.20
+303,2872,1430,2023-05-23,Wrong item sent,Refunded,"₹4,506.48"
+304,2929,1457,2023-05-23,Changed mind,Refunded,461.23
+305,2952,1470,2023-05-23,Not as described,Refunded,₹223.72
+306,2827,1407,2023-05-24,Expired / near expiry,Refunded,1169.47
+307,2865,1427,2023-05-24,Size / fit issue,Refunded,₹539.25
+308,2892,1438,2023-05-25,Damaged,Refunded,14423.18
+309,2893,1438,2023-05-25,Size / fit issue,Refunded,428.49
+310,2905,1446,2023-05-25,Not as described,Refunded,"₹1,475.18"
+311,2997,1491,2023-05-25,Size / fit issue,Refunded,₹242.19
+312,3144,1565,2023-05-25,Changed mind,Refunded,"₹5,883.46"
+313,3040,1512,2023-05-28,Not as described,Refunded,"₹13,203.96"
+314,3192,1587,2023-05-28,Changed mind,Refunded,"₹3,290.04"
+315,2980,1484,2023-05-29,Defective product,Refunded,5445.33
+316,3039,1511,2023-05-29,Size / fit issue,Rejected,
+317,2955,1471,2023-05-30,Size / fit issue,Refunded,550.16
+318,3084,1535,2023-05-30,Size / fit issue,Refunded,1521.99
+319,3037,1510,2023-05-31,Not as described,Refunded,"₹4,882.02"
+320,3175,1580,2023-05-31,Not as described,Refunded,12764.88
+321,3204,1591,2023-05-31,Size / fit issue,Refunded,₹351.96
+322,3045,1515,2023-06-01,Size / fit issue,Pickup Pending,"₹2,746.63"
+323,3241,1612,2023-06-01,Size / fit issue,Refunded,1211.66
+324,3085,1535,2023-06-02,Size / fit issue,Refunded,"₹1,294.20"
+325,3098,1541,2023-06-02,Changed mind,Refunded,1462.3
+326,3070,1528,2023-06-03,Not as described,Refunded,"₹1,400.63"
+327,3114,1548,2023-06-03,Damaged,Refunded,₹289.52
+328,3124,1554,2023-06-03,Size / fit issue,Refunded,479.2
+329,3137,1561,2023-06-03,Not as described,Pickup Pending,"₹13,768.87"
+330,3135,1560,2023-06-04,Size / fit issue,Refunded,"₹1,587.64"
+331,3170,1578,2023-06-04,Not as described,Rejected,
+332,3271,1627,2023-06-04,Not as described,Refunded,₹314.57
+333,3359,1671,2023-06-04,Not as described,Refunded,1031.14
+334,3209,1594,2023-06-07,Wrong item sent,Refunded,₹216.75
+335,3247,1615,2023-06-07,Size / fit issue,Refunded,₹652.12
+336,3276,1629,2023-06-07,Size / fit issue,Refunded,296.65
+337,3182,1582,2023-06-08,Not as described,Refunded,1392.43
+338,3455,1717,2023-06-08,Damaged,Refunded,646.57
+339,3164,1576,2023-06-09,Expired / near expiry,Refunded,₹954.99
+340,3183,1582,2023-06-09,Changed mind,Refunded,4063.17
+341,3227,1604,2023-06-10,Size / fit issue,Refunded,288.04
+342,3258,1620,2023-06-10,Size / fit issue,Refunded,1042.01
+343,3348,1667,2023-06-10,Size / fit issue,Refunded,2503.17
+344,3410,1696,2023-06-10,Size / fit issue,Refunded,₹349.30
+345,3511,1743,2023-06-10,Size / fit issue,Refunded,385.64
+346,3245,1614,2023-06-11,Damaged,Pickup Pending,₹158.84
+347,3442,1709,2023-06-11,Size / fit issue,Refunded,"₹1,385.23"
+348,3302,1641,2023-06-12,Not as described,Refunded,2345.98
+349,3343,1665,2023-06-12,Size / fit issue,Refunded,567.2
+350,3344,1666,2023-06-12,Damaged,Refunded,127.36
+351,3437,1708,2023-06-12,Changed mind,Refunded,1078.92
+352,3485,1733,2023-06-12,Damaged,Refunded,1835.28
+353,3505,1741,2023-06-12,Not as described,Refunded,"₹1,466.48"
+354,3548,1760,2023-06-13,Changed mind,Refunded,2446.64
+355,3354,1670,2023-06-14,Not as described,Refunded,"₹1,116.99"
+356,3509,1743,2023-06-15,Wrong item sent,Refunded,"₹3,145.53"
+357,3560,1764,2023-06-15,Not as described,Refunded,5320.15
+358,3498,1738,2023-06-16,Changed mind,Pickup Pending,₹548.10
+359,3549,1760,2023-06-16,Changed mind,Refunded,₹926.40
+360,3419,1699,2023-06-17,Damaged,Refunded,₹347.65
+361,3605,1784,2023-06-17,Not as described,Refunded,16655.89
+362,3491,1735,2023-06-18,Not as described,Refunded,"₹46,525.16"
+363,3666,1817,2023-06-19,Not as described,Refunded,"₹1,278.38"
+364,3482,1731,2023-06-20,Size / fit issue,Refunded,"₹1,671.20"
+365,3517,1746,2023-06-20,Changed mind,Refunded,₹407.71
+366,3614,1788,2023-06-20,Size / fit issue,Refunded,607.53
+367,3696,1834,2023-06-20,Defective product,Refunded,1179.98
+368,3586,1775,2023-06-21,Defective product,Refunded,1443.94
+369,3633,1798,2023-06-21,Changed mind,Refunded,2555.1
+370,3594,1779,2023-06-23,Not as described,Refunded,₹389.27
+371,3627,1795,2023-06-24,Not as described,Refunded,2150.59
+372,3675,1822,2023-06-24,Size / fit issue,Refunded,"₹1,216.26"
+373,3779,1877,2023-06-24,Not as described,Pickup Pending,903.2
+374,3698,1834,2023-06-25,Size / fit issue,Refunded,"₹2,622.14"
+375,3729,1849,2023-06-25,Size / fit issue,Refunded,456.72
+376,3763,1869,2023-06-25,Changed mind,Refunded,"₹1,355.39"
+377,3649,1809,2023-06-26,Size / fit issue,Refunded,376.28
+378,3692,1831,2023-06-26,Changed mind,Refunded,553.02
+379,3672,1820,2023-06-27,Not as described,Refunded,1403.22
+380,3706,1840,2023-06-27,Size / fit issue,Refunded,"₹1,547.14"
+381,3756,1866,2023-06-27,Size / fit issue,Pickup Pending,"₹2,910.40"
+382,3764,1870,2023-06-27,Changed mind,Refunded,₹175.20
+383,3646,1807,2023-06-28,Not as described,Refunded,11944.08
+384,3668,1818,2023-06-28,Size / fit issue,Refunded,"₹3,325.63"
+385,3677,1824,2023-06-28,Not as described,Refunded,1393.57
+386,3726,1849,2023-06-28,Not as described,Refunded,"₹4,882.02"
+387,3702,1837,2023-06-29,Size / fit issue,Refunded,1475.18
+388,3766,1870,2023-06-29,Damaged,Refunded,"₹1,683.99"
+389,3859,1919,2023-06-29,Size / fit issue,Refunded,₹690.48
+390,3767,1871,2023-06-30,Size / fit issue,Refunded,918.84
+391,3772,1874,2023-06-30,Size / fit issue,Refunded,2320.28
+392,3732,1850,2023-07-01,Size / fit issue,Pickup Pending,"₹2,327.98"
+393,3797,1886,2023-07-01,Size / fit issue,Refunded,532.06
+394,3918,1949,2023-07-01,Not as described,Refunded,1820.22
+395,4012,1994,2023-07-01,Changed mind,Pickup Pending,1493.17
+396,3713,1843,2023-07-02,Not as described,Refunded,"₹3,051.81"
+397,3814,1897,2023-07-02,Not as described,Refunded,"₹2,425.68"
+398,3816,1897,2023-07-02,Changed mind,Refunded,"₹1,531.53"
+399,3890,1933,2023-07-02,Size / fit issue,Refunded,"₹2,064.69"
+400,3927,1953,2023-07-02,Size / fit issue,Refunded,₹642.16
+401,4021,1998,2023-07-02,Changed mind,Refunded,252.01
+402,3974,1976,2023-07-03,Damaged,Refunded,₹266.98
+403,4070,2027,2023-07-04,Damaged,Refunded,575.2
+404,3828,1905,2023-07-05,Not as described,Refunded,₹337.31
+405,3829,1906,2023-07-05,Changed mind,Refunded,4631.66
+406,3963,1970,2023-07-05,Changed mind,Refunded,"₹9,638.19"
+407,3825,1903,2023-07-06,Not as described,Refunded,₹266.11
+408,3986,1982,2023-07-06,Changed mind,Refunded,"₹1,138.48"
+409,3853,1916,2023-07-07,Size / fit issue,Refunded,1164.78
+410,3994,1986,2023-07-07,Changed mind,Refunded,"₹1,324.44"
+411,3996,1987,2023-07-07,Not as described,Refunded,1635.04
+412,4055,2016,2023-07-07,Wrong item sent,Refunded,4762.91
+413,3958,1968,2023-07-08,Damaged,Rejected,
+414,3990,1984,2023-07-09,Size / fit issue,Refunded,₹594.15
+415,4132,2058,2023-07-10,Changed mind,Refunded,"₹1,655.10"
+416,4072,2027,2023-07-11,Size / fit issue,Refunded,₹318.36
+417,4123,2055,2023-07-13,Changed mind,Refunded,1023.72
+418,4069,2026,2023-07-14,Changed mind,Refunded,338.43
+419,4095,2041,2023-07-15,Size / fit issue,Refunded,"₹1,754.76"
+420,4119,2053,2023-07-15,Not as described,Refunded,2434.59
+421,4155,2070,2023-07-16,Changed mind,Refunded,3106.36
+422,4156,2070,2023-07-16,Size / fit issue,Refunded,489.01
+423,4141,2062,2023-07-18,Not as described,Refunded,₹251.28
+424,4305,2137,2023-07-18,Size / fit issue,Pickup Pending,₹324.86
+425,4319,2144,2023-07-18,Damaged,Refunded,"₹2,652.63"
+426,4268,2122,2023-07-19,Changed mind,Rejected,
+427,4179,2078,2023-07-20,Defective product,Refunded,3011.06
+428,4206,2092,2023-07-20,Damaged,Refunded,₹619.77
+429,4210,2093,2023-07-21,Size / fit issue,Refunded,376.38
+430,4409,2186,2023-07-21,Changed mind,Refunded,422.67
+431,4234,2107,2023-07-22,Not as described,Refunded,2572.17
+432,4241,2110,2023-07-22,Size / fit issue,Refunded,"₹3,722.15"
+433,4249,2114,2023-07-22,Size / fit issue,Refunded,724.62
+434,4318,2144,2023-07-23,Not as described,Rejected,
+435,4385,2176,2023-07-23,Size / fit issue,Refunded,1087.06
+436,4463,2211,2023-07-24,Size / fit issue,Refunded,₹839.30
+437,4469,2214,2023-07-24,Size / fit issue,Refunded,2821.17
+438,4522,2239,2023-07-24,Not as described,Pickup Pending,₹623.31
+439,4316,2144,2023-07-25,Not as described,Pickup Pending,"₹20,425.68"
+440,4356,2160,2023-07-25,Size / fit issue,Refunded,"₹2,815.81"
+441,4483,2220,2023-07-25,Not as described,Refunded,1002.44
+442,4489,2225,2023-07-25,Wrong item sent,Refunded,"₹1,150.40"
+443,4427,2194,2023-07-26,Size / fit issue,Rejected,
+444,4410,2187,2023-07-27,Size / fit issue,Refunded,3359.25
+445,4565,2259,2023-07-28,Not as described,Refunded,"₹1,334.25"
+446,4347,2156,2023-07-29,Not as described,Refunded,"₹3,476.87"
+447,4506,2231,2023-07-29,Damaged,Refunded,"₹1,345.68"
+448,4515,2236,2023-07-29,Changed mind,Pickup Pending,₹260.13
+449,4517,2237,2023-07-30,Not as described,Refunded,3771.18
+450,4662,2307,2023-07-31,Changed mind,Refunded,"₹3,801.03"
+451,4684,2317,2023-08-01,Size / fit issue,Refunded,₹567.29
+452,4698,2323,2023-08-02,Wrong item sent,Refunded,₹659.12
+453,4808,2376,2023-08-02,Changed mind,Refunded,1754.76
+454,4558,2255,2023-08-03,Wrong item sent,Rejected,
+455,4710,2330,2023-08-03,Defective product,Refunded,13066.25
+456,4567,2260,2023-08-04,Changed mind,Refunded,5940.21
+457,4637,2295,2023-08-04,Not as described,Refunded,"₹1,405.41"
+458,4709,2330,2023-08-04,Not as described,Rejected,
+459,4631,2292,2023-08-05,Damaged,Refunded,"₹4,922.19"
+460,4837,2390,2023-08-05,Size / fit issue,Refunded,1421.21
+461,4865,2404,2023-08-05,Changed mind,Pickup Pending,1078.5
+462,4646,2300,2023-08-06,Not as described,Refunded,₹341.10
+463,4784,2368,2023-08-06,Size / fit issue,Refunded,₹517.59
+464,4919,2431,2023-08-06,Changed mind,Refunded,2356.37
+465,4629,2291,2023-08-07,Size / fit issue,Refunded,3004.29
+466,4727,2338,2023-08-07,Not as described,Refunded,3265.16
+467,4731,2340,2023-08-07,Changed mind,Refunded,"₹1,662.43"
+468,4797,2372,2023-08-07,Not as described,Refunded,"₹9,725.94"
+469,4769,2361,2023-08-08,Size / fit issue,Refunded,2286.75
+470,4844,2395,2023-08-08,Size / fit issue,Refunded,₹399.20
+471,4818,2381,2023-08-09,Size / fit issue,Pickup Pending,₹212.89
+472,4792,2371,2023-08-10,Changed mind,Refunded,669.03
+473,4903,2425,2023-08-10,Size / fit issue,Refunded,₹306.99
+474,4912,2429,2023-08-10,Size / fit issue,Refunded,₹260.13
+475,4940,2443,2023-08-10,Size / fit issue,Refunded,562.32
+476,4740,2346,2023-08-11,Not as described,Refunded,"₹5,615.86"
+477,4825,2384,2023-08-11,Not as described,Refunded,288.04
+478,4828,2386,2023-08-11,Size / fit issue,Refunded,₹757.74
+479,4895,2420,2023-08-12,Size / fit issue,Refunded,₹273.27
+480,4928,2436,2023-08-12,Size / fit issue,Refunded,272.88
+481,4968,2453,2023-08-12,Not as described,Refunded,322.42
+482,5038,2486,2023-08-12,Damaged,Refunded,₹456.72
+483,4814,2380,2023-08-13,Size / fit issue,Refunded,"₹2,030.63"
+484,4885,2415,2023-08-13,Damaged,Refunded,₹411.75
+485,4977,2458,2023-08-13,Not as described,Refunded,356.44
+486,5061,2497,2023-08-13,Allergic / skin reaction,Refunded,221.88
+487,5099,2517,2023-08-13,Changed mind,Refunded,"₹1,009.29"
+488,4843,2395,2023-08-14,Size / fit issue,Refunded,591.26
+489,4911,2428,2023-08-14,Changed mind,Rejected,
+490,5100,2517,2023-08-14,Not as described,Refunded,"₹2,262.66"
+491,4948,2446,2023-08-15,Size / fit issue,Refunded,3258.84
+492,4921,2431,2023-08-16,Size / fit issue,Refunded,₹467.10
+493,5076,2505,2023-08-17,Damaged,Refunded,471.2
+494,5084,2509,2023-08-17,Size / fit issue,Refunded,530.37
+495,5186,2556,2023-08-17,Size / fit issue,Pickup Pending,432.39
+496,5081,2507,2023-08-18,Size / fit issue,Refunded,2537.46
+497,5226,2575,2023-08-18,Not as described,Refunded,"₹3,329.25"
+498,5050,2491,2023-08-19,Wrong item sent,Refunded,2038.5
+499,5188,2557,2023-08-20,Size / fit issue,Rejected,
+500,4998,2466,2023-08-21,Damaged,Refunded,"₹2,086.92"
+501,5052,2493,2023-08-21,Size / fit issue,Refunded,253.33
+502,5080,2507,2023-08-21,Size / fit issue,Refunded,513.77
+503,5229,2576,2023-08-22,Changed mind,Rejected,
+504,5278,2600,2023-08-22,Not as described,Refunded,1020.46
+505,5305,2615,2023-08-22,Not as described,Refunded,₹337.68
+506,5341,2636,2023-08-23,Not as described,Refunded,₹568.62
+507,5351,2640,2023-08-23,Changed mind,Refunded,781.08
+508,5191,2559,2023-08-24,Changed mind,Refunded,1160.34
+509,5113,2523,2023-08-25,Size / fit issue,Refunded,433.78
+510,5254,2590,2023-08-25,Not as described,Pickup Pending,1393.57
+511,5349,2639,2023-08-25,Size / fit issue,Refunded,"₹2,256.52"
+512,5150,2542,2023-08-26,Size / fit issue,Rejected,
+513,5212,2569,2023-08-26,Size / fit issue,Refunded,275.71
+514,5293,2609,2023-08-26,Size / fit issue,Refunded,"₹1,546.29"
+515,5271,2597,2023-08-27,Size / fit issue,Refunded,293.16
+516,5287,2606,2023-08-27,Size / fit issue,Refunded,"₹1,546.15"
+517,5437,2683,2023-08-27,Changed mind,Refunded,1044.05
+518,5449,2690,2023-08-27,Wrong item sent,Refunded,₹141.41
+519,5475,2704,2023-08-27,Damaged,Refunded,₹482.12
+520,5503,2720,2023-08-27,Changed mind,Rejected,
+521,5235,2579,2023-08-28,Damaged,Refunded,₹475.30
+522,5260,2592,2023-08-28,Not as described,Refunded,₹470.44
+523,5311,2618,2023-08-28,Damaged,Refunded,130.66
+524,5178,2553,2023-08-29,Damaged,Refunded,427.77
+525,5320,2624,2023-08-29,Not as described,Rejected,
+526,5375,2653,2023-08-29,Changed mind,Refunded,₹391.93
+527,5392,2661,2023-08-29,Not as described,Rejected,
+528,5523,2731,2023-08-29,Damaged,Refunded,"₹1,862.63"
+529,5373,2652,2023-08-30,Not as described,Refunded,"₹1,277.37"
+530,5377,2654,2023-08-30,Size / fit issue,Refunded,₹462.84
+531,5447,2690,2023-08-31,Wrong item sent,Refunded,"₹3,735.42"
+532,5568,2751,2023-09-01,Not as described,Rejected,
+533,5442,2686,2023-09-03,Not as described,Refunded,282.69
+534,5610,2770,2023-09-03,Changed mind,Refunded,1316.46
+535,5327,2627,2023-09-04,Not as described,Refunded,853.37
+536,5528,2733,2023-09-04,Size / fit issue,Rejected,
+537,5575,2753,2023-09-04,Not as described,Refunded,"₹32,303.04"
+538,5494,2716,2023-09-05,Size / fit issue,Pickup Pending,1173.91
+539,5579,2754,2023-09-05,Not as described,Refunded,₹271.15
+540,5682,2804,2023-09-05,Not as described,Refunded,384.58
+541,5537,2736,2023-09-07,Damaged,Refunded,2442.25
+542,5551,2745,2023-09-07,Size / fit issue,Refunded,2917.56
+543,5601,2764,2023-09-07,Changed mind,Refunded,"₹1,547.14"
+544,5604,2766,2023-09-07,Size / fit issue,Refunded,"₹1,576.07"
+545,5665,2799,2023-09-07,Size / fit issue,Refunded,"₹1,047.66"
+546,5763,2841,2023-09-07,Size / fit issue,Refunded,371.42
+547,5490,2713,2023-09-08,Damaged,Refunded,₹950.04
+548,5559,2747,2023-09-08,Expired / near expiry,Refunded,161.98
+549,5535,2735,2023-09-09,Not as described,Refunded,4164.93
+550,5608,2769,2023-09-10,Size / fit issue,Rejected,
+551,5652,2791,2023-09-10,Changed mind,Rejected,
+552,5708,2817,2023-09-10,Not as described,Rejected,
+553,5784,2851,2023-09-10,Wrong item sent,Refunded,971.19
+554,5590,2759,2023-09-12,Not as described,Pickup Pending,"₹3,189.74"
+555,5599,2764,2023-09-12,Allergic / skin reaction,Refunded,₹402.04
+556,5853,2889,2023-09-12,Wrong item sent,Refunded,₹988.50
+557,5777,2847,2023-09-13,Size / fit issue,Refunded,₹608.79
+558,5825,2872,2023-09-13,Not as described,Refunded,₹801.54
+559,5830,2874,2023-09-13,Changed mind,Refunded,1509.77
+560,5849,2887,2023-09-13,Size / fit issue,Rejected,
+561,5653,2791,2023-09-14,Not as described,Refunded,"₹5,382.74"
+562,5942,2927,2023-09-14,Size / fit issue,Refunded,₹652.12
+563,5694,2811,2023-09-15,Changed mind,Pickup Pending,3151.2
+564,5688,2807,2023-09-16,Damaged,Refunded,656.6
+565,5740,2830,2023-09-17,Damaged,Refunded,415.2
+566,5733,2827,2023-09-18,Not as described,Refunded,8288.1
+567,5821,2870,2023-09-18,Size / fit issue,Refunded,573.33
+568,5851,2888,2023-09-18,Changed mind,Refunded,₹733.19
+569,5961,2939,2023-09-18,Size / fit issue,Pickup Pending,₹310.78
+570,5906,2911,2023-09-20,Changed mind,Refunded,223.2
+571,5967,2942,2023-09-20,Changed mind,Refunded,4906.98
+572,5997,2954,2023-09-20,Not as described,Refunded,532.68
+573,5925,2919,2023-09-21,Size / fit issue,Refunded,553.02
+574,5817,2868,2023-09-22,Not as described,Refunded,5382.74
+575,5951,2934,2023-09-22,Size / fit issue,Refunded,261.51
+576,6064,2989,2023-09-22,Size / fit issue,Refunded,2217.08
+577,5960,2938,2023-09-23,Damaged,Refunded,"₹2,842.42"
+578,6157,3035,2023-09-23,Defective product,Refunded,5257.56
+579,5920,2917,2023-09-24,Size / fit issue,Refunded,₹577.61
+580,5985,2950,2023-09-24,Size / fit issue,Rejected,
+581,6103,3009,2023-09-24,Damaged,Refunded,707.16
+582,5978,2948,2023-09-25,Wrong item sent,Refunded,2829.96
+583,6037,2976,2023-09-26,Size / fit issue,Refunded,₹292.81
+584,6063,2988,2023-09-26,Changed mind,Refunded,231.57
+585,6222,3066,2023-09-26,Size / fit issue,Refunded,₹989.82
+586,6016,2963,2023-09-27,Defective product,Refunded,"₹1,162.04"
+587,6173,3043,2023-09-27,Size / fit issue,Refunded,"₹1,775.37"
+588,6019,2965,2023-09-28,Changed mind,Pickup Pending,293.16
+589,6051,2981,2023-09-28,Wrong item sent,Refunded,"₹15,242.66"
+590,6102,3009,2023-09-28,Not as described,Refunded,"₹8,921.67"
+591,6182,3048,2023-09-28,Not as described,Refunded,1116.28
+592,6238,3074,2023-09-28,Size / fit issue,Refunded,6029.22
+593,6001,2957,2023-09-29,Size / fit issue,Refunded,947.21
+594,6123,3019,2023-09-29,Changed mind,Refunded,₹391.46
+595,6214,3062,2023-09-30,Damaged,Refunded,346.81
+596,6257,3083,2023-09-30,Size / fit issue,Refunded,1565.38
+597,6112,3012,2023-10-01,Size / fit issue,Refunded,₹966.75
+598,6156,3035,2023-10-01,Not as described,Refunded,₹495.67
+599,6191,3053,2023-10-01,Size / fit issue,Refunded,526.15
+600,6300,3107,2023-10-01,Size / fit issue,Refunded,₹276.67
+601,6329,3121,2023-10-01,Size / fit issue,Rejected,
+602,6270,3090,2023-10-02,Changed mind,Rejected,
+603,6138,3027,2023-10-03,Not as described,Refunded,10640.3
+604,6268,3089,2023-10-03,Size / fit issue,Refunded,₹347.77
+605,6357,3132,2023-10-03,Size / fit issue,Refunded,"₹1,733.87"
+606,6136,3026,2023-10-04,Wrong item sent,Refunded,"₹1,661.81"
+607,6251,3080,2023-10-04,Damaged,Rejected,
+608,6264,3086,2023-10-04,Wrong item sent,Refunded,"₹6,602.43"
+609,6278,3094,2023-10-04,Changed mind,Refunded,1147.21
+610,6372,3140,2023-10-04,Size / fit issue,Refunded,₹447.30
+611,6460,3183,2023-10-05,Size / fit issue,Refunded,830.97
+612,6464,3186,2023-10-05,Not as described,Rejected,
+613,6273,3091,2023-10-06,Size / fit issue,Refunded,₹269.10
+614,6391,3150,2023-10-06,Size / fit issue,Refunded,4512.52
+615,6502,3204,2023-10-06,Changed mind,Refunded,"₹4,844.47"
+616,6232,3071,2023-10-07,Size / fit issue,Refunded,1785.96
+617,6359,3133,2023-10-07,Damaged,Rejected,
+618,6463,3185,2023-10-07,Size / fit issue,Refunded,₹250.04
+619,6332,3122,2023-10-08,Size / fit issue,Refunded,₹546.44
+620,6423,3164,2023-10-08,Not as described,Refunded,3541.58
+621,6200,3058,2023-10-09,Not as described,Refunded,₹575.20
+622,6349,3128,2023-10-09,Not as described,Refunded,"₹9,263.32"
+623,6370,3138,2023-10-09,Size / fit issue,Refunded,₹505.47
+624,6552,3223,2023-10-09,Not as described,Refunded,"₹2,966.38"
+625,6542,3220,2023-10-10,Size / fit issue,Refunded,"₹1,539.49"
+626,6481,3194,2023-10-11,Not as described,Refunded,₹272.88
+627,6524,3213,2023-10-11,Damaged,Refunded,599.64
+628,6583,3241,2023-10-11,Size / fit issue,Rejected,
+629,6469,3188,2023-10-12,Size / fit issue,Refunded,₹971.03
+630,6471,3189,2023-10-12,Not as described,Pickup Pending,"₹5,132.38"
+631,6472,3190,2023-10-13,Damaged,Refunded,566.19
+632,6539,3218,2023-10-13,Not as described,Refunded,6541.96
+633,6467,3188,2023-10-14,Size / fit issue,Refunded,₹855.12
+634,6625,3261,2023-10-14,Changed mind,Refunded,"₹2,552.08"
+635,6731,3318,2023-10-14,Not as described,Refunded,"₹1,396.08"
+636,6441,3174,2023-10-15,Not as described,Refunded,250.04
+637,6475,3191,2023-10-15,Size / fit issue,Rejected,
+638,6706,3306,2023-10-15,Size / fit issue,Refunded,286.23
+639,6593,3245,2023-10-16,Not as described,Refunded,453.53
+640,6746,3324,2023-10-16,Defective product,Refunded,4955.09
+641,6811,3358,2023-10-16,Size / fit issue,Refunded,1578.36
+642,6682,3294,2023-10-17,Size / fit issue,Refunded,₹516.52
+643,6712,3309,2023-10-17,Size / fit issue,Rejected,
+644,6799,3350,2023-10-17,Damaged,Refunded,5184.94
+645,6512,3209,2023-10-18,Not as described,Refunded,₹482.82
+646,6697,3303,2023-10-18,Size / fit issue,Refunded,517.57
+647,6498,3201,2023-10-19,Size / fit issue,Refunded,444.36
+648,6678,3291,2023-10-19,Size / fit issue,Refunded,"₹1,349.25"
+649,6739,3320,2023-10-19,Damaged,Refunded,282.69
+650,6795,3348,2023-10-19,Size / fit issue,Refunded,"₹1,295.28"
+651,6655,3280,2023-10-20,Changed mind,Refunded,₹560.82
+652,6715,3310,2023-10-20,Not as described,Refunded,"₹2,821.17"
+653,6791,3346,2023-10-20,Size / fit issue,Pickup Pending,"₹2,893.66"
+654,6878,3390,2023-10-20,Size / fit issue,Refunded,₹347.55
+655,6591,3244,2023-10-22,Damaged,Refunded,₹450.36
+656,6629,3264,2023-10-22,Size / fit issue,Refunded,₹538.23
+657,6918,3413,2023-10-22,Not as described,Refunded,529.62
+658,6624,3261,2023-10-23,Damaged,Refunded,10145.37
+659,6772,3337,2023-10-23,Wrong item sent,Refunded,546.77
+660,6846,3375,2023-10-23,Changed mind,Refunded,"₹2,738.17"
+661,6851,3377,2023-10-23,Wrong item sent,Refunded,4118.54
+662,6893,3398,2023-10-23,Not as described,Refunded,668.88
+663,7017,3459,2023-10-23,Size / fit issue,Refunded,1547.14
+664,6860,3381,2023-10-24,Size / fit issue,Refunded,₹510.48
+665,6961,3432,2023-10-24,Not as described,Pickup Pending,"₹1,692.09"
+666,6981,3442,2023-10-24,Size / fit issue,Refunded,"₹1,450.84"
+667,7016,3458,2023-10-24,Damaged,Refunded,"₹3,762.36"
+668,7061,3479,2023-10-24,Not as described,Refunded,₹753.58
+669,6779,3341,2023-10-25,Changed mind,Refunded,"₹5,234.46"
+670,6870,3387,2023-10-25,Size / fit issue,Refunded,"₹1,809.79"
+671,6898,3401,2023-10-25,Size / fit issue,Refunded,₹419.30
+672,6912,3409,2023-10-25,Size / fit issue,Refunded,"₹2,208.14"
+673,7014,3457,2023-10-25,Wrong item sent,Pickup Pending,"₹26,383.17"
+674,6719,3312,2023-10-26,Changed mind,Refunded,₹277.53
+675,6794,3347,2023-10-26,Changed mind,Refunded,₹259.91
+676,6970,3436,2023-10-26,Changed mind,Refunded,489.21
+677,7044,3471,2023-10-26,Defective product,Refunded,"₹21,276.75"
+678,7122,3512,2023-10-27,Not as described,Refunded,13594.78
+679,6953,3427,2023-10-28,Damaged,Refunded,2837.38
+680,7001,3452,2023-10-28,Size / fit issue,Refunded,228.0
+681,7069,3485,2023-10-28,Changed mind,Refunded,₹820.95
+682,6969,3436,2023-10-29,Damaged,Refunded,609.74
+683,7049,3473,2023-10-29,Changed mind,Refunded,18781.62
+684,7118,3509,2023-10-29,Wrong item sent,Refunded,958.12
+685,7153,3527,2023-10-29,Size / fit issue,Refunded,"₹1,103.31"
+686,6988,3446,2023-10-30,Size / fit issue,Refunded,₹467.28
+687,7203,3549,2023-10-31,Size / fit issue,Refunded,₹413.31
+688,6955,3429,2023-11-01,Changed mind,Refunded,1712.98
+689,7022,3460,2023-11-01,Defective product,Refunded,4112.16
+690,7062,3480,2023-11-01,Size / fit issue,Refunded,"₹1,775.37"
+691,7121,3511,2023-11-01,Size / fit issue,Pickup Pending,495.2
+692,7235,3564,2023-11-01,Size / fit issue,Refunded,795.97
+693,7223,3558,2023-11-02,Changed mind,Refunded,"₹11,641.74"
+694,7000,3451,2023-11-03,Wrong item sent,Refunded,"₹1,796.54"
+695,7040,3469,2023-11-03,Size / fit issue,Refunded,379.24
+696,7208,3551,2023-11-03,Size / fit issue,Refunded,"₹1,462.30"
+697,7050,3473,2023-11-04,Size / fit issue,Refunded,"₹1,941.88"
+698,7146,3523,2023-11-04,Not as described,Refunded,3852.81
+699,7272,3583,2023-11-04,Size / fit issue,Refunded,"₹1,233.96"
+700,7148,3525,2023-11-06,Size / fit issue,Refunded,"₹1,343.85"
+701,7083,3491,2023-11-07,Size / fit issue,Refunded,"₹4,031.10"
+702,7336,3615,2023-11-07,Not as described,Refunded,₹156.75
+703,7337,3616,2023-11-07,Size / fit issue,Refunded,"₹1,504.08"
+704,7385,3637,2023-11-07,Changed mind,Refunded,₹386.92
+705,7274,3584,2023-11-08,Damaged,Refunded,"₹2,295.06"
+706,7447,3666,2023-11-09,Size / fit issue,Refunded,607.53
+707,7313,3603,2023-11-11,Size / fit issue,Refunded,5183.3
+708,7428,3658,2023-11-11,Not as described,Refunded,1880.1
+709,7451,3668,2023-11-12,Size / fit issue,Rejected,
+710,7655,3768,2023-11-12,Size / fit issue,Refunded,306.99
+711,7693,3784,2023-11-12,Size / fit issue,Refunded,1048.04
+712,7575,3732,2023-11-13,Size / fit issue,Refunded,₹269.47
+713,7531,3708,2023-11-14,Changed mind,Refunded,342.37
+714,7511,3699,2023-11-15,Changed mind,Pickup Pending,431.28
+715,7685,3780,2023-11-15,Defective product,Refunded,"₹16,948.84"
+716,7602,3746,2023-11-16,Not as described,Refunded,622.11
+717,7839,3865,2023-11-16,Size / fit issue,Pickup Pending,623.22
+718,7533,3709,2023-11-17,Changed mind,Refunded,"₹1,119.67"
+719,7696,3786,2023-11-17,Size / fit issue,Refunded,964.44
+720,7829,3858,2023-11-17,Not as described,Refunded,299.41
+721,7547,3715,2023-11-18,Changed mind,Rejected,
+722,7586,3737,2023-11-18,Size / fit issue,Refunded,3134.05
+723,7651,3765,2023-11-18,Size / fit issue,Refunded,"₹1,213.38"
+724,7709,3794,2023-11-18,Size / fit issue,Rejected,
+725,7726,3803,2023-11-18,Size / fit issue,Refunded,266.49
+726,7661,3770,2023-11-19,Not as described,Refunded,"₹28,157.98"
+727,7872,3883,2023-11-19,Damaged,Refunded,2327.98
+728,7576,3732,2023-11-20,Not as described,Refunded,₹482.98
+729,7631,3758,2023-11-20,Size / fit issue,Refunded,502.56
+730,7691,3783,2023-11-20,Changed mind,Refunded,351.75
+731,7725,3803,2023-11-20,Size / fit issue,Refunded,1609.37
+732,7805,3847,2023-11-20,Not as described,Refunded,623.2
+733,7811,3849,2023-11-20,Size / fit issue,Refunded,719.1
+734,7835,3862,2023-11-20,Damaged,Refunded,370.51
+735,7841,3867,2023-11-20,Not as described,Refunded,536.76
+736,7544,3713,2023-11-21,Not as described,Refunded,359.67
+737,7561,3724,2023-11-21,Damaged,Refunded,₹608.78
+738,7581,3734,2023-11-21,Damaged,Refunded,₹297.97
+739,7600,3744,2023-11-21,Size / fit issue,Refunded,458.1
+740,7788,3837,2023-11-21,Changed mind,Rejected,
+741,7902,3898,2023-11-21,Damaged,Refunded,293.16
+742,7903,3899,2023-11-21,Size / fit issue,Refunded,531.75
+743,7669,3774,2023-11-22,Size / fit issue,Refunded,₹531.75
+744,7786,3835,2023-11-22,Size / fit issue,Refunded,"₹1,758.81"
+745,7812,3850,2023-11-22,Size / fit issue,Refunded,273.27
+746,7861,3878,2023-11-22,Changed mind,Refunded,"₹1,173.91"
+747,7808,3848,2023-11-24,Damaged,Refunded,590.73
+748,7951,3920,2023-11-24,Size / fit issue,Refunded,₹274.34
+749,7781,3832,2023-11-25,Changed mind,Refunded,1631.58
+750,7820,3853,2023-11-26,Not as described,Rejected,
+751,7832,3860,2023-11-26,Size / fit issue,Refunded,1418.82
+752,7745,3811,2023-11-27,Size / fit issue,Refunded,"₹1,455.30"
+753,7956,3922,2023-11-27,Wrong item sent,Refunded,1526.37
+754,8007,3948,2023-11-27,Not as described,Refunded,"₹1,624.14"
+755,7942,3914,2023-11-28,Not as described,Refunded,18705.96
+756,8077,3981,2023-11-29,Size / fit issue,Refunded,"₹2,413.29"
+757,8080,3982,2023-11-29,Damaged,Refunded,389.22
+758,8088,3987,2023-11-29,Damaged,Rejected,
+759,8081,3982,2023-11-30,Size / fit issue,Refunded,₹521.13
+760,8178,4029,2023-11-30,Not as described,Refunded,₹559.40
+761,7789,3837,2023-12-01,Size / fit issue,Rejected,
+762,7948,3918,2023-12-01,Not as described,Refunded,"₹1,146.75"
+763,7959,3923,2023-12-01,Size / fit issue,Refunded,"₹3,130.26"
+764,8110,3998,2023-12-01,Changed mind,Refunded,"₹2,462.85"
+765,7974,3931,2023-12-02,Size / fit issue,Refunded,567.89
+766,8166,4023,2023-12-02,Size / fit issue,Refunded,813.48
+767,7961,3924,2023-12-03,Not as described,Refunded,₹248.82
+768,7987,3939,2023-12-03,Size / fit issue,Rejected,
+769,8241,4059,2023-12-03,Size / fit issue,Refunded,"₹1,312.04"
+770,8089,3988,2023-12-04,Not as described,Refunded,1717.27
+771,8093,3989,2023-12-04,Size / fit issue,Refunded,279.2
+772,8136,4011,2023-12-04,Not as described,Refunded,329.73
+773,8222,4048,2023-12-04,Damaged,Rejected,
+774,8092,3988,2023-12-05,Size / fit issue,Refunded,1496.64
+775,8074,3979,2023-12-06,Not as described,Refunded,1215.81
+776,8117,4001,2023-12-07,Changed mind,Refunded,3287.79
+777,8132,4008,2023-12-07,Wrong item sent,Refunded,₹286.23
+778,8231,4052,2023-12-07,Size / fit issue,Refunded,482.12
+779,8272,4073,2023-12-07,Not as described,Refunded,517.68
+780,8152,4018,2023-12-08,Size / fit issue,Refunded,397.02
+781,8165,4022,2023-12-08,Size / fit issue,Refunded,"₹1,838.32"
+782,8247,4062,2023-12-08,Changed mind,Refunded,₹98.69
+783,8282,4079,2023-12-08,Size / fit issue,Refunded,"₹1,256.52"
+784,8131,4008,2023-12-09,Size / fit issue,Refunded,2685.21
+785,8244,4060,2023-12-09,Defective product,Refunded,"₹1,756.86"
+786,8288,4081,2023-12-10,Damaged,Refunded,466.65
+787,8194,4036,2023-12-11,Size / fit issue,Refunded,517.68
+788,8299,4089,2023-12-11,Size / fit issue,Refunded,₹468.93
+789,8401,4141,2023-12-11,Damaged,Refunded,₹293.48
+790,8408,4144,2023-12-12,Size / fit issue,Refunded,440.91
+791,8425,4154,2023-12-12,Changed mind,Refunded,622.89
+792,8335,4108,2023-12-13,Damaged,Pickup Pending,6896.16
+793,8359,4119,2023-12-13,Changed mind,Refunded,993.52
+794,8437,4160,2023-12-13,Size / fit issue,Rejected,
+795,8500,4192,2023-12-13,Damaged,Refunded,3624.03
+796,8331,4106,2023-12-14,Not as described,Rejected,
+797,8268,4072,2023-12-15,Size / fit issue,Refunded,₹356.30
+798,8591,4232,2023-12-15,Changed mind,Rejected,
+799,8332,4107,2023-12-16,Damaged,Refunded,₹726.01
+800,8357,4118,2023-12-16,Not as described,Refunded,₹536.07
+801,8374,4126,2023-12-16,Size / fit issue,Refunded,341.1
+802,8523,4201,2023-12-16,Size / fit issue,Refunded,1458.78
+803,8347,4113,2023-12-17,Defective product,Refunded,5633.1
+804,8417,4151,2023-12-17,Size / fit issue,Refunded,"₹1,569.96"
+805,8301,4089,2023-12-18,Size / fit issue,Pickup Pending,615.41
+806,8315,4097,2023-12-18,Not as described,Refunded,"₹3,276.75"
+807,8458,4170,2023-12-18,Changed mind,Refunded,2431.62
+808,8571,4223,2023-12-18,Size / fit issue,Refunded,₹477.09
+809,8265,4070,2023-12-19,Damaged,Refunded,769.3
+810,8391,4134,2023-12-19,Not as described,Refunded,₹280.72
+811,8502,4192,2023-12-19,Not as described,Pickup Pending,₹279.20
+812,8433,4158,2023-12-20,Damaged,Refunded,"₹6,697.62"
+813,8527,4202,2023-12-20,Changed mind,Rejected,
+814,8484,4185,2023-12-21,Damaged,Rejected,
+815,8494,4189,2023-12-21,Size / fit issue,Refunded,"₹1,764.49"
+816,8397,4138,2023-12-22,Size / fit issue,Refunded,₹314.57
+817,8439,4161,2023-12-22,Size / fit issue,Refunded,3518.76
+818,8627,4250,2023-12-22,Size / fit issue,Refunded,1277.29
+819,8719,4295,2023-12-22,Size / fit issue,Refunded,560.15
+820,8561,4218,2023-12-23,Size / fit issue,Refunded,₹252.01
+821,8605,4238,2023-12-23,Defective product,Refunded,1899.92
+822,8624,4248,2023-12-23,Size / fit issue,Refunded,₹882.09
+823,8651,4263,2023-12-23,Not as described,Pickup Pending,10264.76
+824,8490,4188,2023-12-24,Not as described,Refunded,₹488.88
+825,8636,4255,2023-12-24,Defective product,Refunded,3541.23
+826,8558,4217,2023-12-25,Not as described,Refunded,"₹9,638.19"
+827,8626,4250,2023-12-26,Damaged,Refunded,₹562.95
+828,8863,4371,2023-12-26,Damaged,Refunded,₹98.69
+829,8764,4317,2023-12-29,Wrong item sent,Refunded,11758.4
+830,8820,4348,2023-12-29,Changed mind,Refunded,"₹1,335.51"
+831,8882,4381,2023-12-29,Size / fit issue,Refunded,₹482.98
+832,8895,4389,2023-12-29,Size / fit issue,Rejected,
+833,8629,4251,2023-12-30,Changed mind,Rejected,
+834,8677,4273,2023-12-30,Not as described,Refunded,"₹1,880.10"
+835,8867,4373,2023-12-30,Damaged,Refunded,"₹1,513.89"
+836,8870,4375,2023-12-30,Changed mind,Refunded,"₹1,277.29"
+837,8818,4346,2023-12-31,Not as described,Refunded,2519.33
+838,8853,4366,2023-12-31,Damaged,Refunded,"₹1,432.08"
+839,8887,4385,2023-12-31,Size / fit issue,Refunded,₹678.17
+840,8765,4317,2024-01-01,Changed mind,Refunded,₹372.91
+841,8873,4377,2024-01-01,Size / fit issue,Refunded,389.24
+842,8968,4424,2024-01-01,Size / fit issue,Refunded,1845.43
+843,9026,4452,2024-01-01,Size / fit issue,Refunded,1446.83
+844,8723,4297,2024-01-02,Size / fit issue,Refunded,2936.92
+845,8785,4328,2024-01-02,Size / fit issue,Refunded,306.99
+846,8832,4355,2024-01-02,Changed mind,Refunded,₹296.65
+847,8898,4390,2024-01-02,Not as described,Refunded,₹615.41
+848,9009,4445,2024-01-02,Size / fit issue,Refunded,₹538.84
+849,8925,4402,2024-01-03,Not as described,Refunded,"₹2,358.30"
+850,8963,4422,2024-01-03,Size / fit issue,Refunded,₹606.69
+851,8971,4426,2024-01-03,Not as described,Refunded,287.1
+852,8872,4376,2024-01-04,Size / fit issue,Refunded,"₹3,282.44"
+853,9050,4463,2024-01-04,Not as described,Refunded,423.2
+854,8774,4322,2024-01-05,Changed mind,Refunded,"₹1,262.79"
+855,8861,4369,2024-01-05,Not as described,Refunded,15291.75
+856,8986,4433,2024-01-05,Size / fit issue,Refunded,429.14
+857,9113,4496,2024-01-05,Defective product,Refunded,"₹1,684.02"
+858,8939,4408,2024-01-06,Changed mind,Refunded,2726.1
+859,8941,4410,2024-01-06,Size / fit issue,Refunded,"₹2,195.28"
+860,9011,4445,2024-01-06,Not as described,Refunded,1078.03
+861,9036,4457,2024-01-06,Not as described,Refunded,439.07
+862,9104,4492,2024-01-07,Damaged,Refunded,₹247.79
+863,9126,4504,2024-01-07,Size / fit issue,Refunded,"₹1,454.25"
+864,9130,4506,2024-01-07,Size / fit issue,Refunded,"₹1,352.88"
+865,9145,4513,2024-01-07,Changed mind,Refunded,1756.86
+866,8940,4409,2024-01-08,Damaged,Refunded,₹625.53
+867,9080,4480,2024-01-08,Defective product,Refunded,14321.87
+868,8966,4423,2024-01-09,Size / fit issue,Refunded,₹538.84
+869,8987,4434,2024-01-09,Size / fit issue,Refunded,"₹1,279.20"
+870,8989,4434,2024-01-09,Size / fit issue,Refunded,"₹1,421.21"
+871,9038,4459,2024-01-09,Damaged,Refunded,157.61
+872,9169,4524,2024-01-09,Damaged,Refunded,"₹1,015.63"
+873,9203,4543,2024-01-09,Not as described,Rejected,
+874,9006,4443,2024-01-10,Changed mind,Refunded,₹899.25
+875,9039,4459,2024-01-10,Size / fit issue,Refunded,580.17
+876,8984,4432,2024-01-11,Size / fit issue,Refunded,530.1
+877,9059,4468,2024-01-11,Not as described,Refunded,₹707.37
+878,9118,4499,2024-01-12,Wrong item sent,Refunded,8599.2
+879,9198,4541,2024-01-12,Size / fit issue,Refunded,"₹1,240.85"
+880,9114,4496,2024-01-13,Size / fit issue,Refunded,₹501.39
+881,9181,4530,2024-01-14,Changed mind,Refunded,451.58
+882,9220,4551,2024-01-14,Size / fit issue,Refunded,314.1
+883,9259,4572,2024-01-14,Size / fit issue,Refunded,₹356.15
+884,9305,4596,2024-01-14,Size / fit issue,Refunded,415.65
+885,9358,4623,2024-01-14,Size / fit issue,Refunded,₹501.39
+886,9001,4440,2024-01-15,Changed mind,Refunded,3301.01
+887,9140,4510,2024-01-15,Wrong item sent,Refunded,"₹1,198.77"
+888,9380,4635,2024-01-15,Not as described,Refunded,5855.74
+889,9146,4513,2024-01-16,Not as described,Refunded,"₹3,206.79"
+890,9168,4524,2024-01-16,Size / fit issue,Refunded,₹708.89
+891,9236,4559,2024-01-17,Not as described,Refunded,₹282.94
+892,9379,4634,2024-01-17,Size / fit issue,Refunded,2672.19
+893,9333,4611,2024-01-18,Changed mind,Refunded,146.72
+894,9370,4628,2024-01-18,Changed mind,Refunded,₹272.22
+895,9156,4520,2024-01-19,Size / fit issue,Refunded,1590.47
+896,9328,4609,2024-01-19,Not as described,Refunded,"₹2,072.16"
+897,9438,4665,2024-01-19,Size / fit issue,Refunded,"₹1,434.51"
+898,9256,4571,2024-01-20,Not as described,Refunded,₹504.81
+899,9276,4580,2024-01-20,Size / fit issue,Refunded,"₹1,107.96"
+900,9329,4609,2024-01-21,Damaged,Refunded,230.23
+901,9341,4617,2024-01-21,Size / fit issue,Refunded,1202.56
+902,9387,4639,2024-01-21,Not as described,Refunded,3534.28
+903,9433,4662,2024-01-21,Size / fit issue,Rejected,
+904,9464,4678,2024-01-21,Not as described,Refunded,₹248.14
+905,9270,4577,2024-01-22,Size / fit issue,Refunded,"₹2,515.26"
+906,9344,4618,2024-01-22,Size / fit issue,Refunded,2847.26
+907,9434,4662,2024-01-22,Size / fit issue,Rejected,
+908,9423,4658,2024-01-23,Not as described,Pickup Pending,"₹1,004.55"
+909,9512,4702,2024-01-23,Defective product,Rejected,
+910,9636,4760,2024-01-23,Size / fit issue,Rejected,
+911,9317,4602,2024-01-24,Size / fit issue,Refunded,2027.62
+912,9421,4657,2024-01-24,Not as described,Refunded,"₹2,194.20"
+913,9453,4672,2024-01-24,Changed mind,Refunded,195.43
+914,9577,4732,2024-01-24,Size / fit issue,Refunded,1846.32
+915,9564,4728,2024-01-25,Not as described,Refunded,"₹1,733.87"
+916,9638,4760,2024-01-25,Changed mind,Rejected,
+917,9678,4779,2024-01-25,Not as described,Rejected,
+918,9550,4723,2024-01-26,Not as described,Refunded,505.47
+919,9566,4728,2024-01-26,Damaged,Refunded,587.16
+920,9587,4737,2024-01-26,Not as described,Refunded,₹630.99
+921,9662,4771,2024-01-26,Not as described,Refunded,₹857.65
+922,9495,4693,2024-01-27,Size / fit issue,Rejected,
+923,9616,4749,2024-01-27,Damaged,Pickup Pending,"₹1,056.98"
+924,9723,4799,2024-01-27,Size / fit issue,Refunded,₹664.05
+925,9741,4807,2024-01-27,Size / fit issue,Refunded,₹647.22
+926,9625,4753,2024-01-28,Damaged,Refunded,"₹2,441.26"
+927,9661,4771,2024-01-28,Size / fit issue,Refunded,"₹1,410.08"
+928,9770,4823,2024-01-28,Not as described,Refunded,5320.15
+929,9437,4664,2024-01-29,Size / fit issue,Refunded,937.33
+930,9632,4758,2024-01-29,Changed mind,Refunded,"₹1,035.14"
+931,9693,4787,2024-01-29,Size / fit issue,Refunded,₹833.08
+932,9489,4690,2024-01-30,Size / fit issue,Refunded,1122.48
+933,9491,4691,2024-01-30,Changed mind,Refunded,"₹2,105.10"
+934,9537,4716,2024-01-30,Size / fit issue,Refunded,1690.65
+935,9552,4724,2024-01-30,Damaged,Refunded,"₹2,195.28"
+936,9724,4799,2024-01-30,Changed mind,Refunded,553.68
+937,9578,4732,2024-01-31,Size / fit issue,Pickup Pending,"₹1,695.12"
+938,9659,4769,2024-01-31,Changed mind,Pickup Pending,804.22
+939,9811,4843,2024-01-31,Not as described,Refunded,371.57
+940,9920,4894,2024-01-31,Not as described,Pickup Pending,1839.2
+941,9812,4844,2024-02-01,Changed mind,Refunded,"₹1,457.32"
+942,9597,4740,2024-02-02,Size / fit issue,Refunded,"₹1,146.65"
+943,9656,4767,2024-02-02,Size / fit issue,Refunded,"₹1,619.10"
+944,9883,4876,2024-02-02,Size / fit issue,Refunded,₹930.69
+945,9530,4712,2024-02-03,Defective product,Refunded,"₹4,506.48"
+946,9704,4792,2024-02-04,Size / fit issue,Refunded,1187.34
+947,9732,4803,2024-02-04,Damaged,Refunded,2469.69
+948,9825,4849,2024-02-04,Size / fit issue,Refunded,1613.82
+949,9904,4886,2024-02-05,Size / fit issue,Refunded,1007.16
+950,9917,4891,2024-02-05,Changed mind,Refunded,427.56
+951,10003,4939,2024-02-05,Size / fit issue,Refunded,₹530.61
+952,9894,4882,2024-02-06,Defective product,Refunded,"₹8,387.06"
+953,9951,4913,2024-02-07,Changed mind,Refunded,567.2
+954,9860,4865,2024-02-08,Size / fit issue,Refunded,1160.51
+955,9949,4911,2024-02-08,Size / fit issue,Refunded,₹286.18
+956,10012,4944,2024-02-08,Not as described,Refunded,₹533.11
+957,10052,4962,2024-02-08,Size / fit issue,Refunded,"₹1,631.15"
+958,9968,4923,2024-02-09,Damaged,Rejected,
+959,9935,4903,2024-02-10,Changed mind,Rejected,
+960,10073,4971,2024-02-11,Not as described,Refunded,"₹14,979.66"
+961,9992,4935,2024-02-12,Not as described,Refunded,376.37
+962,10040,4957,2024-02-12,Size / fit issue,Refunded,408.03
+963,10074,4972,2024-02-13,Changed mind,Refunded,3102.84
+964,10098,4983,2024-02-13,Damaged,Refunded,₹552.21
+965,10142,5005,2024-02-13,Damaged,Pickup Pending,369.26
+966,10150,5009,2024-02-13,Changed mind,Refunded,518.32
+967,10002,4939,2024-02-14,Size / fit issue,Refunded,567.2
+968,10118,4994,2024-02-14,Size / fit issue,Refunded,₹367.63
+969,10158,5015,2024-02-14,Wrong item sent,Refunded,₹181.77
+970,10204,5038,2024-02-14,Size / fit issue,Refunded,589.58
+971,10004,4940,2024-02-15,Size / fit issue,Refunded,₹440.04
+972,10138,5003,2024-02-15,Size / fit issue,Refunded,₹983.42
+973,10232,5049,2024-02-15,Size / fit issue,Refunded,687.14
+974,10069,4969,2024-02-17,Damaged,Refunded,"₹1,043.31"
+975,10072,4971,2024-02-17,Not as described,Refunded,"₹2,734.48"
+976,10191,5032,2024-02-18,Not as described,Refunded,2350.4
+977,10228,5047,2024-02-18,Changed mind,Refunded,₹461.23
+978,10199,5036,2024-02-19,Size / fit issue,Rejected,
+979,10268,5069,2024-02-19,Allergic / skin reaction,Refunded,498.56
+980,10329,5106,2024-02-19,Size / fit issue,Refunded,₹470.44
+981,10303,5091,2024-02-20,Defective product,Refunded,2673.33
+982,10390,5138,2024-02-20,Wrong item sent,Refunded,1227.66
+983,10183,5028,2024-02-21,Size / fit issue,Pickup Pending,264.77
+984,10213,5041,2024-02-21,Changed mind,Refunded,1092.69
+985,10334,5110,2024-02-21,Size / fit issue,Refunded,376.12
+986,10406,5146,2024-02-21,Not as described,Refunded,1588.65
+987,10238,5053,2024-02-22,Changed mind,Refunded,2846.07
+988,10256,5063,2024-02-22,Size / fit issue,Refunded,276.36
+989,10317,5098,2024-02-22,Size / fit issue,Refunded,414.73
+990,10335,5111,2024-02-22,Size / fit issue,Rejected,
+991,10310,5093,2024-02-23,Size / fit issue,Refunded,"₹2,299.59"
+992,10351,5117,2024-02-23,Size / fit issue,Rejected,
+993,10273,5073,2024-02-24,Size / fit issue,Refunded,"₹2,453.49"
+994,10381,5132,2024-02-24,Size / fit issue,Refunded,1094.77
+995,10416,5153,2024-02-24,Size / fit issue,Rejected,
+996,10493,5194,2024-02-24,Size / fit issue,Pickup Pending,297.97
+997,10496,5197,2024-02-24,Damaged,Refunded,4435.38
+998,10437,5164,2024-02-25,Not as described,Refunded,"₹15,681.75"
+999,10490,5193,2024-02-26,Size / fit issue,Refunded,453.69
+1000,10518,5206,2024-02-26,Size / fit issue,Refunded,₹687.69
+1001,10439,5165,2024-02-28,Size / fit issue,Refunded,1056.98
+1002,10457,5173,2024-02-28,Size / fit issue,Refunded,₹524.21
+1003,10473,5181,2024-02-28,Size / fit issue,Refunded,699.79
+1004,10638,5266,2024-02-29,Size / fit issue,Refunded,"₹2,378.22"
+1005,10451,5170,2024-03-01,Not as described,Refunded,495.2
+1006,10472,5180,2024-03-01,Not as described,Rejected,
+1007,10515,5206,2024-03-01,Size / fit issue,Refunded,"₹1,902.13"
+1008,10519,5207,2024-03-01,Size / fit issue,Refunded,3166.24
+1009,10546,5222,2024-03-01,Size / fit issue,Refunded,"₹4,695.46"
+1010,10582,5239,2024-03-01,Size / fit issue,Refunded,₹405.87
+1011,10538,5216,2024-03-02,Size / fit issue,Refunded,"₹2,157.64"
+1012,10675,5284,2024-03-02,Size / fit issue,Refunded,416.56
+1013,10549,5224,2024-03-03,Changed mind,Pickup Pending,2690.22
+1014,10570,5234,2024-03-03,Size / fit issue,Refunded,1789.4
+1015,10574,5236,2024-03-03,Damaged,Refunded,₹441.75
+1016,10578,5237,2024-03-03,Not as described,Pickup Pending,1192.62
+1017,10589,5244,2024-03-03,Not as described,Refunded,"₹2,662.52"
+1018,10673,5283,2024-03-03,Not as described,Refunded,1138.86
+1019,10448,5169,2024-03-04,Size / fit issue,Rejected,
+1020,10467,5178,2024-03-04,Size / fit issue,Refunded,407.32
+1021,10588,5243,2024-03-04,Size / fit issue,Refunded,₹588.72
+1022,10435,5163,2024-03-05,Not as described,Refunded,155.49
+1023,10571,5235,2024-03-05,Size / fit issue,Refunded,₹422.73
+1024,10687,5291,2024-03-05,Changed mind,Refunded,₹291.83
+1025,10619,5256,2024-03-06,Size / fit issue,Refunded,₹843.03
+1026,10708,5304,2024-03-07,Size / fit issue,Refunded,638.78
+1027,10526,5209,2024-03-08,Defective product,Refunded,"₹1,420.06"
+1028,10825,5355,2024-03-08,Changed mind,Refunded,399.2
+1029,10541,5219,2024-03-09,Wrong item sent,Refunded,"₹4,844.47"
+1030,10641,5268,2024-03-09,Changed mind,Refunded,"₹8,853.24"
+1031,10878,5377,2024-03-09,Size / fit issue,Rejected,
+1032,10714,5307,2024-03-10,Size / fit issue,Refunded,1277.37
+1033,10828,5356,2024-03-10,Changed mind,Refunded,477.63
+1034,10689,5293,2024-03-11,Damaged,Refunded,"₹4,489.47"
+1035,10800,5345,2024-03-11,Not as described,Refunded,"₹1,102.10"
+1036,10947,5408,2024-03-11,Size / fit issue,Refunded,"₹1,011.75"
+1037,10679,5286,2024-03-12,Wrong item sent,Refunded,"₹3,903.54"
+1038,10852,5365,2024-03-12,Damaged,Rejected,
+1039,10870,5372,2024-03-12,Size / fit issue,Refunded,₹282.69
+1040,10926,5400,2024-03-12,Changed mind,Refunded,898.01
+1041,10889,5384,2024-03-13,Size / fit issue,Refunded,560.19
+1042,10908,5393,2024-03-13,Size / fit issue,Refunded,"₹3,679.82"
+1043,10948,5408,2024-03-13,Size / fit issue,Refunded,618.34
+1044,10736,5318,2024-03-14,Damaged,Refunded,"₹4,214.32"
+1045,10794,5344,2024-03-14,Size / fit issue,Refunded,"₹2,753.19"
+1046,10839,5360,2024-03-14,Size / fit issue,Refunded,₹736.57
+1047,10886,5382,2024-03-14,Size / fit issue,Refunded,3282.44
+1048,10979,5419,2024-03-14,Not as described,Refunded,₹568.01
+1049,10967,5415,2024-03-15,Damaged,Refunded,3271.7
+1050,10791,5341,2024-03-16,Size / fit issue,Refunded,403.99
+1051,11019,5440,2024-03-16,Size / fit issue,Refunded,6553.5
+1052,10755,5327,2024-03-17,Changed mind,Refunded,2639.2
+1053,10855,5367,2024-03-18,Damaged,Refunded,272.22
+1054,10891,5385,2024-03-18,Damaged,Refunded,"₹9,244.14"
+1055,10923,5399,2024-03-18,Damaged,Refunded,83.3
+1056,10916,5397,2024-03-19,Size / fit issue,Rejected,
+1057,10911,5394,2024-03-20,Damaged,Refunded,"₹9,781.59"
+1058,11095,5477,2024-03-20,Defective product,Rejected,
+1059,11107,5482,2024-03-20,Size / fit issue,Refunded,3584.77
+1060,11028,5443,2024-03-21,Damaged,Refunded,"₹2,393.67"
+1061,10953,5409,2024-03-22,Damaged,Pickup Pending,70.29
+1062,10955,5410,2024-03-22,Not as described,Refunded,1044.09
+1063,11162,5516,2024-03-22,Not as described,Refunded,₹957.79
+1064,11229,5548,2024-03-22,Not as described,Refunded,410.01
+1065,11031,5444,2024-03-24,Size / fit issue,Refunded,"₹3,247.20"
+1066,11059,5457,2024-03-24,Defective product,Refunded,4443.89
+1067,11127,5493,2024-03-24,Size / fit issue,Refunded,279.2
+1068,11149,5508,2024-03-24,Wrong item sent,Refunded,"₹4,694.25"
+1069,11166,5517,2024-03-24,Not as described,Refunded,761.78
+1070,11211,5535,2024-03-24,Size / fit issue,Rejected,
+1071,11212,5536,2024-03-24,Not as described,Refunded,₹308.13
+1072,11288,5580,2024-03-24,Damaged,Refunded,"₹3,506.98"
+1073,11151,5508,2024-03-25,Changed mind,Refunded,₹233.83
+1074,11192,5526,2024-03-25,Size / fit issue,Refunded,₹223.72
+1075,11193,5526,2024-03-25,Size / fit issue,Refunded,386.84
+1076,11283,5576,2024-03-25,Damaged,Refunded,"₹3,371.83"
+1077,11058,5457,2024-03-27,Size / fit issue,Refunded,453.69
+1078,11215,5538,2024-03-27,Size / fit issue,Refunded,₹849.42
+1079,11271,5571,2024-03-27,Size / fit issue,Refunded,₹239.25
+1080,11287,5579,2024-03-27,Defective product,Refunded,10688.92
+1081,11320,5595,2024-03-27,Wrong item sent,Refunded,"₹5,445.33"
+1082,11051,5454,2024-03-28,Damaged,Refunded,"₹1,211.74"
+1083,11114,5487,2024-03-28,Damaged,Refunded,3546.99
+1084,11137,5499,2024-03-28,Size / fit issue,Refunded,₹355.59
+1085,11158,5514,2024-03-28,Damaged,Refunded,"₹1,705.61"
+1086,11189,5525,2024-03-28,Size / fit issue,Refunded,₹743.07
+1087,11093,5475,2024-03-29,Size / fit issue,Refunded,428.49
+1088,11221,5542,2024-03-29,Size / fit issue,Refunded,₹329.73
+1089,11368,5621,2024-03-29,Size / fit issue,Refunded,₹687.14
+1090,11144,5504,2024-03-30,Not as described,Refunded,₹348.16
+1091,11190,5525,2024-03-30,Size / fit issue,Refunded,1619.1
+1092,11207,5535,2024-03-30,Not as described,Refunded,245.63
+1093,11365,5620,2024-03-30,Size / fit issue,Refunded,967.1
+1094,11361,5618,2024-03-31,Defective product,Refunded,"₹23,546.27"
+1095,11246,5558,2024-04-01,Not as described,Rejected,
+1096,11342,5608,2024-04-01,Size / fit issue,Refunded,257.14
+1097,11381,5629,2024-04-01,Defective product,Refunded,₹981.96
+1098,11335,5604,2024-04-02,Size / fit issue,Refunded,1387.51
+1099,11451,5667,2024-04-02,Changed mind,Refunded,"₹1,758.81"
+1100,11479,5681,2024-04-02,Changed mind,Refunded,12732.39
+1101,11536,5706,2024-04-02,Changed mind,Refunded,337.68
+1102,11276,5573,2024-04-03,Wrong item sent,Refunded,"₹3,082.26"
+1103,11448,5666,2024-04-03,Size / fit issue,Refunded,"₹1,133.37"
+1104,11405,5645,2024-04-04,Changed mind,Refunded,1676.88
+1105,11522,5700,2024-04-05,Size / fit issue,Rejected,
+1106,11584,5731,2024-04-05,Not as described,Refunded,"₹1,504.08"
+1107,11475,5679,2024-04-06,Not as described,Refunded,"₹1,091.55"
+1108,11481,5682,2024-04-07,Size / fit issue,Rejected,
+1109,11581,5729,2024-04-07,Size / fit issue,Pickup Pending,332.99
+1110,11519,5698,2024-04-08,Changed mind,Refunded,₹561.96
+1111,11542,5709,2024-04-08,Damaged,Refunded,₹233.22
+1112,11578,5727,2024-04-08,Size / fit issue,Refunded,₹501.10
+1113,11621,5750,2024-04-08,Damaged,Refunded,"₹3,735.42"
+1114,11398,5640,2024-04-09,Size / fit issue,Pickup Pending,530.6
+1115,11533,5705,2024-04-09,Size / fit issue,Refunded,"₹3,070.81"
+1116,11566,5722,2024-04-09,Changed mind,Refunded,₹49.56
+1117,11674,5781,2024-04-09,Size / fit issue,Refunded,310.61
+1118,11415,5651,2024-04-10,Not as described,Rejected,
+1119,11663,5775,2024-04-10,Not as described,Refunded,1545.86
+1120,11679,5783,2024-04-11,Defective product,Refunded,5382.74
+1121,11737,5815,2024-04-12,Defective product,Refunded,3436.19
+1122,11781,5836,2024-04-12,Damaged,Rejected,
+1123,11649,5768,2024-04-13,Size / fit issue,Refunded,₹463.19
+1124,11758,5824,2024-04-13,Size / fit issue,Refunded,1733.87
+1125,11494,5687,2024-04-14,Allergic / skin reaction,Rejected,
+1126,11552,5714,2024-04-14,Changed mind,Refunded,"₹6,046.60"
+1127,11582,5730,2024-04-14,Changed mind,Refunded,1119.2
+1128,11647,5767,2024-04-14,Damaged,Refunded,2688.12
+1129,11671,5779,2024-04-14,Size / fit issue,Rejected,
+1130,11812,5852,2024-04-14,Not as described,Refunded,470.81
+1131,11588,5733,2024-04-15,Not as described,Refunded,₹159.20
+1132,11615,5747,2024-04-15,Changed mind,Pickup Pending,₹206.71
+1133,11631,5756,2024-04-15,Changed mind,Rejected,
+1134,11699,5793,2024-04-15,Size / fit issue,Rejected,
+1135,11852,5868,2024-04-15,Changed mind,Refunded,"₹2,374.24"
+1136,11799,5846,2024-04-16,Damaged,Refunded,381.75
+1137,11496,5688,2024-04-17,Damaged,Refunded,2794.33
+1138,11739,5816,2024-04-17,Changed mind,Refunded,₹411.09
+1139,11800,5846,2024-04-18,Wrong item sent,Refunded,₹606.69
+1140,11851,5868,2024-04-19,Defective product,Refunded,11946.44
+1141,11961,5922,2024-04-19,Not as described,Refunded,645.24
+1142,11757,5824,2024-04-20,Changed mind,Refunded,"₹1,662.43"
+1143,11805,5847,2024-04-21,Size / fit issue,Rejected,
+1144,11921,5901,2024-04-21,Size / fit issue,Refunded,265.24
+1145,11785,5838,2024-04-22,Defective product,Refunded,"₹6,469.19"
+1146,11883,5883,2024-04-22,Not as described,Refunded,"₹1,123.92"
+1147,11792,5842,2024-04-23,Defective product,Refunded,"₹2,404.89"
+1148,11802,5847,2024-04-23,Damaged,Refunded,₹239.20
+1149,11838,5861,2024-04-23,Size / fit issue,Refunded,₹212.29
+1150,11928,5905,2024-04-24,Size / fit issue,Refunded,"₹1,007.16"
+1151,11962,5922,2024-04-24,Not as described,Refunded,4055.83
+1152,11904,5893,2024-04-25,Not as described,Refunded,₹263.20
+1153,11918,5899,2024-04-25,Not as described,Refunded,419.3
+1154,12044,5962,2024-04-25,Damaged,Refunded,"₹3,948.57"
+1155,12131,6002,2024-04-25,Size / fit issue,Refunded,₹474.78
+1156,11829,5859,2024-04-26,Size / fit issue,Refunded,"₹1,379.40"
+1157,11855,5871,2024-04-26,Damaged,Refunded,"₹1,308.96"
+1158,11922,5902,2024-04-26,Not as described,Refunded,₹268.73
+1159,12010,5945,2024-04-26,Size / fit issue,Refunded,1403.22
+1160,12091,5985,2024-04-26,Not as described,Refunded,"₹5,895.99"
+1161,11842,5863,2024-04-27,Size / fit issue,Rejected,
+1162,11858,5872,2024-04-27,Defective product,Refunded,937.71
+1163,11979,5930,2024-04-27,Not as described,Refunded,₹468.93
+1164,12004,5942,2024-04-27,Damaged,Refunded,462.84
+1165,12059,5969,2024-04-27,Size / fit issue,Refunded,979.3
+1166,11915,5897,2024-04-28,Not as described,Refunded,"₹1,248.86"
+1167,12081,5979,2024-04-29,Not as described,Refunded,5194.97
+1168,12082,5980,2024-04-29,Size / fit issue,Refunded,242.44
+1169,12085,5981,2024-04-29,Size / fit issue,Refunded,1199.28
+1170,12096,5988,2024-04-29,Size / fit issue,Rejected,
+1171,12166,6024,2024-04-29,Changed mind,Refunded,8802.34
+1172,12084,5980,2024-04-30,Changed mind,Pickup Pending,5320.15
+1173,11997,5938,2024-05-01,Size / fit issue,Refunded,"₹1,105.21"
+1174,12041,5961,2024-05-01,Size / fit issue,Refunded,366.48
+1175,12052,5966,2024-05-02,Changed mind,Refunded,"₹1,511.16"
+1176,12114,5995,2024-05-02,Changed mind,Refunded,"₹1,291.05"
+1177,12221,6047,2024-05-02,Changed mind,Refunded,2051.05
+1178,11999,5939,2024-05-03,Size / fit issue,Refunded,₹497.17
+1179,12076,5977,2024-05-03,Size / fit issue,Refunded,7062.66
+1180,12164,6023,2024-05-04,Size / fit issue,Refunded,₹295.62
+1181,12159,6021,2024-05-05,Changed mind,Refunded,4485.62
+1182,12163,6022,2024-05-05,Not as described,Refunded,1385.23
+1183,12220,6047,2024-05-05,Changed mind,Refunded,"₹1,015.63"
+1184,12229,6051,2024-05-05,Size / fit issue,Rejected,
+1185,12426,6152,2024-05-05,Size / fit issue,Refunded,518.32
+1186,12179,6029,2024-05-06,Size / fit issue,Refunded,"₹3,765.94"
+1187,12332,6101,2024-05-06,Changed mind,Refunded,1641.74
+1188,12267,6069,2024-05-07,Changed mind,Refunded,560.19
+1189,12319,6094,2024-05-07,Damaged,Refunded,"₹2,950.36"
+1190,12346,6110,2024-05-07,Damaged,Refunded,₹566.23
+1191,12387,6129,2024-05-07,Defective product,Refunded,"₹1,393.56"
+1192,12437,6160,2024-05-07,Changed mind,Refunded,3165.06
+1193,12181,6029,2024-05-08,Size / fit issue,Refunded,₹645.96
+1194,12239,6055,2024-05-08,Changed mind,Refunded,3115.56
+1195,12401,6138,2024-05-08,Size / fit issue,Refunded,433.78
+1196,12207,6038,2024-05-09,Defective product,Refunded,"₹10,139.58"
+1197,12292,6080,2024-05-09,Not as described,Refunded,1457.19
+1198,12414,6146,2024-05-10,Changed mind,Rejected,
+1199,12538,6200,2024-05-10,Size / fit issue,Rejected,
+1200,12378,6124,2024-05-11,Wrong item sent,Rejected,
+1201,12481,6177,2024-05-11,Not as described,Refunded,"₹4,882.02"
+1202,12551,6208,2024-05-11,Size / fit issue,Refunded,538.23
+1203,12607,6234,2024-05-11,Size / fit issue,Refunded,2065.87
+1204,12330,6100,2024-05-13,Not as described,Refunded,545.93
+1205,12552,6209,2024-05-13,Size / fit issue,Refunded,"₹1,611.09"
+1206,12573,6219,2024-05-13,Not as described,Refunded,532.18
+1207,12597,6229,2024-05-13,Changed mind,Refunded,₹298.16
+1208,12608,6235,2024-05-13,Wrong item sent,Refunded,"₹1,477.52"
+1209,12434,6157,2024-05-14,Size / fit issue,Refunded,"₹3,045.72"
+1210,12557,6211,2024-05-15,Not as described,Refunded,513.24
+1211,12586,6226,2024-05-15,Size / fit issue,Refunded,765.51
+1212,12646,6255,2024-05-15,Size / fit issue,Refunded,596.77
+1213,12533,6198,2024-05-16,Size / fit issue,Refunded,318.36
+1214,12587,6227,2024-05-16,Not as described,Refunded,"₹3,051.81"
+1215,12634,6250,2024-05-16,Changed mind,Refunded,359.98
+1216,12452,6165,2024-05-17,Damaged,Pickup Pending,1769.46
+1217,12770,6313,2024-05-17,Defective product,Rejected,
+1218,12520,6192,2024-05-18,Changed mind,Refunded,4049.19
+1219,12554,6210,2024-05-18,Not as described,Refunded,471.82
+1220,12666,6266,2024-05-18,Not as described,Refunded,921.7
+1221,12703,6283,2024-05-18,Not as described,Refunded,₹618.34
+1222,12496,6184,2024-05-19,Size / fit issue,Refunded,1091.34
+1223,12644,6255,2024-05-19,Size / fit issue,Rejected,
+1224,12747,6304,2024-05-19,Defective product,Refunded,"₹5,257.56"
+1225,12621,6243,2024-05-21,Not as described,Refunded,"₹2,366.52"
+1226,12674,6268,2024-05-21,Size / fit issue,Refunded,"₹1,262.79"
+1227,12709,6286,2024-05-21,Changed mind,Refunded,₹990.12
+1228,12764,6310,2024-05-21,Size / fit issue,Refunded,2554.58
+1229,12782,6319,2024-05-21,Size / fit issue,Rejected,
+1230,12817,6335,2024-05-22,Not as described,Refunded,"₹3,349.94"
+1231,12904,6377,2024-05-22,Size / fit issue,Refunded,2593.02
+1232,12629,6247,2024-05-23,Size / fit issue,Refunded,"₹1,712.38"
+1233,12906,6378,2024-05-23,Size / fit issue,Refunded,"₹1,933.07"
+1234,12787,6321,2024-05-24,Size / fit issue,Refunded,531.24
+1235,12851,6350,2024-05-24,Changed mind,Refunded,2015.69
+1236,12725,6292,2024-05-25,Not as described,Refunded,₹609.74
+1237,12768,6313,2024-05-25,Size / fit issue,Rejected,
+1238,12803,6328,2024-05-25,Changed mind,Refunded,"₹3,509.52"
+1239,12889,6368,2024-05-25,Damaged,Refunded,1106.18
+1240,12761,6309,2024-05-27,Size / fit issue,Refunded,269.78
+1241,12920,6383,2024-05-27,Defective product,Refunded,"₹1,894.59"
+1242,12911,6380,2024-05-28,Size / fit issue,Refunded,"₹2,421.20"
+1243,13080,6468,2024-05-28,Size / fit issue,Refunded,422.47
+1244,12822,6336,2024-05-29,Changed mind,Refunded,553.02
+1245,12714,6289,2024-05-30,Size / fit issue,Rejected,
+1246,12972,6413,2024-05-30,Size / fit issue,Rejected,
+1247,12922,6385,2024-05-31,Size / fit issue,Refunded,"₹1,116.72"
+1248,13052,6452,2024-05-31,Wrong item sent,Refunded,"₹2,263.66"
+1249,13081,6468,2024-05-31,Wrong item sent,Pickup Pending,"₹1,019.15"
+1250,13125,6493,2024-05-31,Damaged,Refunded,4110.84
+1251,12924,6387,2024-06-01,Damaged,Refunded,₹239.20
+1252,13041,6446,2024-06-01,Wrong item sent,Refunded,"₹9,298.38"
+1253,12950,6401,2024-06-02,Size / fit issue,Refunded,1586.31
+1254,12952,6402,2024-06-02,Not as described,Rejected,
+1255,13056,6453,2024-06-02,Damaged,Refunded,"₹7,461.76"
+1256,13061,6455,2024-06-02,Changed mind,Refunded,"₹1,449.24"
+1257,12984,6419,2024-06-03,Size / fit issue,Refunded,493.29
+1258,13057,6453,2024-06-03,Not as described,Rejected,
+1259,13071,6461,2024-06-03,Wrong item sent,Refunded,674.1
+1260,13124,6492,2024-06-03,Not as described,Refunded,296.65
+1261,12937,6395,2024-06-04,Size / fit issue,Refunded,946.42
+1262,12998,6427,2024-06-04,Changed mind,Refunded,"₹1,092.69"
+1263,13037,6444,2024-06-04,Wrong item sent,Refunded,"₹1,539.96"
+1264,13120,6491,2024-06-05,Damaged,Refunded,5864.66
+1265,12997,6426,2024-06-06,Not as described,Refunded,538.67
+1266,13115,6488,2024-06-06,Size / fit issue,Refunded,485.64
+1267,13153,6508,2024-06-06,Size / fit issue,Refunded,₹352.74
+1268,13233,6543,2024-06-06,Not as described,Refunded,2724.71
+1269,13303,6579,2024-06-07,Defective product,Rejected,
+1270,13045,6447,2024-06-08,Size / fit issue,Refunded,611.15
+1271,13168,6515,2024-06-08,Changed mind,Refunded,₹431.48
+1272,13223,6538,2024-06-08,Defective product,Refunded,"₹1,809.99"
+1273,13280,6568,2024-06-08,Not as described,Refunded,1607.01
+1274,13317,6585,2024-06-08,Not as described,Pickup Pending,1025.42
+1275,13319,6586,2024-06-08,Not as described,Refunded,₹438.59
+1276,13076,6465,2024-06-09,Not as described,Refunded,2210.33
+1277,13088,6471,2024-06-09,Changed mind,Refunded,₹747.32
+1278,13237,6546,2024-06-09,Damaged,Refunded,346.12
+1279,13363,6608,2024-06-09,Changed mind,Refunded,1747.24
+1280,13181,6519,2024-06-10,Not as described,Refunded,"₹2,365.58"
+1281,13300,6578,2024-06-10,Allergic / skin reaction,Refunded,₹375.59
+1282,13343,6598,2024-06-10,Not as described,Refunded,1622.65
+1283,13160,6512,2024-06-11,Defective product,Refunded,33451.65
+1284,13222,6538,2024-06-11,Size / fit issue,Refunded,"₹3,861.93"
+1285,13263,6557,2024-06-11,Changed mind,Refunded,128.95
+1286,13327,6589,2024-06-11,Damaged,Refunded,451.25
+1287,13427,6639,2024-06-11,Not as described,Refunded,342.42
+1288,13210,6532,2024-06-12,Size / fit issue,Rejected,
+1289,13231,6542,2024-06-12,Size / fit issue,Refunded,2397.54
+1290,13346,6600,2024-06-12,Changed mind,Refunded,₹485.10
+1291,13364,6608,2024-06-12,Size / fit issue,Refunded,989.25
+1292,13382,6618,2024-06-12,Size / fit issue,Refunded,"₹1,862.19"
+1293,13450,6652,2024-06-12,Wrong item sent,Pickup Pending,"₹19,374.03"
+1294,13195,6525,2024-06-13,Size / fit issue,Refunded,2712.52
+1295,13305,6580,2024-06-13,Size / fit issue,Refunded,"₹2,186.03"
+1296,13335,6593,2024-06-13,Changed mind,Refunded,2752.47
+1297,13179,6518,2024-06-14,Size / fit issue,Refunded,356.97
+1298,13381,6618,2024-06-14,Changed mind,Refunded,"₹2,670.03"
+1299,13425,6637,2024-06-14,Not as described,Refunded,"₹1,327.17"
+1300,13448,6650,2024-06-14,Not as described,Refunded,"₹1,331.26"
+1301,13418,6635,2024-06-15,Changed mind,Refunded,"₹1,712.98"
+1302,13357,6605,2024-06-16,Size / fit issue,Refunded,"₹3,941.10"
+1303,13417,6634,2024-06-16,Size / fit issue,Refunded,2708.91
+1304,13473,6664,2024-06-16,Size / fit issue,Refunded,1088.52
+1305,13476,6666,2024-06-16,Not as described,Refunded,379.24
+1306,13493,6677,2024-06-16,Damaged,Refunded,"₹2,099.10"
+1307,13599,6727,2024-06-16,Size / fit issue,Refunded,₹635.18
+1308,13559,6709,2024-06-17,Size / fit issue,Rejected,
+1309,13578,6718,2024-06-17,Defective product,Refunded,3336.58
+1310,13585,6720,2024-06-17,Size / fit issue,Refunded,1622.65
+1311,13374,6615,2024-06-18,Changed mind,Refunded,"₹13,040.31"
+1312,13481,6669,2024-06-18,Size / fit issue,Refunded,₹775.20
+1313,13642,6754,2024-06-19,Not as described,Pickup Pending,611.15
+1314,13385,6619,2024-06-20,Damaged,Refunded,"₹8,387.28"
+1315,13402,6626,2024-06-20,Changed mind,Refunded,"₹4,788.14"
+1316,13467,6662,2024-06-20,Changed mind,Refunded,"₹18,532.61"
+1317,13522,6692,2024-06-20,Not as described,Rejected,
+1318,13591,6723,2024-06-20,Size / fit issue,Refunded,₹621.68
+1319,13706,6787,2024-06-21,Changed mind,Refunded,₹265.30
+1320,13489,6674,2024-06-22,Size / fit issue,Refunded,₹254.77
+1321,13520,6690,2024-06-22,Size / fit issue,Refunded,334.41
+1322,13632,6749,2024-06-22,Not as described,Refunded,"₹4,883.08"
+1323,13697,6783,2024-06-22,Size / fit issue,Refunded,"₹1,113.23"
+1324,13482,6669,2024-06-23,Changed mind,Refunded,"₹1,230.82"
+1325,13717,6795,2024-06-23,Size / fit issue,Rejected,
+1326,13660,6761,2024-06-24,Size / fit issue,Refunded,₹351.74
+1327,13622,6742,2024-06-25,Size / fit issue,Refunded,289.67
+1328,13753,6814,2024-06-25,Not as described,Refunded,"₹9,490.83"
+1329,13643,6754,2024-06-26,Size / fit issue,Refunded,482.09
+1330,13815,6842,2024-06-26,Changed mind,Refunded,"₹7,029.33"
+1331,13676,6771,2024-06-27,Size / fit issue,Refunded,"₹4,207.62"
+1332,13832,6850,2024-06-27,Size / fit issue,Refunded,282.69
+1333,13862,6865,2024-06-27,Size / fit issue,Refunded,₹669.94
+1334,13872,6872,2024-06-27,Not as described,Refunded,₹425.58
+1335,13941,6909,2024-06-27,Size / fit issue,Refunded,₹606.69
+1336,13805,6838,2024-06-28,Size / fit issue,Refunded,"₹1,660.83"
+1337,13822,6845,2024-06-28,Size / fit issue,Refunded,2842.42
+1338,13877,6876,2024-06-28,Not as described,Refunded,₹422.67
+1339,13684,6776,2024-06-29,Size / fit issue,Refunded,3059.1
+1340,13788,6829,2024-06-29,Damaged,Refunded,246.75
+1341,13679,6774,2024-07-01,Size / fit issue,Refunded,₹486.75
+1342,13899,6887,2024-07-01,Not as described,Refunded,6320.14
+1343,13957,6917,2024-07-01,Defective product,Refunded,"₹6,887.20"
+1344,13997,6942,2024-07-01,Not as described,Refunded,"₹5,563.50"
+1345,13925,6901,2024-07-03,Defective product,Refunded,"₹24,113.65"
+1346,13720,6796,2024-07-04,Damaged,Refunded,609.7
+1347,13727,6800,2024-07-04,Damaged,Refunded,₹601.30
+1348,13900,6888,2024-07-04,Size / fit issue,Pickup Pending,2049.41
+1349,13944,6910,2024-07-04,Changed mind,Refunded,₹361.39
+1350,13984,6932,2024-07-04,Size / fit issue,Refunded,"₹2,803.50"
+1351,14068,6978,2024-07-04,Size / fit issue,Refunded,"₹1,167.48"
+1352,13794,6833,2024-07-05,Allergic / skin reaction,Refunded,"₹2,835.36"
+1353,13798,6834,2024-07-05,Not as described,Rejected,
+1354,13904,6890,2024-07-05,Not as described,Refunded,"₹2,506.10"
+1355,13908,6892,2024-07-05,Size / fit issue,Refunded,"₹1,007.37"
+1356,13909,6893,2024-07-05,Changed mind,Refunded,10828.09
+1357,14161,7023,2024-07-05,Damaged,Refunded,"₹5,030.37"
+1358,13857,6862,2024-07-06,Not as described,Refunded,"₹2,286.75"
+1359,13939,6909,2024-07-06,Changed mind,Refunded,2639.2
+1360,13959,6918,2024-07-06,Changed mind,Refunded,₹538.53
+1361,13868,6869,2024-07-07,Changed mind,Refunded,2351.72
+1362,14013,6950,2024-07-07,Defective product,Refunded,1561.47
+1363,14008,6948,2024-07-08,Not as described,Refunded,"₹1,469.93"
+1364,14012,6950,2024-07-08,Wrong item sent,Refunded,"₹1,601.37"
+1365,14021,6954,2024-07-08,Wrong item sent,Refunded,"₹1,266.48"
+1366,14042,6965,2024-07-08,Damaged,Refunded,₹989.25
+1367,14072,6980,2024-07-08,Not as described,Refunded,1145.82
+1368,14194,7037,2024-07-08,Damaged,Refunded,"₹1,065.71"
+1369,14047,6967,2024-07-09,Not as described,Refunded,₹347.06
+1370,14089,6987,2024-07-09,Changed mind,Refunded,₹273.07
+1371,14093,6988,2024-07-09,Changed mind,Refunded,₹399.92
+1372,13990,6937,2024-07-10,Damaged,Refunded,3451.51
+1373,13998,6943,2024-07-10,Size / fit issue,Refunded,647.1
+1374,14118,6999,2024-07-10,Damaged,Refunded,3412.01
+1375,14039,6964,2024-07-11,Expired / near expiry,Refunded,"₹1,389.72"
+1376,14211,7046,2024-07-11,Size / fit issue,Refunded,"₹4,725.24"
+1377,13924,6901,2024-07-12,Damaged,Refunded,"₹2,103.20"
+1378,14011,6949,2024-07-12,Size / fit issue,Refunded,361.13
+1379,14081,6983,2024-07-12,Changed mind,Refunded,₹732.96
+1380,14109,6997,2024-07-12,Damaged,Pickup Pending,"₹2,347.73"
+1381,14127,7004,2024-07-12,Wrong item sent,Refunded,"₹15,834.82"
+1382,14148,7016,2024-07-12,Size / fit issue,Refunded,912.25
+1383,14169,7026,2024-07-12,Not as described,Refunded,449.65
+1384,14188,7035,2024-07-12,Damaged,Rejected,
+1385,14259,7070,2024-07-12,Allergic / skin reaction,Refunded,1303.29
+1386,14248,7065,2024-07-13,Changed mind,Refunded,"₹5,069.79"
+1387,14044,6966,2024-07-14,Size / fit issue,Refunded,580.17
+1388,14160,7022,2024-07-14,Changed mind,Refunded,3008.16
+1389,14096,6989,2024-07-15,Defective product,Rejected,
+1390,14097,6990,2024-07-15,Damaged,Refunded,₹574.29
+1391,14141,7012,2024-07-16,Not as described,Pickup Pending,"₹1,246.59"
+1392,14157,7021,2024-07-16,Not as described,Refunded,₹488.37
+1393,14444,7162,2024-07-17,Changed mind,Refunded,"₹1,344.85"
+1394,14190,7035,2024-07-18,Defective product,Refunded,888.44
+1395,14230,7057,2024-07-18,Size / fit issue,Pickup Pending,1565.13
+1396,14274,7079,2024-07-18,Size / fit issue,Rejected,
+1397,14470,7175,2024-07-18,Size / fit issue,Rejected,
+1398,14299,7088,2024-07-21,Not as described,Refunded,519.82
+1399,14536,7203,2024-07-21,Size / fit issue,Refunded,₹244.30
+1400,14563,7216,2024-07-21,Not as described,Refunded,"₹1,434.28"
+1401,14280,7081,2024-07-22,Wrong item sent,Refunded,₹736.36
+1402,14303,7090,2024-07-22,Not as described,Refunded,3624.68
+1403,14583,7225,2024-07-22,Damaged,Pickup Pending,207.21
+1404,14345,7111,2024-07-23,Not as described,Refunded,14640.08
+1405,14468,7175,2024-07-23,Size / fit issue,Refunded,₹575.20
+1406,14338,7106,2024-07-24,Size / fit issue,Refunded,559.2
+1407,14440,7159,2024-07-24,Size / fit issue,Refunded,505.47
+1408,14469,7175,2024-07-24,Not as described,Refunded,599.82
+1409,14494,7185,2024-07-24,Wrong item sent,Refunded,₹282.69
+1410,14512,7193,2024-07-24,Size / fit issue,Refunded,344.31
+1411,14365,7121,2024-07-25,Changed mind,Refunded,408.03
+1412,14411,7145,2024-07-25,Size / fit issue,Refunded,376.12
+1413,14422,7151,2024-07-25,Damaged,Pickup Pending,₹591.24
+1414,14446,7163,2024-07-25,Not as described,Refunded,"₹4,756.84"
+1415,14485,7183,2024-07-25,Size / fit issue,Refunded,492.03
+1416,14540,7207,2024-07-25,Defective product,Refunded,1765.48
+1417,14584,7226,2024-07-25,Not as described,Pickup Pending,1083.78
+1418,14677,7269,2024-07-25,Size / fit issue,Refunded,₹282.94
+1419,14385,7132,2024-07-26,Size / fit issue,Refunded,"₹1,469.93"
+1420,14438,7158,2024-07-26,Damaged,Refunded,₹661.43
+1421,14478,7178,2024-07-26,Not as described,Refunded,"₹4,440.19"
+1422,14599,7233,2024-07-26,Damaged,Refunded,₹582.47
+1423,14586,7227,2024-07-27,Not as described,Refunded,"₹2,408.71"
+1424,14694,7278,2024-07-27,Not as described,Refunded,423.3
+1425,14636,7251,2024-07-28,Not as described,Refunded,"₹4,022.76"
+1426,14650,7256,2024-07-28,Size / fit issue,Rejected,
+1427,14655,7258,2024-07-28,Damaged,Refunded,2914.65
+1428,14662,7262,2024-07-28,Not as described,Refunded,"₹1,551.20"
+1429,14410,7145,2024-07-29,Not as described,Refunded,"₹2,970.37"
+1430,14763,7318,2024-07-29,Size / fit issue,Refunded,529.83
+1431,14548,7211,2024-07-30,Size / fit issue,Refunded,₹356.44
+1432,14621,7244,2024-07-31,Not as described,Refunded,₹306.99
+1433,14601,7234,2024-08-01,Wrong item sent,Refunded,5007.2
+1434,14741,7305,2024-08-02,Changed mind,Refunded,702.21
+1435,14700,7281,2024-08-03,Size / fit issue,Rejected,
+1436,14723,7294,2024-08-03,Changed mind,Refunded,₹337.46
+1437,14728,7296,2024-08-03,Wrong item sent,Refunded,"₹13,760.57"
+1438,14868,7370,2024-08-03,Defective product,Refunded,1211.07
+1439,14631,7249,2024-08-04,Size / fit issue,Refunded,248.82
+1440,14809,7341,2024-08-04,Changed mind,Refunded,₹567.89
+1441,14874,7373,2024-08-04,Wrong item sent,Refunded,"₹27,579.34"
+1442,14925,7401,2024-08-04,Not as described,Refunded,1334.25
+1443,14807,7339,2024-08-05,Changed mind,Refunded,2561.3
+1444,14872,7372,2024-08-05,Size / fit issue,Refunded,"₹2,447.28"
+1445,14939,7407,2024-08-05,Size / fit issue,Rejected,
+1446,14949,7411,2024-08-05,Size / fit issue,Refunded,289.67
+1447,14980,7428,2024-08-06,Not as described,Refunded,₹587.88
+1448,14995,7435,2024-08-07,Not as described,Refunded,1546.29
+1449,14870,7372,2024-08-08,Not as described,Refunded,687.14
+1450,14958,7416,2024-08-08,Damaged,Refunded,371.57
+1451,14820,7346,2024-08-09,Changed mind,Refunded,495.58
+1452,14842,7358,2024-08-09,Changed mind,Rejected,
+1453,14960,7417,2024-08-09,Changed mind,Refunded,₹265.30
+1454,15003,7438,2024-08-09,Not as described,Refunded,4443.89
+1455,15068,7472,2024-08-09,Damaged,Refunded,"₹4,189.38"
+1456,15099,7486,2024-08-09,Size / fit issue,Refunded,₹466.65
+1457,15101,7487,2024-08-09,Changed mind,Refunded,502.46
+1458,14882,7378,2024-08-10,Size / fit issue,Refunded,₹503.30
+1459,15070,7473,2024-08-10,Not as described,Refunded,3284.25
+1460,15152,7516,2024-08-10,Size / fit issue,Refunded,2787.18
+1461,15162,7522,2024-08-10,Changed mind,Refunded,"₹2,088.99"
+1462,14832,7353,2024-08-11,Damaged,Refunded,294.48
+1463,15011,7442,2024-08-11,Not as described,Refunded,453.53
+1464,15076,7475,2024-08-11,Size / fit issue,Refunded,₹995.17
+1465,15092,7481,2024-08-11,Changed mind,Refunded,"₹1,491.58"
+1466,15102,7488,2024-08-12,Not as described,Refunded,440.04
+1467,15222,7552,2024-08-12,Not as described,Refunded,"₹1,357.08"
+1468,14918,7397,2024-08-13,Size / fit issue,Refunded,₹550.05
+1469,14934,7404,2024-08-13,Size / fit issue,Refunded,397.02
+1470,15123,7502,2024-08-13,Wrong item sent,Refunded,"₹3,603.15"
+1471,15155,7518,2024-08-13,Not as described,Refunded,₹536.41
+1472,15103,7488,2024-08-15,Changed mind,Refunded,"₹3,507.96"
+1473,15335,7605,2024-08-15,Size / fit issue,Refunded,335.94
+1474,15094,7482,2024-08-16,Size / fit issue,Pickup Pending,"₹1,387.51"
+1475,15141,7512,2024-08-16,Wrong item sent,Refunded,2143.36
+1476,15176,7530,2024-08-16,Not as described,Refunded,"₹1,539.57"
+1477,15188,7538,2024-08-16,Size / fit issue,Refunded,272.09
+1478,15250,7565,2024-08-17,Size / fit issue,Refunded,₹885.66
+1479,15259,7571,2024-08-17,Not as described,Pickup Pending,₹456.72
+1480,15119,7498,2024-08-18,Not as described,Rejected,
+1481,15148,7515,2024-08-18,Size / fit issue,Refunded,"₹2,210.33"
+1482,15150,7515,2024-08-18,Defective product,Rejected,
+1483,15081,7477,2024-08-19,Damaged,Refunded,₹278.33
+1484,15433,7648,2024-08-19,Changed mind,Refunded,239.94
+1485,15087,7479,2024-08-20,Size / fit issue,Refunded,₹371.57
+1486,15144,7514,2024-08-20,Wrong item sent,Refunded,5257.56
+1487,15469,7666,2024-08-20,Size / fit issue,Refunded,1091.09
+1488,15568,7715,2024-08-21,Changed mind,Refunded,5217.79
+1489,15201,7544,2024-08-22,Changed mind,Refunded,5520.44
+1490,15293,7587,2024-08-22,Size / fit issue,Refunded,"₹1,559.57"
+1491,15306,7592,2024-08-22,Changed mind,Refunded,₹324.57
+1492,15414,7641,2024-08-22,Changed mind,Refunded,1153.46
+1493,15435,7650,2024-08-22,Not as described,Refunded,"₹1,355.46"
+1494,15528,7694,2024-08-22,Size / fit issue,Refunded,"₹1,640.84"
+1495,15350,7609,2024-08-23,Not as described,Refunded,"₹1,055.20"
+1496,15398,7633,2024-08-23,Size / fit issue,Refunded,2966.38
+1497,15500,7681,2024-08-23,Size / fit issue,Refunded,653.65
+1498,15507,7683,2024-08-23,Size / fit issue,Refunded,₹351.21
+1499,15569,7715,2024-08-23,Size / fit issue,Refunded,559.3
+1500,15406,7637,2024-08-24,Damaged,Refunded,357.24
+1501,15557,7710,2024-08-24,Defective product,Refunded,1690.5
+1502,15443,7656,2024-08-25,Size / fit issue,Refunded,₹375.20
+1503,15459,7662,2024-08-25,Changed mind,Refunded,5758.28
+1504,15596,7731,2024-08-25,Changed mind,Refunded,1551.75
+1505,15323,7598,2024-08-26,Size / fit issue,Refunded,"₹1,094.77"
+1506,15399,7634,2024-08-26,Damaged,Rejected,
+1507,15263,7574,2024-08-27,Size / fit issue,Refunded,"₹1,293.97"
+1508,15348,7609,2024-08-27,Not as described,Refunded,"₹1,439.20"
+1509,15432,7648,2024-08-27,Size / fit issue,Refunded,2455.2
+1510,15453,7660,2024-08-27,Not as described,Refunded,310.78
+1511,15476,7668,2024-08-27,Size / fit issue,Pickup Pending,1909.78
+1512,15529,7695,2024-08-27,Size / fit issue,Refunded,370.51
+1513,15558,7710,2024-08-27,Changed mind,Refunded,2608.65
+1514,15707,7781,2024-08-27,Not as described,Refunded,₹575.97
+1515,15801,7830,2024-08-27,Damaged,Refunded,"₹10,249.30"
+1516,15402,7636,2024-08-28,Size / fit issue,Refunded,₹515.14
+1517,15534,7697,2024-08-29,Not as described,Refunded,1230.46
+1518,15626,7745,2024-08-29,Damaged,Refunded,1712.98
+1519,15771,7815,2024-08-29,Size / fit issue,Refunded,563.57
+1520,15538,7699,2024-08-30,Changed mind,Refunded,"₹7,428.68"
+1521,15548,7704,2024-08-30,Not as described,Refunded,2910.4
+1522,15597,7731,2024-08-30,Changed mind,Refunded,₹565.88
+1523,15675,7767,2024-08-30,Size / fit issue,Refunded,1699.01
+1524,15711,7784,2024-08-30,Changed mind,Refunded,307.12
+1525,15772,7816,2024-08-31,Size / fit issue,Refunded,775.2
+1526,15870,7865,2024-08-31,Size / fit issue,Refunded,292.81
+1527,15610,7736,2024-09-01,Size / fit issue,Refunded,2654.05
+1528,15646,7754,2024-09-01,Changed mind,Refunded,662.22
+1529,15781,7820,2024-09-01,Not as described,Rejected,
+1530,15881,7872,2024-09-01,Damaged,Refunded,1450.84
+1531,15594,7730,2024-09-02,Changed mind,Refunded,1727.04
+1532,15762,7810,2024-09-02,Defective product,Refunded,3223.92
+1533,15816,7837,2024-09-02,Changed mind,Refunded,₹269.78
+1534,15906,7887,2024-09-02,Size / fit issue,Refunded,2969.1
+1535,15593,7730,2024-09-03,Size / fit issue,Refunded,"₹1,539.49"
+1536,15704,7780,2024-09-03,Changed mind,Refunded,₹237.32
+1537,15840,7852,2024-09-05,Changed mind,Refunded,5295.11
+1538,16039,7951,2024-09-05,Not as described,Refunded,2225.77
+1539,15789,7824,2024-09-06,Changed mind,Refunded,"₹8,871.58"
+1540,15987,7923,2024-09-06,Changed mind,Refunded,2698.5
+1541,15730,7792,2024-09-07,Damaged,Refunded,4883.49
+1542,15868,7864,2024-09-07,Changed mind,Refunded,1231.12
+1543,15897,7882,2024-09-08,Size / fit issue,Refunded,₹431.28
+1544,15971,7917,2024-09-08,Size / fit issue,Rejected,
+1545,15974,7919,2024-09-08,Wrong item sent,Refunded,"₹1,027.46"
+1546,16087,7975,2024-09-08,Size / fit issue,Refunded,1439.2
+1547,15783,7821,2024-09-09,Size / fit issue,Refunded,479.04
+1548,15920,7894,2024-09-09,Size / fit issue,Refunded,₹663.17
+1549,15976,7920,2024-09-09,Changed mind,Refunded,₹543.15
+1550,16024,7941,2024-09-09,Changed mind,Refunded,₹646.57
+1551,16115,7991,2024-09-09,Expired / near expiry,Refunded,589.58
+1552,15769,7814,2024-09-10,Damaged,Refunded,433.71
+1553,15901,7884,2024-09-10,Size / fit issue,Refunded,239.2
+1554,15912,7890,2024-09-10,Size / fit issue,Refunded,"₹5,506.38"
+1555,16010,7934,2024-09-10,Not as described,Pickup Pending,269.78
+1556,16011,7934,2024-09-10,Damaged,Refunded,₹377.10
+1557,16111,7990,2024-09-10,Not as described,Rejected,
+1558,16119,7993,2024-09-10,Not as described,Refunded,1292.76
+1559,15921,7895,2024-09-11,Size / fit issue,Refunded,415.65
+1560,15978,7920,2024-09-11,Not as described,Refunded,405.3
+1561,16023,7941,2024-09-11,Size / fit issue,Refunded,482.12
+1562,16028,7945,2024-09-11,Not as described,Refunded,11015.84
+1563,16109,7989,2024-09-11,Damaged,Refunded,3114.57
+1564,16122,7994,2024-09-11,Defective product,Refunded,"₹3,835.96"
+1565,16144,8004,2024-09-13,Size / fit issue,Refunded,2271.06
+1566,16200,8025,2024-09-13,Defective product,Refunded,"₹20,226.36"
+1567,15907,7888,2024-09-14,Size / fit issue,Refunded,"₹3,822.02"
+1568,16218,8036,2024-09-14,Size / fit issue,Rejected,
+1569,16220,8036,2024-09-14,Size / fit issue,Refunded,1147.18
+1570,15985,7923,2024-09-15,Changed mind,Rejected,
+1571,16206,8029,2024-09-15,Size / fit issue,Refunded,911.24
+1572,16244,8046,2024-09-15,Changed mind,Refunded,343.58
+1573,15905,7886,2024-09-16,Damaged,Refunded,836.1
+1574,15994,7925,2024-09-17,Size / fit issue,Refunded,459.43
+1575,16133,7998,2024-09-17,Size / fit issue,Refunded,1241.31
+1576,16156,8008,2024-09-17,Changed mind,Rejected,
+1577,16181,8017,2024-09-17,Not as described,Refunded,619.74
+1578,16310,8078,2024-09-17,Changed mind,Refunded,3493.62
+1579,16047,7954,2024-09-18,Damaged,Refunded,3459.41
+1580,16108,7988,2024-09-18,Not as described,Refunded,"₹1,508.11"
+1581,16165,8011,2024-09-18,Size / fit issue,Refunded,2217.63
+1582,16182,8018,2024-09-18,Wrong item sent,Refunded,"₹2,661.51"
+1583,16334,8089,2024-09-18,Not as described,Refunded,650.46
+1584,16335,8090,2024-09-19,Not as described,Refunded,₹671.30
+1585,16358,8100,2024-09-19,Changed mind,Refunded,393.96
+1586,16407,8124,2024-09-19,Wrong item sent,Refunded,₹522.83
+1587,16240,8043,2024-09-20,Size / fit issue,Refunded,2408.71
+1588,16481,8165,2024-09-20,Size / fit issue,Refunded,"₹3,257.55"
+1589,16270,8057,2024-09-22,Size / fit issue,Refunded,₹654.36
+1590,16328,8087,2024-09-23,Size / fit issue,Refunded,"₹1,382.44"
+1591,16375,8109,2024-09-25,Damaged,Pickup Pending,1591.2
+1592,16511,8178,2024-09-25,Changed mind,Rejected,
+1593,16316,8083,2024-09-26,Not as described,Refunded,824.58
+1594,16373,8108,2024-09-26,Wrong item sent,Refunded,"₹1,966.36"
+1595,16540,8194,2024-09-26,Not as described,Refunded,5549.18
+1596,16453,8150,2024-09-27,Changed mind,Refunded,865.3
+1597,16521,8184,2024-09-28,Not as described,Refunded,477.09
+1598,16544,8196,2024-09-28,Size / fit issue,Refunded,351.21
+1599,16572,8212,2024-09-28,Size / fit issue,Rejected,
+1600,16574,8212,2024-09-28,Changed mind,Refunded,"₹1,893.78"
+1601,16602,8222,2024-09-28,Size / fit issue,Refunded,2561.16
+1602,16562,8206,2024-09-29,Wrong item sent,Refunded,2624.61
+1603,16582,8214,2024-09-29,Not as described,Refunded,225.99
+1604,16634,8240,2024-09-29,Size / fit issue,Refunded,670.08
+1605,16570,8211,2024-09-30,Not as described,Refunded,₹333.52
+1606,16520,8184,2024-10-01,Not as described,Pickup Pending,1440.99
+1607,16651,8249,2024-10-01,Not as described,Refunded,"₹1,584.47"
+1608,16524,8187,2024-10-02,Not as described,Refunded,"₹1,136.51"
+1609,16667,8258,2024-10-02,Changed mind,Refunded,1288.58
+1610,16604,8223,2024-10-03,Size / fit issue,Refunded,233.59
+1611,16769,8310,2024-10-03,Changed mind,Refunded,3055.92
+1612,16762,8306,2024-10-04,Not as described,Refunded,338.03
+1613,16771,8311,2024-10-04,Damaged,Refunded,₹476.66
+1614,16818,8340,2024-10-04,Not as described,Pickup Pending,220.11
+1615,16495,8171,2024-10-05,Not as described,Refunded,1437.01
+1616,16561,8205,2024-10-05,Size / fit issue,Refunded,603.64
+1617,16581,8214,2024-10-05,Changed mind,Refunded,"₹5,382.74"
+1618,16739,8295,2024-10-05,Size / fit issue,Refunded,414.17
+1619,16861,8365,2024-10-05,Size / fit issue,Refunded,2583.61
+1620,16890,8382,2024-10-05,Size / fit issue,Refunded,₹365.18
+1621,16664,8256,2024-10-06,Size / fit issue,Pickup Pending,2195.28
+1622,16752,8301,2024-10-06,Size / fit issue,Refunded,"₹1,306.26"
+1623,16842,8355,2024-10-06,Allergic / skin reaction,Refunded,375.54
+1624,16883,8377,2024-10-07,Defective product,Refunded,3984.12
+1625,16971,8423,2024-10-07,Size / fit issue,Refunded,246.35
+1626,17071,8469,2024-10-07,Not as described,Refunded,"₹1,431.75"
+1627,16693,8272,2024-10-08,Damaged,Pickup Pending,412.29
+1628,16751,8301,2024-10-08,Damaged,Pickup Pending,384.58
+1629,16680,8264,2024-10-09,Damaged,Refunded,489.21
+1630,16894,8384,2024-10-09,Size / fit issue,Refunded,₹399.51
+1631,16713,8284,2024-10-10,Wrong item sent,Refunded,17134.31
+1632,16784,8319,2024-10-10,Changed mind,Refunded,446.67
+1633,16794,8324,2024-10-10,Size / fit issue,Refunded,"₹1,561.45"
+1634,16963,8420,2024-10-10,Size / fit issue,Refunded,328.3
+1635,17097,8481,2024-10-10,Damaged,Refunded,₹384.58
+1636,17121,8495,2024-10-10,Size / fit issue,Refunded,545.93
+1637,17130,8500,2024-10-10,Size / fit issue,Refunded,₹782.42
+1638,17073,8469,2024-10-11,Size / fit issue,Refunded,"₹1,946.41"
+1639,17191,8534,2024-10-11,Size / fit issue,Refunded,2014.88
+1640,17026,8450,2024-10-12,Not as described,Rejected,
+1641,17182,8529,2024-10-12,Size / fit issue,Refunded,₹595.63
+1642,16846,8357,2024-10-13,Size / fit issue,Refunded,₹359.29
+1643,16975,8424,2024-10-13,Size / fit issue,Refunded,₹213.85
+1644,17095,8481,2024-10-13,Not as described,Refunded,₹857.65
+1645,17148,8512,2024-10-13,Not as described,Refunded,₹349.43
+1646,17155,8516,2024-10-13,Not as described,Refunded,₹157.74
+1647,17243,8558,2024-10-13,Damaged,Refunded,326.82
+1648,16919,8398,2024-10-14,Changed mind,Refunded,₹984.96
+1649,16985,8429,2024-10-14,Size / fit issue,Refunded,861.28
+1650,17055,8462,2024-10-14,Size / fit issue,Refunded,332.94
+1651,17063,8465,2024-10-14,Size / fit issue,Refunded,"₹3,841.74"
+1652,17190,8534,2024-10-14,Not as described,Refunded,4256.12
+1653,17036,8454,2024-10-15,Size / fit issue,Refunded,286.3
+1654,17039,8455,2024-10-15,Damaged,Refunded,"₹2,587.23"
+1655,17086,8476,2024-10-15,Not as described,Refunded,"₹9,350.95"
+1656,17250,8560,2024-10-15,Allergic / skin reaction,Rejected,
+1657,16876,8373,2024-10-17,Not as described,Refunded,262.64
+1658,17043,8456,2024-10-17,Size / fit issue,Refunded,553.09
+1659,17284,8576,2024-10-17,Changed mind,Refunded,223.3
+1660,17307,8588,2024-10-17,Not as described,Refunded,"₹1,106.18"
+1661,17352,8612,2024-10-17,Changed mind,Refunded,₹320.47
+1662,17127,8498,2024-10-18,Not as described,Pickup Pending,233.83
+1663,17237,8556,2024-10-18,Not as described,Pickup Pending,₹895.57
+1664,17254,8561,2024-10-18,Damaged,Refunded,"₹2,710.78"
+1665,17414,8644,2024-10-18,Defective product,Refunded,"₹1,631.15"
+1666,17189,8533,2024-10-19,Damaged,Refunded,₹256.74
+1667,17455,8664,2024-10-19,Size / fit issue,Refunded,449.65
+1668,17197,8537,2024-10-20,Allergic / skin reaction,Refunded,₹347.09
+1669,17241,8557,2024-10-20,Not as described,Refunded,₹731.64
+1670,17248,8560,2024-10-21,Changed mind,Refunded,₹246.75
+1671,17275,8570,2024-10-21,Changed mind,Refunded,₹965.64
+1672,17342,8606,2024-10-21,Not as described,Refunded,4506.48
+1673,17444,8660,2024-10-21,Changed mind,Refunded,₹498.27
+1674,17137,8505,2024-10-22,Size / fit issue,Refunded,2345.32
+1675,17329,8599,2024-10-22,Damaged,Refunded,2705.18
+1676,17357,8616,2024-10-22,Not as described,Refunded,"₹4,885.30"
+1677,17382,8629,2024-10-22,Not as described,Refunded,"₹3,196.06"
+1678,17420,8647,2024-10-22,Changed mind,Refunded,2276.31
+1679,17367,8623,2024-10-23,Changed mind,Refunded,"₹3,092.58"
+1680,17330,8600,2024-10-24,Size / fit issue,Refunded,₹935.22
+1681,17400,8638,2024-10-24,Not as described,Refunded,₹568.09
+1682,17424,8648,2024-10-24,Damaged,Refunded,₹263.20
+1683,17430,8651,2024-10-24,Changed mind,Refunded,15365.61
+1684,17594,8731,2024-10-24,Not as described,Refunded,365.01
+1685,17350,8611,2024-10-25,Damaged,Refunded,197.4
+1686,17577,8724,2024-10-25,Not as described,Refunded,"₹1,094.77"
+1687,17626,8745,2024-10-25,Not as described,Refunded,5082.36
+1688,17443,8659,2024-10-27,Not as described,Refunded,"₹1,211.66"
+1689,17496,8683,2024-10-27,Damaged,Refunded,704.38
+1690,17590,8730,2024-10-27,Changed mind,Refunded,₹516.81
+1691,17617,8742,2024-10-27,Size / fit issue,Rejected,
+1692,17640,8750,2024-10-27,Damaged,Refunded,73.26
+1693,17641,8751,2024-10-27,Changed mind,Refunded,481.11
+1694,17468,8669,2024-10-28,Damaged,Refunded,₹258.39
+1695,17515,8693,2024-10-28,Damaged,Refunded,₹107.03
+1696,17605,8737,2024-10-28,Changed mind,Refunded,₹965.64
+1697,17765,8811,2024-10-28,Not as described,Refunded,"₹8,329.30"
+1698,17767,8812,2024-10-29,Size / fit issue,Refunded,853.39
+1699,17783,8822,2024-10-29,Changed mind,Refunded,"₹6,846.75"
+1700,17419,8647,2024-10-30,Size / fit issue,Refunded,"₹1,361.78"
+1701,17787,8824,2024-10-30,Size / fit issue,Refunded,"₹2,474.25"
+1702,17857,8858,2024-10-30,Changed mind,Refunded,920.96
+1703,17693,8776,2024-10-31,Changed mind,Refunded,289.67
+1704,17811,8837,2024-10-31,Not as described,Refunded,₹362.12
+1705,17862,8861,2024-10-31,Size / fit issue,Refunded,₹492.03
+1706,17530,8699,2024-11-01,Wrong item sent,Refunded,₹604.31
+1707,17563,8716,2024-11-01,Defective product,Refunded,"₹4,844.47"
+1708,17612,8740,2024-11-01,Damaged,Refunded,₹413.49
+1709,17661,8761,2024-11-01,Size / fit issue,Refunded,1511.16
+1710,17759,8807,2024-11-01,Size / fit issue,Refunded,₹382.85
+1711,17818,8841,2024-11-01,Size / fit issue,Refunded,827.31
+1712,17891,8875,2024-11-01,Size / fit issue,Refunded,286.09
+1713,17477,8673,2024-11-02,Not as described,Refunded,458.06
+1714,17624,8745,2024-11-02,Damaged,Pickup Pending,₹164.68
+1715,17985,8921,2024-11-02,Changed mind,Refunded,₹217.14
+1716,18014,8936,2024-11-02,Changed mind,Refunded,₹439.58
+1717,18036,8945,2024-11-02,Size / fit issue,Refunded,863.63
+1718,17961,8910,2024-11-03,Damaged,Refunded,2188.31
+1719,18090,8974,2024-11-03,Size / fit issue,Refunded,374.25
+1720,17574,8721,2024-11-04,Changed mind,Refunded,407.33
+1721,17697,8778,2024-11-04,Wrong item sent,Refunded,₹632.88
+1722,18202,9030,2024-11-04,Damaged,Refunded,"₹3,683.72"
+1723,17744,8800,2024-11-05,Defective product,Refunded,"₹7,635.98"
+1724,17838,8849,2024-11-05,Not as described,Rejected,
+1725,17850,8855,2024-11-05,Not as described,Refunded,509.24
+1726,18030,8943,2024-11-05,Changed mind,Refunded,1364.25
+1727,17719,8787,2024-11-06,Defective product,Refunded,2563.47
+1728,17761,8808,2024-11-06,Not as described,Refunded,1859.89
+1729,17843,8851,2024-11-06,Size / fit issue,Refunded,"₹1,478.47"
+1730,17896,8877,2024-11-06,Size / fit issue,Refunded,₹843.92
+1731,18232,9047,2024-11-06,Not as described,Refunded,1499.46
+1732,17867,8864,2024-11-07,Not as described,Refunded,₹144.42
+1733,17968,8913,2024-11-07,Size / fit issue,Refunded,460.16
+1734,18132,8998,2024-11-07,Damaged,Refunded,388.74
+1735,17710,8784,2024-11-08,Defective product,Rejected,
+1736,17720,8788,2024-11-08,Damaged,Refunded,2481.27
+1737,17823,8843,2024-11-08,Size / fit issue,Refunded,₹786.29
+1738,17841,8850,2024-11-08,Not as described,Pickup Pending,"₹1,727.93"
+1739,17911,8885,2024-11-08,Size / fit issue,Refunded,2922.48
+1740,17958,8908,2024-11-09,Changed mind,Refunded,₹340.45
+1741,18025,8942,2024-11-09,Size / fit issue,Refunded,77340.0
+1742,17804,8833,2024-11-10,Not as described,Refunded,"₹3,066.91"
+1743,18000,8928,2024-11-10,Not as described,Refunded,257.72
+1744,18031,8943,2024-11-10,Size / fit issue,Refunded,1446.53
+1745,18282,9076,2024-11-10,Damaged,Rejected,
+1746,18301,9086,2024-11-10,Changed mind,Refunded,137.94
+1747,18328,9099,2024-11-10,Changed mind,Refunded,"₹1,295.40"
+1748,18366,9113,2024-11-10,Damaged,Rejected,
+1749,18397,9129,2024-11-10,Not as described,Refunded,1686.93
+1750,17972,8914,2024-11-11,Damaged,Refunded,318.92
+1751,18004,8930,2024-11-11,Damaged,Refunded,3112.85
+1752,18069,8960,2024-11-11,Size / fit issue,Refunded,364.77
+1753,18321,9095,2024-11-11,Size / fit issue,Refunded,"₹3,034.68"
+1754,18456,9156,2024-11-11,Defective product,Refunded,"₹24,612.34"
+1755,18102,8981,2024-11-12,Damaged,Refunded,152.32
+1756,18166,9015,2024-11-12,Size / fit issue,Refunded,₹806.72
+1757,18218,9040,2024-11-12,Changed mind,Refunded,"₹2,331.72"
+1758,18061,8958,2024-11-13,Damaged,Refunded,311.48
+1759,18298,9084,2024-11-13,Wrong item sent,Refunded,"₹12,579.62"
+1760,18459,9158,2024-11-13,Size / fit issue,Refunded,310.78
+1761,18103,8982,2024-11-14,Changed mind,Refunded,982.26
+1762,18121,8993,2024-11-14,Size / fit issue,Refunded,₹432.06
+1763,18127,8996,2024-11-14,Damaged,Refunded,₹434.42
+1764,18186,9024,2024-11-14,Size / fit issue,Refunded,"₹1,403.22"
+1765,18320,9095,2024-11-14,Not as described,Refunded,"₹1,887.41"
+1766,18566,9215,2024-11-14,Size / fit issue,Refunded,₹479.20
+1767,18467,9163,2024-11-15,Changed mind,Refunded,1475.18
+1768,18468,9163,2024-11-15,Not as described,Refunded,239.94
+1769,18557,9211,2024-11-15,Changed mind,Refunded,"₹3,801.98"
+1770,18562,9213,2024-11-15,Size / fit issue,Refunded,2518.6
+1771,18263,9064,2024-11-16,Size / fit issue,Refunded,757.67
+1772,18431,9146,2024-11-16,Not as described,Refunded,310.84
+1773,18491,9176,2024-11-16,Damaged,Refunded,₹645.19
+1774,18506,9184,2024-11-16,Size / fit issue,Refunded,"₹1,885.18"
+1775,18577,9220,2024-11-16,Size / fit issue,Rejected,
+1776,18148,9005,2024-11-17,Size / fit issue,Refunded,₹580.78
+1777,18260,9062,2024-11-17,Not as described,Refunded,₹318.06
+1778,18516,9190,2024-11-17,Not as described,Refunded,₹259.26
+1779,18596,9228,2024-11-17,Damaged,Refunded,"₹1,880.10"
+1780,18622,9241,2024-11-17,Not as described,Refunded,1446.53
+1781,18625,9242,2024-11-17,Size / fit issue,Refunded,₹439.20
+1782,18124,8994,2024-11-18,Changed mind,Refunded,₹581.40
+1783,18464,9162,2024-11-18,Size / fit issue,Refunded,"₹3,368.82"
+1784,18524,9195,2024-11-18,Size / fit issue,Refunded,"₹1,634.73"
+1785,18534,9202,2024-11-18,Not as described,Refunded,3505.04
+1786,18587,9224,2024-11-18,Not as described,Refunded,715.33
+1787,18657,9257,2024-11-18,Not as described,Refunded,"₹1,431.27"
+1788,18389,9125,2024-11-19,Not as described,Rejected,
+1789,18479,9169,2024-11-20,Size / fit issue,Refunded,615.41
+1790,18655,9256,2024-11-20,Size / fit issue,Refunded,"₹1,469.93"
+1791,18679,9267,2024-11-20,Size / fit issue,Refunded,₹572.46
+1792,18322,9096,2024-11-21,Not as described,Refunded,1124.11
+1793,18455,9156,2024-11-21,Wrong item sent,Refunded,₹798.94
+1794,18463,9161,2024-11-21,Size / fit issue,Pickup Pending,3065.3
+1795,18470,9165,2024-11-21,Size / fit issue,Refunded,₹743.20
+1796,18549,9208,2024-11-21,Changed mind,Refunded,"₹3,092.44"
+1797,18594,9228,2024-11-21,Not as described,Refunded,"₹4,485.62"
+1798,18540,9205,2024-11-22,Size / fit issue,Refunded,"₹3,526.04"
+1799,18717,9281,2024-11-22,Damaged,Refunded,568.01
+1800,18785,9313,2024-11-22,Changed mind,Refunded,1035.26
+1801,18701,9274,2024-11-23,Damaged,Pickup Pending,489.02
+1802,18769,9305,2024-11-23,Size / fit issue,Pickup Pending,493.73
+1803,18811,9325,2024-11-23,Defective product,Refunded,5257.56
+1804,18615,9237,2024-11-24,Wrong item sent,Refunded,"₹8,814.18"
+1805,18636,9248,2024-11-24,Size / fit issue,Rejected,
+1806,18752,9297,2024-11-24,Changed mind,Refunded,499.38
+1807,18834,9337,2024-11-24,Size / fit issue,Refunded,"₹1,019.15"
+1808,18895,9366,2024-11-24,Size / fit issue,Rejected,
+1809,18664,9261,2024-11-25,Size / fit issue,Refunded,1178.71
+1810,18765,9303,2024-11-25,Size / fit issue,Refunded,₹773.43
+1811,18787,9313,2024-11-25,Wrong item sent,Refunded,"₹1,154.30"
+1812,18792,9316,2024-11-26,Size / fit issue,Refunded,₹477.33
+1813,18857,9348,2024-11-26,Expired / near expiry,Refunded,2508.02
+1814,18794,9317,2024-11-27,Size / fit issue,Refunded,"₹1,458.78"
+1815,18813,9326,2024-11-27,Changed mind,Refunded,313.96
+1816,18814,9326,2024-11-27,Size / fit issue,Refunded,"₹1,183.26"
+1817,18921,9378,2024-11-27,Not as described,Refunded,603.02
+1818,18827,9333,2024-11-28,Not as described,Refunded,"₹1,221.33"
+1819,18911,9374,2024-11-28,Size / fit issue,Refunded,"₹1,403.22"
+1820,18892,9365,2024-11-29,Changed mind,Refunded,"₹1,412.66"
+1821,18906,9371,2024-11-29,Not as described,Refunded,"₹1,138.86"
+1822,18923,9379,2024-11-29,Not as described,Refunded,"₹5,464.11"
+1823,18707,9277,2024-11-30,Not as described,Refunded,"₹4,180.42"
+1824,18819,9329,2024-11-30,Size / fit issue,Refunded,₹253.33
+1825,18946,9389,2024-11-30,Changed mind,Refunded,₹517.65
+1826,18999,9417,2024-11-30,Size / fit issue,Refunded,515.13
+1827,19063,9448,2024-11-30,Size / fit issue,Refunded,848.3
+1828,18896,9367,2024-12-01,Size / fit issue,Refunded,₹360.34
+1829,18944,9388,2024-12-01,Changed mind,Refunded,₹653.73
+1830,18958,9396,2024-12-01,Damaged,Refunded,"₹3,731.43"
+1831,19128,9480,2024-12-01,Changed mind,Refunded,₹261.58
+1832,18897,9368,2024-12-02,Defective product,Refunded,10288.6
+1833,18941,9387,2024-12-02,Changed mind,Refunded,1546.15
+1834,18973,9404,2024-12-02,Size / fit issue,Pickup Pending,"₹1,653.59"
+1835,18986,9410,2024-12-02,Damaged,Refunded,₹441.15
+1836,19110,9470,2024-12-02,Size / fit issue,Refunded,449.1
+1837,19117,9474,2024-12-02,Changed mind,Refunded,3196.06
+1838,19127,9480,2024-12-02,Changed mind,Rejected,
+1839,19099,9466,2024-12-03,Not as described,Refunded,"₹3,645.54"
+1840,18912,9374,2024-12-04,Defective product,Rejected,
+1841,18931,9383,2024-12-04,Damaged,Refunded,8945.38
+1842,19297,9564,2024-12-04,Damaged,Refunded,539.56
+1843,18879,9360,2024-12-05,Changed mind,Refunded,"₹1,551.20"
+1844,18967,9402,2024-12-05,Defective product,Refunded,"₹11,305.98"
+1845,19006,9423,2024-12-05,Not as described,Refunded,5007.2
+1846,19009,9424,2024-12-05,Size / fit issue,Refunded,2573.22
+1847,19135,9483,2024-12-05,Changed mind,Refunded,"₹8,111.66"
+1848,19210,9522,2024-12-05,Changed mind,Refunded,"₹1,319.38"
+1849,18969,9403,2024-12-06,Not as described,Refunded,"₹1,072.72"
+1850,19031,9433,2024-12-06,Size / fit issue,Refunded,509.54
+1851,19162,9496,2024-12-06,Size / fit issue,Refunded,1331.26
+1852,19170,9499,2024-12-06,Damaged,Refunded,447.92
+1853,19186,9507,2024-12-06,Size / fit issue,Refunded,₹409.18
+1854,19234,9531,2024-12-06,Changed mind,Refunded,399.51
+1855,19023,9429,2024-12-07,Size / fit issue,Refunded,"₹1,075.71"
+1856,19130,9481,2024-12-07,Changed mind,Refunded,₹438.48
+1857,19213,9522,2024-12-07,Wrong item sent,Refunded,₹189.04
+1858,19230,9530,2024-12-07,Defective product,Refunded,"₹1,194.48"
+1859,19368,9598,2024-12-07,Size / fit issue,Refunded,2855.93
+1860,19056,9444,2024-12-08,Size / fit issue,Refunded,3245.3
+1861,19064,9449,2024-12-09,Size / fit issue,Refunded,"₹1,298.67"
+1862,19337,9582,2024-12-09,Size / fit issue,Refunded,527.2
+1863,19089,9462,2024-12-10,Not as described,Refunded,"₹1,061.91"
+1864,19106,9468,2024-12-10,Size / fit issue,Refunded,₹268.73
+1865,19176,9502,2024-12-10,Not as described,Refunded,₹337.68
+1866,19231,9530,2024-12-10,Defective product,Refunded,5382.74
+1867,19254,9540,2024-12-11,Size / fit issue,Pickup Pending,"₹1,696.66"
+1868,19299,9565,2024-12-11,Damaged,Refunded,1379.25
+1869,19215,9524,2024-12-12,Size / fit issue,Refunded,₹329.00
+1870,19397,9612,2024-12-12,Changed mind,Rejected,
+1871,19262,9544,2024-12-13,Damaged,Rejected,
+1872,19160,9495,2024-12-14,Size / fit issue,Refunded,1862.1
+1873,19318,9573,2024-12-15,Damaged,Refunded,"₹2,350.32"
+1874,19321,9575,2024-12-15,Not as described,Refunded,₹310.78
+1875,19363,9594,2024-12-16,Changed mind,Refunded,1403.22
+1876,19432,9628,2024-12-16,Size / fit issue,Refunded,6449.76
+1877,19450,9636,2024-12-16,Size / fit issue,Refunded,246.75
+1878,19350,9589,2024-12-17,Size / fit issue,Refunded,990.99
+1879,19402,9616,2024-12-17,Size / fit issue,Refunded,553.63
+1880,19514,9672,2024-12-19,Changed mind,Refunded,"₹4,318.71"
+1881,19463,9645,2024-12-20,Not as described,Refunded,575.2
+1882,19532,9685,2024-12-20,Changed mind,Refunded,₹399.63
+1883,19636,9738,2024-12-20,Damaged,Rejected,
+1884,19594,9715,2024-12-21,Size / fit issue,Refunded,553.09
+1885,19603,9720,2024-12-21,Not as described,Rejected,
+1886,19627,9734,2024-12-21,Changed mind,Pickup Pending,"₹1,019.84"
+1887,19665,9752,2024-12-21,Damaged,Refunded,909.38
+1888,19554,9696,2024-12-22,Defective product,Refunded,"₹11,407.99"
+1889,19613,9727,2024-12-22,Not as described,Refunded,"₹5,513.41"
+1890,19634,9737,2024-12-22,Size / fit issue,Refunded,₹236.21
+1891,19674,9757,2024-12-22,Size / fit issue,Rejected,
+1892,19544,9691,2024-12-23,Not as described,Refunded,"₹2,818.84"
+1893,19654,9747,2024-12-23,Size / fit issue,Refunded,"₹1,150.56"
+1894,19520,9676,2024-12-24,Damaged,Refunded,1787.94
+1895,19589,9713,2024-12-24,Changed mind,Refunded,1457.82
+1896,19759,9800,2024-12-24,Size / fit issue,Refunded,"₹1,522.88"
+1897,19787,9814,2024-12-25,Size / fit issue,Refunded,"₹1,999.26"
+1898,19797,9820,2024-12-25,Defective product,Refunded,22978.89
+1899,19498,9663,2024-12-26,Size / fit issue,Pickup Pending,402.04
+1900,19551,9695,2024-12-26,Size / fit issue,Refunded,₹752.49
+1901,19638,9739,2024-12-27,Defective product,Rejected,
+1902,19814,9830,2024-12-27,Defective product,Refunded,"₹1,494.30"
+1903,19755,9797,2024-12-28,Changed mind,Refunded,₹569.05
+1904,19621,9731,2024-12-29,Not as described,Refunded,₹386.84
+1905,19771,9805,2024-12-29,Allergic / skin reaction,Pickup Pending,₹943.59
+1906,19786,9814,2024-12-29,Not as described,Refunded,"₹1,573.58"
+1907,19904,9877,2024-12-30,Defective product,Refunded,"₹4,443.89"
+1908,19706,9772,2024-12-31,Wrong item sent,Refunded,"₹11,266.20"
+1909,19725,9781,2024-12-31,Size / fit issue,Refunded,1439.2

@@ -1,0 +1,48 @@
+---
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Sidebar from '../components/Sidebar.astro';
+import Search from '../components/Search.astro';
+import { url } from '../lib/url';
+interface Props { title: string; description?: string; sidebar?: boolean; }
+const { title, description = 'DA Launchpad: a free, offline-capable Data Analyst study site.', sidebar = false } = Astro.props;
+const fullTitle = title === 'Dashboard' ? 'DA Launchpad' : `${title} | DA Launchpad`;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#4338ca" />
+    <link rel="manifest" href={url('/manifest.webmanifest')} />
+    <link rel="icon" href={url('/icons/icon.svg')} type="image/svg+xml" />
+    <link rel="apple-touch-icon" href={url('/icons/icon-192.png')} />
+    <script is:inline>
+      (function () {
+        try {
+          var t = localStorage.getItem('dal:theme');
+          if (!t) t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          document.documentElement.dataset.theme = t;
+        } catch (e) { document.documentElement.dataset.theme = 'light'; }
+      })();
+    </script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to content</a>
+    <Header hasSidebar={sidebar} />
+    <div class={`shell ${sidebar ? 'has-sidebar' : ''}`}>
+      {sidebar && <Sidebar />}
+      <main id="main" style="min-width:0;padding:1.25rem 1rem 4rem">
+        <slot />
+      </main>
+    </div>
+    <Search />
+    <script define:vars={{ swUrl: url('/sw.js'), scope: url('/'), enable: import.meta.env.PROD }}>
+      if (enable && 'serviceWorker' in navigator && location.protocol !== 'file:') {
+        window.addEventListener('load', () => navigator.serviceWorker.register(swUrl, { scope }).catch(() => {}));
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,49 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { MODULES } from '../../lib/modules';
+import { getLessons, SHOW_DRAFTS } from '../../lib/content';
+import { url } from '../../lib/url';
+import ModuleProgress from '../../components/react/ModuleProgress';
+
+export function getStaticPaths() { return MODULES.map((m) => ({ params: { module: m.slug }, props: { mod: m } })); }
+const { mod } = Astro.props;
+const lessons = (await getLessons({ includeDrafts: false })).filter((l) => l.module === mod.slug);
+const practice = (await getCollection('practice')).map((e) => e.data).filter((q) => q.module === mod.slug);
+const topics = [...new Set(practice.map((q) => q.topic))].sort();
+const count = (d: string) => practice.filter((q) => q.difficulty === d).length;
+const projects = mod.slug === 'projects' ? (await getCollection('projects')).filter((p) => SHOW_DRAFTS || !p.data.draft).sort((a, b) => a.data.order - b.data.order) : [];
+const cases = mod.slug === 'business' ? (await getCollection('cases')).filter((p) => SHOW_DRAFTS || !p.data.draft) : [];
+---
+<Base title={mod.title} description={mod.blurb} sidebar>
+  <div style="max-width:52rem;margin:0 auto">
+    <nav aria-label="Breadcrumb" class="muted" style="font-size:.85rem"><a href={url('/')}>Home</a> / {mod.title}</nav>
+    <h1>{mod.title}</h1>
+    <p class="muted">{mod.blurb}</p>
+    <ModuleProgress client:load module={mod.slug} lessonIds={lessons.map((l) => l.id)} />
+    {lessons.length > 0 ? (
+      <ol style="list-style:none;padding:0;display:grid;gap:.6rem">
+        {lessons.map((l, i) => (
+          <li><a class="card" style="display:flex;gap:.8rem;text-decoration:none;color:var(--text)" href={url(l.href)}>
+            <span class="muted" style="font-weight:700;min-width:1.6rem">{i + 1}</span>
+            <span style="flex:1"><strong>{l.title}</strong><br /><span class="muted" style="font-size:.88rem">{l.entry.data.description}</span></span>
+            <span class="chip" style="align-self:center">{l.entry.data.estimatedMinutes} min</span>
+          </a></li>
+        ))}
+      </ol>
+    ) : projects.length === 0 && cases.length === 0 && <p class="card">Lessons for this module are being written.</p>}
+    {projects.length > 0 && <>
+      <h2>Projects</h2>
+      <ul style="list-style:none;padding:0;display:grid;gap:.6rem">{projects.map((p) => <li><a class="card" style="display:block;text-decoration:none;color:var(--text)" href={url(`/projects/${p.id}/`)}><strong>{p.data.title}</strong><br /><span class="muted">{p.data.businessProblem}</span> <span class="chip">{p.data.estimatedHours} h</span></a></li>)}</ul>
+    </>}
+    {cases.length > 0 && <>
+      <h2>Case studies</h2>
+      <ul style="list-style:none;padding:0;display:grid;gap:.6rem">{cases.map((p) => <li><a class="card" style="display:block;text-decoration:none;color:var(--text)" href={url(`/business/cases/${p.id}/`)}><strong>{p.data.title}</strong> <span class={`chip chip-${p.data.difficulty}`}>{p.data.difficulty}</span> <span class="chip">{p.data.industry}</span></a></li>)}</ul>
+    </>}
+    {practice.length > 0 && <>
+      <h2>Practice in this module</h2>
+      <p>{practice.length} questions: {count('easy')} easy, {count('medium')} medium, {count('hard')} hard.</p>
+      <ul>{topics.map((t) => <li><a href={url(`/practice/?module=${mod.slug}&topic=${encodeURIComponent(t)}`)}>{t}</a> ({practice.filter((q) => q.topic === t).length})</li>)}</ul>
+    </>}
+  </div>
+</Base>

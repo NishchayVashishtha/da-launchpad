@@ -1,0 +1,9 @@
+node_modules
+dist
+.venv
+.astro
+*.log
+.DS_Store
+__pycache__
+*.pyc
+reports

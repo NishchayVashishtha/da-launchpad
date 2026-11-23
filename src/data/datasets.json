@@ -1,0 +1,2606 @@
+[
+  {
+    "id": "ecommerce",
+    "title": "E-commerce: DesiCart Marketplace",
+    "description": "DesiCart is a fictional Indian online marketplace selling electronics, fashion, home goods, beauty, grocery and books across 20 cities. The data covers two years of customers, orders, line items, payments and returns (Jan 2023 to Dec 2024), including festive-season sale spikes around Diwali and the usual messiness of a real order database. Use it for revenue analysis, cohort and repeat-purchase analysis, return analysis and cleaning practice.",
+    "tables": [
+      {
+        "name": "customers",
+        "rowCount": 4520,
+        "description": "One row per registered customer (a few duplicated rows are deliberate).",
+        "columns": [
+          {
+            "name": "customer_id",
+            "type": "INTEGER",
+            "description": "Customer identifier (primary key, chronological by signup)",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "full_name",
+            "type": "TEXT",
+            "description": "Customer name",
+            "nullable": false,
+            "example": "Komal Patel"
+          },
+          {
+            "name": "email",
+            "type": "TEXT",
+            "description": "Email address (NULL for some customers)",
+            "nullable": true,
+            "example": "komal.patel@gmail.com"
+          },
+          {
+            "name": "phone",
+            "type": "TEXT",
+            "description": "10-digit Indian mobile number as text",
+            "nullable": true,
+            "example": "8799613512"
+          },
+          {
+            "name": "gender",
+            "type": "TEXT",
+            "description": "Male / Female (NULL for some)",
+            "nullable": true,
+            "example": "Female"
+          },
+          {
+            "name": "city",
+            "type": "TEXT",
+            "description": "Home city (inconsistent casing/whitespace, NULL for some)",
+            "nullable": true,
+            "example": "Delhi"
+          },
+          {
+            "name": "state",
+            "type": "TEXT",
+            "description": "Indian state of the city (NULL when city is NULL)",
+            "nullable": true,
+            "example": "Delhi"
+          },
+          {
+            "name": "signup_date",
+            "type": "DATE",
+            "description": "Account creation date (clean ISO date)",
+            "nullable": false,
+            "example": "2022-07-01"
+          },
+          {
+            "name": "signup_date_raw",
+            "type": "TEXT",
+            "description": "Signup date as typed in a legacy form: mixed formats, some NULL (for cleaning lessons)",
+            "nullable": true,
+            "example": "2022-07-01"
+          },
+          {
+            "name": "acquisition_channel",
+            "type": "TEXT",
+            "description": "Marketing channel that brought the customer",
+            "nullable": false,
+            "example": "Google Ads"
+          },
+          {
+            "name": "is_prime",
+            "type": "INTEGER",
+            "description": "1 if customer holds the paid DesiCart Prime membership",
+            "nullable": false,
+            "example": "0"
+          }
+        ]
+      },
+      {
+        "name": "products",
+        "rowCount": 420,
+        "description": "Product catalogue (~420 SKUs).",
+        "columns": [
+          {
+            "name": "product_id",
+            "type": "INTEGER",
+            "description": "Product identifier (primary key)",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "sku",
+            "type": "TEXT",
+            "description": "Stock keeping unit code",
+            "nullable": false,
+            "example": "SKU100014"
+          },
+          {
+            "name": "product_name",
+            "type": "TEXT",
+            "description": "Display name",
+            "nullable": false,
+            "example": "Lakshmi Home Decor 542"
+          },
+          {
+            "name": "category",
+            "type": "TEXT",
+            "description": "Top-level category (a few rows have inconsistent casing/whitespace)",
+            "nullable": false,
+            "example": "Home & Kitchen"
+          },
+          {
+            "name": "sub_category",
+            "type": "TEXT",
+            "description": "Sub-category",
+            "nullable": false,
+            "example": "Decor"
+          },
+          {
+            "name": "brand",
+            "type": "TEXT",
+            "description": "Fictional brand name",
+            "nullable": false,
+            "example": "Lakshmi Home"
+          },
+          {
+            "name": "mrp",
+            "type": "REAL",
+            "description": "Maximum retail price in INR",
+            "nullable": false,
+            "example": "509.0"
+          },
+          {
+            "name": "cost_price",
+            "type": "REAL",
+            "description": "Landing cost in INR",
+            "nullable": false,
+            "example": "361.58"
+          },
+          {
+            "name": "is_active",
+            "type": "INTEGER",
+            "description": "1 if currently listed",
+            "nullable": false,
+            "example": "1"
+          }
+        ]
+      },
+      {
+        "name": "orders",
+        "rowCount": 10100,
+        "description": "One row per order (about 1% exact duplicate rows are deliberate).",
+        "columns": [
+          {
+            "name": "order_id",
+            "type": "INTEGER",
+            "description": "Order identifier (duplicated for duplicate rows)",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "customer_id",
+            "type": "INTEGER",
+            "description": "FK to customers.customer_id",
+            "nullable": false,
+            "example": "934"
+          },
+          {
+            "name": "order_date",
+            "type": "DATE",
+            "description": "Date the order was placed (clean ISO in SQLite)",
+            "nullable": false,
+            "example": "2023-01-01"
+          },
+          {
+            "name": "order_time",
+            "type": "TEXT",
+            "description": "Time of day the order was placed (HH:MM:SS)",
+            "nullable": false,
+            "example": "22:08:01"
+          },
+          {
+            "name": "order_status",
+            "type": "TEXT",
+            "description": "Delivered, Cancelled or RTO (return to origin, mostly COD)",
+            "nullable": false,
+            "example": "Delivered"
+          },
+          {
+            "name": "sales_channel",
+            "type": "TEXT",
+            "description": "Android App, iOS App, Website or Mobile Web",
+            "nullable": false,
+            "example": "iOS App"
+          },
+          {
+            "name": "coupon_code",
+            "type": "TEXT",
+            "description": "Coupon applied (NULL if none)",
+            "nullable": true,
+            "example": "SAVE5"
+          },
+          {
+            "name": "discount_amount",
+            "type": "REAL",
+            "description": "Coupon discount in INR",
+            "nullable": false,
+            "example": "0.0"
+          },
+          {
+            "name": "shipping_fee",
+            "type": "REAL",
+            "description": "Shipping fee in INR (free above 499)",
+            "nullable": false,
+            "example": "0.0"
+          },
+          {
+            "name": "total_amount",
+            "type": "REAL",
+            "description": "Order value in INR after discount and shipping",
+            "nullable": false,
+            "example": "2599.2"
+          },
+          {
+            "name": "delivery_date",
+            "type": "DATE",
+            "description": "Delivery date (NULL unless delivered)",
+            "nullable": true,
+            "example": "2023-01-07"
+          }
+        ]
+      },
+      {
+        "name": "order_items",
+        "rowCount": 20157,
+        "description": "Line items of each order.",
+        "columns": [
+          {
+            "name": "order_item_id",
+            "type": "INTEGER",
+            "description": "Line item identifier (primary key)",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "order_id",
+            "type": "INTEGER",
+            "description": "FK to orders.order_id",
+            "nullable": false,
+            "example": "1"
+          },
+          {
+            "name": "product_id",
+            "type": "INTEGER",
+            "description": "FK to products.product_id",
+            "nullable": false,
+            "example": "287"
+          },
+          {
+            "name": "quantity",
+            "type": "INTEGER",
+            "description": "Units ordered",
+            "nullable": false,
+            "example": "1"
+          },
+          {
+            "name": "unit_price",
+            "type": "REAL",
+            "description": "Selling price per unit in INR after discount (a few 100x outliers)",
+            "nullable": false,
+            "example": "300.14"
+          },
+          {
+            "name": "discount_pct",
+            "type": "INTEGER",
+            "description": "Percentage discount applied on MRP",
+            "nullable": false,
+            "example": "14"
+          },
+          {
+            "name": "line_total",
+            "type": "REAL",
+            "description": "unit_price x quantity in INR",
+            "nullable": false,
+            "example": "300.14"
+          }
+        ]
+      },
+      {
+        "name": "payments",
+        "rowCount": 10399,
+        "description": "Payment attempts (some orders have a failed attempt followed by a success).",
+        "columns": [
+          {
+            "name": "payment_id",
+            "type": "INTEGER",
+            "description": "Payment identifier (primary key)",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "order_id",
+            "type": "INTEGER",
+            "description": "FK to orders.order_id",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "payment_method",
+            "type": "TEXT",
+            "description": "UPI, Credit Card, Debit Card, COD, Netbanking or Wallet",
+            "nullable": false,
+            "example": "UPI"
+          },
+          {
+            "name": "amount",
+            "type": "REAL",
+            "description": "Amount in INR",
+            "nullable": false,
+            "example": "2599.2"
+          },
+          {
+            "name": "payment_status",
+            "type": "TEXT",
+            "description": "Success, Failed or Refunded",
+            "nullable": false,
+            "example": "Success"
+          },
+          {
+            "name": "payment_date",
+            "type": "DATE",
+            "description": "Date of payment (delivery date for COD)",
+            "nullable": false,
+            "example": "2023-01-01"
+          },
+          {
+            "name": "transaction_ref",
+            "type": "TEXT",
+            "description": "Gateway reference (NULL for COD)",
+            "nullable": true,
+            "example": "TXN3375021494"
+          }
+        ]
+      },
+      {
+        "name": "returns",
+        "rowCount": 1909,
+        "description": "Returned line items.",
+        "columns": [
+          {
+            "name": "return_id",
+            "type": "INTEGER",
+            "description": "Return identifier (primary key)",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "order_item_id",
+            "type": "INTEGER",
+            "description": "FK to order_items.order_item_id",
+            "nullable": false,
+            "example": "36"
+          },
+          {
+            "name": "order_id",
+            "type": "INTEGER",
+            "description": "FK to orders.order_id",
+            "nullable": false,
+            "example": "21"
+          },
+          {
+            "name": "return_date",
+            "type": "DATE",
+            "description": "Date the return was raised",
+            "nullable": false,
+            "example": "2023-01-14"
+          },
+          {
+            "name": "return_reason",
+            "type": "TEXT",
+            "description": "Customer reason",
+            "nullable": false,
+            "example": "Wrong item sent"
+          },
+          {
+            "name": "return_status",
+            "type": "TEXT",
+            "description": "Refunded, Rejected or Pickup Pending",
+            "nullable": false,
+            "example": "Refunded"
+          },
+          {
+            "name": "refund_amount",
+            "type": "REAL",
+            "description": "Refund in INR (NULL when rejected)",
+            "nullable": true,
+            "example": "971.28"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "orders.customer_id",
+        "to": "customers.customer_id",
+        "type": "many-to-one"
+      },
+      {
+        "from": "order_items.order_id",
+        "to": "orders.order_id",
+        "type": "many-to-one"
+      },
+      {
+        "from": "order_items.product_id",
+        "to": "products.product_id",
+        "type": "many-to-one"
+      },
+      {
+        "from": "payments.order_id",
+        "to": "orders.order_id",
+        "type": "many-to-one"
+      },
+      {
+        "from": "returns.order_item_id",
+        "to": "order_items.order_item_id",
+        "type": "many-to-one"
+      },
+      {
+        "from": "returns.order_id",
+        "to": "orders.order_id",
+        "type": "many-to-one"
+      }
+    ],
+    "qualityIssues": [
+      "orders: ~1% of rows (about 100) are exact duplicates (same order_id repeated); so orders.order_id has no PRIMARY KEY constraint.",
+      "customers: 20 exact duplicate customer rows; customers.customer_id is therefore not unique.",
+      "customers.email is NULL for ~8% of rows, phone ~3%, gender ~4%, city ~3% (state is NULL whenever city is NULL).",
+      "customers.city: ~10% of values have inconsistent casing or stray whitespace ('mumbai', ' Mumbai', 'DELHI ').",
+      "customers.signup_date_raw: free-text dates in four formats (YYYY-MM-DD, DD/MM/YYYY, '5 Mar 2023', 'Mar 5, 2023') and ~3% NULL; signup_date holds the clean value.",
+      "products.category: ~2% of values have inconsistent casing or whitespace.",
+      "order_items.unit_price: 12 rows are 100x too high (entry errors) which inflates order totals for those orders.",
+      "CSV only - orders.order_date: ~18% of rows are written as DD-MM-YYYY instead of YYYY-MM-DD.",
+      "CSV only - orders.total_amount: ~12% of rows are text like '₹1,234.50' (symbol and thousands commas).",
+      "CSV only - returns.refund_amount: ~50% of rows are text with rupee symbol and Indian digit grouping (e.g. '₹1,23,456.00').",
+      "payments: ~5% of online-paid orders have an extra earlier 'Failed' attempt row, so order_id is not unique in payments."
+    ],
+    "er": "erDiagram\n  customers {\n    INTEGER customer_id PK\n    TEXT full_name\n    TEXT email\n    TEXT phone\n    TEXT gender\n    TEXT city\n    TEXT state\n    TEXT signup_date\n    TEXT signup_date_raw\n    TEXT acquisition_channel\n    INTEGER is_prime\n  }\n  products {\n    INTEGER product_id PK\n    TEXT sku\n    TEXT product_name\n    TEXT category\n    TEXT sub_category\n    TEXT brand\n    REAL mrp\n    REAL cost_price\n    INTEGER is_active\n  }\n  orders {\n    INTEGER order_id PK\n    INTEGER customer_id FK\n    TEXT order_date\n    TEXT order_time\n    TEXT order_status\n    TEXT sales_channel\n    TEXT coupon_code\n    REAL discount_amount\n    REAL shipping_fee\n    REAL total_amount\n    TEXT delivery_date\n  }\n  order_items {\n    INTEGER order_item_id PK\n    INTEGER order_id FK\n    INTEGER product_id FK\n    INTEGER quantity\n    REAL unit_price\n    INTEGER discount_pct\n    REAL line_total\n  }\n  payments {\n    INTEGER payment_id PK\n    INTEGER order_id FK\n    TEXT payment_method\n    REAL amount\n    TEXT payment_status\n    TEXT payment_date\n    TEXT transaction_ref\n  }\n  returns {\n    INTEGER return_id PK\n    INTEGER order_item_id FK\n    INTEGER order_id FK\n    TEXT return_date\n    TEXT return_reason\n    TEXT return_status\n    REAL refund_amount\n  }\n  customers ||--o{ orders : \"customer_id\"\n  orders ||--o{ order_items : \"order_id\"\n  products ||--o{ order_items : \"product_id\"\n  orders ||--o{ payments : \"order_id\"\n  order_items ||--o{ returns : \"order_item_id\"\n  orders ||--o{ returns : \"order_id\"",
+    "downloads": {
+      "sqlite": "data/sqlite/ecommerce.sqlite",
+      "zip": "data/zip/ecommerce.zip",
+      "csv": [
+        "data/csv/ecommerce/customers.csv",
+        "data/csv/ecommerce/products.csv",
+        "data/csv/ecommerce/orders.csv",
+        "data/csv/ecommerce/order_items.csv",
+        "data/csv/ecommerce/payments.csv",
+        "data/csv/ecommerce/returns.csv"
+      ]
+    },
+    "signals": [
+      "[Instructor note] Festive spikes: order volume rises ~1.5-1.9x in the Diwali windows (Oct 8-16 2023, Nov 6-14 2023, Sep 27-Oct 6 2024, Oct 24-Nov 3 2024); weekends are ~18% higher; steady growth through 2024.",
+      "[Instructor note] Fashion and Footwear have return rates of ~21% and ~15% (mostly 'Size / fit issue'), versus ~1% for Grocery.",
+      "[Instructor note] COD orders are cancelled ~11% of the time and RTO another ~7%, versus ~3.5% cancellation for prepaid.",
+      "[Instructor note] Tier-2 cities use COD far more (~34% vs ~18%) and have longer delivery times.",
+      "[Instructor note] Prime members (22% of customers) place roughly twice the orders; customer activity is heavy-tailed (a minority of customers drive most orders).",
+      "[Instructor note] Data-entry outliers (12 order_items with 100x unit_price) distort average order value unless handled."
+    ]
+  },
+  {
+    "id": "food_delivery",
+    "title": "Food Delivery: ThaliDash",
+    "description": "ThaliDash is a fictional Indian food-delivery platform operating in 10 cities with 600 partner restaurants and 900 delivery partners. Two years of deliveries, ratings and promo redemptions capture lunch and dinner peaks, IPL-season surges and monsoon disruption. Use it to study delivery time, SLA breaches, customer ratings, partner performance and promo ROI.",
+    "tables": [
+      {
+        "name": "restaurants",
+        "rowCount": 600,
+        "description": "Partner restaurants.",
+        "columns": [
+          {
+            "name": "restaurant_id",
+            "type": "INTEGER",
+            "description": "Restaurant identifier (primary key)",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "restaurant_name",
+            "type": "TEXT",
+            "description": "Restaurant display name (not unique)",
+            "nullable": false,
+            "example": "Masala Kitchen"
+          },
+          {
+            "name": "cuisine",
+            "type": "TEXT",
+            "description": "Main cuisine",
+            "nullable": false,
+            "example": "Biryani"
+          },
+          {
+            "name": "city",
+            "type": "TEXT",
+            "description": "City (inconsistent casing/whitespace, ~2% NULL)",
+            "nullable": true,
+            "example": "Kolkata"
+          },
+          {
+            "name": "price_band",
+            "type": "TEXT",
+            "description": "Budget, Mid or Premium",
+            "nullable": false,
+            "example": "Budget"
+          },
+          {
+            "name": "avg_prep_minutes",
+            "type": "INTEGER",
+            "description": "Typical kitchen preparation time",
+            "nullable": false,
+            "example": "12"
+          },
+          {
+            "name": "is_cloud_kitchen",
+            "type": "INTEGER",
+            "description": "1 if delivery-only kitchen",
+            "nullable": false,
+            "example": "0"
+          },
+          {
+            "name": "onboarded_date",
+            "type": "DATE",
+            "description": "Date the restaurant joined the platform",
+            "nullable": false,
+            "example": "2021-09-15"
+          }
+        ]
+      },
+      {
+        "name": "delivery_partners",
+        "rowCount": 908,
+        "description": "Delivery riders (a few duplicate rows are deliberate).",
+        "columns": [
+          {
+            "name": "partner_id",
+            "type": "INTEGER",
+            "description": "Partner identifier",
+            "nullable": false,
+            "example": "2"
+          },
+          {
+            "name": "partner_name",
+            "type": "TEXT",
+            "description": "Rider name",
+            "nullable": false,
+            "example": "Kunal Shah"
+          },
+          {
+            "name": "city",
+            "type": "TEXT",
+            "description": "Operating city (inconsistent casing)",
+            "nullable": false,
+            "example": "Lucknow"
+          },
+          {
+            "name": "vehicle_type",
+            "type": "TEXT",
+            "description": "Bike, EV Scooter or Bicycle",
+            "nullable": false,
+            "example": "Bike"
+          },
+          {
+            "name": "joined_date",
+            "type": "DATE",
+            "description": "Date the rider joined",
+            "nullable": false,
+            "example": "2022-12-23"
+          },
+          {
+            "name": "phone",
+            "type": "TEXT",
+            "description": "Mobile number (NULL for ~5%)",
+            "nullable": true,
+            "example": "9114230551"
+          },
+          {
+            "name": "is_active",
+            "type": "INTEGER",
+            "description": "1 if currently active",
+            "nullable": false,
+            "example": "1"
+          }
+        ]
+      },
+      {
+        "name": "deliveries",
+        "rowCount": 15120,
+        "description": "One row per order/delivery (~0.8% exact duplicate rows are deliberate).",
+        "columns": [
+          {
+            "name": "delivery_id",
+            "type": "INTEGER",
+            "description": "Delivery identifier (duplicated for duplicate rows)",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "restaurant_id",
+            "type": "INTEGER",
+            "description": "FK to restaurants.restaurant_id",
+            "nullable": false,
+            "example": "34"
+          },
+          {
+            "name": "partner_id",
+            "type": "INTEGER",
+            "description": "FK to delivery_partners.partner_id",
+            "nullable": false,
+            "example": "391"
+          },
+          {
+            "name": "customer_id",
+            "type": "INTEGER",
+            "description": "Anonymous customer id (no customer table)",
+            "nullable": false,
+            "example": "3913"
+          },
+          {
+            "name": "city",
+            "type": "TEXT",
+            "description": "Customer city (a few casing issues)",
+            "nullable": false,
+            "example": "Hyderabad"
+          },
+          {
+            "name": "order_date",
+            "type": "DATE",
+            "description": "Date the order was placed",
+            "nullable": false,
+            "example": "2023-01-01"
+          },
+          {
+            "name": "order_time",
+            "type": "DATETIME",
+            "description": "Timestamp the order was placed",
+            "nullable": false,
+            "example": "2023-01-01 09:35:27"
+          },
+          {
+            "name": "delivered_time",
+            "type": "DATETIME",
+            "description": "Timestamp of delivery (NULL if cancelled)",
+            "nullable": true,
+            "example": "2023-01-01 10:10:27"
+          },
+          {
+            "name": "distance_km",
+            "type": "REAL",
+            "description": "Restaurant to customer distance",
+            "nullable": false,
+            "example": "4.2"
+          },
+          {
+            "name": "promised_minutes",
+            "type": "INTEGER",
+            "description": "ETA promised to the customer",
+            "nullable": false,
+            "example": "40"
+          },
+          {
+            "name": "actual_minutes",
+            "type": "INTEGER",
+            "description": "Actual minutes from order to delivery (NULL if cancelled)",
+            "nullable": true,
+            "example": "35"
+          },
+          {
+            "name": "delay_minutes",
+            "type": "INTEGER",
+            "description": "actual_minutes minus promised_minutes (NULL if cancelled; negative = early)",
+            "nullable": true,
+            "example": "-5"
+          },
+          {
+            "name": "order_value",
+            "type": "REAL",
+            "description": "Food order value in INR (8 rows are 100x outliers)",
+            "nullable": false,
+            "example": "177.0"
+          },
+          {
+            "name": "delivery_fee",
+            "type": "REAL",
+            "description": "Delivery fee in INR",
+            "nullable": false,
+            "example": "32.0"
+          },
+          {
+            "name": "payment_mode",
+            "type": "TEXT",
+            "description": "UPI, Card, Cash on Delivery or Wallet",
+            "nullable": false,
+            "example": "UPI"
+          },
+          {
+            "name": "weather",
+            "type": "TEXT",
+            "description": "Clear, Cloudy, Rain or Heavy Rain at delivery",
+            "nullable": false,
+            "example": "Clear"
+          },
+          {
+            "name": "delivery_status",
+            "type": "TEXT",
+            "description": "Delivered or Cancelled",
+            "nullable": false,
+            "example": "Delivered"
+          },
+          {
+            "name": "cancel_reason",
+            "type": "TEXT",
+            "description": "Reason when cancelled, else NULL",
+            "nullable": true,
+            "example": "Customer cancelled"
+          }
+        ]
+      },
+      {
+        "name": "ratings",
+        "rowCount": 8630,
+        "description": "Customer ratings for ~60-70% of delivered orders.",
+        "columns": [
+          {
+            "name": "rating_id",
+            "type": "INTEGER",
+            "description": "Rating identifier (primary key)",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "delivery_id",
+            "type": "INTEGER",
+            "description": "FK to deliveries.delivery_id",
+            "nullable": false,
+            "example": "6"
+          },
+          {
+            "name": "restaurant_id",
+            "type": "INTEGER",
+            "description": "FK to restaurants.restaurant_id",
+            "nullable": false,
+            "example": "202"
+          },
+          {
+            "name": "partner_id",
+            "type": "INTEGER",
+            "description": "FK to delivery_partners.partner_id",
+            "nullable": false,
+            "example": "319"
+          },
+          {
+            "name": "food_rating",
+            "type": "INTEGER",
+            "description": "1-5 food rating",
+            "nullable": false,
+            "example": "4"
+          },
+          {
+            "name": "delivery_rating",
+            "type": "INTEGER",
+            "description": "1-5 delivery rating",
+            "nullable": false,
+            "example": "5"
+          },
+          {
+            "name": "overall_rating",
+            "type": "INTEGER",
+            "description": "1-5 overall rating",
+            "nullable": false,
+            "example": "5"
+          },
+          {
+            "name": "review_text",
+            "type": "TEXT",
+            "description": "Free-text review (NULL for ~55%)",
+            "nullable": true,
+            "example": "Delivery was quick"
+          },
+          {
+            "name": "rated_at",
+            "type": "DATETIME",
+            "description": "Timestamp the rating was left",
+            "nullable": false,
+            "example": "2023-01-01 19:41:25"
+          }
+        ]
+      },
+      {
+        "name": "promo_usage",
+        "rowCount": 5474,
+        "description": "Promo code redemptions on deliveries.",
+        "columns": [
+          {
+            "name": "usage_id",
+            "type": "INTEGER",
+            "description": "Redemption identifier (primary key)",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "delivery_id",
+            "type": "INTEGER",
+            "description": "FK to deliveries.delivery_id",
+            "nullable": false,
+            "example": "11"
+          },
+          {
+            "name": "promo_code",
+            "type": "TEXT",
+            "description": "Promo code (a few casing inconsistencies)",
+            "nullable": false,
+            "example": "WELCOME50"
+          },
+          {
+            "name": "discount_amount",
+            "type": "REAL",
+            "description": "Discount given in INR",
+            "nullable": false,
+            "example": "100.0"
+          },
+          {
+            "name": "is_new_user",
+            "type": "INTEGER",
+            "description": "1 if redemption by a first-time user",
+            "nullable": false,
+            "example": "1"
+          },
+          {
+            "name": "used_at",
+            "type": "DATETIME",
+            "description": "Timestamp of redemption (equals order time)",
+            "nullable": false,
+            "example": "2023-01-01 15:59:43"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "deliveries.restaurant_id",
+        "to": "restaurants.restaurant_id",
+        "type": "many-to-one"
+      },
+      {
+        "from": "deliveries.partner_id",
+        "to": "delivery_partners.partner_id",
+        "type": "many-to-one"
+      },
+      {
+        "from": "ratings.delivery_id",
+        "to": "deliveries.delivery_id",
+        "type": "many-to-one"
+      },
+      {
+        "from": "ratings.restaurant_id",
+        "to": "restaurants.restaurant_id",
+        "type": "many-to-one"
+      },
+      {
+        "from": "ratings.partner_id",
+        "to": "delivery_partners.partner_id",
+        "type": "many-to-one"
+      },
+      {
+        "from": "promo_usage.delivery_id",
+        "to": "deliveries.delivery_id",
+        "type": "many-to-one"
+      }
+    ],
+    "qualityIssues": [
+      "deliveries: ~0.8% of rows (about 120) are exact duplicates by delivery_id, so delivery_id has no PRIMARY KEY constraint.",
+      "delivery_partners: 8 exact duplicate partner rows.",
+      "deliveries.actual_minutes, delay_minutes, delivered_time and cancel_reason are NULL by design for cancelled orders (~5-6% of rows).",
+      "deliveries.order_value: 8 rows are 100x outliers (e.g. 41,200 instead of 412).",
+      "restaurants.city ~8% and delivery_partners.city ~6% (and deliveries.city ~3%) have inconsistent casing or whitespace; restaurants.city ~2% NULL; delivery_partners.phone ~5% NULL.",
+      "promo_usage.promo_code: ~4% of values have inconsistent casing/whitespace.",
+      "CSV only - deliveries.order_time: ~15% of rows are DD-MM-YYYY HH:MM:SS instead of ISO.",
+      "CSV only - deliveries.order_value: ~15% of rows are text with rupee symbol and Indian grouping (e.g. '₹1,250').",
+      "CSV only - ratings.rated_at: ~25% of rows in DD-MM-YYYY format.",
+      "CSV only - promo_usage.discount_amount: ~20% of rows are text like '₹75.00'."
+    ],
+    "er": "erDiagram\n  restaurants {\n    INTEGER restaurant_id PK\n    TEXT restaurant_name\n    TEXT cuisine\n    TEXT city\n    TEXT price_band\n    INTEGER avg_prep_minutes\n    INTEGER is_cloud_kitchen\n    TEXT onboarded_date\n  }\n  delivery_partners {\n    INTEGER partner_id PK\n    TEXT partner_name\n    TEXT city\n    TEXT vehicle_type\n    TEXT joined_date\n    TEXT phone\n    INTEGER is_active\n  }\n  deliveries {\n    INTEGER delivery_id PK\n    INTEGER restaurant_id FK\n    INTEGER partner_id FK\n    INTEGER customer_id\n    TEXT city\n    TEXT order_date\n    TEXT order_time\n    TEXT delivered_time\n    REAL distance_km\n    INTEGER promised_minutes\n    INTEGER actual_minutes\n    INTEGER delay_minutes\n    REAL order_value\n    REAL delivery_fee\n    TEXT payment_mode\n    TEXT weather\n    TEXT delivery_status\n    TEXT cancel_reason\n  }\n  ratings {\n    INTEGER rating_id PK\n    INTEGER delivery_id FK\n    INTEGER restaurant_id FK\n    INTEGER partner_id FK\n    INTEGER food_rating\n    INTEGER delivery_rating\n    INTEGER overall_rating\n    TEXT review_text\n    TEXT rated_at\n  }\n  promo_usage {\n    INTEGER usage_id PK\n    INTEGER delivery_id FK\n    TEXT promo_code\n    REAL discount_amount\n    INTEGER is_new_user\n    TEXT used_at\n  }\n  restaurants ||--o{ deliveries : \"restaurant_id\"\n  delivery_partners ||--o{ deliveries : \"partner_id\"\n  deliveries ||--o{ ratings : \"delivery_id\"\n  restaurants ||--o{ ratings : \"restaurant_id\"\n  delivery_partners ||--o{ ratings : \"partner_id\"\n  deliveries ||--o{ promo_usage : \"delivery_id\"",
+    "downloads": {
+      "sqlite": "data/sqlite/food_delivery.sqlite",
+      "zip": "data/zip/food_delivery.zip",
+      "csv": [
+        "data/csv/food_delivery/restaurants.csv",
+        "data/csv/food_delivery/delivery_partners.csv",
+        "data/csv/food_delivery/deliveries.csv",
+        "data/csv/food_delivery/ratings.csv",
+        "data/csv/food_delivery/promo_usage.csv"
+      ]
+    },
+    "signals": [
+      "[Instructor note] Delivery delay drives ratings: delivery_rating falls ~0.075 per minute of delay; late (delay > 10 min) orders average roughly 1-1.5 points lower than on-time orders; unhappy customers are also more likely to rate.",
+      "[Instructor note] Heavy Rain and Rain days (Mumbai/Kolkata/Pune Jun-Sep, Chennai Oct-Dec) add 6-13 minutes and raise cancellation rates (~3.5% base up to ~8%).",
+      "[Instructor note] Lunch (12-13h) and dinner (20-21h) peaks have longer waits; weekends are ~25% busier; order volume rises ~1.3x during IPL months (Mar 22-May 26 2024, Mar 31-May 28 2023).",
+      "[Instructor note] Partners in their first ~60 days are ~5 minutes slower; a skill factor per partner creates a spread in partner performance.",
+      "[Instructor note] FLAT75 is applied heavily to low-value orders (discount is a large share of order value), making it the worst-ROI promo; WELCOME50 drives new-user orders; IPLFEAST and MONSOON20 only appear in their seasons.",
+      "[Instructor note] Restaurant food quality varies independently of delivery speed (food_rating vs delivery_rating can be separated by analysts).",
+      "[Instructor note] 8 outlier order_values (100x) distort average order value."
+    ]
+  },
+  {
+    "id": "hr",
+    "title": "HR Analytics: Nirmaan Technologies",
+    "description": "Nirmaan Technologies is a fictional 2,400-person Indian tech and services company with eight departments across Bengaluru, Mumbai, Pune, Hyderabad, Chennai and Delhi. The dataset links employees to appraisal-cycle salary changes, half-yearly performance reviews and exits during 2023-2024. Use it to analyse attrition drivers, pay equity, hike policy and workforce planning.",
+    "tables": [
+      {
+        "name": "departments",
+        "rowCount": 8,
+        "description": "Eight departments with budget and head.",
+        "columns": [
+          {
+            "name": "department_id",
+            "type": "INTEGER",
+            "description": "Department identifier (primary key)",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "department_name",
+            "type": "TEXT",
+            "description": "Department name",
+            "nullable": false,
+            "example": "Marketing"
+          },
+          {
+            "name": "department_head",
+            "type": "TEXT",
+            "description": "Name of the department head",
+            "nullable": false,
+            "example": "Sameer Joshi"
+          },
+          {
+            "name": "location",
+            "type": "TEXT",
+            "description": "Main office location",
+            "nullable": false,
+            "example": "Mumbai"
+          },
+          {
+            "name": "annual_budget_inr",
+            "type": "INTEGER",
+            "description": "Annual budget in INR",
+            "nullable": false,
+            "example": "90000000"
+          },
+          {
+            "name": "cost_center_code",
+            "type": "TEXT",
+            "description": "Finance cost-centre code",
+            "nullable": false,
+            "example": "CC120"
+          }
+        ]
+      },
+      {
+        "name": "employees",
+        "rowCount": 2412,
+        "description": "One row per employee ever employed 2023-2024 (12 duplicate rows are deliberate).",
+        "columns": [
+          {
+            "name": "employee_id",
+            "type": "INTEGER",
+            "description": "Employee identifier (duplicated for the duplicate rows)",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "full_name",
+            "type": "TEXT",
+            "description": "Employee name",
+            "nullable": false,
+            "example": "Venkat Chatterjee"
+          },
+          {
+            "name": "gender",
+            "type": "TEXT",
+            "description": "Male/Female with some abbreviated 'M'/'F' values",
+            "nullable": false,
+            "example": "Male"
+          },
+          {
+            "name": "date_of_birth",
+            "type": "DATE",
+            "description": "Date of birth",
+            "nullable": false,
+            "example": "1979-03-07"
+          },
+          {
+            "name": "email",
+            "type": "TEXT",
+            "description": "Work email (NULL for ~4%)",
+            "nullable": true,
+            "example": "venkat.chatterjee998@nirmaan-tech.in"
+          },
+          {
+            "name": "hire_date",
+            "type": "DATE",
+            "description": "Date of joining (2014 to Nov 2024)",
+            "nullable": false,
+            "example": "2014-01-05"
+          },
+          {
+            "name": "department_id",
+            "type": "INTEGER",
+            "description": "FK to departments.department_id",
+            "nullable": false,
+            "example": "8"
+          },
+          {
+            "name": "job_title",
+            "type": "TEXT",
+            "description": "Job title",
+            "nullable": false,
+            "example": "UX Designer"
+          },
+          {
+            "name": "job_level",
+            "type": "TEXT",
+            "description": "Junior, Mid, Senior, Lead or Manager",
+            "nullable": false,
+            "example": "Mid"
+          },
+          {
+            "name": "manager_id",
+            "type": "INTEGER",
+            "description": "FK to employees.employee_id (NULL for top managers)",
+            "nullable": true,
+            "example": "1285"
+          },
+          {
+            "name": "city",
+            "type": "TEXT",
+            "description": "Work city (casing/whitespace issues, ~2% NULL)",
+            "nullable": true,
+            "example": "Bengaluru"
+          },
+          {
+            "name": "employment_type",
+            "type": "TEXT",
+            "description": "Full-time, Contract or Intern",
+            "nullable": false,
+            "example": "Full-time"
+          },
+          {
+            "name": "work_mode",
+            "type": "TEXT",
+            "description": "Hybrid, Office or Remote",
+            "nullable": false,
+            "example": "Hybrid"
+          },
+          {
+            "name": "employment_status",
+            "type": "TEXT",
+            "description": "Active or Exited (matches the attrition table)",
+            "nullable": false,
+            "example": "Active"
+          }
+        ]
+      },
+      {
+        "name": "salaries",
+        "rowCount": 5259,
+        "description": "Salary history: opening/joining CTC and April appraisal revisions.",
+        "columns": [
+          {
+            "name": "salary_id",
+            "type": "INTEGER",
+            "description": "Salary record identifier (primary key)",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "employee_id",
+            "type": "INTEGER",
+            "description": "FK to employees.employee_id",
+            "nullable": false,
+            "example": "1"
+          },
+          {
+            "name": "effective_date",
+            "type": "DATE",
+            "description": "Date the CTC became effective",
+            "nullable": false,
+            "example": "2024-04-01"
+          },
+          {
+            "name": "annual_ctc",
+            "type": "REAL",
+            "description": "Annual cost-to-company in INR (5 rows are 100x outliers)",
+            "nullable": false,
+            "example": "628000.0"
+          },
+          {
+            "name": "hike_pct",
+            "type": "REAL",
+            "description": "Percentage hike versus the previous CTC (NULL for opening/joining rows)",
+            "nullable": true,
+            "example": "3.5"
+          },
+          {
+            "name": "change_reason",
+            "type": "TEXT",
+            "description": "Opening balance, Joining, Annual Appraisal or Promotion",
+            "nullable": false,
+            "example": "Annual Appraisal"
+          }
+        ]
+      },
+      {
+        "name": "attrition",
+        "rowCount": 544,
+        "description": "One row per employee who left in 2023-2024.",
+        "columns": [
+          {
+            "name": "attrition_id",
+            "type": "INTEGER",
+            "description": "Attrition record identifier (primary key)",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "employee_id",
+            "type": "INTEGER",
+            "description": "FK to employees.employee_id",
+            "nullable": false,
+            "example": "669"
+          },
+          {
+            "name": "exit_date",
+            "type": "DATE",
+            "description": "Last working date",
+            "nullable": false,
+            "example": "2023-01-14"
+          },
+          {
+            "name": "exit_type",
+            "type": "TEXT",
+            "description": "Resignation, Termination, Retirement or End of Contract",
+            "nullable": false,
+            "example": "Resignation"
+          },
+          {
+            "name": "exit_reason",
+            "type": "TEXT",
+            "description": "Recorded reason",
+            "nullable": false,
+            "example": "Better compensation"
+          },
+          {
+            "name": "notice_period_days",
+            "type": "INTEGER",
+            "description": "Notice period served in days",
+            "nullable": false,
+            "example": "30"
+          },
+          {
+            "name": "regretted_loss",
+            "type": "INTEGER",
+            "description": "1 if a high performer resigned",
+            "nullable": false,
+            "example": "0"
+          },
+          {
+            "name": "exit_interview_score",
+            "type": "INTEGER",
+            "description": "1-5 exit interview score (NULL for ~30%)",
+            "nullable": true,
+            "example": "3"
+          }
+        ]
+      },
+      {
+        "name": "performance_reviews",
+        "rowCount": 4786,
+        "description": "Half-yearly reviews 2023-H1 to 2024-H1 (10 duplicate rows are deliberate).",
+        "columns": [
+          {
+            "name": "review_id",
+            "type": "INTEGER",
+            "description": "Review identifier (duplicated for duplicate rows)",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "employee_id",
+            "type": "INTEGER",
+            "description": "FK to employees.employee_id",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "review_period",
+            "type": "TEXT",
+            "description": "Period label such as 2023-H1",
+            "nullable": false,
+            "example": "2023-H1"
+          },
+          {
+            "name": "review_date",
+            "type": "DATE",
+            "description": "Date the review was recorded",
+            "nullable": false,
+            "example": "2023-07-24"
+          },
+          {
+            "name": "manager_rating",
+            "type": "INTEGER",
+            "description": "Manager rating 1-5",
+            "nullable": false,
+            "example": "2"
+          },
+          {
+            "name": "self_rating",
+            "type": "INTEGER",
+            "description": "Self-assessment rating 1-5",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "goals_met_pct",
+            "type": "INTEGER",
+            "description": "Percentage of goals met",
+            "nullable": false,
+            "example": "43"
+          },
+          {
+            "name": "avg_monthly_overtime_hours",
+            "type": "REAL",
+            "description": "Average monthly overtime hours in the period",
+            "nullable": false,
+            "example": "4.3"
+          },
+          {
+            "name": "promotion_recommended",
+            "type": "INTEGER",
+            "description": "1 if manager recommended promotion",
+            "nullable": false,
+            "example": "0"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "employees.department_id",
+        "to": "departments.department_id",
+        "type": "many-to-one"
+      },
+      {
+        "from": "employees.manager_id",
+        "to": "employees.employee_id",
+        "type": "many-to-one"
+      },
+      {
+        "from": "salaries.employee_id",
+        "to": "employees.employee_id",
+        "type": "many-to-one"
+      },
+      {
+        "from": "attrition.employee_id",
+        "to": "employees.employee_id",
+        "type": "many-to-one"
+      },
+      {
+        "from": "performance_reviews.employee_id",
+        "to": "employees.employee_id",
+        "type": "many-to-one"
+      }
+    ],
+    "qualityIssues": [
+      "employees: 12 exact duplicate rows (same employee_id twice), so employee_id has no PRIMARY KEY constraint; performance_reviews: 10 exact duplicate rows.",
+      "employees.gender: ~6% of rows use 'M'/'F' instead of 'Male'/'Female'.",
+      "employees.city: ~9% have inconsistent casing/whitespace ('pune', ' Pune'), ~2% NULL; employees.email ~4% NULL.",
+      "employees.manager_id is NULL for top-level managers (~5% of employees).",
+      "salaries.annual_ctc: 5 rows are 100x outliers (e.g. 120,000,000 instead of 1,200,000).",
+      "salaries.hike_pct is NULL for opening-balance and joining rows (about 45% of salary rows).",
+      "attrition.exit_interview_score is NULL for ~30% of exits.",
+      "CSV only - employees.hire_date and employees.date_of_birth: ~20% of rows are DD-MM-YYYY.",
+      "CSV only - salaries.annual_ctc: ~30% of rows are text with rupee symbol and Indian grouping (e.g. '₹12,50,000').",
+      "CSV only - performance_reviews.review_date: ~15% of rows are DD-MM-YYYY."
+    ],
+    "er": "erDiagram\n  departments {\n    INTEGER department_id PK\n    TEXT department_name\n    TEXT department_head\n    TEXT location\n    INTEGER annual_budget_inr\n    TEXT cost_center_code\n  }\n  employees {\n    INTEGER employee_id PK\n    TEXT full_name\n    TEXT gender\n    TEXT date_of_birth\n    TEXT email\n    TEXT hire_date\n    INTEGER department_id FK\n    TEXT job_title\n    TEXT job_level\n    INTEGER manager_id FK\n    TEXT city\n    TEXT employment_type\n    TEXT work_mode\n    TEXT employment_status\n  }\n  salaries {\n    INTEGER salary_id PK\n    INTEGER employee_id FK\n    TEXT effective_date\n    REAL annual_ctc\n    REAL hike_pct\n    TEXT change_reason\n  }\n  attrition {\n    INTEGER attrition_id PK\n    INTEGER employee_id FK\n    TEXT exit_date\n    TEXT exit_type\n    TEXT exit_reason\n    INTEGER notice_period_days\n    INTEGER regretted_loss\n    INTEGER exit_interview_score\n  }\n  performance_reviews {\n    INTEGER review_id PK\n    INTEGER employee_id FK\n    TEXT review_period\n    TEXT review_date\n    INTEGER manager_rating\n    INTEGER self_rating\n    INTEGER goals_met_pct\n    REAL avg_monthly_overtime_hours\n    INTEGER promotion_recommended\n  }\n  departments ||--o{ employees : \"department_id\"\n  employees ||--o{ employees : \"manager_id\"\n  employees ||--o{ salaries : \"employee_id\"\n  employees ||--o{ attrition : \"employee_id\"\n  employees ||--o{ performance_reviews : \"employee_id\"",
+    "downloads": {
+      "sqlite": "data/sqlite/hr.sqlite",
+      "zip": "data/zip/hr.zip",
+      "csv": [
+        "data/csv/hr/departments.csv",
+        "data/csv/hr/employees.csv",
+        "data/csv/hr/salaries.csv",
+        "data/csv/hr/attrition.csv",
+        "data/csv/hr/performance_reviews.csv"
+      ]
+    },
+    "signals": [
+      "[Instructor note] Attrition is driven by (a) low manager ratings, (b) high average overtime (> ~10 h/month), and (c) low appraisal hikes (< ~4%); employees with all three leave at several times the base rate.",
+      "[Instructor note] Customer Support, Sales and Operations have the highest attrition; Finance and HR the lowest; employees with < 2 years tenure leave more.",
+      "[Instructor note] Exits spike in April-June (post-appraisal) and Nov-Jan (post-bonus).",
+      "[Instructor note] Hike % tracks performance (about +3 points per rating step) while Sales gets ~1 point lower hikes.",
+      "[Instructor note] Customer Support has the lowest CTC but the highest overtime; Engineering and Product pay ~25-30% more than average.",
+      "[Instructor note] Overtime-heavy exits cite 'Work-life balance / overtime' far more often in exit_reason.",
+      "[Instructor note] 5 salary outliers (100x) distort average CTC unless excluded."
+    ]
+  },
+  {
+    "id": "fintech",
+    "title": "Fintech: UPI-style Payments (PayZippy and friends)",
+    "description": "A fictional UPI-style digital payments ecosystem with five payment apps, eight banks and 400 merchants across India. Transactions cover P2P transfers, merchant payments, bill payments and recharges over two years, with salary-day, festive and evening peaks plus bank outages. Use it for failure-rate analysis, peak-hour load, merchant category insights and simple fraud-flag exploration.",
+    "tables": [
+      {
+        "name": "users",
+        "rowCount": 4010,
+        "description": "App users (10 duplicate rows are deliberate).",
+        "columns": [
+          {
+            "name": "user_id",
+            "type": "INTEGER",
+            "description": "User identifier (duplicated for duplicate rows)",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "full_name",
+            "type": "TEXT",
+            "description": "User name",
+            "nullable": false,
+            "example": "Harpreet Shetty"
+          },
+          {
+            "name": "phone",
+            "type": "TEXT",
+            "description": "Mobile number (NULL ~2%)",
+            "nullable": true,
+            "example": "9571738952"
+          },
+          {
+            "name": "city",
+            "type": "TEXT",
+            "description": "City (casing/whitespace issues, ~3% NULL)",
+            "nullable": true,
+            "example": "Chandigarh"
+          },
+          {
+            "name": "state",
+            "type": "TEXT",
+            "description": "State of the city",
+            "nullable": false,
+            "example": "Madhya Pradesh"
+          },
+          {
+            "name": "age_group",
+            "type": "TEXT",
+            "description": "Age band",
+            "nullable": false,
+            "example": "18-24"
+          },
+          {
+            "name": "kyc_status",
+            "type": "TEXT",
+            "description": "Full KYC, Min KYC or Pending",
+            "nullable": false,
+            "example": "Full KYC"
+          },
+          {
+            "name": "primary_bank",
+            "type": "TEXT",
+            "description": "Linked bank (fictional)",
+            "nullable": false,
+            "example": "Sundaram Bank"
+          },
+          {
+            "name": "preferred_app",
+            "type": "TEXT",
+            "description": "UPI app the user mostly uses",
+            "nullable": false,
+            "example": "PayZippy"
+          },
+          {
+            "name": "upi_id",
+            "type": "TEXT",
+            "description": "Virtual payment address (NULL ~5%)",
+            "nullable": true,
+            "example": "9571738952@sdm"
+          },
+          {
+            "name": "signup_date",
+            "type": "DATE",
+            "description": "Registration date",
+            "nullable": false,
+            "example": "2022-01-01"
+          }
+        ]
+      },
+      {
+        "name": "merchants",
+        "rowCount": 400,
+        "description": "Merchants accepting UPI.",
+        "columns": [
+          {
+            "name": "merchant_id",
+            "type": "INTEGER",
+            "description": "Merchant identifier (primary key)",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "merchant_name",
+            "type": "TEXT",
+            "description": "Merchant name",
+            "nullable": false,
+            "example": "Super Biryani House"
+          },
+          {
+            "name": "category",
+            "type": "TEXT",
+            "description": "Business category",
+            "nullable": false,
+            "example": "Food & Beverage"
+          },
+          {
+            "name": "city",
+            "type": "TEXT",
+            "description": "City (casing issues)",
+            "nullable": false,
+            "example": "Jaipur"
+          },
+          {
+            "name": "onboarding_date",
+            "type": "DATE",
+            "description": "Date merchant was onboarded",
+            "nullable": false,
+            "example": "2021-08-02"
+          },
+          {
+            "name": "is_verified",
+            "type": "INTEGER",
+            "description": "1 if KYB verified",
+            "nullable": false,
+            "example": "1"
+          },
+          {
+            "name": "mcc_code",
+            "type": "INTEGER",
+            "description": "Merchant category code",
+            "nullable": false,
+            "example": "5812"
+          }
+        ]
+      },
+      {
+        "name": "transactions",
+        "rowCount": 22088,
+        "description": "All payment attempts, successful or not (~0.4% exact duplicates).",
+        "columns": [
+          {
+            "name": "txn_id",
+            "type": "INTEGER",
+            "description": "Transaction identifier (duplicated for duplicate rows)",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "user_id",
+            "type": "INTEGER",
+            "description": "FK to users.user_id (payer)",
+            "nullable": false,
+            "example": "426"
+          },
+          {
+            "name": "merchant_id",
+            "type": "INTEGER",
+            "description": "FK to merchants.merchant_id (NULL for P2P)",
+            "nullable": true,
+            "example": "56"
+          },
+          {
+            "name": "receiver_user_id",
+            "type": "INTEGER",
+            "description": "FK to users.user_id for P2P (NULL otherwise)",
+            "nullable": true,
+            "example": "2338"
+          },
+          {
+            "name": "txn_type",
+            "type": "TEXT",
+            "description": "P2M, P2P, Bill Pay or Recharge",
+            "nullable": false,
+            "example": "P2M"
+          },
+          {
+            "name": "txn_datetime",
+            "type": "DATETIME",
+            "description": "Timestamp of the attempt",
+            "nullable": false,
+            "example": "2023-01-01 16:26:05"
+          },
+          {
+            "name": "amount",
+            "type": "REAL",
+            "description": "Amount in INR (6 rows are 100x outliers)",
+            "nullable": false,
+            "example": "887.52"
+          },
+          {
+            "name": "payment_app",
+            "type": "TEXT",
+            "description": "App used",
+            "nullable": false,
+            "example": "SabPay"
+          },
+          {
+            "name": "bank",
+            "type": "TEXT",
+            "description": "Payer's bank",
+            "nullable": false,
+            "example": "Himalaya Trust Bank"
+          },
+          {
+            "name": "device_os",
+            "type": "TEXT",
+            "description": "Android or iOS",
+            "nullable": false,
+            "example": "Android"
+          },
+          {
+            "name": "status",
+            "type": "TEXT",
+            "description": "SUCCESS, FAILED or PENDING",
+            "nullable": false,
+            "example": "SUCCESS"
+          },
+          {
+            "name": "is_flagged",
+            "type": "INTEGER",
+            "description": "1 if flagged by risk rules",
+            "nullable": false,
+            "example": "0"
+          }
+        ]
+      },
+      {
+        "name": "failed_transactions",
+        "rowCount": 633,
+        "description": "Details for transactions with status FAILED (6 duplicate rows are deliberate).",
+        "columns": [
+          {
+            "name": "failed_txn_id",
+            "type": "INTEGER",
+            "description": "Failure record identifier (duplicated for duplicate rows)",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "txn_id",
+            "type": "INTEGER",
+            "description": "FK to transactions.txn_id",
+            "nullable": false,
+            "example": "184"
+          },
+          {
+            "name": "failure_code",
+            "type": "TEXT",
+            "description": "Machine failure code",
+            "nullable": false,
+            "example": "INSUFFICIENT_FUNDS"
+          },
+          {
+            "name": "failure_reason",
+            "type": "TEXT",
+            "description": "Human readable reason",
+            "nullable": false,
+            "example": "Insufficient balance in account"
+          },
+          {
+            "name": "failed_at",
+            "type": "DATETIME",
+            "description": "Timestamp of failure",
+            "nullable": false,
+            "example": "2023-01-09 12:21:23"
+          },
+          {
+            "name": "retried",
+            "type": "INTEGER",
+            "description": "1 if the user retried",
+            "nullable": false,
+            "example": "1"
+          },
+          {
+            "name": "retry_succeeded",
+            "type": "INTEGER",
+            "description": "1/0 result of retry (NULL if not retried)",
+            "nullable": true,
+            "example": "1"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "transactions.user_id",
+        "to": "users.user_id",
+        "type": "many-to-one"
+      },
+      {
+        "from": "transactions.merchant_id",
+        "to": "merchants.merchant_id",
+        "type": "many-to-one"
+      },
+      {
+        "from": "transactions.receiver_user_id",
+        "to": "users.user_id",
+        "type": "many-to-one"
+      },
+      {
+        "from": "failed_transactions.txn_id",
+        "to": "transactions.txn_id",
+        "type": "many-to-one"
+      }
+    ],
+    "qualityIssues": [
+      "transactions: ~0.4% (about 90) rows are exact duplicates (same txn_id), so txn_id has no PRIMARY KEY constraint; users: 10 exact duplicate rows; failed_transactions: 6 exact duplicates.",
+      "transactions.amount: 6 rows are 100x outliers.",
+      "transactions.merchant_id is NULL for P2P rows (~24%) and receiver_user_id is NULL for non-P2P rows - by design, not an error.",
+      "users.city ~10% inconsistent casing/whitespace and ~3% NULL; users.phone ~2% NULL; users.upi_id ~5% NULL; merchants.city ~8% inconsistent casing.",
+      "failed_transactions.retry_succeeded is NULL when retried = 0 (~40% of rows).",
+      "CSV only - users.signup_date: ~15% of rows are DD-MM-YYYY.",
+      "CSV only - transactions.txn_datetime: ~15% DD-MM-YYYY HH:MM:SS; transactions.amount: ~12% text with rupee symbol and Indian grouping.",
+      "CSV only - failed_transactions.failed_at: ~20% DD-MM-YYYY."
+    ],
+    "er": "erDiagram\n  users {\n    INTEGER user_id PK\n    TEXT full_name\n    TEXT phone\n    TEXT city\n    TEXT state\n    TEXT age_group\n    TEXT kyc_status\n    TEXT primary_bank\n    TEXT preferred_app\n    TEXT upi_id\n    TEXT signup_date\n  }\n  merchants {\n    INTEGER merchant_id PK\n    TEXT merchant_name\n    TEXT category\n    TEXT city\n    TEXT onboarding_date\n    INTEGER is_verified\n    INTEGER mcc_code\n  }\n  transactions {\n    INTEGER txn_id PK\n    INTEGER user_id FK\n    INTEGER merchant_id FK\n    INTEGER receiver_user_id FK\n    TEXT txn_type\n    TEXT txn_datetime\n    REAL amount\n    TEXT payment_app\n    TEXT bank\n    TEXT device_os\n    TEXT status\n    INTEGER is_flagged\n  }\n  failed_transactions {\n    INTEGER failed_txn_id PK\n    INTEGER txn_id FK\n    TEXT failure_code\n    TEXT failure_reason\n    TEXT failed_at\n    INTEGER retried\n    INTEGER retry_succeeded\n  }\n  users ||--o{ transactions : \"user_id\"\n  merchants ||--o{ transactions : \"merchant_id\"\n  users ||--o{ transactions : \"receiver_user_id\"\n  transactions ||--o{ failed_transactions : \"txn_id\"",
+    "downloads": {
+      "sqlite": "data/sqlite/fintech.sqlite",
+      "zip": "data/zip/fintech.zip",
+      "csv": [
+        "data/csv/fintech/users.csv",
+        "data/csv/fintech/merchants.csv",
+        "data/csv/fintech/transactions.csv",
+        "data/csv/fintech/failed_transactions.csv"
+      ]
+    },
+    "signals": [
+      "[Instructor note] Kaveri Co-op Bank has a much higher failure rate than other banks, concentrated in peak hours (9-10h and 18-20h) with code BANK_SERVER_TIMEOUT (about 15% at peak vs ~2% elsewhere).",
+      "[Instructor note] Two platform-wide UPI outages (2023-11-12 18-22h and 2024-10-31 18-22h, Diwali evenings) push failure rates to ~55%, code UPI_SYSTEM_DOWN.",
+      "[Instructor note] Failures are ~35% higher on the 1st-3rd of the month (salary days) and amounts above 50,000 fail 2.5x more (LIMIT_EXCEEDED).",
+      "[Instructor note] Volume spikes around Diwali windows and month-end; weekends are ~10% higher; evening 18-20h is the busiest slot.",
+      "[Instructor note] Network/timeouts are retried and succeed far more often than insufficient-funds failures.",
+      "[Instructor note] Late-night (0-4h) large P2P transfers (> 8,000) are flagged ~45% of the time (the fraud-risk signal).",
+      "[Instructor note] Customer activity is heavy-tailed; merchant volume is power-law distributed; Fuel/Travel/Electronics have high ticket sizes."
+    ]
+  },
+  {
+    "id": "subscription",
+    "title": "Subscription App: Kahani+ Streaming",
+    "description": "Kahani+ is a fictional Indian streaming and learning app with a 7-day free trial and Basic, Standard and Premium plans (monthly or annual, priced in INR). The data tracks 5,200 signups from 2023-2024 through trial, first payment, renewals and cancellation, along with a raw event log. Use it for funnel conversion, retention curves, cohort analysis, churn drivers and plan mix.",
+    "tables": [
+      {
+        "name": "users",
+        "rowCount": 5208,
+        "description": "One row per signup (8 duplicate rows are deliberate).",
+        "columns": [
+          {
+            "name": "user_id",
+            "type": "INTEGER",
+            "description": "User identifier (duplicated for duplicate rows)",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "email",
+            "type": "TEXT",
+            "description": "Email (NULL ~6%)",
+            "nullable": true,
+            "example": "vaishnavi.chowdhury317@gmail.com"
+          },
+          {
+            "name": "signup_date",
+            "type": "DATE",
+            "description": "Date the user signed up",
+            "nullable": false,
+            "example": "2023-01-01"
+          },
+          {
+            "name": "signup_time",
+            "type": "TEXT",
+            "description": "Time of day of signup",
+            "nullable": false,
+            "example": "11:54:43"
+          },
+          {
+            "name": "city",
+            "type": "TEXT",
+            "description": "City (casing issues, ~4% NULL)",
+            "nullable": true,
+            "example": "Delhi"
+          },
+          {
+            "name": "platform",
+            "type": "TEXT",
+            "description": "Android, iOS or Web at signup",
+            "nullable": false,
+            "example": "Android"
+          },
+          {
+            "name": "acquisition_source",
+            "type": "TEXT",
+            "description": "Acquisition channel",
+            "nullable": false,
+            "example": "Instagram"
+          },
+          {
+            "name": "age_group",
+            "type": "TEXT",
+            "description": "Age band",
+            "nullable": false,
+            "example": "25-34"
+          }
+        ]
+      },
+      {
+        "name": "subscriptions",
+        "rowCount": 3308,
+        "description": "One row per user who started a free trial; tracks conversion, renewal and end.",
+        "columns": [
+          {
+            "name": "subscription_id",
+            "type": "INTEGER",
+            "description": "Subscription identifier (primary key)",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "user_id",
+            "type": "INTEGER",
+            "description": "FK to users.user_id",
+            "nullable": false,
+            "example": "5"
+          },
+          {
+            "name": "plan",
+            "type": "TEXT",
+            "description": "Basic, Standard or Premium",
+            "nullable": false,
+            "example": "Premium"
+          },
+          {
+            "name": "billing_cycle",
+            "type": "TEXT",
+            "description": "Monthly or Annual",
+            "nullable": false,
+            "example": "Monthly"
+          },
+          {
+            "name": "price_inr",
+            "type": "INTEGER",
+            "description": "Price per billing period in INR",
+            "nullable": false,
+            "example": "499"
+          },
+          {
+            "name": "trial_start_date",
+            "type": "DATE",
+            "description": "Date the free trial started",
+            "nullable": false,
+            "example": "2023-01-01"
+          },
+          {
+            "name": "paid_start_date",
+            "type": "DATE",
+            "description": "Date of first payment (NULL if never converted)",
+            "nullable": true,
+            "example": "2023-01-09"
+          },
+          {
+            "name": "end_date",
+            "type": "DATE",
+            "description": "Trial expiry date (if not converted) or end of paid service (if cancelled); NULL while active/trialing",
+            "nullable": true,
+            "example": "2023-03-10"
+          },
+          {
+            "name": "cancel_date",
+            "type": "DATE",
+            "description": "Date the user requested cancellation (NULL if not cancelled)",
+            "nullable": true,
+            "example": "2023-03-13"
+          },
+          {
+            "name": "status",
+            "type": "TEXT",
+            "description": "active, cancelled, trial_expired or trialing",
+            "nullable": false,
+            "example": "cancelled"
+          },
+          {
+            "name": "renewal_count",
+            "type": "INTEGER",
+            "description": "Number of successful renewals after the first payment",
+            "nullable": false,
+            "example": "13"
+          }
+        ]
+      },
+      {
+        "name": "events",
+        "rowCount": 36383,
+        "description": "Raw product and billing event log (~0.5% exact duplicates).",
+        "columns": [
+          {
+            "name": "event_id",
+            "type": "INTEGER",
+            "description": "Event identifier (duplicated for duplicate rows)",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "user_id",
+            "type": "INTEGER",
+            "description": "FK to users.user_id",
+            "nullable": false,
+            "example": "5"
+          },
+          {
+            "name": "event_time",
+            "type": "DATETIME",
+            "description": "Timestamp of the event",
+            "nullable": false,
+            "example": "2023-01-01 10:01:30"
+          },
+          {
+            "name": "event_name",
+            "type": "TEXT",
+            "description": "signup, trial_start, trial_expired, payment_success, renewal_success, payment_failed, cancel_subscription, app_open, content_view, search (some UPPERCASE)",
+            "nullable": false,
+            "example": "signup"
+          },
+          {
+            "name": "plan",
+            "type": "TEXT",
+            "description": "Plan at the time of the event (NULL before a plan is chosen)",
+            "nullable": true,
+            "example": "Standard"
+          },
+          {
+            "name": "platform",
+            "type": "TEXT",
+            "description": "Platform of the user (some lowercase values)",
+            "nullable": false,
+            "example": "Android"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "subscriptions.user_id",
+        "to": "users.user_id",
+        "type": "many-to-one"
+      },
+      {
+        "from": "events.user_id",
+        "to": "users.user_id",
+        "type": "many-to-one"
+      }
+    ],
+    "qualityIssues": [
+      "events: ~0.5% (about 100) exact duplicate rows (same event_id); users: 8 exact duplicates. Neither table has a PRIMARY KEY constraint on its id.",
+      "events.event_name: ~1.2% of values are UPPERCASE ('APP_OPEN'); events.platform: ~2% are lowercase ('android') - breaks naive GROUP BY.",
+      "users.email ~6% NULL; users.city ~4% NULL and ~10% inconsistent casing/whitespace.",
+      "events.plan is NULL for events before a plan is chosen (signup and most early engagement events); subscriptions.paid_start_date NULL for users who never paid; cancel_date/end_date NULL by design for active users.",
+      "CSV only - users.signup_date ~15% and subscriptions.trial_start_date ~10%: DD-MM-YYYY; events.event_time ~10%: DD-MM-YYYY HH:MM:SS.",
+      "CSV only - subscriptions.price_inr: ~40% of rows are text such as '₹299'."
+    ],
+    "er": "erDiagram\n  users {\n    INTEGER user_id PK\n    TEXT email\n    TEXT signup_date\n    TEXT signup_time\n    TEXT city\n    TEXT platform\n    TEXT acquisition_source\n    TEXT age_group\n  }\n  subscriptions {\n    INTEGER subscription_id PK\n    INTEGER user_id FK\n    TEXT plan\n    TEXT billing_cycle\n    INTEGER price_inr\n    TEXT trial_start_date\n    TEXT paid_start_date\n    TEXT end_date\n    TEXT cancel_date\n    TEXT status\n    INTEGER renewal_count\n  }\n  events {\n    INTEGER event_id PK\n    INTEGER user_id FK\n    TEXT event_time\n    TEXT event_name\n    TEXT plan\n    TEXT platform\n  }\n  users ||--o{ subscriptions : \"user_id\"\n  users ||--o{ events : \"user_id\"",
+    "downloads": {
+      "sqlite": "data/sqlite/subscription.sqlite",
+      "zip": "data/zip/subscription.zip",
+      "csv": [
+        "data/csv/subscription/users.csv",
+        "data/csv/subscription/subscriptions.csv",
+        "data/csv/subscription/events.csv"
+      ]
+    },
+    "signals": [
+      "[Instructor note] Funnel: signup -> trial_start (~63%) -> payment_success (~36% of trials) -> renewals; iOS converts trials noticeably better (~50%) than Android (~34%).",
+      "[Instructor note] The March 2024 signup cohort churns far faster (about 2.7x hazard) - month-1 and month-2 retention is visibly worse than neighbouring cohorts.",
+      "[Instructor note] Influencer-sourced users start trials often but convert at less than half the normal rate and churn faster; Referral users convert ~25% better.",
+      "[Instructor note] Basic plan churns more than Premium; annual plans have almost no churn in the first year but low renewal at month 12.",
+      "[Instructor note] Oct-Nov (Diwali) cohorts convert ~20% better; signups grow strongly through 2024.",
+      "[Instructor note] About 3.5% of renewal charges fail (payment_failed), and ~45% of those lead to involuntary cancellation.",
+      "[Instructor note] Engagement events (app_open, content_view) cluster in the first 14 days after signup and decay for churners."
+    ]
+  },
+  {
+    "id": "marketing",
+    "title": "Marketing Analytics: ShopSetu Campaigns and A/B Test",
+    "description": "ShopSetu is a fictional Indian direct-to-consumer fashion and lifestyle brand running 28 paid and owned campaigns across Google, Meta, YouTube, influencers, email, WhatsApp and affiliates. The data links campaign budgets and daily spend to clicks and conversions, plus a separate 12,000-user checkout A/B test (free-shipping banner). Use it for ROAS and CAC analysis, channel comparison, attribution-style funnels and A/B test significance testing.",
+    "tables": [
+      {
+        "name": "campaigns",
+        "rowCount": 28,
+        "description": "Campaign master (28 campaigns).",
+        "columns": [
+          {
+            "name": "campaign_id",
+            "type": "INTEGER",
+            "description": "Campaign identifier (primary key)",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "campaign_name",
+            "type": "TEXT",
+            "description": "Campaign name",
+            "nullable": false,
+            "example": "IPL 2023 YouTube Brand Burst"
+          },
+          {
+            "name": "channel",
+            "type": "TEXT",
+            "description": "Marketing channel",
+            "nullable": false,
+            "example": "YouTube"
+          },
+          {
+            "name": "objective",
+            "type": "TEXT",
+            "description": "Sales, Awareness, Retargeting or Retention",
+            "nullable": false,
+            "example": "Awareness"
+          },
+          {
+            "name": "start_date",
+            "type": "DATE",
+            "description": "Campaign start date",
+            "nullable": false,
+            "example": "2023-04-01"
+          },
+          {
+            "name": "end_date",
+            "type": "DATE",
+            "description": "Campaign end date",
+            "nullable": false,
+            "example": "2023-05-25"
+          },
+          {
+            "name": "budget_inr",
+            "type": "REAL",
+            "description": "Planned budget in INR",
+            "nullable": false,
+            "example": "8000.0"
+          },
+          {
+            "name": "owner_team",
+            "type": "TEXT",
+            "description": "Owning team",
+            "nullable": false,
+            "example": "Brand"
+          },
+          {
+            "name": "status",
+            "type": "TEXT",
+            "description": "Completed or Running",
+            "nullable": false,
+            "example": "Completed"
+          }
+        ]
+      },
+      {
+        "name": "ad_spend",
+        "rowCount": 2109,
+        "description": "Daily spend, impressions and clicks per campaign and device (6 duplicate rows are deliberate).",
+        "columns": [
+          {
+            "name": "ad_spend_id",
+            "type": "INTEGER",
+            "description": "Row identifier (duplicated for duplicate rows)",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "campaign_id",
+            "type": "INTEGER",
+            "description": "FK to campaigns.campaign_id",
+            "nullable": false,
+            "example": "1"
+          },
+          {
+            "name": "spend_date",
+            "type": "DATE",
+            "description": "Date of spend",
+            "nullable": false,
+            "example": "2023-01-18"
+          },
+          {
+            "name": "device",
+            "type": "TEXT",
+            "description": "Mobile, Desktop or Tablet",
+            "nullable": false,
+            "example": "Tablet"
+          },
+          {
+            "name": "impressions",
+            "type": "INTEGER",
+            "description": "Impressions served",
+            "nullable": false,
+            "example": "56"
+          },
+          {
+            "name": "clicks",
+            "type": "INTEGER",
+            "description": "Clicks recorded (matches rows in the clicks table)",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "spend_inr",
+            "type": "REAL",
+            "description": "Spend in INR (3 rows are 100x outliers)",
+            "nullable": false,
+            "example": "36.82"
+          }
+        ]
+      },
+      {
+        "name": "clicks",
+        "rowCount": 21514,
+        "description": "Individual ad clicks (30 duplicate rows are deliberate).",
+        "columns": [
+          {
+            "name": "click_id",
+            "type": "INTEGER",
+            "description": "Click identifier (duplicated for duplicate rows)",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "campaign_id",
+            "type": "INTEGER",
+            "description": "FK to campaigns.campaign_id",
+            "nullable": false,
+            "example": "1"
+          },
+          {
+            "name": "click_time",
+            "type": "DATETIME",
+            "description": "Timestamp of the click",
+            "nullable": false,
+            "example": "2023-01-18 08:26:58"
+          },
+          {
+            "name": "visitor_id",
+            "type": "INTEGER",
+            "description": "Anonymous visitor identifier",
+            "nullable": false,
+            "example": "504340"
+          },
+          {
+            "name": "device",
+            "type": "TEXT",
+            "description": "Mobile, Desktop or Tablet (a few casing issues)",
+            "nullable": false,
+            "example": "Desktop"
+          },
+          {
+            "name": "city",
+            "type": "TEXT",
+            "description": "City (casing issues, ~3% NULL)",
+            "nullable": true,
+            "example": "LUCKNOW"
+          },
+          {
+            "name": "city_tier",
+            "type": "TEXT",
+            "description": "Metro or Tier-2",
+            "nullable": false,
+            "example": "Tier-2"
+          },
+          {
+            "name": "landing_page",
+            "type": "TEXT",
+            "description": "Landing page path",
+            "nullable": false,
+            "example": "/category/fashion"
+          },
+          {
+            "name": "cost_inr",
+            "type": "REAL",
+            "description": "Cost of this click in INR",
+            "nullable": false,
+            "example": "16.94"
+          }
+        ]
+      },
+      {
+        "name": "conversions",
+        "rowCount": 807,
+        "description": "Conversions attributed to a click (last-click).",
+        "columns": [
+          {
+            "name": "conversion_id",
+            "type": "INTEGER",
+            "description": "Conversion identifier (primary key)",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "click_id",
+            "type": "INTEGER",
+            "description": "FK to clicks.click_id",
+            "nullable": false,
+            "example": "41"
+          },
+          {
+            "name": "campaign_id",
+            "type": "INTEGER",
+            "description": "FK to campaigns.campaign_id",
+            "nullable": false,
+            "example": "1"
+          },
+          {
+            "name": "conversion_time",
+            "type": "DATETIME",
+            "description": "Timestamp of conversion",
+            "nullable": false,
+            "example": "2023-01-19 04:51:36"
+          },
+          {
+            "name": "conversion_type",
+            "type": "TEXT",
+            "description": "Purchase, Signup or Lead",
+            "nullable": false,
+            "example": "Purchase"
+          },
+          {
+            "name": "revenue_inr",
+            "type": "REAL",
+            "description": "Order revenue in INR (NULL for Signup and Lead)",
+            "nullable": true,
+            "example": "1386.46"
+          }
+        ]
+      },
+      {
+        "name": "ab_test_results",
+        "rowCount": 12030,
+        "description": "User-level A/B test of a free-shipping banner at checkout (Sep 2024).",
+        "columns": [
+          {
+            "name": "ab_id",
+            "type": "INTEGER",
+            "description": "Row identifier (duplicated for duplicate rows)",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "user_id",
+            "type": "INTEGER",
+            "description": "Experiment unit (visitor), assigned once to a variant",
+            "nullable": false,
+            "example": "101492"
+          },
+          {
+            "name": "test_name",
+            "type": "TEXT",
+            "description": "Name of the experiment",
+            "nullable": false,
+            "example": "checkout_free_shipping_banner"
+          },
+          {
+            "name": "variant",
+            "type": "TEXT",
+            "description": "control or treatment",
+            "nullable": false,
+            "example": "treatment"
+          },
+          {
+            "name": "assigned_at",
+            "type": "DATETIME",
+            "description": "Timestamp of assignment",
+            "nullable": false,
+            "example": "2024-09-02 00:10:19"
+          },
+          {
+            "name": "device_type",
+            "type": "TEXT",
+            "description": "Mobile or Desktop",
+            "nullable": false,
+            "example": "Mobile"
+          },
+          {
+            "name": "city_tier",
+            "type": "TEXT",
+            "description": "Metro or Tier-2",
+            "nullable": false,
+            "example": "Metro"
+          },
+          {
+            "name": "converted",
+            "type": "INTEGER",
+            "description": "1 if the user purchased",
+            "nullable": false,
+            "example": "0"
+          },
+          {
+            "name": "revenue_inr",
+            "type": "REAL",
+            "description": "Revenue in INR (0 when not converted)",
+            "nullable": false,
+            "example": "0.0"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "ad_spend.campaign_id",
+        "to": "campaigns.campaign_id",
+        "type": "many-to-one"
+      },
+      {
+        "from": "clicks.campaign_id",
+        "to": "campaigns.campaign_id",
+        "type": "many-to-one"
+      },
+      {
+        "from": "conversions.click_id",
+        "to": "clicks.click_id",
+        "type": "many-to-one"
+      },
+      {
+        "from": "conversions.campaign_id",
+        "to": "campaigns.campaign_id",
+        "type": "many-to-one"
+      }
+    ],
+    "qualityIssues": [
+      "clicks: 30 exact duplicate rows (same click_id); ad_spend: 6 exact duplicates; ab_test_results: 20 exact duplicate rows - so these ids carry no PRIMARY KEY constraint.",
+      "ab_test_results: 10 users appear in both variants (contaminated assignment) - should be removed before analysis.",
+      "ad_spend.spend_inr: 3 rows are 100x outliers.",
+      "clicks.city: ~3% NULL and ~7% inconsistent casing/whitespace; clicks.device: ~2% casing issues ('mobile', 'DESKTOP').",
+      "conversions.revenue_inr is NULL for Signup and Lead conversions (~10%) by design.",
+      "ab_test_results has no foreign key; it is independent of the campaign tables.",
+      "CSV only - campaigns.start_date ~15% DD-MM-YYYY; campaigns.budget_inr ~30% text like '₹12,50,000'.",
+      "CSV only - ad_spend.spend_inr ~10% text with rupee symbol; clicks.click_time ~12% DD-MM-YYYY HH:MM:SS; conversions.revenue_inr ~25% text with rupee symbol and Indian grouping."
+    ],
+    "er": "erDiagram\n  campaigns {\n    INTEGER campaign_id PK\n    TEXT campaign_name\n    TEXT channel\n    TEXT objective\n    TEXT start_date\n    TEXT end_date\n    REAL budget_inr\n    TEXT owner_team\n    TEXT status\n  }\n  ad_spend {\n    INTEGER ad_spend_id PK\n    INTEGER campaign_id FK\n    TEXT spend_date\n    TEXT device\n    INTEGER impressions\n    INTEGER clicks\n    REAL spend_inr\n  }\n  clicks {\n    INTEGER click_id PK\n    INTEGER campaign_id FK\n    TEXT click_time\n    INTEGER visitor_id\n    TEXT device\n    TEXT city\n    TEXT city_tier\n    TEXT landing_page\n    REAL cost_inr\n  }\n  conversions {\n    INTEGER conversion_id PK\n    INTEGER click_id FK\n    INTEGER campaign_id FK\n    TEXT conversion_time\n    TEXT conversion_type\n    REAL revenue_inr\n  }\n  ab_test_results {\n    INTEGER ab_id PK\n    INTEGER user_id\n    TEXT test_name\n    TEXT variant\n    TEXT assigned_at\n    TEXT device_type\n    TEXT city_tier\n    INTEGER converted\n    REAL revenue_inr\n  }\n  campaigns ||--o{ ad_spend : \"campaign_id\"\n  campaigns ||--o{ clicks : \"campaign_id\"\n  clicks ||--o{ conversions : \"click_id\"\n  campaigns ||--o{ conversions : \"campaign_id\"",
+    "downloads": {
+      "sqlite": "data/sqlite/marketing.sqlite",
+      "zip": "data/zip/marketing.zip",
+      "csv": [
+        "data/csv/marketing/campaigns.csv",
+        "data/csv/marketing/ad_spend.csv",
+        "data/csv/marketing/clicks.csv",
+        "data/csv/marketing/conversions.csv",
+        "data/csv/marketing/ab_test_results.csv"
+      ]
+    },
+    "signals": [
+      "[Instructor note] Campaign 'Influencer Mega Reach Oct-24' burns the largest budget at ~2.3x normal CPC with a conversion rate ~1/8 of a normal influencer campaign - by far the worst ROAS/CAC among revenue-driving campaigns (ROAS about 0.07 vs 5-8 for Search).",
+      "[Instructor note] Email and WhatsApp have the lowest CPC and the highest conversion rate (best ROAS); Google Search is the best large-scale paid channel.",
+      "[Instructor note] Diwali windows (Oct 25-Nov 14 2023, Oct 20-Nov 3 2024) lift conversion rate by ~25%; Search/Meta Diwali campaigns are the top revenue campaigns.",
+      "[Instructor note] Awareness-objective campaigns (YouTube, Display) convert to Signup/Lead mostly and look weak on last-click revenue.",
+      "[Instructor note] Desktop converts ~35% better than mobile; Metro converts better than Tier-2.",
+      "[Instructor note] A/B test: treatment lifts conversion from ~9.5% to ~11% overall (about +1.5pp, p roughly 0.01-0.03), driven by Mobile (about +1.8pp) while Desktop shows an insignificant +0.3pp; treatment AOV is ~4% lower (free shipping cost), so revenue per user lift is smaller than conversion lift.",
+      "[Instructor note] Contaminated users, duplicates and 100x spend outliers must be cleaned before computing cost metrics or test statistics."
+    ]
+  },
+  {
+    "id": "retail",
+    "title": "Retail Sales: Vasudha Retail",
+    "description": "Vasudha Retail is a fictional chain of 24 grocery and lifestyle stores (hypermarkets, supermarkets and express stores) across 15 Indian states and union territories. The dataset covers 2023-2024 with sampled transaction lines, month-end inventory snapshots per store and SKU, and monthly sales targets. Use it for monthly sales trends, festive seasonality, stockout impact, overstock and target attainment.",
+    "tables": [
+      {
+        "name": "stores",
+        "rowCount": 24,
+        "description": "24 stores with city, region, format and carpet area.",
+        "columns": [
+          {
+            "name": "store_id",
+            "type": "INTEGER",
+            "description": "Store identifier (primary key)",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "store_code",
+            "type": "TEXT",
+            "description": "Short store code such as VSD-001",
+            "nullable": false,
+            "example": "VSD-003"
+          },
+          {
+            "name": "store_name",
+            "type": "TEXT",
+            "description": "Store name (format and locality)",
+            "nullable": false,
+            "example": "Vasudha Hypermarket - Dwarka"
+          },
+          {
+            "name": "city",
+            "type": "TEXT",
+            "description": "City (casing/whitespace issues on ~8% of rows)",
+            "nullable": false,
+            "example": "Delhi"
+          },
+          {
+            "name": "state",
+            "type": "TEXT",
+            "description": "State or union territory",
+            "nullable": false,
+            "example": "Delhi"
+          },
+          {
+            "name": "region",
+            "type": "TEXT",
+            "description": "North, South, East or West",
+            "nullable": false,
+            "example": "North"
+          },
+          {
+            "name": "store_format",
+            "type": "TEXT",
+            "description": "Hypermarket, Supermarket or Express",
+            "nullable": false,
+            "example": "Hypermarket"
+          },
+          {
+            "name": "opened_on",
+            "type": "DATE",
+            "description": "Opening date",
+            "nullable": false,
+            "example": "2008-06-01"
+          },
+          {
+            "name": "carpet_area_sqft",
+            "type": "INTEGER",
+            "description": "Carpet area in square feet",
+            "nullable": false,
+            "example": "60600"
+          }
+        ]
+      },
+      {
+        "name": "sales",
+        "rowCount": 24350,
+        "description": "Sampled sales transaction lines, about one line per store per day (350 exact duplicate rows are deliberate).",
+        "columns": [
+          {
+            "name": "sale_id",
+            "type": "INTEGER",
+            "description": "Sale line identifier (duplicated for duplicate rows)",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "sale_datetime",
+            "type": "DATETIME",
+            "description": "Date and time of the sale",
+            "nullable": false,
+            "example": "2023-01-01 09:01:50"
+          },
+          {
+            "name": "store_id",
+            "type": "INTEGER",
+            "description": "FK to stores.store_id",
+            "nullable": false,
+            "example": "9"
+          },
+          {
+            "name": "sku_id",
+            "type": "TEXT",
+            "description": "SKU code (no product master table; see category)",
+            "nullable": false,
+            "example": "GRC-01"
+          },
+          {
+            "name": "category",
+            "type": "TEXT",
+            "description": "Product category for the SKU",
+            "nullable": false,
+            "example": "Grocery & Staples"
+          },
+          {
+            "name": "quantity",
+            "type": "INTEGER",
+            "description": "Units sold on the line",
+            "nullable": false,
+            "example": "2"
+          },
+          {
+            "name": "unit_price_inr",
+            "type": "REAL",
+            "description": "Unit selling price in INR",
+            "nullable": false,
+            "example": "487.08"
+          },
+          {
+            "name": "discount_pct",
+            "type": "REAL",
+            "description": "Discount percentage applied (NULL for ~4%)",
+            "nullable": true,
+            "example": "5.0"
+          },
+          {
+            "name": "net_amount_inr",
+            "type": "REAL",
+            "description": "Net line amount in INR after discount (6 rows are 100x outliers)",
+            "nullable": false,
+            "example": "925.45"
+          },
+          {
+            "name": "payment_mode",
+            "type": "TEXT",
+            "description": "UPI, Card, Cash or Wallet (casing issues, ~1% NULL)",
+            "nullable": true,
+            "example": "Card"
+          }
+        ]
+      },
+      {
+        "name": "inventory",
+        "rowCount": 13824,
+        "description": "Month-end stock snapshot for every store and SKU, 2023-01 to 2024-12.",
+        "columns": [
+          {
+            "name": "inventory_id",
+            "type": "INTEGER",
+            "description": "Inventory record identifier (primary key)",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "snapshot_date",
+            "type": "DATE",
+            "description": "Month-end snapshot date",
+            "nullable": false,
+            "example": "2023-01-31"
+          },
+          {
+            "name": "store_id",
+            "type": "INTEGER",
+            "description": "FK to stores.store_id",
+            "nullable": false,
+            "example": "1"
+          },
+          {
+            "name": "sku_id",
+            "type": "TEXT",
+            "description": "SKU code",
+            "nullable": false,
+            "example": "GRC-03"
+          },
+          {
+            "name": "category",
+            "type": "TEXT",
+            "description": "Product category for the SKU",
+            "nullable": false,
+            "example": "Grocery & Staples"
+          },
+          {
+            "name": "stock_on_hand",
+            "type": "INTEGER",
+            "description": "Units on hand at month end (NULL for ~1%)",
+            "nullable": true,
+            "example": "24"
+          },
+          {
+            "name": "reorder_level",
+            "type": "INTEGER",
+            "description": "Suggested reorder level in units",
+            "nullable": false,
+            "example": "8"
+          },
+          {
+            "name": "units_sold_in_month",
+            "type": "INTEGER",
+            "description": "Units sold during the month",
+            "nullable": false,
+            "example": "19"
+          },
+          {
+            "name": "days_out_of_stock",
+            "type": "INTEGER",
+            "description": "Days during the month the SKU was out of stock",
+            "nullable": false,
+            "example": "0"
+          }
+        ]
+      },
+      {
+        "name": "targets",
+        "rowCount": 504,
+        "description": "Monthly net sales targets per store; the East region (Kolkata, Patna, Guwahati) has no targets.",
+        "columns": [
+          {
+            "name": "target_id",
+            "type": "INTEGER",
+            "description": "Target identifier (primary key)",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "store_id",
+            "type": "INTEGER",
+            "description": "FK to stores.store_id",
+            "nullable": false,
+            "example": "3"
+          },
+          {
+            "name": "target_month",
+            "type": "TEXT",
+            "description": "Target month as YYYY-MM",
+            "nullable": false,
+            "example": "2023-01"
+          },
+          {
+            "name": "target_net_sales_inr",
+            "type": "REAL",
+            "description": "Target net sales in INR (NULL for ~3%)",
+            "nullable": true,
+            "example": "117000.0"
+          },
+          {
+            "name": "target_units",
+            "type": "INTEGER",
+            "description": "Target units derived from the sales target",
+            "nullable": false,
+            "example": "138"
+          }
+        ]
+      }
+    ],
+    "relationships": [
+      {
+        "from": "sales.store_id",
+        "to": "stores.store_id",
+        "type": "many-to-one"
+      },
+      {
+        "from": "inventory.store_id",
+        "to": "stores.store_id",
+        "type": "many-to-one"
+      },
+      {
+        "from": "targets.store_id",
+        "to": "stores.store_id",
+        "type": "many-to-one"
+      }
+    ],
+    "qualityIssues": [
+      "sales: 350 exact duplicate rows (same sale_id twice), so sale_id has no PRIMARY KEY constraint.",
+      "sales.discount_pct: NULL for ~4% of rows; net_amount_inr already reflects the discount, so it is still populated.",
+      "sales.payment_mode: ~8% inconsistent casing/whitespace ('upi', ' Card'), ~1% NULL.",
+      "sales.net_amount_inr: 6 rows are 100x outliers.",
+      "stores.city: ~8% casing/whitespace issues.",
+      "inventory.stock_on_hand: ~1% NULL.",
+      "targets.target_net_sales_inr: ~3% NULL; no targets exist for the East region stores.",
+      "CSV only - sales.sale_datetime: ~15% of rows use DD-MM-YYYY; sales.net_amount_inr: ~25% are rupee text with Indian grouping.",
+      "CSV only - inventory.snapshot_date: ~12% of rows use DD-MM-YYYY; targets.target_net_sales_inr: ~15% are rupee text.",
+      "No product master table: sku_id and category are denormalised codes."
+    ],
+    "er": "erDiagram\n  stores {\n    INTEGER store_id PK\n    TEXT store_code\n    TEXT store_name\n    TEXT city\n    TEXT state\n    TEXT region\n    TEXT store_format\n    TEXT opened_on\n    INTEGER carpet_area_sqft\n  }\n  sales {\n    INTEGER sale_id PK\n    TEXT sale_datetime\n    INTEGER store_id FK\n    TEXT sku_id\n    TEXT category\n    INTEGER quantity\n    REAL unit_price_inr\n    REAL discount_pct\n    REAL net_amount_inr\n    TEXT payment_mode\n  }\n  inventory {\n    INTEGER inventory_id PK\n    TEXT snapshot_date\n    INTEGER store_id FK\n    TEXT sku_id\n    TEXT category\n    INTEGER stock_on_hand\n    INTEGER reorder_level\n    INTEGER units_sold_in_month\n    INTEGER days_out_of_stock\n  }\n  targets {\n    INTEGER target_id PK\n    INTEGER store_id FK\n    TEXT target_month\n    REAL target_net_sales_inr\n    INTEGER target_units\n  }\n  stores ||--o{ sales : \"store_id\"\n  stores ||--o{ inventory : \"store_id\"\n  stores ||--o{ targets : \"store_id\"",
+    "downloads": {
+      "sqlite": "data/sqlite/retail.sqlite",
+      "zip": "data/zip/retail.zip",
+      "csv": [
+        "data/csv/retail/stores.csv",
+        "data/csv/retail/sales.csv",
+        "data/csv/retail/inventory.csv",
+        "data/csv/retail/targets.csv"
+      ]
+    },
+    "signals": [
+      "[Instructor note] Stockouts: Velachery (Chennai), Adajan (Surat), Gomti Nagar (Lucknow) and Kharadi (Pune) stores have frequent stockouts (days_out_of_stock > 0 for many SKUs) and roughly 30% lower sales volume than peers.",
+      "[Instructor note] Diwali (Oct-Nov) and the 2024 Navratri window spike sales; Republic Day and Independence Day sale weeks give smaller spikes.",
+      "[Instructor note] Home Decor is slow-moving: about 5% of sales volume, but stock covers 6-10 months of demand, so it is overstocked.",
+      "[Instructor note] East region stores (Kolkata, Patna, Guwahati) have no targets, so target attainment can only be compared for the other regions.",
+      "[Instructor note] Targets are set at 90-115% of actual sales, so attainment clusters near 100% with a few misses.",
+      "[Instructor note] 2024 prices are about 6% higher than 2023 for every SKU, so compare volume and value separately.",
+      "[Instructor note] Sales are a sampled extract of about one transaction line per store per day, so use rates and shares rather than absolute totals.",
+      "[Instructor note] 6 net_amount outliers (100x) distort totals unless excluded."
+    ]
+  }
+]

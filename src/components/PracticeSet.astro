@@ -1,0 +1,12 @@
+---
+import { getCollection } from 'astro:content';
+import View from './react/PracticeSet';
+interface Props { topic?: string; module?: string; ids?: string[]; difficulty?: 'easy' | 'medium' | 'hard' }
+const { topic, module, ids, difficulty } = Astro.props;
+if (!topic && !ids) throw new Error('<PracticeSet> needs topic (+ module) or ids');
+const all = (await getCollection('practice')).map((e) => e.data);
+let qs = ids ? ids.map((id) => all.find((q) => q.id === id)).filter(Boolean) : all.filter((q) => q.topic === topic && (!module || q.module === module));
+if (ids && qs.length !== ids.length) throw new Error(`<PracticeSet> unknown ids: ${ids.filter((i) => !all.some((q) => q.id === i)).join(', ')}`);
+if (difficulty) qs = qs.filter((q) => q!.difficulty === difficulty);
+---
+<View client:visible questions={qs as any} />

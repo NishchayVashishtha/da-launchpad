@@ -1,0 +1,9 @@
+---
+import Base from '../layouts/Base.astro';
+import Playground from '../components/react/Playground';
+import { datasets } from '../lib/datasets';
+---
+<Base title="SQL Playground" description="Run SQL in your browser on the practice datasets.">
+  <div style="max-width:72rem;margin:0 auto"><h1 style="margin-top:0">SQL Playground</h1>
+    <Playground client:load datasets={datasets.map((d) => ({ id: d.id, title: d.title }))} /></div>
+</Base>

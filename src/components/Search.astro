@@ -1,0 +1,46 @@
+---
+import { base } from '../lib/url';
+---
+<dialog class="search" id="search-dialog" aria-label="Search">
+  <div style="padding:.75rem;border-bottom:1px solid var(--border)">
+    <label class="sr-only" for="search-input">Search the site</label>
+    <input id="search-input" type="search" class="field" placeholder="Search lessons, projects, datasets..." autocomplete="off" />
+  </div>
+  <div id="search-results" class="search-results" style="overflow:auto;max-height:55vh;padding:.5rem" aria-live="polite">
+    <p class="muted" style="padding:.5rem">Type to search. <kbd>Esc</kbd> to close.</p>
+  </div>
+</dialog>
+<script define:vars={{ base }}>
+  const dlg = document.getElementById('search-dialog');
+  const input = document.getElementById('search-input');
+  const out = document.getElementById('search-results');
+  let pf = null, timer;
+  const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  async function ensure() {
+    if (pf) return pf;
+    try {
+      pf = await import(/* @vite-ignore */ base + 'pagefind/pagefind.js');
+      await pf.options({ baseUrl: base });
+      return pf;
+    } catch { return null; }
+  }
+  async function run() {
+    const q = input.value.trim();
+    if (!q) { out.innerHTML = '<p class="muted" style="padding:.5rem">Type to search. <kbd>Esc</kbd> to close.</p>'; return; }
+    const p = await ensure();
+    if (!p) { out.innerHTML = '<p class="muted" style="padding:.5rem">Search index not built yet. Run <code>npm run build</code> and use <code>npm run preview</code>.</p>'; return; }
+    const res = await p.search(q);
+    const items = await Promise.all(res.results.slice(0, 8).map((r) => r.data()));
+    out.innerHTML = items.length
+      ? items.map((d) => `<a href="${d.url}" style="display:block;padding:.6rem .75rem;border-radius:8px;text-decoration:none;color:var(--text)" class="sb-link"><strong>${esc(d.meta?.title || d.url)}</strong><br><span class="muted" style="font-size:.85rem">${d.excerpt}</span></a>`).join('')
+      : '<p class="muted" style="padding:.5rem">No results.</p>';
+  }
+  function open() { if (!dlg.open) dlg.showModal(); input.focus(); input.select(); }
+  window.openSearch = open;
+  input.addEventListener('input', () => { clearTimeout(timer); timer = setTimeout(run, 150); });
+  dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
+  document.addEventListener('keydown', (e) => {
+    if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); dlg.open ? dlg.close() : open(); }
+  });
+  document.querySelectorAll('[data-open-search]').forEach((b) => b.addEventListener('click', open));
+</script>

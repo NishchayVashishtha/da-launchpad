@@ -1,0 +1,242 @@
+{
+  "id": "subscription",
+  "title": "Subscription App: Kahani+ Streaming",
+  "description": "Kahani+ is a fictional Indian streaming and learning app with a 7-day free trial and Basic, Standard and Premium plans (monthly or annual, priced in INR). The data tracks 5,200 signups from 2023-2024 through trial, first payment, renewals and cancellation, along with a raw event log. Use it for funnel conversion, retention curves, cohort analysis, churn drivers and plan mix.",
+  "tables": [
+    {
+      "name": "users",
+      "rowCount": 5208,
+      "description": "One row per signup (8 duplicate rows are deliberate).",
+      "columns": [
+        {
+          "name": "user_id",
+          "type": "INTEGER",
+          "description": "User identifier (duplicated for duplicate rows)",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "email",
+          "type": "TEXT",
+          "description": "Email (NULL ~6%)",
+          "nullable": true,
+          "example": "vaishnavi.chowdhury317@gmail.com"
+        },
+        {
+          "name": "signup_date",
+          "type": "DATE",
+          "description": "Date the user signed up",
+          "nullable": false,
+          "example": "2023-01-01"
+        },
+        {
+          "name": "signup_time",
+          "type": "TEXT",
+          "description": "Time of day of signup",
+          "nullable": false,
+          "example": "11:54:43"
+        },
+        {
+          "name": "city",
+          "type": "TEXT",
+          "description": "City (casing issues, ~4% NULL)",
+          "nullable": true,
+          "example": "Delhi"
+        },
+        {
+          "name": "platform",
+          "type": "TEXT",
+          "description": "Android, iOS or Web at signup",
+          "nullable": false,
+          "example": "Android"
+        },
+        {
+          "name": "acquisition_source",
+          "type": "TEXT",
+          "description": "Acquisition channel",
+          "nullable": false,
+          "example": "Instagram"
+        },
+        {
+          "name": "age_group",
+          "type": "TEXT",
+          "description": "Age band",
+          "nullable": false,
+          "example": "25-34"
+        }
+      ]
+    },
+    {
+      "name": "subscriptions",
+      "rowCount": 3308,
+      "description": "One row per user who started a free trial; tracks conversion, renewal and end.",
+      "columns": [
+        {
+          "name": "subscription_id",
+          "type": "INTEGER",
+          "description": "Subscription identifier (primary key)",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "user_id",
+          "type": "INTEGER",
+          "description": "FK to users.user_id",
+          "nullable": false,
+          "example": "5"
+        },
+        {
+          "name": "plan",
+          "type": "TEXT",
+          "description": "Basic, Standard or Premium",
+          "nullable": false,
+          "example": "Premium"
+        },
+        {
+          "name": "billing_cycle",
+          "type": "TEXT",
+          "description": "Monthly or Annual",
+          "nullable": false,
+          "example": "Monthly"
+        },
+        {
+          "name": "price_inr",
+          "type": "INTEGER",
+          "description": "Price per billing period in INR",
+          "nullable": false,
+          "example": "499"
+        },
+        {
+          "name": "trial_start_date",
+          "type": "DATE",
+          "description": "Date the free trial started",
+          "nullable": false,
+          "example": "2023-01-01"
+        },
+        {
+          "name": "paid_start_date",
+          "type": "DATE",
+          "description": "Date of first payment (NULL if never converted)",
+          "nullable": true,
+          "example": "2023-01-09"
+        },
+        {
+          "name": "end_date",
+          "type": "DATE",
+          "description": "Trial expiry date (if not converted) or end of paid service (if cancelled); NULL while active/trialing",
+          "nullable": true,
+          "example": "2023-03-10"
+        },
+        {
+          "name": "cancel_date",
+          "type": "DATE",
+          "description": "Date the user requested cancellation (NULL if not cancelled)",
+          "nullable": true,
+          "example": "2023-03-13"
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "description": "active, cancelled, trial_expired or trialing",
+          "nullable": false,
+          "example": "cancelled"
+        },
+        {
+          "name": "renewal_count",
+          "type": "INTEGER",
+          "description": "Number of successful renewals after the first payment",
+          "nullable": false,
+          "example": "13"
+        }
+      ]
+    },
+    {
+      "name": "events",
+      "rowCount": 36383,
+      "description": "Raw product and billing event log (~0.5% exact duplicates).",
+      "columns": [
+        {
+          "name": "event_id",
+          "type": "INTEGER",
+          "description": "Event identifier (duplicated for duplicate rows)",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "user_id",
+          "type": "INTEGER",
+          "description": "FK to users.user_id",
+          "nullable": false,
+          "example": "5"
+        },
+        {
+          "name": "event_time",
+          "type": "DATETIME",
+          "description": "Timestamp of the event",
+          "nullable": false,
+          "example": "2023-01-01 10:01:30"
+        },
+        {
+          "name": "event_name",
+          "type": "TEXT",
+          "description": "signup, trial_start, trial_expired, payment_success, renewal_success, payment_failed, cancel_subscription, app_open, content_view, search (some UPPERCASE)",
+          "nullable": false,
+          "example": "signup"
+        },
+        {
+          "name": "plan",
+          "type": "TEXT",
+          "description": "Plan at the time of the event (NULL before a plan is chosen)",
+          "nullable": true,
+          "example": "Standard"
+        },
+        {
+          "name": "platform",
+          "type": "TEXT",
+          "description": "Platform of the user (some lowercase values)",
+          "nullable": false,
+          "example": "Android"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "from": "subscriptions.user_id",
+      "to": "users.user_id",
+      "type": "many-to-one"
+    },
+    {
+      "from": "events.user_id",
+      "to": "users.user_id",
+      "type": "many-to-one"
+    }
+  ],
+  "qualityIssues": [
+    "events: ~0.5% (about 100) exact duplicate rows (same event_id); users: 8 exact duplicates. Neither table has a PRIMARY KEY constraint on its id.",
+    "events.event_name: ~1.2% of values are UPPERCASE ('APP_OPEN'); events.platform: ~2% are lowercase ('android') - breaks naive GROUP BY.",
+    "users.email ~6% NULL; users.city ~4% NULL and ~10% inconsistent casing/whitespace.",
+    "events.plan is NULL for events before a plan is chosen (signup and most early engagement events); subscriptions.paid_start_date NULL for users who never paid; cancel_date/end_date NULL by design for active users.",
+    "CSV only - users.signup_date ~15% and subscriptions.trial_start_date ~10%: DD-MM-YYYY; events.event_time ~10%: DD-MM-YYYY HH:MM:SS.",
+    "CSV only - subscriptions.price_inr: ~40% of rows are text such as '₹299'."
+  ],
+  "er": "erDiagram\n  users {\n    INTEGER user_id PK\n    TEXT email\n    TEXT signup_date\n    TEXT signup_time\n    TEXT city\n    TEXT platform\n    TEXT acquisition_source\n    TEXT age_group\n  }\n  subscriptions {\n    INTEGER subscription_id PK\n    INTEGER user_id FK\n    TEXT plan\n    TEXT billing_cycle\n    INTEGER price_inr\n    TEXT trial_start_date\n    TEXT paid_start_date\n    TEXT end_date\n    TEXT cancel_date\n    TEXT status\n    INTEGER renewal_count\n  }\n  events {\n    INTEGER event_id PK\n    INTEGER user_id FK\n    TEXT event_time\n    TEXT event_name\n    TEXT plan\n    TEXT platform\n  }\n  users ||--o{ subscriptions : \"user_id\"\n  users ||--o{ events : \"user_id\"",
+  "downloads": {
+    "sqlite": "data/sqlite/subscription.sqlite",
+    "zip": "data/zip/subscription.zip",
+    "csv": [
+      "data/csv/subscription/users.csv",
+      "data/csv/subscription/subscriptions.csv",
+      "data/csv/subscription/events.csv"
+    ]
+  },
+  "signals": [
+    "[Instructor note] Funnel: signup -> trial_start (~63%) -> payment_success (~36% of trials) -> renewals; iOS converts trials noticeably better (~50%) than Android (~34%).",
+    "[Instructor note] The March 2024 signup cohort churns far faster (about 2.7x hazard) - month-1 and month-2 retention is visibly worse than neighbouring cohorts.",
+    "[Instructor note] Influencer-sourced users start trials often but convert at less than half the normal rate and churn faster; Referral users convert ~25% better.",
+    "[Instructor note] Basic plan churns more than Premium; annual plans have almost no churn in the first year but low renewal at month 12.",
+    "[Instructor note] Oct-Nov (Diwali) cohorts convert ~20% better; signups grow strongly through 2024.",
+    "[Instructor note] About 3.5% of renewal charges fail (payment_failed), and ~45% of those lead to involuntary cancellation.",
+    "[Instructor note] Engagement events (app_open, content_view) cluster in the first 14 days after signup and decay for churners."
+  ]
+}

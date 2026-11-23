@@ -1,0 +1,78 @@
+---
+title: "SAMPLE lesson: component showcase (delete me)"
+description: "Shows every MDX component. Draft, so it is hidden from navigation in production."
+module: start-here
+order: 0
+estimatedMinutes: 10
+objectives:
+  - "See how each component is written"
+tags: ["sample"]
+draft: true
+---
+
+## Learning objectives
+
+- Use every component once.
+- Know where each one is documented.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+A hiring manager in a Pune fintech once said: "Show me one clean query, not ten messy ones."
+</RealWorld>
+
+## Concept
+
+A **table** is a grid of rows and columns. Links are base-aware: see the [practice hub](/practice/).
+
+<Tip>Keep sentences short. Define each term the first time you use it.</Tip>
+
+<Warning>Never run DELETE without a WHERE clause on real data.</Warning>
+
+<FormulaCard title="Average">
+mean = sum of values / number of values
+</FormulaCard>
+
+<Mermaid chart={`erDiagram
+  CUSTOMERS ||--o{ ORDERS : places`} caption="A customer places many orders." />
+
+## Worked examples
+
+<SqlPlayground dataset="none" query="SELECT 1 AS n, 'hello' AS word;" title="Run me" />
+
+## Common mistakes
+
+<CommonMistake>Writing `= NULL` instead of `IS NULL`.</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="sample" module="start-here" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What is 2 + 2?", options: ["3", "4", "5"], answer: 1, explanation: "Basic addition." },
+  { q: "Which keyword filters rows?", options: ["WHERE", "ORDER BY", "LIMIT"], answer: 0, explanation: "WHERE filters rows before grouping." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>Interviewers love to ask about NULL handling.</InterviewAlert>
+
+<InterviewQ q="What is a primary key?">
+A **primary key** uniquely identifies each row and cannot be NULL.
+</InterviewQ>
+
+## Key takeaways
+
+- Components need no imports.
+- Use them sparingly.
+- Every lesson has the same 10 headings.
+- Practice questions come from the collection.
+- Keep reading level simple.
+
+## Further reading
+
+<FurtherReading ids={["sqlbolt", "sqlite-docs"]} />
+
+<Download href="/data/csv/ecommerce/customers.csv" label="customers.csv" />

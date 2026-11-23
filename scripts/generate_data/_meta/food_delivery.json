@@ -1,0 +1,443 @@
+{
+  "id": "food_delivery",
+  "title": "Food Delivery: ThaliDash",
+  "description": "ThaliDash is a fictional Indian food-delivery platform operating in 10 cities with 600 partner restaurants and 900 delivery partners. Two years of deliveries, ratings and promo redemptions capture lunch and dinner peaks, IPL-season surges and monsoon disruption. Use it to study delivery time, SLA breaches, customer ratings, partner performance and promo ROI.",
+  "tables": [
+    {
+      "name": "restaurants",
+      "rowCount": 600,
+      "description": "Partner restaurants.",
+      "columns": [
+        {
+          "name": "restaurant_id",
+          "type": "INTEGER",
+          "description": "Restaurant identifier (primary key)",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "restaurant_name",
+          "type": "TEXT",
+          "description": "Restaurant display name (not unique)",
+          "nullable": false,
+          "example": "Masala Kitchen"
+        },
+        {
+          "name": "cuisine",
+          "type": "TEXT",
+          "description": "Main cuisine",
+          "nullable": false,
+          "example": "Biryani"
+        },
+        {
+          "name": "city",
+          "type": "TEXT",
+          "description": "City (inconsistent casing/whitespace, ~2% NULL)",
+          "nullable": true,
+          "example": "Kolkata"
+        },
+        {
+          "name": "price_band",
+          "type": "TEXT",
+          "description": "Budget, Mid or Premium",
+          "nullable": false,
+          "example": "Budget"
+        },
+        {
+          "name": "avg_prep_minutes",
+          "type": "INTEGER",
+          "description": "Typical kitchen preparation time",
+          "nullable": false,
+          "example": "12"
+        },
+        {
+          "name": "is_cloud_kitchen",
+          "type": "INTEGER",
+          "description": "1 if delivery-only kitchen",
+          "nullable": false,
+          "example": "0"
+        },
+        {
+          "name": "onboarded_date",
+          "type": "DATE",
+          "description": "Date the restaurant joined the platform",
+          "nullable": false,
+          "example": "2021-09-15"
+        }
+      ]
+    },
+    {
+      "name": "delivery_partners",
+      "rowCount": 908,
+      "description": "Delivery riders (a few duplicate rows are deliberate).",
+      "columns": [
+        {
+          "name": "partner_id",
+          "type": "INTEGER",
+          "description": "Partner identifier",
+          "nullable": false,
+          "example": "2"
+        },
+        {
+          "name": "partner_name",
+          "type": "TEXT",
+          "description": "Rider name",
+          "nullable": false,
+          "example": "Kunal Shah"
+        },
+        {
+          "name": "city",
+          "type": "TEXT",
+          "description": "Operating city (inconsistent casing)",
+          "nullable": false,
+          "example": "Lucknow"
+        },
+        {
+          "name": "vehicle_type",
+          "type": "TEXT",
+          "description": "Bike, EV Scooter or Bicycle",
+          "nullable": false,
+          "example": "Bike"
+        },
+        {
+          "name": "joined_date",
+          "type": "DATE",
+          "description": "Date the rider joined",
+          "nullable": false,
+          "example": "2022-12-23"
+        },
+        {
+          "name": "phone",
+          "type": "TEXT",
+          "description": "Mobile number (NULL for ~5%)",
+          "nullable": true,
+          "example": "9114230551"
+        },
+        {
+          "name": "is_active",
+          "type": "INTEGER",
+          "description": "1 if currently active",
+          "nullable": false,
+          "example": "1"
+        }
+      ]
+    },
+    {
+      "name": "deliveries",
+      "rowCount": 15120,
+      "description": "One row per order/delivery (~0.8% exact duplicate rows are deliberate).",
+      "columns": [
+        {
+          "name": "delivery_id",
+          "type": "INTEGER",
+          "description": "Delivery identifier (duplicated for duplicate rows)",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "restaurant_id",
+          "type": "INTEGER",
+          "description": "FK to restaurants.restaurant_id",
+          "nullable": false,
+          "example": "34"
+        },
+        {
+          "name": "partner_id",
+          "type": "INTEGER",
+          "description": "FK to delivery_partners.partner_id",
+          "nullable": false,
+          "example": "391"
+        },
+        {
+          "name": "customer_id",
+          "type": "INTEGER",
+          "description": "Anonymous customer id (no customer table)",
+          "nullable": false,
+          "example": "3913"
+        },
+        {
+          "name": "city",
+          "type": "TEXT",
+          "description": "Customer city (a few casing issues)",
+          "nullable": false,
+          "example": "Hyderabad"
+        },
+        {
+          "name": "order_date",
+          "type": "DATE",
+          "description": "Date the order was placed",
+          "nullable": false,
+          "example": "2023-01-01"
+        },
+        {
+          "name": "order_time",
+          "type": "DATETIME",
+          "description": "Timestamp the order was placed",
+          "nullable": false,
+          "example": "2023-01-01 09:35:27"
+        },
+        {
+          "name": "delivered_time",
+          "type": "DATETIME",
+          "description": "Timestamp of delivery (NULL if cancelled)",
+          "nullable": true,
+          "example": "2023-01-01 10:10:27"
+        },
+        {
+          "name": "distance_km",
+          "type": "REAL",
+          "description": "Restaurant to customer distance",
+          "nullable": false,
+          "example": "4.2"
+        },
+        {
+          "name": "promised_minutes",
+          "type": "INTEGER",
+          "description": "ETA promised to the customer",
+          "nullable": false,
+          "example": "40"
+        },
+        {
+          "name": "actual_minutes",
+          "type": "INTEGER",
+          "description": "Actual minutes from order to delivery (NULL if cancelled)",
+          "nullable": true,
+          "example": "35"
+        },
+        {
+          "name": "delay_minutes",
+          "type": "INTEGER",
+          "description": "actual_minutes minus promised_minutes (NULL if cancelled; negative = early)",
+          "nullable": true,
+          "example": "-5"
+        },
+        {
+          "name": "order_value",
+          "type": "REAL",
+          "description": "Food order value in INR (8 rows are 100x outliers)",
+          "nullable": false,
+          "example": "177.0"
+        },
+        {
+          "name": "delivery_fee",
+          "type": "REAL",
+          "description": "Delivery fee in INR",
+          "nullable": false,
+          "example": "32.0"
+        },
+        {
+          "name": "payment_mode",
+          "type": "TEXT",
+          "description": "UPI, Card, Cash on Delivery or Wallet",
+          "nullable": false,
+          "example": "UPI"
+        },
+        {
+          "name": "weather",
+          "type": "TEXT",
+          "description": "Clear, Cloudy, Rain or Heavy Rain at delivery",
+          "nullable": false,
+          "example": "Clear"
+        },
+        {
+          "name": "delivery_status",
+          "type": "TEXT",
+          "description": "Delivered or Cancelled",
+          "nullable": false,
+          "example": "Delivered"
+        },
+        {
+          "name": "cancel_reason",
+          "type": "TEXT",
+          "description": "Reason when cancelled, else NULL",
+          "nullable": true,
+          "example": "Customer cancelled"
+        }
+      ]
+    },
+    {
+      "name": "ratings",
+      "rowCount": 8630,
+      "description": "Customer ratings for ~60-70% of delivered orders.",
+      "columns": [
+        {
+          "name": "rating_id",
+          "type": "INTEGER",
+          "description": "Rating identifier (primary key)",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "delivery_id",
+          "type": "INTEGER",
+          "description": "FK to deliveries.delivery_id",
+          "nullable": false,
+          "example": "6"
+        },
+        {
+          "name": "restaurant_id",
+          "type": "INTEGER",
+          "description": "FK to restaurants.restaurant_id",
+          "nullable": false,
+          "example": "202"
+        },
+        {
+          "name": "partner_id",
+          "type": "INTEGER",
+          "description": "FK to delivery_partners.partner_id",
+          "nullable": false,
+          "example": "319"
+        },
+        {
+          "name": "food_rating",
+          "type": "INTEGER",
+          "description": "1-5 food rating",
+          "nullable": false,
+          "example": "4"
+        },
+        {
+          "name": "delivery_rating",
+          "type": "INTEGER",
+          "description": "1-5 delivery rating",
+          "nullable": false,
+          "example": "5"
+        },
+        {
+          "name": "overall_rating",
+          "type": "INTEGER",
+          "description": "1-5 overall rating",
+          "nullable": false,
+          "example": "5"
+        },
+        {
+          "name": "review_text",
+          "type": "TEXT",
+          "description": "Free-text review (NULL for ~55%)",
+          "nullable": true,
+          "example": "Delivery was quick"
+        },
+        {
+          "name": "rated_at",
+          "type": "DATETIME",
+          "description": "Timestamp the rating was left",
+          "nullable": false,
+          "example": "2023-01-01 19:41:25"
+        }
+      ]
+    },
+    {
+      "name": "promo_usage",
+      "rowCount": 5474,
+      "description": "Promo code redemptions on deliveries.",
+      "columns": [
+        {
+          "name": "usage_id",
+          "type": "INTEGER",
+          "description": "Redemption identifier (primary key)",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "delivery_id",
+          "type": "INTEGER",
+          "description": "FK to deliveries.delivery_id",
+          "nullable": false,
+          "example": "11"
+        },
+        {
+          "name": "promo_code",
+          "type": "TEXT",
+          "description": "Promo code (a few casing inconsistencies)",
+          "nullable": false,
+          "example": "WELCOME50"
+        },
+        {
+          "name": "discount_amount",
+          "type": "REAL",
+          "description": "Discount given in INR",
+          "nullable": false,
+          "example": "100.0"
+        },
+        {
+          "name": "is_new_user",
+          "type": "INTEGER",
+          "description": "1 if redemption by a first-time user",
+          "nullable": false,
+          "example": "1"
+        },
+        {
+          "name": "used_at",
+          "type": "DATETIME",
+          "description": "Timestamp of redemption (equals order time)",
+          "nullable": false,
+          "example": "2023-01-01 15:59:43"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "from": "deliveries.restaurant_id",
+      "to": "restaurants.restaurant_id",
+      "type": "many-to-one"
+    },
+    {
+      "from": "deliveries.partner_id",
+      "to": "delivery_partners.partner_id",
+      "type": "many-to-one"
+    },
+    {
+      "from": "ratings.delivery_id",
+      "to": "deliveries.delivery_id",
+      "type": "many-to-one"
+    },
+    {
+      "from": "ratings.restaurant_id",
+      "to": "restaurants.restaurant_id",
+      "type": "many-to-one"
+    },
+    {
+      "from": "ratings.partner_id",
+      "to": "delivery_partners.partner_id",
+      "type": "many-to-one"
+    },
+    {
+      "from": "promo_usage.delivery_id",
+      "to": "deliveries.delivery_id",
+      "type": "many-to-one"
+    }
+  ],
+  "qualityIssues": [
+    "deliveries: ~0.8% of rows (about 120) are exact duplicates by delivery_id, so delivery_id has no PRIMARY KEY constraint.",
+    "delivery_partners: 8 exact duplicate partner rows.",
+    "deliveries.actual_minutes, delay_minutes, delivered_time and cancel_reason are NULL by design for cancelled orders (~5-6% of rows).",
+    "deliveries.order_value: 8 rows are 100x outliers (e.g. 41,200 instead of 412).",
+    "restaurants.city ~8% and delivery_partners.city ~6% (and deliveries.city ~3%) have inconsistent casing or whitespace; restaurants.city ~2% NULL; delivery_partners.phone ~5% NULL.",
+    "promo_usage.promo_code: ~4% of values have inconsistent casing/whitespace.",
+    "CSV only - deliveries.order_time: ~15% of rows are DD-MM-YYYY HH:MM:SS instead of ISO.",
+    "CSV only - deliveries.order_value: ~15% of rows are text with rupee symbol and Indian grouping (e.g. '₹1,250').",
+    "CSV only - ratings.rated_at: ~25% of rows in DD-MM-YYYY format.",
+    "CSV only - promo_usage.discount_amount: ~20% of rows are text like '₹75.00'."
+  ],
+  "er": "erDiagram\n  restaurants {\n    INTEGER restaurant_id PK\n    TEXT restaurant_name\n    TEXT cuisine\n    TEXT city\n    TEXT price_band\n    INTEGER avg_prep_minutes\n    INTEGER is_cloud_kitchen\n    TEXT onboarded_date\n  }\n  delivery_partners {\n    INTEGER partner_id PK\n    TEXT partner_name\n    TEXT city\n    TEXT vehicle_type\n    TEXT joined_date\n    TEXT phone\n    INTEGER is_active\n  }\n  deliveries {\n    INTEGER delivery_id PK\n    INTEGER restaurant_id FK\n    INTEGER partner_id FK\n    INTEGER customer_id\n    TEXT city\n    TEXT order_date\n    TEXT order_time\n    TEXT delivered_time\n    REAL distance_km\n    INTEGER promised_minutes\n    INTEGER actual_minutes\n    INTEGER delay_minutes\n    REAL order_value\n    REAL delivery_fee\n    TEXT payment_mode\n    TEXT weather\n    TEXT delivery_status\n    TEXT cancel_reason\n  }\n  ratings {\n    INTEGER rating_id PK\n    INTEGER delivery_id FK\n    INTEGER restaurant_id FK\n    INTEGER partner_id FK\n    INTEGER food_rating\n    INTEGER delivery_rating\n    INTEGER overall_rating\n    TEXT review_text\n    TEXT rated_at\n  }\n  promo_usage {\n    INTEGER usage_id PK\n    INTEGER delivery_id FK\n    TEXT promo_code\n    REAL discount_amount\n    INTEGER is_new_user\n    TEXT used_at\n  }\n  restaurants ||--o{ deliveries : \"restaurant_id\"\n  delivery_partners ||--o{ deliveries : \"partner_id\"\n  deliveries ||--o{ ratings : \"delivery_id\"\n  restaurants ||--o{ ratings : \"restaurant_id\"\n  delivery_partners ||--o{ ratings : \"partner_id\"\n  deliveries ||--o{ promo_usage : \"delivery_id\"",
+  "downloads": {
+    "sqlite": "data/sqlite/food_delivery.sqlite",
+    "zip": "data/zip/food_delivery.zip",
+    "csv": [
+      "data/csv/food_delivery/restaurants.csv",
+      "data/csv/food_delivery/delivery_partners.csv",
+      "data/csv/food_delivery/deliveries.csv",
+      "data/csv/food_delivery/ratings.csv",
+      "data/csv/food_delivery/promo_usage.csv"
+    ]
+  },
+  "signals": [
+    "[Instructor note] Delivery delay drives ratings: delivery_rating falls ~0.075 per minute of delay; late (delay > 10 min) orders average roughly 1-1.5 points lower than on-time orders; unhappy customers are also more likely to rate.",
+    "[Instructor note] Heavy Rain and Rain days (Mumbai/Kolkata/Pune Jun-Sep, Chennai Oct-Dec) add 6-13 minutes and raise cancellation rates (~3.5% base up to ~8%).",
+    "[Instructor note] Lunch (12-13h) and dinner (20-21h) peaks have longer waits; weekends are ~25% busier; order volume rises ~1.3x during IPL months (Mar 22-May 26 2024, Mar 31-May 28 2023).",
+    "[Instructor note] Partners in their first ~60 days are ~5 minutes slower; a skill factor per partner creates a spread in partner performance.",
+    "[Instructor note] FLAT75 is applied heavily to low-value orders (discount is a large share of order value), making it the worst-ROI promo; WELCOME50 drives new-user orders; IPLFEAST and MONSOON20 only appear in their seasons.",
+    "[Instructor note] Restaurant food quality varies independently of delivery speed (food_rating vs delivery_rating can be separated by analysts).",
+    "[Instructor note] 8 outlier order_values (100x) distort average order value."
+  ]
+}

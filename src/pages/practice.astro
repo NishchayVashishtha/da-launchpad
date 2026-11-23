@@ -1,0 +1,9 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import PracticeHub from '../components/react/PracticeHub';
+const qs = (await getCollection('practice')).map(({ data: d }) => ({ id: d.id, module: d.module, topic: d.topic, difficulty: d.difficulty, language: d.language, question: d.question, tags: d.tags }));
+---
+<Base title="Practice" description="All practice questions with filters for module, topic, difficulty, status and bookmarks.">
+  <div style="max-width:60rem;margin:0 auto"><h1 style="margin-top:0">Practice</h1><PracticeHub client:load questions={qs} /></div>
+</Base>

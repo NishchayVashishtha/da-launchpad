@@ -1,0 +1,25 @@
+store_id,store_code,store_name,city,state,region,store_format,opened_on,carpet_area_sqft
+1,VSD-001,Vasudha Hypermarket - Andheri,Mumbai,Maharashtra,West,Hypermarket,2016-05-28,60500
+2,VSD-002,Vasudha Supermarket - Thane,Mumbai,Maharashtra,West,Supermarket,2009-05-09,15500
+3,VSD-003,Vasudha Hypermarket - Dwarka,Delhi,Delhi,North,Hypermarket,2008-06-01,60600
+4,VSD-004,Vasudha Express - Rohini,Delhi,Delhi,North,Express,2010-05-23,3600
+5,VSD-005,Vasudha Hypermarket - Whitefield,Bengaluru,Karnataka,South,Hypermarket,2011-10-01,89400
+6,VSD-006,Vasudha Supermarket - Jayanagar,Bengaluru,Karnataka,South,Supermarket,2016-06-08,17800
+7,VSD-007,Vasudha Supermarket - Kukatpally,Hyderabad,Telangana,South,Supermarket,2021-02-03,18000
+8,VSD-008,Vasudha Supermarket - Velachery,Chennai ,Tamil Nadu,South,Supermarket,2016-04-27,22100
+9,VSD-009,Vasudha Supermarket - Salt Lake,KOLKATA,West Bengal,East,Supermarket,2019-09-02,21300
+10,VSD-010,Vasudha Supermarket - Aundh, Pune,Maharashtra,West,Supermarket,2013-08-31,28800
+11,VSD-011,Vasudha Express - Kharadi,Pune,Maharashtra,West,Express,2011-01-06,4700
+12,VSD-012,Vasudha Hypermarket - Satellite,Ahmedabad,Gujarat,West,Hypermarket,2016-12-15,62300
+13,VSD-013,Vasudha Supermarket - Malviya Nagar,Jaipur,Rajasthan,North,Supermarket,2018-10-01,28700
+14,VSD-014,Vasudha Supermarket - Gomti Nagar, Lucknow,Uttar Pradesh,North,Supermarket,2022-06-06,26400
+15,VSD-015,Vasudha Express - Sector 17,Chandigarh,Chandigarh,North,Express,2009-10-30,3000
+16,VSD-016,Vasudha Supermarket - Vijay Nagar,Indore,Madhya Pradesh,West,Supermarket,2013-08-07,26100
+17,VSD-017,Vasudha Express - Kakkanad,Kochi,Kerala,South,Express,2010-02-28,3500
+18,VSD-018,Vasudha Supermarket - Dharampeth,Nagpur,Maharashtra,West,Supermarket,2010-12-20,28500
+19,VSD-019,Vasudha Express - Adajan,Surat,Gujarat,West,Express,2015-07-24,4000
+20,VSD-020,Vasudha Supermarket - MP Nagar,Bhopal,Madhya Pradesh,West,Supermarket,2015-04-10,19300
+21,VSD-021,Vasudha Express - Boring Road,Patna,Bihar,East,Express,2008-09-06,4800
+22,VSD-022,Vasudha Supermarket - RS Puram,Coimbatore,Tamil Nadu,South,Supermarket,2012-01-19,17500
+23,VSD-023,Vasudha Express - MVP Colony,Visakhapatnam,Andhra Pradesh,South,Express,2011-07-18,4100
+24,VSD-024,Vasudha Supermarket - Six Mile,Guwahati,Assam,East,Supermarket,2008-04-07,19800

@@ -1,0 +1,38 @@
+[
+  {
+    "week": 1,
+    "day": 1,
+    "title": "Understand the role and set up your tools",
+    "tasks": [
+      "Read the Start Here lessons on what a Data Analyst does",
+      "Install VS Code and Git",
+      "Log your first study hours on the Dashboard"
+    ],
+    "links": [
+      {
+        "label": "Start Here",
+        "href": "/start-here/"
+      }
+    ]
+  },
+  {
+    "week": 1,
+    "day": 2,
+    "title": "First SQL queries",
+    "tasks": [
+      "Open the SQL playground and explore a dataset",
+      "Write 5 simple SELECT queries",
+      "Mark one practice question as done"
+    ],
+    "links": [
+      {
+        "label": "SQL playground",
+        "href": "/playground/"
+      },
+      {
+        "label": "Practice hub",
+        "href": "/practice/"
+      }
+    ]
+  }
+]

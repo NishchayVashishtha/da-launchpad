@@ -1,0 +1,316 @@
+{
+  "id": "retail",
+  "title": "Retail Sales: Vasudha Retail",
+  "description": "Vasudha Retail is a fictional chain of 24 grocery and lifestyle stores (hypermarkets, supermarkets and express stores) across 15 Indian states and union territories. The dataset covers 2023-2024 with sampled transaction lines, month-end inventory snapshots per store and SKU, and monthly sales targets. Use it for monthly sales trends, festive seasonality, stockout impact, overstock and target attainment.",
+  "tables": [
+    {
+      "name": "stores",
+      "rowCount": 24,
+      "description": "24 stores with city, region, format and carpet area.",
+      "columns": [
+        {
+          "name": "store_id",
+          "type": "INTEGER",
+          "description": "Store identifier (primary key)",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "store_code",
+          "type": "TEXT",
+          "description": "Short store code such as VSD-001",
+          "nullable": false,
+          "example": "VSD-003"
+        },
+        {
+          "name": "store_name",
+          "type": "TEXT",
+          "description": "Store name (format and locality)",
+          "nullable": false,
+          "example": "Vasudha Hypermarket - Dwarka"
+        },
+        {
+          "name": "city",
+          "type": "TEXT",
+          "description": "City (casing/whitespace issues on ~8% of rows)",
+          "nullable": false,
+          "example": "Delhi"
+        },
+        {
+          "name": "state",
+          "type": "TEXT",
+          "description": "State or union territory",
+          "nullable": false,
+          "example": "Delhi"
+        },
+        {
+          "name": "region",
+          "type": "TEXT",
+          "description": "North, South, East or West",
+          "nullable": false,
+          "example": "North"
+        },
+        {
+          "name": "store_format",
+          "type": "TEXT",
+          "description": "Hypermarket, Supermarket or Express",
+          "nullable": false,
+          "example": "Hypermarket"
+        },
+        {
+          "name": "opened_on",
+          "type": "DATE",
+          "description": "Opening date",
+          "nullable": false,
+          "example": "2008-06-01"
+        },
+        {
+          "name": "carpet_area_sqft",
+          "type": "INTEGER",
+          "description": "Carpet area in square feet",
+          "nullable": false,
+          "example": "60600"
+        }
+      ]
+    },
+    {
+      "name": "sales",
+      "rowCount": 24350,
+      "description": "Sampled sales transaction lines, about one line per store per day (350 exact duplicate rows are deliberate).",
+      "columns": [
+        {
+          "name": "sale_id",
+          "type": "INTEGER",
+          "description": "Sale line identifier (duplicated for duplicate rows)",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "sale_datetime",
+          "type": "DATETIME",
+          "description": "Date and time of the sale",
+          "nullable": false,
+          "example": "2023-01-01 09:01:50"
+        },
+        {
+          "name": "store_id",
+          "type": "INTEGER",
+          "description": "FK to stores.store_id",
+          "nullable": false,
+          "example": "9"
+        },
+        {
+          "name": "sku_id",
+          "type": "TEXT",
+          "description": "SKU code (no product master table; see category)",
+          "nullable": false,
+          "example": "GRC-01"
+        },
+        {
+          "name": "category",
+          "type": "TEXT",
+          "description": "Product category for the SKU",
+          "nullable": false,
+          "example": "Grocery & Staples"
+        },
+        {
+          "name": "quantity",
+          "type": "INTEGER",
+          "description": "Units sold on the line",
+          "nullable": false,
+          "example": "2"
+        },
+        {
+          "name": "unit_price_inr",
+          "type": "REAL",
+          "description": "Unit selling price in INR",
+          "nullable": false,
+          "example": "487.08"
+        },
+        {
+          "name": "discount_pct",
+          "type": "REAL",
+          "description": "Discount percentage applied (NULL for ~4%)",
+          "nullable": true,
+          "example": "5.0"
+        },
+        {
+          "name": "net_amount_inr",
+          "type": "REAL",
+          "description": "Net line amount in INR after discount (6 rows are 100x outliers)",
+          "nullable": false,
+          "example": "925.45"
+        },
+        {
+          "name": "payment_mode",
+          "type": "TEXT",
+          "description": "UPI, Card, Cash or Wallet (casing issues, ~1% NULL)",
+          "nullable": true,
+          "example": "Card"
+        }
+      ]
+    },
+    {
+      "name": "inventory",
+      "rowCount": 13824,
+      "description": "Month-end stock snapshot for every store and SKU, 2023-01 to 2024-12.",
+      "columns": [
+        {
+          "name": "inventory_id",
+          "type": "INTEGER",
+          "description": "Inventory record identifier (primary key)",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "snapshot_date",
+          "type": "DATE",
+          "description": "Month-end snapshot date",
+          "nullable": false,
+          "example": "2023-01-31"
+        },
+        {
+          "name": "store_id",
+          "type": "INTEGER",
+          "description": "FK to stores.store_id",
+          "nullable": false,
+          "example": "1"
+        },
+        {
+          "name": "sku_id",
+          "type": "TEXT",
+          "description": "SKU code",
+          "nullable": false,
+          "example": "GRC-03"
+        },
+        {
+          "name": "category",
+          "type": "TEXT",
+          "description": "Product category for the SKU",
+          "nullable": false,
+          "example": "Grocery & Staples"
+        },
+        {
+          "name": "stock_on_hand",
+          "type": "INTEGER",
+          "description": "Units on hand at month end (NULL for ~1%)",
+          "nullable": true,
+          "example": "24"
+        },
+        {
+          "name": "reorder_level",
+          "type": "INTEGER",
+          "description": "Suggested reorder level in units",
+          "nullable": false,
+          "example": "8"
+        },
+        {
+          "name": "units_sold_in_month",
+          "type": "INTEGER",
+          "description": "Units sold during the month",
+          "nullable": false,
+          "example": "19"
+        },
+        {
+          "name": "days_out_of_stock",
+          "type": "INTEGER",
+          "description": "Days during the month the SKU was out of stock",
+          "nullable": false,
+          "example": "0"
+        }
+      ]
+    },
+    {
+      "name": "targets",
+      "rowCount": 504,
+      "description": "Monthly net sales targets per store; the East region (Kolkata, Patna, Guwahati) has no targets.",
+      "columns": [
+        {
+          "name": "target_id",
+          "type": "INTEGER",
+          "description": "Target identifier (primary key)",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "store_id",
+          "type": "INTEGER",
+          "description": "FK to stores.store_id",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "target_month",
+          "type": "TEXT",
+          "description": "Target month as YYYY-MM",
+          "nullable": false,
+          "example": "2023-01"
+        },
+        {
+          "name": "target_net_sales_inr",
+          "type": "REAL",
+          "description": "Target net sales in INR (NULL for ~3%)",
+          "nullable": true,
+          "example": "117000.0"
+        },
+        {
+          "name": "target_units",
+          "type": "INTEGER",
+          "description": "Target units derived from the sales target",
+          "nullable": false,
+          "example": "138"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "from": "sales.store_id",
+      "to": "stores.store_id",
+      "type": "many-to-one"
+    },
+    {
+      "from": "inventory.store_id",
+      "to": "stores.store_id",
+      "type": "many-to-one"
+    },
+    {
+      "from": "targets.store_id",
+      "to": "stores.store_id",
+      "type": "many-to-one"
+    }
+  ],
+  "qualityIssues": [
+    "sales: 350 exact duplicate rows (same sale_id twice), so sale_id has no PRIMARY KEY constraint.",
+    "sales.discount_pct: NULL for ~4% of rows; net_amount_inr already reflects the discount, so it is still populated.",
+    "sales.payment_mode: ~8% inconsistent casing/whitespace ('upi', ' Card'), ~1% NULL.",
+    "sales.net_amount_inr: 6 rows are 100x outliers.",
+    "stores.city: ~8% casing/whitespace issues.",
+    "inventory.stock_on_hand: ~1% NULL.",
+    "targets.target_net_sales_inr: ~3% NULL; no targets exist for the East region stores.",
+    "CSV only - sales.sale_datetime: ~15% of rows use DD-MM-YYYY; sales.net_amount_inr: ~25% are rupee text with Indian grouping.",
+    "CSV only - inventory.snapshot_date: ~12% of rows use DD-MM-YYYY; targets.target_net_sales_inr: ~15% are rupee text.",
+    "No product master table: sku_id and category are denormalised codes."
+  ],
+  "er": "erDiagram\n  stores {\n    INTEGER store_id PK\n    TEXT store_code\n    TEXT store_name\n    TEXT city\n    TEXT state\n    TEXT region\n    TEXT store_format\n    TEXT opened_on\n    INTEGER carpet_area_sqft\n  }\n  sales {\n    INTEGER sale_id PK\n    TEXT sale_datetime\n    INTEGER store_id FK\n    TEXT sku_id\n    TEXT category\n    INTEGER quantity\n    REAL unit_price_inr\n    REAL discount_pct\n    REAL net_amount_inr\n    TEXT payment_mode\n  }\n  inventory {\n    INTEGER inventory_id PK\n    TEXT snapshot_date\n    INTEGER store_id FK\n    TEXT sku_id\n    TEXT category\n    INTEGER stock_on_hand\n    INTEGER reorder_level\n    INTEGER units_sold_in_month\n    INTEGER days_out_of_stock\n  }\n  targets {\n    INTEGER target_id PK\n    INTEGER store_id FK\n    TEXT target_month\n    REAL target_net_sales_inr\n    INTEGER target_units\n  }\n  stores ||--o{ sales : \"store_id\"\n  stores ||--o{ inventory : \"store_id\"\n  stores ||--o{ targets : \"store_id\"",
+  "downloads": {
+    "sqlite": "data/sqlite/retail.sqlite",
+    "zip": "data/zip/retail.zip",
+    "csv": [
+      "data/csv/retail/stores.csv",
+      "data/csv/retail/sales.csv",
+      "data/csv/retail/inventory.csv",
+      "data/csv/retail/targets.csv"
+    ]
+  },
+  "signals": [
+    "[Instructor note] Stockouts: Velachery (Chennai), Adajan (Surat), Gomti Nagar (Lucknow) and Kharadi (Pune) stores have frequent stockouts (days_out_of_stock > 0 for many SKUs) and roughly 30% lower sales volume than peers.",
+    "[Instructor note] Diwali (Oct-Nov) and the 2024 Navratri window spike sales; Republic Day and Independence Day sale weeks give smaller spikes.",
+    "[Instructor note] Home Decor is slow-moving: about 5% of sales volume, but stock covers 6-10 months of demand, so it is overstocked.",
+    "[Instructor note] East region stores (Kolkata, Patna, Guwahati) have no targets, so target attainment can only be compared for the other regions.",
+    "[Instructor note] Targets are set at 90-115% of actual sales, so attainment clusters near 100% with a few misses.",
+    "[Instructor note] 2024 prices are about 6% higher than 2023 for every SKU, so compare volume and value separately.",
+    "[Instructor note] Sales are a sampled extract of about one transaction line per store per day, so use rates and shares rather than absolute totals.",
+    "[Instructor note] 6 net_amount outliers (100x) distort totals unless excluded."
+  ]
+}

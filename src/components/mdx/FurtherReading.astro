@@ -1,0 +1,13 @@
+---
+import links from '../../data/links.json';
+interface Props { ids: string[] }
+const { ids } = Astro.props;
+const items = ids.map((id) => {
+  const l = links.find((x) => x.id === id);
+  if (!l) throw new Error(`<FurtherReading>: unknown link id "${id}". Add it to src/data/links.json`);
+  return l;
+});
+---
+<ul>
+  {items.map((l) => <li><a href={l.url} target="_blank" rel="noopener noreferrer">{l.title}</a>: {l.note}</li>)}
+</ul>

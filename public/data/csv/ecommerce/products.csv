@@ -1,0 +1,421 @@
+product_id,sku,product_name,category,sub_category,brand,mrp,cost_price,is_active
+1,SKU100000,Masala Mandi Beverage 979,Grocery,Beverages,Masala Mandi,1289.0,922.17,1
+2,SKU100007,Ayurmitra Skincare 761,Beauty,Skincare,Ayurmitra,1069.0,646.31,1
+3,SKU100014,Lakshmi Home Decor 542,Home & Kitchen,Decor,Lakshmi Home,509.0,361.58,1
+4,SKU100021,Denim Dukaan Kurta 499,Fashion,Kurtas,Denim Dukaan,1599.0,1040.92,1
+5,SKU100028,Masala Mandi Dry Fruit 452,Grocery,Dry Fruits,Masala Mandi,69.0,47.7,1
+6,SKU100035,Orbita Speaker 867,Electronics,Speakers,Orbita,2109.0,1228.66,1
+7,SKU100042,RunMate Sandal 151,Footwear,Sandals,RunMate,1399.0,921.44,1
+8,SKU100049,Desi Dhara Snack 545,Grocery ,Snacks,Desi Dhara,89.0,67.35,1
+9,SKU100056,Desi Dhara Staple 618,Grocery,Staples,Desi Dhara,129.0,85.25,1
+10,SKU100063,NestWell Storage 656,Home & Kitchen,Storage,NestWell,349.0,256.04,1
+11,SKU100070,Lakshmi Home Appliance 103,Home & Kitchen,Appliances,Lakshmi Home,10909.0,8636.24,1
+12,SKU100077,Threadly Jean 487,Fashion,Jeans,Threadly,789.0,469.18,1
+13,SKU100084,Threadly Jean 247,Fashion,Jeans,Threadly,2839.0,1818.32,1
+14,SKU100091,Rangrez Dresse 857,Fashion,Dresses,Rangrez,4059.0,2998.23,1
+15,SKU100098,Denim Dukaan Kurta 808,Fashion,Kurtas,Denim Dukaan,3049.0,2420.58,1
+16,SKU100105,Technova Mobile 561,Electronics,Mobiles,Technova,629.0,413.6,1
+17,SKU100112,UrbanKurta Jean 509,Fashion,Jeans,UrbanKurta,1469.0,1023.04,1
+18,SKU100119,Desi Dhara Staple 950,Grocery,Staples,Desi Dhara,119.0,68.25,1
+19,SKU100126,StrideWell Sneaker 194,Footwear,Sneakers,StrideWell,509.0,285.04,1
+20,SKU100133,Rangrez Jean 756,Fashion,Jeans,Rangrez,3709.0,2564.82,1
+21,SKU100140,Rasoi Plus Storage 470,Home & Kitchen,Storage,Rasoi Plus,329.0,207.2,1
+22,SKU100147,Lakshmi Home Cookware 299,Home & Kitchen,Cookware,Lakshmi Home,719.0,431.94,1
+23,SKU100154,StrideWell Formal Shoe 641,Footwear,Formal Shoes,StrideWell,1919.0,1137.61,1
+24,SKU100161,RunMate Sports Shoe 925,Footwear,Sports Shoes,RunMate,439.0,314.93,1
+25,SKU100168,Lakshmi Home Bedding 532,Home & Kitchen,Bedding,Lakshmi Home,3279.0,2097.48,1
+26,SKU100175,Technova Charger 654,Electronics,Chargers,Technova,3369.0,1917.65,1
+27,SKU100182,Gadgetry Headphone 377,Electronics,Headphones,Gadgetry,1659.0,977.45,1
+28,SKU100189,Rangrez Dresse 842,Fashion,Dresses,Rangrez,1149.0,646.56,1
+29,SKU100196,Pustak Ghar Self Help 839,books,Self Help,Pustak Ghar,229.0,154.65,1
+30,SKU100203,Kesar Naturals Haircare 134,Beauty,Haircare,Kesar Naturals,1069.0,813.05,1
+31,SKU100210,UrbanKurta Dresse 113,Fashion,Dresses,UrbanKurta,529.0,358.23,1
+32,SKU100217,Rasoi Plus Storage 838,Home & Kitchen,Storage,Rasoi Plus,219.0,158.58,0
+33,SKU100224,Kitaab Press Fiction 437,Books,Fiction,Kitaab Press,179.0,113.2,1
+34,SKU100231,Vastra Co Kurta 709,Fashion,Kurtas,Vastra Co,3399.0,2123.07,1
+35,SKU100238,Orbita Smartwatche 994,Electronics,Smartwatches,Orbita,7109.0,3922.53,1
+36,SKU100245,Kolhapuri Kraft Sneaker 945,Footwear,Sneakers,Kolhapuri Kraft,3809.0,2316.01,0
+37,SKU100252,NestWell Decor 489,Home & Kitchen,Decor,NestWell,10749.0,6563.72,1
+38,SKU100259,Pustak Ghar Exam Prep 434,Books,Exam Prep,Pustak Ghar,229.0,148.76,0
+39,SKU100266,Rangrez Dresse 724,Fashion,Dresses,Rangrez,669.0,498.36,1
+40,SKU100273,Annapurna Beverage 718,Grocery,Beverages,Annapurna,299.0,192.31,1
+41,SKU100280,Denim Dukaan T-Shirt 590,Fashion,T-Shirts,Denim Dukaan,379.0,220.13,1
+42,SKU100287,Denim Dukaan Jean 147,Fashion,Jeans,Denim Dukaan,729.0,434.61,1
+43,SKU100294,Threadly Jean 788,Fashion,Jeans,Threadly,299.0,165.13,1
+44,SKU100301,Technova Smartwatche 630,Electronics,Smartwatches,Technova,2159.0,1196.81,1
+45,SKU100308,Masala Mandi Spice 991,Grocery,Spices,Masala Mandi,139.0,104.47,1
+46,SKU100315,PureNeem Skincare 874,Beauty,Skincare,PureNeem,369.0,258.08,1
+47,SKU100322,Denim Dukaan T-Shirt 790,Fashion,T-Shirts,Denim Dukaan,329.0,246.71,1
+48,SKU100329,Lakshmi Home Decor 337,Home & Kitchen,Decor,Lakshmi Home,1149.0,641.23,1
+49,SKU100336,Denim Dukaan Saree 733,Fashion,Sarees,Denim Dukaan,799.0,464.76,1
+50,SKU100343,Rangrez Dresse 445,Fashion,Dresses,Rangrez,509.0,305.93,1
+51,SKU100350,Denim Dukaan Saree 656,Fashion,Sarees,Denim Dukaan,779.0,610.17,1
+52,SKU100357,NestWell Decor 824,Home & Kitchen,Decor,NestWell,3959.0,2710.99,1
+53,SKU100364,Lakshmi Home Cookware 758,Home & Kitchen,Cookware,Lakshmi Home,369.0,221.29,0
+54,SKU100371,Threadly Kurta 963,Fashion,Kurtas,Threadly,299.0,226.23,1
+55,SKU100378,VoltEdge Charger 215,Electronics,Chargers,VoltEdge,2329.0,1373.04,1
+56,SKU100385,Masala Mandi Beverage 318,Grocery,Beverages,Masala Mandi,229.0,167.95,1
+57,SKU100392,NestWell Decor 802,Home & Kitchen,Decor,NestWell,219.0,150.78,1
+58,SKU100399,Orbita Speaker 659,Electronics,Speakers,Orbita,17729.0,10769.63,1
+59,SKU100406,Desi Dhara Snack 757,Grocery,Snacks,Desi Dhara,139.0,77.08,1
+60,SKU100413,Annapurna Dry Fruit 555,Grocery,Dry Fruits,Annapurna,309.0,244.12,1
+61,SKU100420,NestWell Cookware 882,Home & Kitchen,Cookware,NestWell,2589.0,1723.78,1
+62,SKU100427,Gadgetry Mobile 749,Electronics,Mobiles,Gadgetry,7589.0,4376.63,1
+63,SKU100434,Gadgetry Mobile 974,Electronics,Mobiles,Gadgetry,1419.0,1031.0,1
+64,SKU100441,Sahitya Hub Fiction 919,Books,Fiction,Sahitya Hub,1039.0,808.9,0
+65,SKU100448,GharSaaj Decor 821,Home & Kitchen,Decor,GharSaaj,11649.0,7189.52,1
+66,SKU100455,Vastra Co Kurta 989,Fashion,Kurtas,Vastra Co,749.0,418.05,1
+67,SKU100462,Rasoi Plus Storage 472,Home & Kitchen,Storage,Rasoi Plus,349.0,195.14,1
+68,SKU100469,Rasoi Plus Bedding 126,Home & Kitchen,Bedding,Rasoi Plus,4289.0,2863.19,1
+69,SKU100476,Zenix Speaker 496,Electronics,Speakers,Zenix,16579.0,9579.09,1
+70,SKU100483,Zenix Charger 442,Electronics,Chargers,Zenix,21689.0,16437.42,1
+71,SKU100490,NestWell Decor 807,Home & Kitchen,Decor,NestWell,1199.0,708.83,1
+72,SKU100497,Vastra Co Jean 437,Fashion,Jeans,Vastra Co,2079.0,1164.5,1
+73,SKU100504,Ayurmitra Skincare 956,Beauty,Skincare,Ayurmitra,1289.0,950.81,1
+74,SKU100511,Desi Dhara Dry Fruit 241,Grocery,Dry Fruits,Desi Dhara,129.0,98.52,1
+75,SKU100518,Pustak Ghar Self Help 638,Books,Self Help,Pustak Ghar,449.0,346.1,1
+76,SKU100525,Lakshmi Home Bedding 795,Home & Kitchen,Bedding,Lakshmi Home,939.0,647.47,1
+77,SKU100532,Zenix Headphone 520,Electronics,Headphones,Zenix,18899.0,14747.88,1
+78,SKU100539,Desi Dhara Dry Fruit 276,Grocery,Dry Fruits,Desi Dhara,189.0,151.15,0
+79,SKU100546,FreshKhet Spice 309,Grocery,Spices,FreshKhet,1399.0,986.47,1
+80,SKU100553,Desi Dhara Spice 881,Grocery,Spices,Desi Dhara,169.0,99.27,1
+81,SKU100560,Pustak Ghar Exam Prep 307,Books,Exam Prep,Pustak Ghar,149.0,88.62,1
+82,SKU100567,Sahitya Hub Fiction 803,Books,Fiction,Sahitya Hub,159.0,123.9,1
+83,SKU100574,Pustak Ghar Self Help 376,Books,Self Help,Pustak Ghar,589.0,347.51,1
+84,SKU100581,Orbita Mobile 327,Electronics,Mobiles,Orbita,1759.0,1193.75,1
+85,SKU100588,Orbita Charger 435,Electronics,Chargers,Orbita,2969.0,1659.31,1
+86,SKU100595,Vastra Co Jean 693,Fashion,Jeans,Vastra Co,2329.0,1770.14,1
+87,SKU100602,GlowVeda Makeup 136,Beauty,Makeup,GlowVeda,409.0,323.61,1
+88,SKU100609,Lakshmi Home Cookware 891,Home & Kitchen,Cookware,Lakshmi Home,3939.0,2559.95,1
+89,SKU100616,Zenix Charger 948,Electronics,Chargers,Zenix,4069.0,2861.68,1
+90,SKU100623,Rasoi Plus Appliance 916,Home & Kitchen,Appliances,Rasoi Plus,9129.0,6131.71,1
+91,SKU100630,Rasoi Plus Appliance 418,Home & Kitchen,Appliances,Rasoi Plus,1589.0,908.36,1
+92,SKU100637,Threadly Jean 977,Fashion,Jeans,Threadly,4369.0,2935.01,1
+93,SKU100644,Denim Dukaan Dresse 894,Fashion,Dresses,Denim Dukaan,769.0,492.16,1
+94,SKU100651,UrbanKurta T-Shirt 868,Fashion,T-Shirts,UrbanKurta,1819.0,1066.8,1
+95,SKU100658,Rasoi Plus Storage 421,Home & Kitchen,Storage,Rasoi Plus,1209.0,928.61,1
+96,SKU100665,PureNeem Fragrance 167,Beauty,Fragrance,PureNeem,419.0,334.0,1
+97,SKU100672,Threadly T-Shirt 171,Fashion,T-Shirts,Threadly,699.0,526.54,1
+98,SKU100679,Vastra Co Dresse 240,Fashion,Dresses,Vastra Co,2069.0,1597.48,1
+99,SKU100686,Rasoi Plus Bedding 198,Home & Kitchen,Bedding,Rasoi Plus,6239.0,4456.88,1
+100,SKU100693,UrbanKurta Dresse 196,Fashion,Dresses,UrbanKurta,709.0,426.81,1
+101,SKU100700,PureNeem Skincare 312,Beauty,Skincare,PureNeem,2069.0,1531.34,1
+102,SKU100707,Desi Dhara Beverage 143,Grocery,Beverages,Desi Dhara,229.0,157.21,1
+103,SKU100714,Kitaab Press Kid 717,Books,Kids,Kitaab Press,179.0,123.53,1
+104,SKU100721,Zenix Mobile 860,Electronics,Mobiles,Zenix,4999.0,3625.92,1
+105,SKU100728,FreshKhet Dry Fruit 944,Grocery,Dry Fruits,FreshKhet,69.0,51.59,1
+106,SKU100735,Kolhapuri Kraft Sandal 616,Footwear,Sandals,Kolhapuri Kraft,569.0,353.53,1
+107,SKU100742,Desi Dhara Staple 967,Grocery,Staples,Desi Dhara,119.0,67.73,1
+108,SKU100749,GlowVeda Fragrance 675,Beauty,Fragrance,GlowVeda,139.0,106.74,1
+109,SKU100756,StrideWell Sports Shoe 858,Footwear,Sports Shoes,StrideWell,919.0,537.72,1
+110,SKU100763,Ayurmitra Fragrance 115,Beauty,Fragrance,Ayurmitra,189.0,137.64,1
+111,SKU100770,Denim Dukaan Saree 878,Fashion,Sarees,Denim Dukaan,1559.0,1180.17,1
+112,SKU100777,Kitaab Press Exam Prep 942, Books,Exam Prep,Kitaab Press,1049.0,822.38,1
+113,SKU100784,FreshKhet Beverage 911,Grocery,Beverages,FreshKhet,839.0,555.09,1
+114,SKU100791,Padukas Formal Shoe 298,Footwear,Formal Shoes,Padukas,1989.0,1249.41,1
+115,SKU100798,Denim Dukaan Jean 986,Fashion,Jeans,Denim Dukaan,329.0,254.8,1
+116,SKU100805,Pustak Ghar Self Help 468,Books,Self Help,Pustak Ghar,229.0,130.65,1
+117,SKU100812,NestWell Cookware 971,Home & Kitchen,Cookware,NestWell,1539.0,1167.13,1
+118,SKU100819,RunMate Sports Shoe 318,Footwear,Sports Shoes,RunMate,659.0,450.11,1
+119,SKU100826,FreshKhet Staple 747,Grocery,Staples,FreshKhet,159.0,122.55,1
+120,SKU100833,StrideWell Sports Shoe 658,Footwear,Sports Shoes,StrideWell,3789.0,2567.42,1
+121,SKU100840,Kitaab Press Exam Prep 791,Books,Exam Prep,Kitaab Press,659.0,392.02,1
+122,SKU100847,Sahitya Hub Exam Prep 200,Books,Exam Prep,Sahitya Hub,129.0,82.38,0
+123,SKU100854,NestWell Appliance 619,Home & Kitchen,Appliances,NestWell,749.0,570.91,1
+124,SKU100861,Ayurmitra Skincare 473,Beauty,Skincare,Ayurmitra,1159.0,884.53,1
+125,SKU100868,GharSaaj Decor 445,Home & Kitchen,Decor,GharSaaj,349.0,272.68,1
+126,SKU100875,Annapurna Snack 398,Grocery,Snacks,Annapurna,79.0,55.98,0
+127,SKU100882,Desi Dhara Staple 368,Grocery,Staples,Desi Dhara,249.0,198.16,1
+128,SKU100889,Pustak Ghar Exam Prep 665,Books,Exam Prep,Pustak Ghar,299.0,234.29,1
+129,SKU100896,VoltEdge Smartwatche 354,Electronics,Smartwatches,VoltEdge,7349.0,4670.5,1
+130,SKU100903,Desi Dhara Staple 236,Grocery,Staples,Desi Dhara,1199.0,954.53,1
+131,SKU100910,Ayurmitra Haircare 163,Beauty,Haircare,Ayurmitra,249.0,176.97,1
+132,SKU100917,Masala Mandi Beverage 853,Grocery,Beverages,Masala Mandi,129.0,71.27,1
+133,SKU100924,Desi Dhara Beverage 816,Grocery,Beverages,Desi Dhara,949.0,659.08,1
+134,SKU100931,Technova Smartwatche 111,Electronics,Smartwatches,Technova,6979.0,4083.89,1
+135,SKU100938,Kesar Naturals Fragrance 761,Beauty,Fragrance,Kesar Naturals,569.0,360.69,1
+136,SKU100945,UrbanKurta Kurta 167,Fashion,Kurtas,UrbanKurta,649.0,504.93,1
+137,SKU100952,NestWell Storage 481,Home & Kitchen,Storage,NestWell,729.0,490.0,1
+138,SKU100959,VoltEdge Speaker 578,Electronics,Speakers,VoltEdge,1529.0,1091.21,1
+139,SKU100966,Lakshmi Home Bedding 794,Home & Kitchen,Bedding,Lakshmi Home,679.0,387.23,1
+140,SKU100973,Kesar Naturals Skincare 702,Beauty,Skincare,Kesar Naturals,779.0,566.77,1
+141,SKU100980,Vastra Co Jean 393,Fashion,Jeans,Vastra Co,1879.0,1387.22,1
+142,SKU100987,Vastra Co T-Shirt 107,Fashion,T-Shirts,Vastra Co,699.0,552.07,1
+143,SKU100994,Sahitya Hub Kid 380,Books,Kids,Sahitya Hub,209.0,130.21,1
+144,SKU101001,StrideWell Sports Shoe 913,Footwear,Sports Shoes,StrideWell,4189.0,2661.22,1
+145,SKU101008,GharSaaj Cookware 109,Home & Kitchen,Cookware,GharSaaj,6809.0,5405.45,1
+146,SKU101015,PureNeem Skincare 841,Beauty,Skincare,PureNeem,1329.0,891.13,1
+147,SKU101022,Threadly Dresse 180,Fashion,Dresses,Threadly,2299.0,1466.95,1
+148,SKU101029,Gadgetry Headphone 245,Electronics,Headphones,Gadgetry,15719.0,12501.88,1
+149,SKU101036,Rangrez Dresse 915,Fashion,Dresses,Rangrez,639.0,453.64,1
+150,SKU101043,Lakshmi Home Appliance 594,Home & Kitchen,Appliances,Lakshmi Home,859.0,475.98,1
+151,SKU101050,Technova Mobile 340,Electronics,Mobiles,Technova,23459.0,17798.94,1
+152,SKU101057,Vastra Co Dresse 606,Fashion,Dresses,Vastra Co,1269.0,940.81,1
+153,SKU101064,Denim Dukaan Kurta 162,Fashion,Kurtas,Denim Dukaan,3299.0,1969.37,1
+154,SKU101071,Sahitya Hub Self Help 399,Books,Self Help,Sahitya Hub,469.0,299.72,1
+155,SKU101078,NestWell Decor 408,Home & Kitchen,Decor,NestWell,279.0,177.42,1
+156,SKU101085,Gadgetry Speaker 651,Electronics,Speakers,Gadgetry,32069.0,23074.44,1
+157,SKU101092,Sahitya Hub Self Help 615,Books,Self Help,Sahitya Hub,209.0,165.56,1
+158,SKU101099,NestWell Storage 311,Home & Kitchen,Storage,NestWell,929.0,655.21,1
+159,SKU101106,Gadgetry Smartwatche 664,Electronics,Smartwatches,Gadgetry,10199.0,6501.88,1
+160,SKU101113,Annapurna Spice 509,Grocery,Spices,Annapurna,399.0,284.72,1
+161,SKU101120,FreshKhet Spice 781,Grocery,Spices,FreshKhet,1039.0,794.48,1
+162,SKU101127,Pustak Ghar Fiction 968,Books,Fiction,Pustak Ghar,469.0,344.48,1
+163,SKU101134,PureNeem Fragrance 955,BEAUTY,Fragrance,PureNeem,1149.0,908.7,1
+164,SKU101141,GharSaaj Cookware 971,Home & Kitchen,Cookware,GharSaaj,1219.0,838.07,1
+165,SKU101148,Pustak Ghar Self Help 694,books,Self Help,Pustak Ghar,909.0,689.51,1
+166,SKU101155,Denim Dukaan Jean 616,Fashion,Jeans,Denim Dukaan,599.0,466.7,1
+167,SKU101162,GlowVeda Fragrance 639,Beauty,Fragrance,GlowVeda,429.0,316.22,1
+168,SKU101169,Orbita Speaker 231,Electronics,Speakers,Orbita,24079.0,16678.49,1
+169,SKU101176,Lakshmi Home Storage 231,Home & Kitchen,Storage,Lakshmi Home,4239.0,2756.36,1
+170,SKU101183,Kolhapuri Kraft Sports Shoe 704,Footwear,Sports Shoes,Kolhapuri Kraft,3059.0,2331.39,1
+171,SKU101190,Threadly Jean 411,Fashion,Jeans,Threadly,1799.0,1233.09,1
+172,SKU101197,Masala Mandi Staple 852,Grocery,Staples,Masala Mandi,89.0,55.02,1
+173,SKU101204,Lakshmi Home Appliance 446,Home & Kitchen,Appliances,Lakshmi Home,7899.0,5175.05,1
+174,SKU101211,VoltEdge Headphone 213,Electronics,Headphones,VoltEdge,659.0,394.28,0
+175,SKU101218,Desi Dhara Snack 376,Grocery,Snacks,Desi Dhara,199.0,139.35,1
+176,SKU101225,Sahitya Hub Exam Prep 359,Books,Exam Prep,Sahitya Hub,179.0,103.99,1
+177,SKU101232,Padukas Sneaker 605,Footwear,Sneakers,Padukas,2819.0,1680.11,1
+178,SKU101239,Gadgetry Smartwatche 538,Electronics,Smartwatches,Gadgetry,24779.0,13946.11,1
+179,SKU101246,Rangrez Jean 164,Fashion,Jeans,Rangrez,609.0,429.99,1
+180,SKU101253,Gadgetry Smartwatche 547,Electronics,Smartwatches,Gadgetry,1679.0,1085.51,1
+181,SKU101260,Technova Speaker 906,Electronics,Speakers,Technova,20389.0,14400.66,1
+182,SKU101267,Rasoi Plus Storage 627,Home & Kitchen,Storage,Rasoi Plus,919.0,697.23,1
+183,SKU101274,Rangrez Dresse 301,Fashion,Dresses,Rangrez,1849.0,1103.38,0
+184,SKU101281,Threadly Saree 576,Fashion,Sarees,Threadly,509.0,288.11,1
+185,SKU101288,Kesar Naturals Skincare 101,Beauty,Skincare,Kesar Naturals,779.0,562.03,1
+186,SKU101295,Rangrez T-Shirt 234,Fashion,T-Shirts,Rangrez,469.0,339.36,1
+187,SKU101302,Kolhapuri Kraft Sneaker 405,Footwear,Sneakers,Kolhapuri Kraft,1209.0,668.47,1
+188,SKU101309,Denim Dukaan Saree 769,Fashion,Sarees,Denim Dukaan,349.0,196.78,1
+189,SKU101316,Kesar Naturals Fragrance 169,Beauty,Fragrance,Kesar Naturals,729.0,448.11,1
+190,SKU101323,Kitaab Press Exam Prep 948,Books,Exam Prep,Kitaab Press,119.0,95.09,1
+191,SKU101330,Lakshmi Home Storage 885,Home & Kitchen,Storage,Lakshmi Home,5109.0,3828.06,1
+192,SKU101337,GharSaaj Decor 242,Home & Kitchen,Decor,GharSaaj,3349.0,2558.67,1
+193,SKU101344,Kesar Naturals Haircare 631,Beauty,Haircare,Kesar Naturals,329.0,231.29,1
+194,SKU101351,Masala Mandi Snack 353,Grocery,Snacks,Masala Mandi,1359.0,1020.2,1
+195,SKU101358,Desi Dhara Spice 660,Grocery,Spices,Desi Dhara,1399.0,777.82,1
+196,SKU101365,Threadly Jean 263,Fashion,Jeans,Threadly,1319.0,902.23,1
+197,SKU101372,Desi Dhara Dry Fruit 757,Grocery,Dry Fruits,Desi Dhara,389.0,277.59,1
+198,SKU101379,Technova Mobile 323,Electronics,Mobiles,Technova,5859.0,3915.15,1
+199,SKU101386,UrbanKurta Saree 972,Fashion,Sarees,UrbanKurta,1879.0,1293.58,1
+200,SKU101393,Ayurmitra Makeup 775,Beauty,Makeup,Ayurmitra,169.0,125.06,1
+201,SKU101400,Masala Mandi Dry Fruit 544,Grocery,Dry Fruits,Masala Mandi,139.0,87.89,1
+202,SKU101407,Lakshmi Home Storage 830,Home & Kitchen,Storage,Lakshmi Home,2009.0,1209.85,1
+203,SKU101414,GlowVeda Fragrance 724,Beauty,Fragrance,GlowVeda,189.0,113.82,1
+204,SKU101421,Lakshmi Home Storage 977,Home & Kitchen,Storage,Lakshmi Home,279.0,178.55,1
+205,SKU101428,Kolhapuri Kraft Sneaker 588,Footwear,Sneakers,Kolhapuri Kraft,1199.0,790.88,1
+206,SKU101435,Kesar Naturals Haircare 502,Beauty,Haircare,Kesar Naturals,199.0,137.57,1
+207,SKU101442,FreshKhet Staple 965,Grocery,Staples,FreshKhet,89.0,61.09,1
+208,SKU101449,Denim Dukaan Jean 523,Fashion,Jeans,Denim Dukaan,719.0,413.31,1
+209,SKU101456,Denim Dukaan Kurta 507,Fashion,Kurtas,Denim Dukaan,4379.0,2663.39,1
+210,SKU101463,Gadgetry Speaker 285,Electronics,Speakers,Gadgetry,14739.0,11275.22,1
+211,SKU101470,Rangrez Dresse 729,Fashion,Dresses,Rangrez,589.0,327.15,1
+212,SKU101477,Lakshmi Home Cookware 288,Home & Kitchen,Cookware,Lakshmi Home,419.0,257.61,1
+213,SKU101484,Kitaab Press Exam Prep 763,Books,Exam Prep,Kitaab Press,109.0,84.56,1
+214,SKU101491,Kolhapuri Kraft Sports Shoe 734,Footwear,Sports Shoes,Kolhapuri Kraft,929.0,655.32,1
+215,SKU101498,Orbita Smartwatche 577,Electronics,Smartwatches,Orbita,1359.0,930.2,1
+216,SKU101505,UrbanKurta Saree 488,Fashion,Sarees,UrbanKurta,379.0,275.64,1
+217,SKU101512,Gadgetry Speaker 876,Electronics,Speakers,Gadgetry,8609.0,4832.64,1
+218,SKU101519,Annapurna Staple 328,Grocery,Staples,Annapurna,329.0,216.41,1
+219,SKU101526,Lakshmi Home Cookware 724,Home & Kitchen,Cookware,Lakshmi Home,11129.0,8428.82,1
+220,SKU101533,Annapurna Beverage 181,Grocery,Beverages,Annapurna,99.0,72.75,1
+221,SKU101540,Vastra Co Saree 106, fashion  ,Sarees,Vastra Co,769.0,530.06,1
+222,SKU101547,Lakshmi Home Bedding 171,Home & Kitchen,Bedding,Lakshmi Home,1709.0,1110.51,1
+223,SKU101554,VoltEdge Smartwatche 377,Electronics,Smartwatches,VoltEdge,16589.0,11692.43,1
+224,SKU101561,UrbanKurta Jean 540,Fashion,Jeans,UrbanKurta,359.0,278.13,1
+225,SKU101568,PureNeem Makeup 488,Beauty,Makeup,PureNeem,679.0,449.92,0
+226,SKU101575,UrbanKurta Dresse 414,Fashion,Dresses,UrbanKurta,1869.0,1111.27,1
+227,SKU101582,NestWell Cookware 960,Home & Kitchen,Cookware,NestWell,2669.0,2127.71,1
+228,SKU101589,GharSaaj Storage 803,Home & Kitchen,Storage,GharSaaj,2089.0,1661.43,1
+229,SKU101596,RunMate Formal Shoe 579,Footwear,Formal Shoes,RunMate,409.0,269.99,1
+230,SKU101603,Denim Dukaan Dresse 273,Fashion,Dresses,Denim Dukaan,2419.0,1377.21,1
+231,SKU101610,GharSaaj Decor 552,Home & Kitchen,Decor,GharSaaj,789.0,543.72,1
+232,SKU101617,NestWell Bedding 796,Home & Kitchen,Bedding,NestWell,3059.0,1903.22,1
+233,SKU101624,Threadly Saree 625,Fashion,Sarees,Threadly,679.0,388.81,1
+234,SKU101631,Rasoi Plus Bedding 988,Home & Kitchen,Bedding,Rasoi Plus,11899.0,6885.06,1
+235,SKU101638,GlowVeda Makeup 633,Beauty,Makeup,GlowVeda,529.0,418.89,1
+236,SKU101645,GharSaaj Storage 994,Home & Kitchen,Storage,GharSaaj,4539.0,3625.63,1
+237,SKU101652,Gadgetry Smartwatche 715,Electronics,Smartwatches,Gadgetry,1169.0,693.33,1
+238,SKU101659,Kitaab Press Fiction 295,Books,Fiction,Kitaab Press,189.0,132.15,1
+239,SKU101666,Pustak Ghar Exam Prep 874,Books,Exam Prep,Pustak Ghar,439.0,304.66,1
+240,SKU101673,StrideWell Sports Shoe 619,Footwear,Sports Shoes,StrideWell,659.0,442.51,1
+241,SKU101680,Kitaab Press Fiction 455,Books,Fiction,Kitaab Press,679.0,446.79,1
+242,SKU101687,Rangrez Kurta 904,Fashion ,Kurtas,Rangrez,529.0,370.27,1
+243,SKU101694,UrbanKurta Saree 734,Fashion,Sarees,UrbanKurta,619.0,402.27,1
+244,SKU101701,Vastra Co Kurta 573,Fashion,Kurtas,Vastra Co,519.0,296.69,1
+245,SKU101708,Zenix Charger 693,Electronics,Chargers,Zenix,22269.0,12603.94,1
+246,SKU101715,UrbanKurta T-Shirt 475,Fashion,T-Shirts,UrbanKurta,499.0,329.46,1
+247,SKU101722,Denim Dukaan Kurta 342,Fashion,Kurtas,Denim Dukaan,579.0,341.0,1
+248,SKU101729,Masala Mandi Beverage 237,Grocery,Beverages,Masala Mandi,719.0,476.43,1
+249,SKU101736,Denim Dukaan Dresse 924,Fashion,Dresses,Denim Dukaan,1009.0,768.18,1
+250,SKU101743,Annapurna Beverage 187,Grocery,Beverages,Annapurna,399.0,282.27,1
+251,SKU101750,Vastra Co Dresse 167,Fashion,Dresses,Vastra Co,1389.0,959.52,0
+252,SKU101757,Gadgetry Headphone 880,Electronics,Headphones,Gadgetry,1869.0,1301.19,1
+253,SKU101764,Rangrez Kurta 607,Fashion,Kurtas,Rangrez,589.0,331.0,1
+254,SKU101771,PureNeem Haircare 277,Beauty,Haircare,PureNeem,1979.0,1375.74,1
+255,SKU101778,UrbanKurta Kurta 812,Fashion,Kurtas,UrbanKurta,779.0,613.08,1
+256,SKU101785,GlowVeda Haircare 232,Beauty,Haircare,GlowVeda,549.0,385.75,1
+257,SKU101792,Desi Dhara Beverage 380,Grocery,Beverages,Desi Dhara,349.0,199.06,1
+258,SKU101799,Pustak Ghar Kid 721,Books,Kids,Pustak Ghar,299.0,224.13,1
+259,SKU101806,GlowVeda Makeup 821,Beauty,Makeup,GlowVeda,199.0,124.42,1
+260,SKU101813,Sahitya Hub Self Help 817,Books,Self Help,Sahitya Hub,809.0,599.75,1
+261,SKU101820,GharSaaj Cookware 826,Home & Kitchen,Cookware,GharSaaj,219.0,165.61,1
+262,SKU101827,NestWell Storage 785,Home & Kitchen,Storage,NestWell,6379.0,4014.2,1
+263,SKU101834,Denim Dukaan Kurta 559,Fashion,Kurtas,Denim Dukaan,929.0,662.7,1
+264,SKU101841,Denim Dukaan Kurta 899,Fashion,Kurtas,Denim Dukaan,1819.0,1096.25,1
+265,SKU101848,GlowVeda Fragrance 843,Beauty,Fragrance,GlowVeda,359.0,264.4,1
+266,SKU101855,Sahitya Hub Fiction 221,Books,Fiction,Sahitya Hub,139.0,98.47,1
+267,SKU101862,NestWell Appliance 172,Home & Kitchen,Appliances,NestWell,7279.0,5411.95,1
+268,SKU101869,GharSaaj Cookware 750,Home & Kitchen,Cookware,GharSaaj,6029.0,3998.41,1
+269,SKU101876,Vastra Co Kurta 652,Fashion,Kurtas,Vastra Co,1909.0,1295.58,1
+270,SKU101883,NestWell Appliance 912,Home & Kitchen,Appliances,NestWell,10819.0,7485.09,1
+271,SKU101890,FreshKhet Snack 347,Grocery,Snacks,FreshKhet,1169.0,741.57,1
+272,SKU101897,Desi Dhara Dry Fruit 184,Grocery,Dry Fruits,Desi Dhara,269.0,161.95,1
+273,SKU101904,Padukas Formal Shoe 418,Footwear,Formal Shoes,Padukas,759.0,468.45,1
+274,SKU101911,Vastra Co Kurta 932,Fashion,Kurtas,Vastra Co,489.0,278.0,1
+275,SKU101918,Masala Mandi Dry Fruit 358,Grocery,Dry Fruits,Masala Mandi,139.0,85.05,1
+276,SKU101925,VoltEdge Headphone 147,Electronics,Headphones,VoltEdge,1919.0,1105.34,1
+277,SKU101932,Padukas Sandal 679,Footwear,Sandals,Padukas,609.0,338.94,1
+278,SKU101939,RunMate Sports Shoe 105,Footwear,Sports Shoes,RunMate,1379.0,1031.01,1
+279,SKU101946,Gadgetry Charger 179,Electronics,Chargers,Gadgetry,4599.0,2863.75,1
+280,SKU101953,Masala Mandi Spice 461,Grocery,Spices,Masala Mandi,669.0,423.87,1
+281,SKU101960,Padukas Sandal 979,Footwear,Sandals,Padukas,689.0,526.53,0
+282,SKU101967,Zenix Speaker 983,Electronics,Speakers,Zenix,2579.0,1488.44,1
+283,SKU101974,Padukas Sneaker 258,Footwear,Sneakers,Padukas,1089.0,655.64,1
+284,SKU101981,UrbanKurta Dresse 302,Fashion,Dresses,UrbanKurta,419.0,241.4,1
+285,SKU101988,Vastra Co Jean 882,Fashion,Jeans,Vastra Co,2139.0,1416.39,1
+286,SKU101995,VoltEdge Charger 237,Electronics,Chargers,VoltEdge,2339.0,1823.19,1
+287,SKU102002,Rangrez Kurta 423,Fashion,Kurtas,Rangrez,349.0,197.83,1
+288,SKU102009,NestWell Decor 469,Home & Kitchen,Decor,NestWell,319.0,239.11,1
+289,SKU102016,UrbanKurta Kurta 632,Fashion,Kurtas,UrbanKurta,2159.0,1467.89,1
+290,SKU102023,Rangrez T-Shirt 147,Fashion,T-Shirts,Rangrez,889.0,547.43,1
+291,SKU102030,UrbanKurta Jean 191,Fashion,Jeans,UrbanKurta,3429.0,2370.79,1
+292,SKU102037,FreshKhet Beverage 636,Grocery,Beverages,FreshKhet,1409.0,901.15,1
+293,SKU102044,RunMate Sandal 776,Footwear,Sandals,RunMate,3989.0,2581.23,1
+294,SKU102051,Rasoi Plus Bedding 423,Home & Kitchen,Bedding,Rasoi Plus,9959.0,7060.56,1
+295,SKU102058,GlowVeda Makeup 670,Beauty,Makeup,GlowVeda,1119.0,673.47,1
+296,SKU102065,Orbita Charger 922, electronics  ,Chargers,Orbita,5219.0,3246.82,1
+297,SKU102072,Pustak Ghar Kid 835,Books,Kids,Pustak Ghar,129.0,89.52,1
+298,SKU102079,Masala Mandi Snack 487,Grocery,Snacks,Masala Mandi,1249.0,908.1,0
+299,SKU102086,Denim Dukaan Saree 586,Fashion,Sarees,Denim Dukaan,2089.0,1627.56,1
+300,SKU102093,Orbita Charger 320,Electronics,Chargers,Orbita,1809.0,1387.6,1
+301,SKU102100,Vastra Co T-Shirt 607,Fashion,T-Shirts,Vastra Co,1539.0,881.77,1
+302,SKU102107,FreshKhet Spice 305,Grocery,Spices,FreshKhet,99.0,72.08,1
+303,SKU102114,Lakshmi Home Decor 741,Home & Kitchen,Decor,Lakshmi Home,3099.0,2451.85,1
+304,SKU102121,Orbita Speaker 914,Electronics,Speakers,Orbita,33649.0,24465.25,1
+305,SKU102128,Masala Mandi Staple 320,Grocery,Staples,Masala Mandi,249.0,144.74,1
+306,SKU102135,Rangrez Kurta 136,Fashion,Kurtas,Rangrez,4319.0,2658.39,1
+307,SKU102142,NestWell Cookware 634,Home & Kitchen,Cookware,NestWell,289.0,222.86,1
+308,SKU102149,Kitaab Press Self Help 889,Books,Self Help,Kitaab Press,659.0,397.7,1
+309,SKU102156,StrideWell Sneaker 243,Footwear,Sneakers,StrideWell,439.0,329.25,1
+310,SKU102163,FreshKhet Spice 687,Grocery,Spices,FreshKhet,119.0,93.6,1
+311,SKU102170,RunMate Sports Shoe 616,Footwear,Sports Shoes,RunMate,1939.0,1163.11,1
+312,SKU102177,Kitaab Press Self Help 357,Books,Self Help,Kitaab Press,179.0,101.39,1
+313,SKU102184,Lakshmi Home Cookware 154,Home & Kitchen,Cookware,Lakshmi Home,4789.0,2937.51,1
+314,SKU102191,Gadgetry Headphone 567,Electronics,Headphones,Gadgetry,1439.0,973.62,1
+315,SKU102198,Orbita Headphone 589,Electronics,Headphones,Orbita,4589.0,3617.93,1
+316,SKU102205,Gadgetry Headphone 806,Electronics,Headphones,Gadgetry,28619.0,17569.62,1
+317,SKU102212,Orbita Mobile 613,Electronics,Mobiles,Orbita,3659.0,2325.47,1
+318,SKU102219,Gadgetry Headphone 523,Electronics,Headphones,Gadgetry,6259.0,4893.15,1
+319,SKU102226,Annapurna Dry Fruit 178,Grocery,Dry Fruits,Annapurna,59.0,37.47,1
+320,SKU102233,Vastra Co T-Shirt 665,Fashion,T-Shirts,Vastra Co,969.0,608.19,1
+321,SKU102240,Orbita Headphone 533,Electronics,Headphones,Orbita,769.0,578.96,1
+322,SKU102247,GharSaaj Storage 755,Home & Kitchen,Storage,GharSaaj,219.0,144.17,1
+323,SKU102254,Zenix Charger 642,Electronics,Chargers,Zenix,28369.0,20131.38,1
+324,SKU102261,Technova Speaker 854,Electronics,Speakers,Technova,1459.0,929.8,1
+325,SKU102268,FreshKhet Snack 144,Grocery,Snacks,FreshKhet,139.0,105.9,1
+326,SKU102275,GharSaaj Cookware 651,Home & Kitchen,Cookware,GharSaaj,9209.0,7098.8,1
+327,SKU102282,Threadly Saree 344,Fashion,Sarees,Threadly,1349.0,814.14,1
+328,SKU102289,Padukas Sandal 874,Footwear,Sandals,Padukas,539.0,345.79,1
+329,SKU102296,Vastra Co Jean 487,Fashion,Jeans,Vastra Co,589.0,337.47,0
+330,SKU102303,Annapurna Staple 446,Grocery,Staples,Annapurna,1269.0,949.35,1
+331,SKU102310,NestWell Decor 647,Home & Kitchen,Decor,NestWell,249.0,169.4,1
+332,SKU102317,NestWell Bedding 857,Home & Kitchen,Bedding,NestWell,5409.0,3901.04,1
+333,SKU102324,PureNeem Makeup 670,Beauty,Makeup,PureNeem,1609.0,954.43,1
+334,SKU102331,GharSaaj Bedding 137,Home & Kitchen,Bedding,GharSaaj,779.0,450.01,1
+335,SKU102338,UrbanKurta Dresse 870,FASHION,Dresses,UrbanKurta,4479.0,3363.63,1
+336,SKU102345,GlowVeda Makeup 828,Beauty,Makeup,GlowVeda,989.0,625.9,1
+337,SKU102352,Rangrez Saree 811,fashion,Sarees,Rangrez,499.0,368.97,1
+338,SKU102359,Gadgetry Headphone 782,Electronics,Headphones,Gadgetry,2069.0,1317.59,1
+339,SKU102366,Lakshmi Home Bedding 319,Home & Kitchen,Bedding,Lakshmi Home,1109.0,767.68,1
+340,SKU102373,NestWell Storage 199,Home & Kitchen,Storage,NestWell,1079.0,661.27,1
+341,SKU102380,VoltEdge Smartwatche 609,Electronics,Smartwatches,VoltEdge,6259.0,4875.48,1
+342,SKU102387,Denim Dukaan T-Shirt 249,Fashion,T-Shirts,Denim Dukaan,1199.0,943.72,1
+343,SKU102394,FreshKhet Staple 809,Grocery,Staples,FreshKhet,939.0,673.21,1
+344,SKU102401,FreshKhet Spice 965,Grocery,Spices,FreshKhet,329.0,221.89,1
+345,SKU102408,Rangrez Dresse 554,Fashion,Dresses,Rangrez,3629.0,2224.06,1
+346,SKU102415,Denim Dukaan Dresse 904,Fashion,Dresses,Denim Dukaan,1289.0,893.0,1
+347,SKU102422,Masala Mandi Staple 519,Grocery,Staples,Masala Mandi,319.0,226.25,1
+348,SKU102429,PureNeem Makeup 179,Beauty,Makeup,PureNeem,389.0,293.21,1
+349,SKU102436,Vastra Co Kurta 984,Fashion,Kurtas,Vastra Co,499.0,342.2,1
+350,SKU102443,Annapurna Spice 965,Grocery,Spices,Annapurna,1179.0,705.0,1
+351,SKU102450,GharSaaj Cookware 827,Home & Kitchen,Cookware,GharSaaj,5099.0,2969.49,1
+352,SKU102457,UrbanKurta Saree 190,Fashion,Sarees,UrbanKurta,3029.0,1817.84,1
+353,SKU102464,GharSaaj Storage 461,Home & Kitchen,Storage,GharSaaj,4329.0,3425.01,1
+354,SKU102471,GlowVeda Fragrance 539,Beauty,Fragrance,GlowVeda,99.0,55.61,1
+355,SKU102478,Gadgetry Speaker 535,Electronics,Speakers,Gadgetry,1989.0,1302.64,1
+356,SKU102485,Gadgetry Smartwatche 496,Electronics,Smartwatches,Gadgetry,2949.0,2006.96,1
+357,SKU102492,UrbanKurta Kurta 557,Fashion,Kurtas,UrbanKurta,959.0,718.67,1
+358,SKU102499,Orbita Smartwatche 404,Electronics,Smartwatches,Orbita,24729.0,19450.29,1
+359,SKU102506,Pustak Ghar Fiction 551,Books,Fiction,Pustak Ghar,239.0,138.26,1
+360,SKU102513,Lakshmi Home Bedding 106,Home & Kitchen,Bedding,Lakshmi Home,1259.0,731.57,0
+361,SKU102520,Threadly Kurta 173,Fashion,Kurtas,Threadly,849.0,642.47,1
+362,SKU102527,Orbita Smartwatche 246,Electronics,Smartwatches,Orbita,599.0,454.3,0
+363,SKU102534,Rangrez Jean 285,Fashion,Jeans,Rangrez,2489.0,1808.82,1
+364,SKU102541,Rasoi Plus Cookware 998,Home & Kitchen,Cookware,Rasoi Plus,1189.0,943.41,1
+365,SKU102548,UrbanKurta T-Shirt 256,Fashion,T-Shirts,UrbanKurta,639.0,395.79,1
+366,SKU102555,Zenix Smartwatche 780,Electronics,Smartwatches,Zenix,1219.0,950.04,1
+367,SKU102562,FreshKhet Dry Fruit 842,Grocery,Dry Fruits,FreshKhet,189.0,132.06,1
+368,SKU102569,Sahitya Hub Self Help 338,Books,Self Help,Sahitya Hub,289.0,164.52,1
+369,SKU102576,PureNeem Fragrance 102,Beauty,Fragrance,PureNeem,1969.0,1562.46,1
+370,SKU102583,Pustak Ghar Self Help 282,Books,Self Help,Pustak Ghar,559.0,443.71,1
+371,SKU102590,Rasoi Plus Storage 485,Home & Kitchen,Storage,Rasoi Plus,319.0,182.3,1
+372,SKU102597,Masala Mandi Snack 492,Grocery,Snacks,Masala Mandi,399.0,292.72,1
+373,SKU102604,Desi Dhara Spice 804,Grocery,Spices,Desi Dhara,749.0,560.92,1
+374,SKU102611,Denim Dukaan Dresse 499,Fashion,Dresses,Denim Dukaan,719.0,452.23,1
+375,SKU102618,Threadly Saree 107,Fashion,Sarees,Threadly,1709.0,1190.81,0
+376,SKU102625,Kitaab Press Fiction 436,Books,Fiction,Kitaab Press,1029.0,704.81,1
+377,SKU102632,Pustak Ghar Fiction 456,Books,Fiction,Pustak Ghar,659.0,496.25,1
+378,SKU102639,Ayurmitra Makeup 938,Beauty,Makeup,Ayurmitra,249.0,158.55,1
+379,SKU102646,Pustak Ghar Kid 761,Books,Kids,Pustak Ghar,309.0,170.91,1
+380,SKU102653,Sahitya Hub Kid 544,Books,Kids,Sahitya Hub,499.0,315.82,1
+381,SKU102660,Denim Dukaan Jean 933,Fashion,Jeans,Denim Dukaan,409.0,277.28,1
+382,SKU102667,Zenix Mobile 545,Electronics,Mobiles,Zenix,879.0,659.02,1
+383,SKU102674,Lakshmi Home Bedding 211,Home & Kitchen,Bedding,Lakshmi Home,4419.0,3216.03,1
+384,SKU102681,Rangrez T-Shirt 565,Fashion,T-Shirts,Rangrez,3449.0,2437.59,1
+385,SKU102688,Rangrez T-Shirt 209,Fashion,T-Shirts,Rangrez,319.0,209.96,1
+386,SKU102695,Vastra Co Jean 138,Fashion,Jeans,Vastra Co,4439.0,3139.93,1
+387,SKU102702,Technova Headphone 180,Electronics,Headphones,Technova,20909.0,13108.23,1
+388,SKU102709,Rasoi Plus Appliance 287,Home & Kitchen,Appliances,Rasoi Plus,1839.0,1402.98,1
+389,SKU102716,Threadly Jean 452,Fashion,Jeans,Threadly,2819.0,1867.24,0
+390,SKU102723,Denim Dukaan Saree 970,Fashion,Sarees,Denim Dukaan,1749.0,1029.28,1
+391,SKU102730,Desi Dhara Beverage 725,GROCERY,Beverages,Desi Dhara,119.0,82.61,1
+392,SKU102737,RunMate Formal Shoe 378,Footwear,Formal Shoes,RunMate,2549.0,1984.33,1
+393,SKU102744,Rangrez Kurta 303,Fashion,Kurtas,Rangrez,2729.0,1820.57,0
+394,SKU102751,Pustak Ghar Kid 368,Books,Kids,Pustak Ghar,119.0,85.67,1
+395,SKU102758,Pustak Ghar Self Help 947,Books,Self Help,Pustak Ghar,139.0,79.57,0
+396,SKU102765,Vastra Co Kurta 762,fashion,Kurtas,Vastra Co,459.0,261.03,1
+397,SKU102772,Kitaab Press Fiction 301,Books,Fiction,Kitaab Press,329.0,253.56,1
+398,SKU102779,Masala Mandi Staple 210,Grocery,Staples,Masala Mandi,599.0,350.85,1
+399,SKU102786,Denim Dukaan Dresse 671,Fashion,Dresses,Denim Dukaan,3069.0,2083.28,1
+400,SKU102793,FreshKhet Staple 153,Grocery,Staples,FreshKhet,419.0,278.04,1
+401,SKU102800,Technova Charger 708,Electronics,Chargers,Technova,19619.0,11055.99,1
+402,SKU102807,Ayurmitra Makeup 647,Beauty,Makeup,Ayurmitra,129.0,73.17,1
+403,SKU102814,Threadly T-Shirt 423,Fashion,T-Shirts,Threadly,799.0,527.14,1
+404,SKU102821,GlowVeda Makeup 393,Beauty,Makeup,GlowVeda,149.0,93.4,1
+405,SKU102828,Lakshmi Home Decor 842,Home & Kitchen,Decor,Lakshmi Home,1129.0,853.17,1
+406,SKU102835,NestWell Cookware 739,Home & Kitchen,Cookware,NestWell,2629.0,1486.46,1
+407,SKU102842,Rasoi Plus Bedding 997,Home & Kitchen,Bedding,Rasoi Plus,8089.0,4761.61,1
+408,SKU102849,NestWell Appliance 275,Home & Kitchen,Appliances,NestWell,239.0,170.24,1
+409,SKU102856,NestWell Storage 164,Home & Kitchen,Storage,NestWell,1209.0,806.73,1
+410,SKU102863,Vastra Co Kurta 933,Fashion,Kurtas,Vastra Co,349.0,249.38,1
+411,SKU102870,Vastra Co Dresse 348,Fashion,Dresses,Vastra Co,549.0,403.53,1
+412,SKU102877,FreshKhet Dry Fruit 358,Grocery,Dry Fruits,FreshKhet,99.0,60.97,1
+413,SKU102884,Rasoi Plus Decor 268,Home & Kitchen,Decor,Rasoi Plus,1289.0,903.31,1
+414,SKU102891,Denim Dukaan T-Shirt 904,Fashion,T-Shirts,Denim Dukaan,1779.0,1249.93,1
+415,SKU102898,PureNeem Skincare 180,Beauty,Skincare,PureNeem,239.0,149.76,1
+416,SKU102905,Zenix Speaker 705,Electronics,Speakers,Zenix,34339.0,22793.95,1
+417,SKU102912,Rangrez Dresse 285,Fashion,Dresses,Rangrez,1099.0,857.09,1
+418,SKU102919,Lakshmi Home Appliance 453,Home & Kitchen,Appliances,Lakshmi Home,4239.0,2630.18,1
+419,SKU102926,Lakshmi Home Appliance 584,Home & Kitchen,Appliances,Lakshmi Home,4129.0,3101.99,0
+420,SKU102933,Rasoi Plus Storage 990,Home & Kitchen,Storage,Rasoi Plus,209.0,141.47,1

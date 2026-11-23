@@ -1,0 +1,18 @@
+---
+import { getCollection, render } from 'astro:content';
+import Doc from '../../layouts/Doc.astro';
+import { mdxComponents } from '../../components/mdx';
+import { SHOW_DRAFTS } from '../../lib/content';
+export async function getStaticPaths() {
+  const all = (await getCollection('projects')).filter((p) => SHOW_DRAFTS || !p.data.draft);
+  return all.map((p) => ({ params: { id: p.id }, props: { p } }));
+}
+const { p } = Astro.props;
+const { Content, headings } = await render(p);
+const d = p.data;
+---
+<Doc title={d.title} description={d.businessProblem} headings={headings}
+  crumbs={[{ label: 'Home', href: '/' }, { label: 'Projects', href: '/projects/' }, { label: d.title }]}
+  meta={[`~${d.estimatedHours} hours`, ...d.skillsUsed]}>
+  <Content components={mdxComponents} />
+</Doc>

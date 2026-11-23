@@ -1,0 +1,346 @@
+{
+  "id": "fintech",
+  "title": "Fintech: UPI-style Payments (PayZippy and friends)",
+  "description": "A fictional UPI-style digital payments ecosystem with five payment apps, eight banks and 400 merchants across India. Transactions cover P2P transfers, merchant payments, bill payments and recharges over two years, with salary-day, festive and evening peaks plus bank outages. Use it for failure-rate analysis, peak-hour load, merchant category insights and simple fraud-flag exploration.",
+  "tables": [
+    {
+      "name": "users",
+      "rowCount": 4010,
+      "description": "App users (10 duplicate rows are deliberate).",
+      "columns": [
+        {
+          "name": "user_id",
+          "type": "INTEGER",
+          "description": "User identifier (duplicated for duplicate rows)",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "full_name",
+          "type": "TEXT",
+          "description": "User name",
+          "nullable": false,
+          "example": "Harpreet Shetty"
+        },
+        {
+          "name": "phone",
+          "type": "TEXT",
+          "description": "Mobile number (NULL ~2%)",
+          "nullable": true,
+          "example": "9571738952"
+        },
+        {
+          "name": "city",
+          "type": "TEXT",
+          "description": "City (casing/whitespace issues, ~3% NULL)",
+          "nullable": true,
+          "example": "Chandigarh"
+        },
+        {
+          "name": "state",
+          "type": "TEXT",
+          "description": "State of the city",
+          "nullable": false,
+          "example": "Madhya Pradesh"
+        },
+        {
+          "name": "age_group",
+          "type": "TEXT",
+          "description": "Age band",
+          "nullable": false,
+          "example": "18-24"
+        },
+        {
+          "name": "kyc_status",
+          "type": "TEXT",
+          "description": "Full KYC, Min KYC or Pending",
+          "nullable": false,
+          "example": "Full KYC"
+        },
+        {
+          "name": "primary_bank",
+          "type": "TEXT",
+          "description": "Linked bank (fictional)",
+          "nullable": false,
+          "example": "Sundaram Bank"
+        },
+        {
+          "name": "preferred_app",
+          "type": "TEXT",
+          "description": "UPI app the user mostly uses",
+          "nullable": false,
+          "example": "PayZippy"
+        },
+        {
+          "name": "upi_id",
+          "type": "TEXT",
+          "description": "Virtual payment address (NULL ~5%)",
+          "nullable": true,
+          "example": "9571738952@sdm"
+        },
+        {
+          "name": "signup_date",
+          "type": "DATE",
+          "description": "Registration date",
+          "nullable": false,
+          "example": "2022-01-01"
+        }
+      ]
+    },
+    {
+      "name": "merchants",
+      "rowCount": 400,
+      "description": "Merchants accepting UPI.",
+      "columns": [
+        {
+          "name": "merchant_id",
+          "type": "INTEGER",
+          "description": "Merchant identifier (primary key)",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "merchant_name",
+          "type": "TEXT",
+          "description": "Merchant name",
+          "nullable": false,
+          "example": "Super Biryani House"
+        },
+        {
+          "name": "category",
+          "type": "TEXT",
+          "description": "Business category",
+          "nullable": false,
+          "example": "Food & Beverage"
+        },
+        {
+          "name": "city",
+          "type": "TEXT",
+          "description": "City (casing issues)",
+          "nullable": false,
+          "example": "Jaipur"
+        },
+        {
+          "name": "onboarding_date",
+          "type": "DATE",
+          "description": "Date merchant was onboarded",
+          "nullable": false,
+          "example": "2021-08-02"
+        },
+        {
+          "name": "is_verified",
+          "type": "INTEGER",
+          "description": "1 if KYB verified",
+          "nullable": false,
+          "example": "1"
+        },
+        {
+          "name": "mcc_code",
+          "type": "INTEGER",
+          "description": "Merchant category code",
+          "nullable": false,
+          "example": "5812"
+        }
+      ]
+    },
+    {
+      "name": "transactions",
+      "rowCount": 22088,
+      "description": "All payment attempts, successful or not (~0.4% exact duplicates).",
+      "columns": [
+        {
+          "name": "txn_id",
+          "type": "INTEGER",
+          "description": "Transaction identifier (duplicated for duplicate rows)",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "user_id",
+          "type": "INTEGER",
+          "description": "FK to users.user_id (payer)",
+          "nullable": false,
+          "example": "426"
+        },
+        {
+          "name": "merchant_id",
+          "type": "INTEGER",
+          "description": "FK to merchants.merchant_id (NULL for P2P)",
+          "nullable": true,
+          "example": "56"
+        },
+        {
+          "name": "receiver_user_id",
+          "type": "INTEGER",
+          "description": "FK to users.user_id for P2P (NULL otherwise)",
+          "nullable": true,
+          "example": "2338"
+        },
+        {
+          "name": "txn_type",
+          "type": "TEXT",
+          "description": "P2M, P2P, Bill Pay or Recharge",
+          "nullable": false,
+          "example": "P2M"
+        },
+        {
+          "name": "txn_datetime",
+          "type": "DATETIME",
+          "description": "Timestamp of the attempt",
+          "nullable": false,
+          "example": "2023-01-01 16:26:05"
+        },
+        {
+          "name": "amount",
+          "type": "REAL",
+          "description": "Amount in INR (6 rows are 100x outliers)",
+          "nullable": false,
+          "example": "887.52"
+        },
+        {
+          "name": "payment_app",
+          "type": "TEXT",
+          "description": "App used",
+          "nullable": false,
+          "example": "SabPay"
+        },
+        {
+          "name": "bank",
+          "type": "TEXT",
+          "description": "Payer's bank",
+          "nullable": false,
+          "example": "Himalaya Trust Bank"
+        },
+        {
+          "name": "device_os",
+          "type": "TEXT",
+          "description": "Android or iOS",
+          "nullable": false,
+          "example": "Android"
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "description": "SUCCESS, FAILED or PENDING",
+          "nullable": false,
+          "example": "SUCCESS"
+        },
+        {
+          "name": "is_flagged",
+          "type": "INTEGER",
+          "description": "1 if flagged by risk rules",
+          "nullable": false,
+          "example": "0"
+        }
+      ]
+    },
+    {
+      "name": "failed_transactions",
+      "rowCount": 633,
+      "description": "Details for transactions with status FAILED (6 duplicate rows are deliberate).",
+      "columns": [
+        {
+          "name": "failed_txn_id",
+          "type": "INTEGER",
+          "description": "Failure record identifier (duplicated for duplicate rows)",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "txn_id",
+          "type": "INTEGER",
+          "description": "FK to transactions.txn_id",
+          "nullable": false,
+          "example": "184"
+        },
+        {
+          "name": "failure_code",
+          "type": "TEXT",
+          "description": "Machine failure code",
+          "nullable": false,
+          "example": "INSUFFICIENT_FUNDS"
+        },
+        {
+          "name": "failure_reason",
+          "type": "TEXT",
+          "description": "Human readable reason",
+          "nullable": false,
+          "example": "Insufficient balance in account"
+        },
+        {
+          "name": "failed_at",
+          "type": "DATETIME",
+          "description": "Timestamp of failure",
+          "nullable": false,
+          "example": "2023-01-09 12:21:23"
+        },
+        {
+          "name": "retried",
+          "type": "INTEGER",
+          "description": "1 if the user retried",
+          "nullable": false,
+          "example": "1"
+        },
+        {
+          "name": "retry_succeeded",
+          "type": "INTEGER",
+          "description": "1/0 result of retry (NULL if not retried)",
+          "nullable": true,
+          "example": "1"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "from": "transactions.user_id",
+      "to": "users.user_id",
+      "type": "many-to-one"
+    },
+    {
+      "from": "transactions.merchant_id",
+      "to": "merchants.merchant_id",
+      "type": "many-to-one"
+    },
+    {
+      "from": "transactions.receiver_user_id",
+      "to": "users.user_id",
+      "type": "many-to-one"
+    },
+    {
+      "from": "failed_transactions.txn_id",
+      "to": "transactions.txn_id",
+      "type": "many-to-one"
+    }
+  ],
+  "qualityIssues": [
+    "transactions: ~0.4% (about 90) rows are exact duplicates (same txn_id), so txn_id has no PRIMARY KEY constraint; users: 10 exact duplicate rows; failed_transactions: 6 exact duplicates.",
+    "transactions.amount: 6 rows are 100x outliers.",
+    "transactions.merchant_id is NULL for P2P rows (~24%) and receiver_user_id is NULL for non-P2P rows - by design, not an error.",
+    "users.city ~10% inconsistent casing/whitespace and ~3% NULL; users.phone ~2% NULL; users.upi_id ~5% NULL; merchants.city ~8% inconsistent casing.",
+    "failed_transactions.retry_succeeded is NULL when retried = 0 (~40% of rows).",
+    "CSV only - users.signup_date: ~15% of rows are DD-MM-YYYY.",
+    "CSV only - transactions.txn_datetime: ~15% DD-MM-YYYY HH:MM:SS; transactions.amount: ~12% text with rupee symbol and Indian grouping.",
+    "CSV only - failed_transactions.failed_at: ~20% DD-MM-YYYY."
+  ],
+  "er": "erDiagram\n  users {\n    INTEGER user_id PK\n    TEXT full_name\n    TEXT phone\n    TEXT city\n    TEXT state\n    TEXT age_group\n    TEXT kyc_status\n    TEXT primary_bank\n    TEXT preferred_app\n    TEXT upi_id\n    TEXT signup_date\n  }\n  merchants {\n    INTEGER merchant_id PK\n    TEXT merchant_name\n    TEXT category\n    TEXT city\n    TEXT onboarding_date\n    INTEGER is_verified\n    INTEGER mcc_code\n  }\n  transactions {\n    INTEGER txn_id PK\n    INTEGER user_id FK\n    INTEGER merchant_id FK\n    INTEGER receiver_user_id FK\n    TEXT txn_type\n    TEXT txn_datetime\n    REAL amount\n    TEXT payment_app\n    TEXT bank\n    TEXT device_os\n    TEXT status\n    INTEGER is_flagged\n  }\n  failed_transactions {\n    INTEGER failed_txn_id PK\n    INTEGER txn_id FK\n    TEXT failure_code\n    TEXT failure_reason\n    TEXT failed_at\n    INTEGER retried\n    INTEGER retry_succeeded\n  }\n  users ||--o{ transactions : \"user_id\"\n  merchants ||--o{ transactions : \"merchant_id\"\n  users ||--o{ transactions : \"receiver_user_id\"\n  transactions ||--o{ failed_transactions : \"txn_id\"",
+  "downloads": {
+    "sqlite": "data/sqlite/fintech.sqlite",
+    "zip": "data/zip/fintech.zip",
+    "csv": [
+      "data/csv/fintech/users.csv",
+      "data/csv/fintech/merchants.csv",
+      "data/csv/fintech/transactions.csv",
+      "data/csv/fintech/failed_transactions.csv"
+    ]
+  },
+  "signals": [
+    "[Instructor note] Kaveri Co-op Bank has a much higher failure rate than other banks, concentrated in peak hours (9-10h and 18-20h) with code BANK_SERVER_TIMEOUT (about 15% at peak vs ~2% elsewhere).",
+    "[Instructor note] Two platform-wide UPI outages (2023-11-12 18-22h and 2024-10-31 18-22h, Diwali evenings) push failure rates to ~55%, code UPI_SYSTEM_DOWN.",
+    "[Instructor note] Failures are ~35% higher on the 1st-3rd of the month (salary days) and amounts above 50,000 fail 2.5x more (LIMIT_EXCEEDED).",
+    "[Instructor note] Volume spikes around Diwali windows and month-end; weekends are ~10% higher; evening 18-20h is the busiest slot.",
+    "[Instructor note] Network/timeouts are retried and succeed far more often than insufficient-funds failures.",
+    "[Instructor note] Late-night (0-4h) large P2P transfers (> 8,000) are flagged ~45% of the time (the fraud-risk signal).",
+    "[Instructor note] Customer activity is heavy-tailed; merchant volume is power-law distributed; Fuel/Travel/Electronics have high ticket sizes."
+  ]
+}

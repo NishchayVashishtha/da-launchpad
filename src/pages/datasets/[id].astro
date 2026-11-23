@@ -1,0 +1,41 @@
+---
+import Base from '../../layouts/Base.astro';
+import Mermaid from '../../components/mdx/Mermaid.astro';
+import SqlPlayground from '../../components/mdx/SqlPlayground.astro';
+import { datasets } from '../../lib/datasets';
+import { url } from '../../lib/url';
+export function getStaticPaths() { return datasets.map((d) => ({ params: { id: d.id }, props: { d } })); }
+const { d } = Astro.props;
+const first = d.tables[0]?.name ?? 'sqlite_master';
+---
+<Base title={`${d.title} dataset`} description={d.description}>
+  <div style="max-width:60rem;margin:0 auto" data-pagefind-body class="prose">
+    <nav aria-label="Breadcrumb" class="muted" style="font-size:.85rem"><a href={url('/datasets/')}>Datasets</a> / {d.title}</nav>
+    <h1>{d.title}</h1>
+    <p>{d.description}</p>
+    <p class="no-print" style="display:flex;gap:.5rem;flex-wrap:wrap">
+      <a class="btn" href={url(d.downloads.sqlite)} download>⬇ SQLite database</a>
+      <a class="btn" href={url(`/playground/?dataset=${d.id}`)}>Open in SQL playground</a>
+    </p>
+    <h2 id="er-diagram">ER diagram</h2>
+    {d.er && <Mermaid chart={d.er} caption={`Entity relationship diagram for ${d.title}`} />}
+    <h2 id="relationships">Relationships</h2>
+    <ul>{d.relationships.map((r) => <li><code>{r.from}</code> → <code>{r.to}</code> ({r.type})</li>)}</ul>
+    <h2 id="tables">Tables</h2>
+    {d.tables.map((t) => (
+      <section>
+        <h3 id={`t-${t.name}`}>{t.name} <span class="chip">{t.rowCount.toLocaleString('en-IN')} rows</span></h3>
+        <p>{t.description}</p>
+        <table>
+          <thead><tr><th>Column</th><th>Type</th><th>Description</th><th>Nullable</th><th>Example</th></tr></thead>
+          <tbody>{t.columns.map((c) => <tr><td><code>{c.name}</code></td><td>{c.type}</td><td>{c.description}</td><td>{c.nullable ? 'yes' : 'no'}</td><td>{c.example ?? ''}</td></tr>)}</tbody>
+        </table>
+        <a class="btn btn-sm no-print" href={url(d.downloads.csv.find((p) => p.endsWith(`/${t.name}.csv`)) ?? '')} download>⬇ {t.name}.csv</a>
+      </section>
+    ))}
+    <h2 id="quality-issues">Known data quality issues (on purpose)</h2>
+    <ul>{d.qualityIssues.map((q) => <li>{q}</li>)}</ul>
+    <h2 id="try-it">Try it</h2>
+    <SqlPlayground dataset={d.id} query={`SELECT * FROM ${first} LIMIT 10;`} />
+  </div>
+</Base>

@@ -1,0 +1,375 @@
+{
+  "id": "marketing",
+  "title": "Marketing Analytics: ShopSetu Campaigns and A/B Test",
+  "description": "ShopSetu is a fictional Indian direct-to-consumer fashion and lifestyle brand running 28 paid and owned campaigns across Google, Meta, YouTube, influencers, email, WhatsApp and affiliates. The data links campaign budgets and daily spend to clicks and conversions, plus a separate 12,000-user checkout A/B test (free-shipping banner). Use it for ROAS and CAC analysis, channel comparison, attribution-style funnels and A/B test significance testing.",
+  "tables": [
+    {
+      "name": "campaigns",
+      "rowCount": 28,
+      "description": "Campaign master (28 campaigns).",
+      "columns": [
+        {
+          "name": "campaign_id",
+          "type": "INTEGER",
+          "description": "Campaign identifier (primary key)",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "campaign_name",
+          "type": "TEXT",
+          "description": "Campaign name",
+          "nullable": false,
+          "example": "IPL 2023 YouTube Brand Burst"
+        },
+        {
+          "name": "channel",
+          "type": "TEXT",
+          "description": "Marketing channel",
+          "nullable": false,
+          "example": "YouTube"
+        },
+        {
+          "name": "objective",
+          "type": "TEXT",
+          "description": "Sales, Awareness, Retargeting or Retention",
+          "nullable": false,
+          "example": "Awareness"
+        },
+        {
+          "name": "start_date",
+          "type": "DATE",
+          "description": "Campaign start date",
+          "nullable": false,
+          "example": "2023-04-01"
+        },
+        {
+          "name": "end_date",
+          "type": "DATE",
+          "description": "Campaign end date",
+          "nullable": false,
+          "example": "2023-05-25"
+        },
+        {
+          "name": "budget_inr",
+          "type": "REAL",
+          "description": "Planned budget in INR",
+          "nullable": false,
+          "example": "8000.0"
+        },
+        {
+          "name": "owner_team",
+          "type": "TEXT",
+          "description": "Owning team",
+          "nullable": false,
+          "example": "Brand"
+        },
+        {
+          "name": "status",
+          "type": "TEXT",
+          "description": "Completed or Running",
+          "nullable": false,
+          "example": "Completed"
+        }
+      ]
+    },
+    {
+      "name": "ad_spend",
+      "rowCount": 2109,
+      "description": "Daily spend, impressions and clicks per campaign and device (6 duplicate rows are deliberate).",
+      "columns": [
+        {
+          "name": "ad_spend_id",
+          "type": "INTEGER",
+          "description": "Row identifier (duplicated for duplicate rows)",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "campaign_id",
+          "type": "INTEGER",
+          "description": "FK to campaigns.campaign_id",
+          "nullable": false,
+          "example": "1"
+        },
+        {
+          "name": "spend_date",
+          "type": "DATE",
+          "description": "Date of spend",
+          "nullable": false,
+          "example": "2023-01-18"
+        },
+        {
+          "name": "device",
+          "type": "TEXT",
+          "description": "Mobile, Desktop or Tablet",
+          "nullable": false,
+          "example": "Tablet"
+        },
+        {
+          "name": "impressions",
+          "type": "INTEGER",
+          "description": "Impressions served",
+          "nullable": false,
+          "example": "56"
+        },
+        {
+          "name": "clicks",
+          "type": "INTEGER",
+          "description": "Clicks recorded (matches rows in the clicks table)",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "spend_inr",
+          "type": "REAL",
+          "description": "Spend in INR (3 rows are 100x outliers)",
+          "nullable": false,
+          "example": "36.82"
+        }
+      ]
+    },
+    {
+      "name": "clicks",
+      "rowCount": 21514,
+      "description": "Individual ad clicks (30 duplicate rows are deliberate).",
+      "columns": [
+        {
+          "name": "click_id",
+          "type": "INTEGER",
+          "description": "Click identifier (duplicated for duplicate rows)",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "campaign_id",
+          "type": "INTEGER",
+          "description": "FK to campaigns.campaign_id",
+          "nullable": false,
+          "example": "1"
+        },
+        {
+          "name": "click_time",
+          "type": "DATETIME",
+          "description": "Timestamp of the click",
+          "nullable": false,
+          "example": "2023-01-18 08:26:58"
+        },
+        {
+          "name": "visitor_id",
+          "type": "INTEGER",
+          "description": "Anonymous visitor identifier",
+          "nullable": false,
+          "example": "504340"
+        },
+        {
+          "name": "device",
+          "type": "TEXT",
+          "description": "Mobile, Desktop or Tablet (a few casing issues)",
+          "nullable": false,
+          "example": "Desktop"
+        },
+        {
+          "name": "city",
+          "type": "TEXT",
+          "description": "City (casing issues, ~3% NULL)",
+          "nullable": true,
+          "example": "LUCKNOW"
+        },
+        {
+          "name": "city_tier",
+          "type": "TEXT",
+          "description": "Metro or Tier-2",
+          "nullable": false,
+          "example": "Tier-2"
+        },
+        {
+          "name": "landing_page",
+          "type": "TEXT",
+          "description": "Landing page path",
+          "nullable": false,
+          "example": "/category/fashion"
+        },
+        {
+          "name": "cost_inr",
+          "type": "REAL",
+          "description": "Cost of this click in INR",
+          "nullable": false,
+          "example": "16.94"
+        }
+      ]
+    },
+    {
+      "name": "conversions",
+      "rowCount": 807,
+      "description": "Conversions attributed to a click (last-click).",
+      "columns": [
+        {
+          "name": "conversion_id",
+          "type": "INTEGER",
+          "description": "Conversion identifier (primary key)",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "click_id",
+          "type": "INTEGER",
+          "description": "FK to clicks.click_id",
+          "nullable": false,
+          "example": "41"
+        },
+        {
+          "name": "campaign_id",
+          "type": "INTEGER",
+          "description": "FK to campaigns.campaign_id",
+          "nullable": false,
+          "example": "1"
+        },
+        {
+          "name": "conversion_time",
+          "type": "DATETIME",
+          "description": "Timestamp of conversion",
+          "nullable": false,
+          "example": "2023-01-19 04:51:36"
+        },
+        {
+          "name": "conversion_type",
+          "type": "TEXT",
+          "description": "Purchase, Signup or Lead",
+          "nullable": false,
+          "example": "Purchase"
+        },
+        {
+          "name": "revenue_inr",
+          "type": "REAL",
+          "description": "Order revenue in INR (NULL for Signup and Lead)",
+          "nullable": true,
+          "example": "1386.46"
+        }
+      ]
+    },
+    {
+      "name": "ab_test_results",
+      "rowCount": 12030,
+      "description": "User-level A/B test of a free-shipping banner at checkout (Sep 2024).",
+      "columns": [
+        {
+          "name": "ab_id",
+          "type": "INTEGER",
+          "description": "Row identifier (duplicated for duplicate rows)",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "user_id",
+          "type": "INTEGER",
+          "description": "Experiment unit (visitor), assigned once to a variant",
+          "nullable": false,
+          "example": "101492"
+        },
+        {
+          "name": "test_name",
+          "type": "TEXT",
+          "description": "Name of the experiment",
+          "nullable": false,
+          "example": "checkout_free_shipping_banner"
+        },
+        {
+          "name": "variant",
+          "type": "TEXT",
+          "description": "control or treatment",
+          "nullable": false,
+          "example": "treatment"
+        },
+        {
+          "name": "assigned_at",
+          "type": "DATETIME",
+          "description": "Timestamp of assignment",
+          "nullable": false,
+          "example": "2024-09-02 00:10:19"
+        },
+        {
+          "name": "device_type",
+          "type": "TEXT",
+          "description": "Mobile or Desktop",
+          "nullable": false,
+          "example": "Mobile"
+        },
+        {
+          "name": "city_tier",
+          "type": "TEXT",
+          "description": "Metro or Tier-2",
+          "nullable": false,
+          "example": "Metro"
+        },
+        {
+          "name": "converted",
+          "type": "INTEGER",
+          "description": "1 if the user purchased",
+          "nullable": false,
+          "example": "0"
+        },
+        {
+          "name": "revenue_inr",
+          "type": "REAL",
+          "description": "Revenue in INR (0 when not converted)",
+          "nullable": false,
+          "example": "0.0"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "from": "ad_spend.campaign_id",
+      "to": "campaigns.campaign_id",
+      "type": "many-to-one"
+    },
+    {
+      "from": "clicks.campaign_id",
+      "to": "campaigns.campaign_id",
+      "type": "many-to-one"
+    },
+    {
+      "from": "conversions.click_id",
+      "to": "clicks.click_id",
+      "type": "many-to-one"
+    },
+    {
+      "from": "conversions.campaign_id",
+      "to": "campaigns.campaign_id",
+      "type": "many-to-one"
+    }
+  ],
+  "qualityIssues": [
+    "clicks: 30 exact duplicate rows (same click_id); ad_spend: 6 exact duplicates; ab_test_results: 20 exact duplicate rows - so these ids carry no PRIMARY KEY constraint.",
+    "ab_test_results: 10 users appear in both variants (contaminated assignment) - should be removed before analysis.",
+    "ad_spend.spend_inr: 3 rows are 100x outliers.",
+    "clicks.city: ~3% NULL and ~7% inconsistent casing/whitespace; clicks.device: ~2% casing issues ('mobile', 'DESKTOP').",
+    "conversions.revenue_inr is NULL for Signup and Lead conversions (~10%) by design.",
+    "ab_test_results has no foreign key; it is independent of the campaign tables.",
+    "CSV only - campaigns.start_date ~15% DD-MM-YYYY; campaigns.budget_inr ~30% text like '₹12,50,000'.",
+    "CSV only - ad_spend.spend_inr ~10% text with rupee symbol; clicks.click_time ~12% DD-MM-YYYY HH:MM:SS; conversions.revenue_inr ~25% text with rupee symbol and Indian grouping."
+  ],
+  "er": "erDiagram\n  campaigns {\n    INTEGER campaign_id PK\n    TEXT campaign_name\n    TEXT channel\n    TEXT objective\n    TEXT start_date\n    TEXT end_date\n    REAL budget_inr\n    TEXT owner_team\n    TEXT status\n  }\n  ad_spend {\n    INTEGER ad_spend_id PK\n    INTEGER campaign_id FK\n    TEXT spend_date\n    TEXT device\n    INTEGER impressions\n    INTEGER clicks\n    REAL spend_inr\n  }\n  clicks {\n    INTEGER click_id PK\n    INTEGER campaign_id FK\n    TEXT click_time\n    INTEGER visitor_id\n    TEXT device\n    TEXT city\n    TEXT city_tier\n    TEXT landing_page\n    REAL cost_inr\n  }\n  conversions {\n    INTEGER conversion_id PK\n    INTEGER click_id FK\n    INTEGER campaign_id FK\n    TEXT conversion_time\n    TEXT conversion_type\n    REAL revenue_inr\n  }\n  ab_test_results {\n    INTEGER ab_id PK\n    INTEGER user_id\n    TEXT test_name\n    TEXT variant\n    TEXT assigned_at\n    TEXT device_type\n    TEXT city_tier\n    INTEGER converted\n    REAL revenue_inr\n  }\n  campaigns ||--o{ ad_spend : \"campaign_id\"\n  campaigns ||--o{ clicks : \"campaign_id\"\n  clicks ||--o{ conversions : \"click_id\"\n  campaigns ||--o{ conversions : \"campaign_id\"",
+  "downloads": {
+    "sqlite": "data/sqlite/marketing.sqlite",
+    "zip": "data/zip/marketing.zip",
+    "csv": [
+      "data/csv/marketing/campaigns.csv",
+      "data/csv/marketing/ad_spend.csv",
+      "data/csv/marketing/clicks.csv",
+      "data/csv/marketing/conversions.csv",
+      "data/csv/marketing/ab_test_results.csv"
+    ]
+  },
+  "signals": [
+    "[Instructor note] Campaign 'Influencer Mega Reach Oct-24' burns the largest budget at ~2.3x normal CPC with a conversion rate ~1/8 of a normal influencer campaign - by far the worst ROAS/CAC among revenue-driving campaigns (ROAS about 0.07 vs 5-8 for Search).",
+    "[Instructor note] Email and WhatsApp have the lowest CPC and the highest conversion rate (best ROAS); Google Search is the best large-scale paid channel.",
+    "[Instructor note] Diwali windows (Oct 25-Nov 14 2023, Oct 20-Nov 3 2024) lift conversion rate by ~25%; Search/Meta Diwali campaigns are the top revenue campaigns.",
+    "[Instructor note] Awareness-objective campaigns (YouTube, Display) convert to Signup/Lead mostly and look weak on last-click revenue.",
+    "[Instructor note] Desktop converts ~35% better than mobile; Metro converts better than Tier-2.",
+    "[Instructor note] A/B test: treatment lifts conversion from ~9.5% to ~11% overall (about +1.5pp, p roughly 0.01-0.03), driven by Mobile (about +1.8pp) while Desktop shows an insignificant +0.3pp; treatment AOV is ~4% lower (free shipping cost), so revenue per user lift is smaller than conversion lift.",
+    "[Instructor note] Contaminated users, duplicates and 100x spend outliers must be cleaned before computing cost metrics or test statistics."
+  ]
+}

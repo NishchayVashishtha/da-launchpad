@@ -1,0 +1,401 @@
+merchant_id,merchant_name,category,city,onboarding_date,is_verified,mcc_code
+1,Sai Kirana Store,Grocery,Hyderabad,2023-07-21,1,5411
+2,Om Biryani House,Food & Beverage,Mumbai,2024-06-09,0,5812
+3,Super Biryani House,Food & Beverage,Jaipur,2021-08-02,1,5812
+4,Super Pharmacy,Pharmacy,Hyderabad,2025-08-18,1,5912
+5,Super Tours,Travel,Hyderabad,2023-03-31,1,4722
+6,Sai Fresh Mart,Grocery,Delhi,2021-04-28,0,5411
+7,Lakshmi Fuel Station,Fuel,Indore,2025-06-19,1,5541
+8,Sai Textiles,Fashion,Chennai,2022-10-31,1,5651
+9,Metro Cabs,Travel,Mumbai,2024-06-22,1,4722
+10,Shree Biryani House,Food & Beverage,Kolkata,2024-11-25,1,5812
+11,Balaji OTT Pack,Entertainment,Pune,2023-08-25,1,7832
+12,City Mobile World,Electronics,Bhopal,2023-03-13,1,5732
+13,Royal Gas Agency,Utilities,Pune,2023-06-24,0,4900
+14,Royal Fresh Mart,Grocery,Mumbai,2021-04-13,1,5411
+15,Lakshmi Kirana Store,Grocery,DELHI,2021-04-21,1,5411
+16,Sai Pharmacy,Pharmacy,Chandigarh,2022-08-26,0,5912
+17,Lakshmi Bazaar,Grocery,Patna,2024-04-08,0,5411
+18,Om Travels,Travel,AHMEDABAD,2021-09-16,1,4722
+19,Sai Kirana Store,Grocery,Chennai,2021-09-30,1,5411
+20,Balaji Mobile World,Electronics,Hyderabad,2022-07-21,1,5732
+21,Royal Clinic,Healthcare,Chandigarh,2021-11-27,1,8099
+22,Krishna Kirana Store,Grocery,Ahmedabad,2024-10-17,1,5411
+23,Lakshmi Petro Pump,Fuel,Guwahati,2021-12-13,0,5541
+24,Sri Tours,Travel,Coimbatore,2022-08-02,1,4722
+25,Krishna Recharge Hub,Telecom,Kolkata,2023-12-07,1,4814
+26,Ganesh Power Board,Utilities,Delhi,2025-01-07,1,4900
+27,Super Bazaar,Grocery,Bhopal,2023-11-08,1,5411
+28,Balaji OTT Pack,Entertainment,Bengaluru,2021-09-14,1,7832
+29,New Cabs,Travel,Bengaluru,2025-02-10,1,4722
+30,Ganesh Cafe,Food & Beverage,Coimbatore,2021-11-14,0,5812
+31,Shree Clinic,Healthcare,Bengaluru,2021-12-17,1,8099
+32,Om Cinemas,Entertainment,Delhi,2022-03-10,1,7832
+33,Royal Boutique,Fashion,Ahmedabad,2021-04-27,1,5651
+34,Royal Fresh Mart,Grocery,Hyderabad,2021-02-27,1,5411
+35,Sri Kirana Store,Grocery,Pune,2022-06-23,1,5411
+36,Om Pharmacy,Pharmacy,Hyderabad,2023-01-28,1,5912
+37,Krishna Bazaar,Grocery,Nagpur,2021-12-17,1,5411
+38,Metro Gaming Zone,Entertainment,Chennai,2025-04-25,1,7832
+39,Annapurna Kirana Store,Grocery,NAGPUR,2023-09-13,1,5411
+40,Lakshmi Cafe,Food & Beverage,Mumbai,2021-05-20,1,5812
+41,Sri Bazaar,Grocery,Delhi,2023-10-22,1,5411
+42,Metro Gas Agency,Utilities,Indore,2025-04-29,1,4900
+43,Balaji Petro Pump,Fuel,Jaipur,2023-07-09,1,5541
+44,Anand Tours,Travel,Kolkata,2022-05-02,1,4722
+45,Sri Medico,Pharmacy, Mumbai,2024-07-18,0,5912
+46,Om Power Board,Utilities,Mumbai,2024-07-23,1,4900
+47,Metro Textiles,Fashion,Chennai,2022-06-26,1,5651
+48,Annapurna Cabs,Travel,Chandigarh,2021-10-26,1,4722
+49,Sai Diagnostics,Healthcare,Delhi,2022-08-29,1,8099
+50,Sai Tours,Travel,Hyderabad,2023-04-21,1,4722
+51,New Fresh Mart,Grocery,Kolkata,2021-07-16,1,5411
+52,Lakshmi Petro Pump,Fuel,Hyderabad,2021-07-30,1,5541
+53,New Cinemas,Entertainment,mumbai,2021-09-07,1,7832
+54,New Mobile World,Electronics,Delhi,2025-05-09,1,5732
+55,Sai Fuel Station,Fuel,Hyderabad,2023-01-06,1,5541
+56,Om Cafe,Food & Beverage,Bengaluru,2021-05-26,1,5812
+57,New Classes,Education,Mumbai,2023-05-20,1,8299
+58,Sai Recharge Hub,Telecom,Bengaluru,2023-12-27,0,4814
+59,City Academy,Education,Chennai,2022-08-25,1,8299
+60,Metro Recharge Hub,Telecom,Indore,2024-05-23,1,4814
+61,Anand Petro Pump,Fuel,Kochi ,2025-08-07,0,5541
+62,Royal Chai Point,Food & Beverage,Hyderabad,2021-11-07,1,5812
+63,Metro Textiles,Fashion,Surat,2023-10-18,1,5651
+64,Balaji Fuel Station,Fuel,Hyderabad ,2022-03-09,1,5541
+65,Metro Power Board,Utilities,Delhi,2025-03-20,1,4900
+66,Krishna Biryani House,Food & Beverage,Kolkata,2022-12-04,1,5812
+67,City Cafe,Food & Beverage,Jaipur,2023-09-05,0,5812
+68,Ganesh Bazaar,Grocery,Visakhapatnam,2021-02-02,1,5411
+69,Royal Petro Pump,Fuel,Hyderabad,2025-01-11,1,5541
+70,City Cabs,Travel,Bhopal,2024-05-19,0,4722
+71,New Textiles,Fashion,Pune,2024-12-15,1,5651
+72,Krishna Kirana Store,Grocery,Lucknow,2025-06-05,1,5411
+73,Sri Boutique,Fashion,Mumbai,2023-01-07,1,5651
+74,Royal Cabs,Travel,Chandigarh,2025-01-21,1,4722
+75,Royal Boutique,Fashion,Pune,2024-06-01,1,5651
+76,Royal Chemist,Pharmacy,Mumbai,2021-05-07,1,5912
+77,Shree Biryani House,Food & Beverage,Delhi,2022-09-24,1,5812
+78,Sri Bazaar,Grocery,Delhi,2021-07-14,1,5411
+79,Anand Fashions,Fashion,Coimbatore,2022-05-24,0,5651
+80,Royal Fresh Mart,Grocery,Bengaluru,2023-04-28,1,5411
+81,Super Travels,Travel,Mumbai,2021-11-11,1,4722
+82,Annapurna Fresh Mart,Grocery,Mumbai,2024-06-01,1,5411
+83,Anand Fresh Mart,Grocery,Indore,2021-02-21,1,5411
+84,Om Mobile Care,Telecom,Delhi,2021-03-13,1,4814
+85,Annapurna Fresh Mart,Grocery,Surat,2022-09-07,1,5411
+86,Sri Bazaar,Grocery,Bengaluru,2021-01-14,0,5411
+87,Anand Cabs,Travel,Kolkata,2024-06-12,0,4722
+88,Super Electronics,Electronics,Bengaluru,2025-04-07,1,5732
+89,Super Tours,Travel,Pune,2024-07-25,1,4722
+90,Sri Chai Point,Food & Beverage,Bengaluru,2024-10-29,1,5812
+91,Krishna Recharge Hub,Telecom,Mumbai,2023-09-03,1,4814
+92,Lakshmi Cafe,Food & Beverage,Chennai,2021-10-14,0,5812
+93,Sri Boutique,Fashion,Mumbai,2021-04-13,1,5651
+94,Royal Bazaar,Grocery,delhi,2021-06-13,1,5411
+95,City Chai Point,Food & Beverage,Kolkata,2023-03-26,0,5812
+96,Metro Tours,Travel,Pune,2025-03-15,1,4722
+97,Balaji Kirana Store,Grocery,Lucknow,2023-10-13,1,5411
+98,Annapurna Fuel Station,Fuel,Delhi,2021-08-09,1,5541
+99,Sri Chai Point,Food & Beverage,Bengaluru,2022-03-22,1,5812
+100,Lakshmi Power Board,Utilities,Mumbai,2024-07-19,0,4900
+101,Shree Fresh Mart,Grocery,CHENNAI,2021-07-11,1,5411
+102,New Kirana Store,Grocery,Kolkata,2025-04-07,1,5411
+103,Super Academy,Education,Chennai,2022-05-11,1,8299
+104,New Fresh Mart,Grocery,Delhi,2021-10-29,1,5411
+105,Shree Gas Agency,Utilities,Delhi,2024-02-16,1,4900
+106,Om Fresh Mart,Grocery,Guwahati,2023-11-19,1,5411
+107,Metro Power Board,Utilities,Mumbai,2023-01-12,1,4900
+108,City Bazaar,Grocery,Hyderabad,2025-01-22,1,5411
+109,Anand Cinemas,Entertainment,Chandigarh,2022-01-30,1,7832
+110,Metro OTT Pack,Entertainment,Coimbatore,2025-06-06,1,7832
+111,Om Kirana Store,Grocery,Kolkata,2021-09-08,1,5411
+112,Ganesh Sweets,Food & Beverage,Bengaluru,2021-07-23,1,5812
+113,Sri Clinic,Healthcare,Nagpur,2022-08-21,1,8099
+114,Sai Cafe,Food & Beverage,Hyderabad,2023-12-23,1,5812
+115,Royal Mobile Care,Telecom,Mumbai,2024-09-28,1,4814
+116,Annapurna Mobile Care,Telecom,Jaipur,2021-04-09,1,4814
+117,Krishna Chai Point,Food & Beverage,Kolkata,2024-10-03,1,5812
+118,Sri Tours,Travel,Patna,2022-06-12,1,4722
+119,Shree Fresh Mart,Grocery,Coimbatore,2024-10-01,1,5411
+120,Shree Bazaar,Grocery,Delhi,2024-07-09,1,5411
+121,Anand Mobile World,Electronics,Delhi,2023-09-27,1,5732
+122,Metro Mobile Care,Telecom,Mumbai,2023-12-21,0,4814
+123,Sri Recharge Hub,Telecom,Chandigarh,2022-03-09,1,4814
+124,Sri Cabs,Travel,Bhopal,2023-07-11,0,4722
+125,Sri Petro Pump,Fuel,Mumbai,2023-11-28,1,5541
+126,Sri Bazaar,Grocery,Chennai,2024-03-01,0,5411
+127,Sai Kirana Store,Grocery,Guwahati,2024-11-15,1,5411
+128,New Travels,Travel,Ahmedabad,2023-10-26,0,4722
+129,Ganesh Boutique,Fashion,Delhi,2024-05-18,1,5651
+130,Lakshmi Fashions,Fashion,Delhi,2024-11-30,1,5651
+131,Annapurna Fuel Station,Fuel,Jaipur,2021-02-12,1,5541
+132,Krishna OTT Pack,Entertainment,Kolkata,2024-08-22,1,7832
+133,Sri Fresh Mart,Grocery,Hyderabad,2024-11-28,1,5411
+134,Balaji Gaming Zone,Entertainment,Mumbai,2022-11-22,1,7832
+135,Metro Petro Pump,Fuel,Bengaluru,2022-09-18,1,5541
+136,Super Boutique,Fashion,Indore,2024-02-14,1,5651
+137,Om OTT Pack,Entertainment,Pune,2022-04-09,1,7832
+138,Om Water Works,Utilities,VISAKHAPATNAM,2024-08-13,1,4900
+139,Royal Cinemas,Entertainment,Delhi,2025-07-19,1,7832
+140,Om Biryani House,Food & Beverage,Pune ,2024-12-15,1,5812
+141,Super Fashions,Fashion,Chennai,2021-08-18,1,5651
+142,Balaji Cafe,Food & Beverage,Kochi,2023-03-13,1,5812
+143,Sri Textiles,Fashion,Mumbai,2021-08-10,1,5651
+144,Annapurna Fuel Station,Fuel,Hyderabad,2021-04-09,1,5541
+145,Om Fresh Mart,Grocery,Nagpur,2022-07-29,1,5411
+146,Krishna Textiles,Fashion,Kochi,2025-06-18,0,5651
+147,Anand Bazaar,Grocery,Patna,2022-09-20,1,5411
+148,Royal Boutique,Fashion,Kolkata,2023-02-22,1,5651
+149,Metro Chai Point,Food & Beverage,Mumbai,2023-11-21,1,5812
+150,Anand Biryani House,Food & Beverage,Mumbai,2025-06-16,1,5812
+151,City Electronics,Electronics,Bengaluru,2022-05-16,0,5732
+152,Ganesh Bazaar,Grocery,Bengaluru,2024-08-10,1,5411
+153,Sri Medico,Pharmacy,BENGALURU,2023-07-10,1,5912
+154,Om Bazaar,Grocery,Chennai,2021-02-14,1,5411
+155,Annapurna Fuel Station,Fuel,Lucknow,2025-05-11,1,5541
+156,Krishna Kirana Store,Grocery,Surat ,2023-03-30,1,5411
+157,Shree Fuel Station,Fuel,Delhi,2025-01-07,0,5541
+158,Annapurna Kirana Store,Grocery,delhi,2022-01-03,1,5411
+159,Shree Kirana Store,Grocery,Patna,2021-03-07,1,5411
+160,Anand Water Works,Utilities,Ahmedabad,2021-08-07,1,4900
+161,Balaji Textiles,Fashion,Coimbatore,2023-01-05,0,5651
+162,Ganesh Fashions,Fashion,Pune,2022-03-30,1,5651
+163,Annapurna Fresh Mart,Grocery,Chennai,2023-05-26,1,5411
+164,Lakshmi Medico,Pharmacy,Hyderabad,2024-01-17,1,5912
+165,Lakshmi Cafe,Food & Beverage,Jaipur,2025-08-24,0,5812
+166,Sri Sweets,Food & Beverage,Pune,2023-11-07,1,5812
+167,Lakshmi Chemist,Pharmacy,Jaipur,2021-02-09,1,5912
+168,Lakshmi Bazaar,Grocery,Chennai,2021-01-24,1,5411
+169,Om Bazaar,Grocery,Kolkata,2023-05-04,1,5411
+170,Shree Travels,Travel,Lucknow,2024-06-27,1,4722
+171,Ganesh Biryani House,Food & Beverage,Mumbai,2025-05-20,1,5812
+172,Krishna Boutique,Fashion,Hyderabad,2023-05-25,0,5651
+173,Lakshmi Chai Point,Food & Beverage,Ahmedabad,2022-11-11,1,5812
+174,Shree Clinic,Healthcare,Chennai,2021-01-23,1,8099
+175,Balaji Fuel Station,Fuel,Chandigarh,2021-07-05,1,5541
+176,Super Cafe,Food & Beverage,Hyderabad,2023-09-08,1,5812
+177,Annapurna Power Board,Utilities,Mumbai,2022-08-25,1,4900
+178,Annapurna Sweets,Food & Beverage,Delhi,2024-10-24,1,5812
+179,Ganesh Biryani House,Food & Beverage,Bengaluru,2021-05-24,0,5812
+180,Annapurna Tours,Travel,Bengaluru,2021-02-18,0,4722
+181,Royal Mobile Care,Telecom,Mumbai,2021-03-11,1,4814
+182,Krishna Power Board,Utilities,Bengaluru,2025-06-11,1,4900
+183,Om Bazaar,Grocery,Indore,2025-05-07,1,5411
+184,Ganesh Travels,Travel,MUMBAI,2024-12-26,1,4722
+185,Sai Cabs,Travel,Delhi,2025-06-01,1,4722
+186,Ganesh Tours,Travel,Chennai,2025-03-06,1,4722
+187,City Cinemas,Entertainment,Visakhapatnam,2025-03-16,1,7832
+188,Anand Gaming Zone,Entertainment,Bhopal,2021-11-29,1,7832
+189,Super Tours,Travel,Kolkata,2023-06-28,1,4722
+190,Lakshmi Classes,Education,Jaipur,2021-06-27,0,8299
+191,Krishna Fashions,Fashion,Lucknow,2021-11-07,1,5651
+192,Royal Academy,Education,Visakhapatnam,2024-08-09,1,8299
+193,Sai Fresh Mart,Grocery,Patna,2023-02-12,1,5411
+194,Metro Chemist,Pharmacy,VISAKHAPATNAM,2023-10-27,1,5912
+195,Anand Cafe,Food & Beverage,Bengaluru,2024-02-06,0,5812
+196,Sri Cabs,Travel,Ahmedabad,2021-09-28,1,4722
+197,Balaji Fresh Mart,Grocery,Jaipur,2021-02-03,1,5411
+198,Metro Sweets,Food & Beverage, Chandigarh,2022-11-20,1,5812
+199,Om Bazaar,Grocery,Bengaluru,2021-06-24,1,5411
+200,Balaji Water Works,Utilities,Mumbai,2021-11-20,1,4900
+201,Anand Kirana Store,Grocery,Coimbatore,2024-03-31,1,5411
+202,Super Sweets,Food & Beverage,Jaipur,2022-09-19,1,5812
+203,Krishna Kirana Store,Grocery,Delhi,2024-08-14,1,5411
+204,Krishna Petro Pump,Fuel,Lucknow,2021-08-21,1,5541
+205,Om Chai Point,Food & Beverage,Mumbai,2025-08-12,1,5812
+206,Ganesh Fresh Mart,Grocery,Pune,2023-11-18,1,5411
+207,Annapurna Travels,Travel,Bengaluru,2025-08-24,1,4722
+208,Om Fashions,Fashion,Chennai,2022-08-05,1,5651
+209,Lakshmi Mobile Care,Telecom,kolkata,2023-06-08,1,4814
+210,Royal Bazaar,Grocery,Chennai,2021-10-25,1,5411
+211,Lakshmi Textiles,Fashion,Delhi,2021-07-02,1,5651
+212,Lakshmi Gaming Zone,Entertainment,Mumbai,2024-04-04,1,7832
+213,Krishna Petro Pump,Fuel,Hyderabad,2024-08-05,1,5541
+214,New Kirana Store,Grocery,Kochi,2021-04-11,1,5411
+215,Lakshmi Electronics,Electronics,Kolkata,2022-04-07,1,5732
+216,Royal Biryani House,Food & Beverage,Chennai,2022-05-27,1,5812
+217,New Biryani House,Food & Beverage,Kolkata,2024-01-08,0,5812
+218,Sai Power Board,Utilities,Mumbai,2023-06-24,1,4900
+219,Krishna Diagnostics,Healthcare,Mumbai,2022-11-27,0,8099
+220,Balaji Fresh Mart,Grocery,Lucknow,2022-12-03,0,5411
+221,Balaji Kirana Store,Grocery,Coimbatore,2023-04-11,0,5411
+222,Metro Clinic,Healthcare,Bengaluru,2023-10-26,1,8099
+223,Royal Sweets,Food & Beverage,bengaluru,2024-09-11,1,5812
+224,Ganesh Textiles,Fashion,Delhi,2022-11-03,1,5651
+225,Sri Boutique,Fashion,kolkata,2021-03-10,1,5651
+226,Lakshmi Petro Pump,Fuel,Hyderabad,2025-03-07,1,5541
+227,Ganesh Bazaar,Grocery,Pune,2023-10-20,1,5411
+228,Balaji Sweets,Food & Beverage,Pune,2022-03-10,1,5812
+229,Annapurna Mobile World,Electronics,Surat,2025-03-16,0,5732
+230,City Water Works,Utilities,Delhi,2024-12-06,0,4900
+231,Balaji Diagnostics,Healthcare,ahmedabad,2024-10-14,1,8099
+232,Om Medico,Pharmacy,Lucknow,2021-09-07,1,5912
+233,City Fashions,Fashion,Kolkata ,2023-02-09,1,5651
+234,Sai Biryani House,Food & Beverage,Lucknow,2021-02-10,1,5812
+235,Shree Chai Point,Food & Beverage,Delhi,2021-07-13,1,5812
+236,Lakshmi Chai Point,Food & Beverage,Delhi,2025-05-07,1,5812
+237,Om Pharmacy,Pharmacy,Ahmedabad,2024-10-02,1,5912
+238,Metro Gas Agency,Utilities,Guwahati,2021-05-02,1,4900
+239,Lakshmi Electronics,Electronics,Delhi,2021-04-17,1,5732
+240,Sai Cinemas,Entertainment,Jaipur,2021-10-31,1,7832
+241,Anand Sweets,Food & Beverage,COIMBATORE,2023-05-14,1,5812
+242,Shree Chai Point,Food & Beverage,Bengaluru,2023-12-29,1,5812
+243,Sri Bazaar,Grocery,Ahmedabad,2022-03-12,1,5411
+244,Anand Cafe,Food & Beverage,Delhi,2024-05-05,1,5812
+245,Ganesh Sweets,Food & Beverage,Hyderabad,2023-09-24,1,5812
+246,Royal Power Board,Utilities,Pune,2025-01-08,1,4900
+247,Metro OTT Pack,Entertainment,Lucknow,2025-03-19,1,7832
+248,Krishna Gas Agency,Utilities,Delhi,2021-03-08,1,4900
+249,Shree Sweets,Food & Beverage,Jaipur,2023-03-19,1,5812
+250,Sri Cafe,Food & Beverage,Hyderabad,2023-05-17,1,5812
+251,Metro Textiles,Fashion,Guwahati,2025-05-06,1,5651
+252,Krishna Boutique,Fashion,Delhi,2023-04-20,1,5651
+253,Balaji Petro Pump,Fuel,Delhi,2024-01-19,0,5541
+254,Sri Fresh Mart,Grocery,Bengaluru,2022-10-16,0,5411
+255,City Boutique,Fashion,Kolkata,2023-10-14,1,5651
+256,Royal Chai Point,Food & Beverage,Mumbai,2021-09-25,1,5812
+257,Om Boutique,Fashion,Delhi,2023-12-15,1,5651
+258,Ganesh Fashions,Fashion,Mumbai,2024-07-15,1,5651
+259,Ganesh Gaming Zone,Entertainment,Kolkata,2022-01-31,1,7832
+260,Om Chai Point,Food & Beverage,Indore,2021-05-06,1,5812
+261,Lakshmi Gas Agency,Utilities,lucknow,2024-02-16,1,4900
+262,New Sweets,Food & Beverage,Surat,2024-03-22,1,5812
+263,Krishna Kirana Store,Grocery,Bhopal,2024-02-22,1,5411
+264,Ganesh Kirana Store,Grocery,Visakhapatnam,2024-02-25,1,5411
+265,Om Kirana Store,Grocery,Delhi,2021-01-12,1,5411
+266,Annapurna Fashions,Fashion,Kolkata,2022-07-14,0,5651
+267,Krishna Petro Pump,Fuel,Mumbai,2022-05-26,0,5541
+268,Shree Cafe,Food & Beverage,Mumbai,2024-08-04,1,5812
+269,Krishna Fashions,Fashion,Bengaluru,2024-07-01,1,5651
+270,Metro Diagnostics,Healthcare, Mumbai,2025-08-13,0,8099
+271,Ganesh Cinemas,Entertainment,Delhi,2021-01-31,1,7832
+272,Metro Boutique,Fashion,Bengaluru,2024-12-20,0,5651
+273,Ganesh Pharmacy,Pharmacy,Jaipur,2025-03-25,1,5912
+274,Metro Bazaar,Grocery,Hyderabad,2022-05-26,1,5411
+275,Lakshmi OTT Pack,Entertainment,Bengaluru,2023-06-03,1,7832
+276,Super Biryani House,Food & Beverage,Delhi,2024-12-08,1,5812
+277,Super Textiles,Fashion,Chandigarh,2025-01-13,1,5651
+278,Metro Water Works,Utilities,Kolkata,2023-04-20,1,4900
+279,Sai OTT Pack,Entertainment,Coimbatore,2024-08-21,1,7832
+280,Shree Classes,Education,Delhi,2022-11-20,1,8299
+281,Shree Biryani House,Food & Beverage,Mumbai,2022-01-19,0,5812
+282,Annapurna OTT Pack,Entertainment,Mumbai,2022-10-21,1,7832
+283,Sri Kirana Store,Grocery,Delhi,2022-09-19,1,5411
+284,Ganesh Water Works,Utilities,Bengaluru,2021-08-20,1,4900
+285,Sai Cabs,Travel,Mumbai,2021-11-19,1,4722
+286,Metro Biryani House,Food & Beverage,Hyderabad,2023-03-08,0,5812
+287,Anand Recharge Hub,Telecom,Pune,2023-11-19,1,4814
+288,Sri Petro Pump,Fuel,Jaipur,2024-10-03,1,5541
+289,New Power Board,Utilities,Delhi,2024-08-10,1,4900
+290,Metro Travels,Travel,Bengaluru,2022-11-07,1,4722
+291,Sri OTT Pack,Entertainment,Delhi,2023-07-23,1,7832
+292,Balaji Kirana Store,Grocery,Kolkata,2025-05-06,1,5411
+293,Super Gaming Zone,Entertainment,Ahmedabad,2021-06-27,1,7832
+294,New Classes,Education,Bhopal,2021-10-10,1,8299
+295,Super Bazaar,Grocery,Chandigarh,2021-10-21,1,5411
+296,Lakshmi Kirana Store,Grocery,Delhi,2021-05-21,1,5411
+297,Sai Chai Point,Food & Beverage,Ahmedabad,2025-07-03,1,5812
+298,Annapurna Boutique,Fashion,Mumbai,2024-04-01,1,5651
+299,Balaji Fuel Station,Fuel,Lucknow,2023-07-21,1,5541
+300,Metro Petro Pump,Fuel,Hyderabad,2021-04-20,1,5541
+301,Sai Gaming Zone,Entertainment,Indore,2025-05-12,1,7832
+302,Super Fashions,Fashion,Mumbai,2023-05-05,1,5651
+303,Metro OTT Pack,Entertainment,Patna,2023-08-31,1,7832
+304,Metro Boutique,Fashion,Chennai,2024-05-19,1,5651
+305,Sai Chai Point,Food & Beverage,Ahmedabad,2023-07-30,1,5812
+306,New Fashions,Fashion,Visakhapatnam,2021-11-05,1,5651
+307,City Water Works,Utilities,Hyderabad,2023-05-22,1,4900
+308,Lakshmi Fresh Mart,Grocery,Delhi,2023-08-17,1,5411
+309,Ganesh Pharmacy,Pharmacy,Delhi,2021-02-27,1,5912
+310,Shree Cafe,Food & Beverage,Bhopal,2022-01-09,1,5812
+311,Balaji Cafe,Food & Beverage,Surat,2021-02-06,1,5812
+312,Om Travels,Travel, Guwahati,2025-01-10,1,4722
+313,Sai Pharmacy,Pharmacy,Bengaluru,2024-03-18,1,5912
+314,Krishna Water Works,Utilities,Delhi,2023-04-02,1,4900
+315,City Recharge Hub,Telecom,Mumbai,2022-09-13,1,4814
+316,Sri OTT Pack,Entertainment,Indore,2024-12-19,1,7832
+317,Annapurna Pharmacy,Pharmacy,Delhi,2021-11-05,1,5912
+318,City Fuel Station,Fuel,Visakhapatnam,2021-07-09,1,5541
+319,Balaji Recharge Hub,Telecom,Hyderabad,2022-10-25,1,4814
+320,Royal Gaming Zone,Entertainment,Kochi,2022-06-07,1,7832
+321,Om Sweets,Food & Beverage, delhi  ,2021-06-07,1,5812
+322,Annapurna Kirana Store,Grocery,Delhi,2023-01-05,1,5411
+323,Annapurna Fashions,Fashion,Mumbai,2022-06-27,1,5651
+324,Om Cinemas,Entertainment,Chandigarh,2021-07-26,1,7832
+325,Shree Fashions,Fashion,Delhi,2024-09-10,1,5651
+326,New Diagnostics,Healthcare,Ahmedabad,2023-06-03,1,8099
+327,Shree Water Works,Utilities,Jaipur,2022-07-14,1,4900
+328,Ganesh Medico,Pharmacy,Delhi,2023-09-28,1,5912
+329,Ganesh Power Board,Utilities,Chennai,2024-05-03,1,4900
+330,Royal Sweets,Food & Beverage,Mumbai,2024-02-22,0,5812
+331,Balaji Kirana Store,Grocery,Lucknow,2022-09-18,1,5411
+332,Sri Chemist,Pharmacy,Nagpur,2023-05-15,0,5912
+333,Anand Chai Point,Food & Beverage,Mumbai,2021-04-08,0,5812
+334,Balaji Fuel Station,Fuel,Guwahati,2024-01-14,0,5541
+335,Metro Electronics,Electronics,Mumbai,2024-08-24,1,5732
+336,Annapurna Tours,Travel,Lucknow,2021-05-28,1,4722
+337,Ganesh Cafe,Food & Beverage,nagpur,2023-02-16,1,5812
+338,Sri Bazaar,Grocery,Mumbai,2022-02-14,1,5411
+339,Anand Classes,Education,Bhopal,2024-11-19,1,8299
+340,Royal Cinemas,Entertainment,Nagpur,2021-04-01,1,7832
+341,Royal Fresh Mart,Grocery,Nagpur,2024-04-09,1,5411
+342,Krishna Fresh Mart,Grocery, ahmedabad  ,2021-09-27,1,5411
+343,Annapurna Cafe,Food & Beverage,Mumbai,2021-12-15,1,5812
+344,Anand Boutique,Fashion,Chennai,2023-03-22,1,5651
+345,Sri Cabs,Travel,Chennai,2023-09-05,1,4722
+346,Annapurna Travels,Travel,Patna,2025-04-27,1,4722
+347,Metro Chai Point,Food & Beverage,Mumbai,2023-06-27,1,5812
+348,Sai Bazaar,Grocery,Guwahati,2021-06-30,1,5411
+349,Sai Recharge Hub,Telecom,Hyderabad,2022-08-11,1,4814
+350,Sai Gaming Zone,Entertainment,Bengaluru,2025-01-31,0,7832
+351,New Chemist,Pharmacy,Hyderabad,2022-01-21,1,5912
+352,Anand Bazaar,Grocery,Hyderabad,2023-08-03,1,5411
+353,Anand Sweets,Food & Beverage,Chandigarh,2021-08-19,1,5812
+354,Sai Kirana Store,Grocery,Mumbai,2023-05-20,1,5411
+355,Balaji Academy,Education,Chandigarh,2023-09-11,1,8299
+356,Balaji Electronics,Electronics,Kochi,2023-08-13,1,5732
+357,Krishna Fashions,Fashion,Bengaluru,2023-04-22,1,5651
+358,City Power Board,Utilities,Delhi,2024-04-25,1,4900
+359,Krishna Mobile Care,Telecom,Coimbatore,2022-07-07,1,4814
+360,Krishna Sweets,Food & Beverage,Chennai,2022-06-14,1,5812
+361,Balaji Fuel Station,Fuel,Chennai,2022-05-01,1,5541
+362,Ganesh Fresh Mart,Grocery,Ahmedabad,2021-08-02,1,5411
+363,Royal Petro Pump,Fuel,Delhi,2021-10-31,1,5541
+364,Krishna Travels,Travel,Pune,2025-04-04,1,4722
+365,Royal Cinemas,Entertainment,Delhi,2025-01-03,1,7832
+366,Krishna Travels,Travel,Hyderabad,2024-03-31,1,4722
+367,Om Chemist,Pharmacy,Bengaluru,2022-04-26,0,5912
+368,Sai Medico,Pharmacy,Surat,2023-03-25,0,5912
+369,Royal Recharge Hub,Telecom,Hyderabad,2024-11-14,1,4814
+370,Krishna Medico,Pharmacy,Mumbai,2022-10-13,1,5912
+371,Anand Fresh Mart,Grocery,Bengaluru,2021-10-30,1,5411
+372,Shree Boutique,Fashion,Hyderabad,2022-03-12,0,5651
+373,New Chemist,Pharmacy,Delhi,2024-10-31,1,5912
+374,Lakshmi Cafe,Food & Beverage,Patna,2023-01-25,1,5812
+375,Anand Bazaar,Grocery, Hyderabad,2022-12-15,1,5411
+376,Annapurna Clinic,Healthcare,Mumbai,2025-05-02,1,8099
+377,Metro Bazaar,Grocery,Hyderabad,2022-07-03,1,5411
+378,Annapurna Fashions,Fashion,Mumbai,2024-08-05,1,5651
+379,Royal Biryani House,Food & Beverage,Kolkata,2023-04-26,1,5812
+380,Royal Recharge Hub,Telecom,Kochi,2022-12-26,1,4814
+381,Om Mobile Care,Telecom,Bengaluru,2024-05-23,1,4814
+382,Balaji Bazaar,Grocery,Pune,2024-06-05,0,5411
+383,Ganesh Petro Pump,Fuel,Hyderabad,2023-11-13,1,5541
+384,Ganesh Fashions,Fashion,Delhi,2022-12-10,1,5651
+385,City Kirana Store,Grocery,Bengaluru,2022-03-23,1,5411
+386,Krishna Cafe,Food & Beverage,Pune,2022-11-14,0,5812
+387,Lakshmi Kirana Store,Grocery,Chandigarh,2021-06-24,1,5411
+388,Ganesh Clinic,Healthcare,Mumbai,2021-07-26,1,8099
+389,Om Chai Point,Food & Beverage,Chennai,2024-01-17,1,5812
+390,Shree Boutique,Fashion,Hyderabad,2024-05-15,1,5651
+391,Annapurna Bazaar,Grocery,Bengaluru,2024-05-04,0,5411
+392,Metro Gas Agency,Utilities,Chennai,2021-10-07,1,4900
+393,Super Fashions,Fashion,Lucknow,2025-07-05,1,5651
+394,Sai Cafe,Food & Beverage,Pune,2022-11-24,1,5812
+395,New Water Works,Utilities,Nagpur,2025-08-10,1,4900
+396,Krishna Fresh Mart,Grocery,Delhi,2022-05-04,1,5411
+397,Sri Tours,Travel,hyderabad,2025-07-13,1,4722
+398,Royal Textiles,Fashion,Delhi,2023-06-13,1,5651
+399,New Petro Pump,Fuel,Hyderabad,2023-02-15,1,5541
+400,Ganesh Mobile Care,Telecom,Hyderabad,2022-08-23,1,4814

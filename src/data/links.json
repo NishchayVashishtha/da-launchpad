@@ -1,0 +1,242 @@
+[
+  {
+    "id": "sqlbolt",
+    "title": "SQLBolt",
+    "url": "https://sqlbolt.com/",
+    "note": "Interactive SQL lessons for beginners."
+  },
+  {
+    "id": "mode-sql",
+    "title": "Mode SQL Tutorial",
+    "url": "https://mode.com/sql-tutorial",
+    "note": "Clear SQL tutorial with an analytics focus."
+  },
+  {
+    "id": "leetcode",
+    "title": "LeetCode",
+    "url": "https://leetcode.com/",
+    "note": "Practice site. Use its database section for pattern practice."
+  },
+  {
+    "id": "datalemur",
+    "title": "DataLemur",
+    "url": "https://datalemur.com/",
+    "note": "SQL interview practice. Patterns only."
+  },
+  {
+    "id": "stratascratch",
+    "title": "StrataScratch",
+    "url": "https://www.stratascratch.com/",
+    "note": "Interview-style data questions. Patterns only."
+  },
+  {
+    "id": "pl300",
+    "title": "Microsoft Learn: PL-300 learning path",
+    "url": "https://learn.microsoft.com/en-us/credentials/certifications/data-analyst-associate/",
+    "note": "Official Power BI Data Analyst certification page."
+  },
+  {
+    "id": "power-bi-docs",
+    "title": "Power BI documentation",
+    "url": "https://learn.microsoft.com/en-us/power-bi/",
+    "note": "Official Power BI docs."
+  },
+  {
+    "id": "kaggle-learn",
+    "title": "Kaggle Learn",
+    "url": "https://www.kaggle.com/learn",
+    "note": "Short free courses on Python, pandas and visualisation."
+  },
+  {
+    "id": "alex-the-analyst",
+    "title": "Alex The Analyst (YouTube)",
+    "url": "https://www.youtube.com/@AlexTheAnalyst",
+    "note": "Data analyst bootcamp videos."
+  },
+  {
+    "id": "campusx",
+    "title": "CampusX (YouTube)",
+    "url": "https://www.youtube.com/@campusx-official",
+    "note": "Data science and analytics videos in Hinglish."
+  },
+  {
+    "id": "ankit-bansal",
+    "title": "Ankit Bansal (YouTube)",
+    "url": "https://www.youtube.com/@ankitbansal6",
+    "note": "SQL interview series."
+  },
+  {
+    "id": "chandoo",
+    "title": "Chandoo.org",
+    "url": "https://chandoo.org/",
+    "note": "Excel and dashboard tutorials."
+  },
+  {
+    "id": "excelisfun",
+    "title": "ExcelIsFun (YouTube)",
+    "url": "https://www.youtube.com/@excelisfun",
+    "note": "Long-form Excel video lessons."
+  },
+  {
+    "id": "khan-stats",
+    "title": "Khan Academy: Statistics and probability",
+    "url": "https://www.khanacademy.org/math/statistics-probability",
+    "note": "Free statistics course."
+  },
+  {
+    "id": "pandas-docs",
+    "title": "pandas documentation",
+    "url": "https://pandas.pydata.org/docs/",
+    "note": "Official pandas docs."
+  },
+  {
+    "id": "numpy-docs",
+    "title": "NumPy documentation",
+    "url": "https://numpy.org/doc/",
+    "note": "Official NumPy docs."
+  },
+  {
+    "id": "matplotlib-docs",
+    "title": "Matplotlib documentation",
+    "url": "https://matplotlib.org/stable/",
+    "note": "Official Matplotlib docs."
+  },
+  {
+    "id": "seaborn-docs",
+    "title": "seaborn documentation",
+    "url": "https://seaborn.pydata.org/",
+    "note": "Official seaborn docs."
+  },
+  {
+    "id": "python-docs",
+    "title": "Python documentation",
+    "url": "https://docs.python.org/3/",
+    "note": "Official Python docs."
+  },
+  {
+    "id": "sqlite-docs",
+    "title": "SQLite documentation",
+    "url": "https://www.sqlite.org/docs.html",
+    "note": "Official SQLite docs. The playground uses SQLite."
+  },
+  {
+    "id": "postgres-docs",
+    "title": "PostgreSQL documentation",
+    "url": "https://www.postgresql.org/docs/",
+    "note": "Official PostgreSQL docs."
+  },
+  {
+    "id": "mysql-docs",
+    "title": "MySQL documentation",
+    "url": "https://dev.mysql.com/doc/",
+    "note": "Official MySQL docs."
+  },
+  {
+    "id": "sqlserver-docs",
+    "title": "SQL Server documentation",
+    "url": "https://learn.microsoft.com/en-us/sql/",
+    "note": "Official SQL Server docs."
+  },
+  {
+    "id": "dax-guide",
+    "title": "DAX Guide",
+    "url": "https://dax.guide/",
+    "note": "Reference for every DAX function."
+  },
+  {
+    "id": "excel-support",
+    "title": "Microsoft Excel support",
+    "url": "https://support.microsoft.com/en-us/excel",
+    "note": "Official Excel help and function reference."
+  },
+  {
+    "id": "git-docs",
+    "title": "Git documentation",
+    "url": "https://git-scm.com/doc",
+    "note": "Official Git docs."
+  },
+  {
+    "id": "github-docs",
+    "title": "GitHub Docs",
+    "url": "https://docs.github.com/",
+    "note": "Official GitHub docs."
+  },
+  {
+    "id": "anaconda",
+    "title": "Anaconda",
+    "url": "https://www.anaconda.com/",
+    "note": "Python distribution for data work."
+  },
+  {
+    "id": "vscode",
+    "title": "Visual Studio Code",
+    "url": "https://code.visualstudio.com/",
+    "note": "Free code editor."
+  },
+  {
+    "id": "jupyter",
+    "title": "Project Jupyter",
+    "url": "https://jupyter.org/",
+    "note": "Jupyter notebooks."
+  },
+  {
+    "id": "power-bi-download",
+    "title": "Power BI Desktop download",
+    "url": "https://www.microsoft.com/en-us/power-platform/products/power-bi/desktop",
+    "note": "Free Power BI Desktop."
+  },
+  {
+    "id": "tableau-public",
+    "title": "Tableau Public",
+    "url": "https://public.tableau.com/",
+    "note": "Free Tableau for portfolios."
+  },
+  {
+    "id": "dbt-docs",
+    "title": "dbt documentation",
+    "url": "https://docs.getdbt.com/",
+    "note": "For the analytics engineer roadmap."
+  },
+  {
+    "id": "airflow-docs",
+    "title": "Apache Airflow documentation",
+    "url": "https://airflow.apache.org/docs/",
+    "note": "Workflow orchestration docs."
+  },
+  {
+    "id": "spark-docs",
+    "title": "Apache Spark documentation",
+    "url": "https://spark.apache.org/docs/latest/",
+    "note": "Official Spark docs."
+  },
+  {
+    "id": "naukri",
+    "title": "Naukri",
+    "url": "https://www.naukri.com/",
+    "note": "Indian job portal."
+  },
+  {
+    "id": "linkedin-jobs",
+    "title": "LinkedIn Jobs",
+    "url": "https://www.linkedin.com/jobs/",
+    "note": "Job search on LinkedIn."
+  },
+  {
+    "id": "wellfound",
+    "title": "Wellfound",
+    "url": "https://wellfound.com/",
+    "note": "Startup jobs board."
+  },
+  {
+    "id": "internshala",
+    "title": "Internshala",
+    "url": "https://internshala.com/",
+    "note": "Internships and fresher jobs in India."
+  },
+  {
+    "id": "indeed-in",
+    "title": "Indeed India",
+    "url": "https://in.indeed.com/",
+    "note": "Job portal."
+  }
+]

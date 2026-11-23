@@ -1,0 +1,479 @@
+{
+  "id": "ecommerce",
+  "title": "E-commerce: DesiCart Marketplace",
+  "description": "DesiCart is a fictional Indian online marketplace selling electronics, fashion, home goods, beauty, grocery and books across 20 cities. The data covers two years of customers, orders, line items, payments and returns (Jan 2023 to Dec 2024), including festive-season sale spikes around Diwali and the usual messiness of a real order database. Use it for revenue analysis, cohort and repeat-purchase analysis, return analysis and cleaning practice.",
+  "tables": [
+    {
+      "name": "customers",
+      "rowCount": 4520,
+      "description": "One row per registered customer (a few duplicated rows are deliberate).",
+      "columns": [
+        {
+          "name": "customer_id",
+          "type": "INTEGER",
+          "description": "Customer identifier (primary key, chronological by signup)",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "full_name",
+          "type": "TEXT",
+          "description": "Customer name",
+          "nullable": false,
+          "example": "Komal Patel"
+        },
+        {
+          "name": "email",
+          "type": "TEXT",
+          "description": "Email address (NULL for some customers)",
+          "nullable": true,
+          "example": "komal.patel@gmail.com"
+        },
+        {
+          "name": "phone",
+          "type": "TEXT",
+          "description": "10-digit Indian mobile number as text",
+          "nullable": true,
+          "example": "8799613512"
+        },
+        {
+          "name": "gender",
+          "type": "TEXT",
+          "description": "Male / Female (NULL for some)",
+          "nullable": true,
+          "example": "Female"
+        },
+        {
+          "name": "city",
+          "type": "TEXT",
+          "description": "Home city (inconsistent casing/whitespace, NULL for some)",
+          "nullable": true,
+          "example": "Delhi"
+        },
+        {
+          "name": "state",
+          "type": "TEXT",
+          "description": "Indian state of the city (NULL when city is NULL)",
+          "nullable": true,
+          "example": "Delhi"
+        },
+        {
+          "name": "signup_date",
+          "type": "DATE",
+          "description": "Account creation date (clean ISO date)",
+          "nullable": false,
+          "example": "2022-07-01"
+        },
+        {
+          "name": "signup_date_raw",
+          "type": "TEXT",
+          "description": "Signup date as typed in a legacy form: mixed formats, some NULL (for cleaning lessons)",
+          "nullable": true,
+          "example": "2022-07-01"
+        },
+        {
+          "name": "acquisition_channel",
+          "type": "TEXT",
+          "description": "Marketing channel that brought the customer",
+          "nullable": false,
+          "example": "Google Ads"
+        },
+        {
+          "name": "is_prime",
+          "type": "INTEGER",
+          "description": "1 if customer holds the paid DesiCart Prime membership",
+          "nullable": false,
+          "example": "0"
+        }
+      ]
+    },
+    {
+      "name": "products",
+      "rowCount": 420,
+      "description": "Product catalogue (~420 SKUs).",
+      "columns": [
+        {
+          "name": "product_id",
+          "type": "INTEGER",
+          "description": "Product identifier (primary key)",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "sku",
+          "type": "TEXT",
+          "description": "Stock keeping unit code",
+          "nullable": false,
+          "example": "SKU100014"
+        },
+        {
+          "name": "product_name",
+          "type": "TEXT",
+          "description": "Display name",
+          "nullable": false,
+          "example": "Lakshmi Home Decor 542"
+        },
+        {
+          "name": "category",
+          "type": "TEXT",
+          "description": "Top-level category (a few rows have inconsistent casing/whitespace)",
+          "nullable": false,
+          "example": "Home & Kitchen"
+        },
+        {
+          "name": "sub_category",
+          "type": "TEXT",
+          "description": "Sub-category",
+          "nullable": false,
+          "example": "Decor"
+        },
+        {
+          "name": "brand",
+          "type": "TEXT",
+          "description": "Fictional brand name",
+          "nullable": false,
+          "example": "Lakshmi Home"
+        },
+        {
+          "name": "mrp",
+          "type": "REAL",
+          "description": "Maximum retail price in INR",
+          "nullable": false,
+          "example": "509.0"
+        },
+        {
+          "name": "cost_price",
+          "type": "REAL",
+          "description": "Landing cost in INR",
+          "nullable": false,
+          "example": "361.58"
+        },
+        {
+          "name": "is_active",
+          "type": "INTEGER",
+          "description": "1 if currently listed",
+          "nullable": false,
+          "example": "1"
+        }
+      ]
+    },
+    {
+      "name": "orders",
+      "rowCount": 10100,
+      "description": "One row per order (about 1% exact duplicate rows are deliberate).",
+      "columns": [
+        {
+          "name": "order_id",
+          "type": "INTEGER",
+          "description": "Order identifier (duplicated for duplicate rows)",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "customer_id",
+          "type": "INTEGER",
+          "description": "FK to customers.customer_id",
+          "nullable": false,
+          "example": "934"
+        },
+        {
+          "name": "order_date",
+          "type": "DATE",
+          "description": "Date the order was placed (clean ISO in SQLite)",
+          "nullable": false,
+          "example": "2023-01-01"
+        },
+        {
+          "name": "order_time",
+          "type": "TEXT",
+          "description": "Time of day the order was placed (HH:MM:SS)",
+          "nullable": false,
+          "example": "22:08:01"
+        },
+        {
+          "name": "order_status",
+          "type": "TEXT",
+          "description": "Delivered, Cancelled or RTO (return to origin, mostly COD)",
+          "nullable": false,
+          "example": "Delivered"
+        },
+        {
+          "name": "sales_channel",
+          "type": "TEXT",
+          "description": "Android App, iOS App, Website or Mobile Web",
+          "nullable": false,
+          "example": "iOS App"
+        },
+        {
+          "name": "coupon_code",
+          "type": "TEXT",
+          "description": "Coupon applied (NULL if none)",
+          "nullable": true,
+          "example": "SAVE5"
+        },
+        {
+          "name": "discount_amount",
+          "type": "REAL",
+          "description": "Coupon discount in INR",
+          "nullable": false,
+          "example": "0.0"
+        },
+        {
+          "name": "shipping_fee",
+          "type": "REAL",
+          "description": "Shipping fee in INR (free above 499)",
+          "nullable": false,
+          "example": "0.0"
+        },
+        {
+          "name": "total_amount",
+          "type": "REAL",
+          "description": "Order value in INR after discount and shipping",
+          "nullable": false,
+          "example": "2599.2"
+        },
+        {
+          "name": "delivery_date",
+          "type": "DATE",
+          "description": "Delivery date (NULL unless delivered)",
+          "nullable": true,
+          "example": "2023-01-07"
+        }
+      ]
+    },
+    {
+      "name": "order_items",
+      "rowCount": 20157,
+      "description": "Line items of each order.",
+      "columns": [
+        {
+          "name": "order_item_id",
+          "type": "INTEGER",
+          "description": "Line item identifier (primary key)",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "order_id",
+          "type": "INTEGER",
+          "description": "FK to orders.order_id",
+          "nullable": false,
+          "example": "1"
+        },
+        {
+          "name": "product_id",
+          "type": "INTEGER",
+          "description": "FK to products.product_id",
+          "nullable": false,
+          "example": "287"
+        },
+        {
+          "name": "quantity",
+          "type": "INTEGER",
+          "description": "Units ordered",
+          "nullable": false,
+          "example": "1"
+        },
+        {
+          "name": "unit_price",
+          "type": "REAL",
+          "description": "Selling price per unit in INR after discount (a few 100x outliers)",
+          "nullable": false,
+          "example": "300.14"
+        },
+        {
+          "name": "discount_pct",
+          "type": "INTEGER",
+          "description": "Percentage discount applied on MRP",
+          "nullable": false,
+          "example": "14"
+        },
+        {
+          "name": "line_total",
+          "type": "REAL",
+          "description": "unit_price x quantity in INR",
+          "nullable": false,
+          "example": "300.14"
+        }
+      ]
+    },
+    {
+      "name": "payments",
+      "rowCount": 10399,
+      "description": "Payment attempts (some orders have a failed attempt followed by a success).",
+      "columns": [
+        {
+          "name": "payment_id",
+          "type": "INTEGER",
+          "description": "Payment identifier (primary key)",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "order_id",
+          "type": "INTEGER",
+          "description": "FK to orders.order_id",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "payment_method",
+          "type": "TEXT",
+          "description": "UPI, Credit Card, Debit Card, COD, Netbanking or Wallet",
+          "nullable": false,
+          "example": "UPI"
+        },
+        {
+          "name": "amount",
+          "type": "REAL",
+          "description": "Amount in INR",
+          "nullable": false,
+          "example": "2599.2"
+        },
+        {
+          "name": "payment_status",
+          "type": "TEXT",
+          "description": "Success, Failed or Refunded",
+          "nullable": false,
+          "example": "Success"
+        },
+        {
+          "name": "payment_date",
+          "type": "DATE",
+          "description": "Date of payment (delivery date for COD)",
+          "nullable": false,
+          "example": "2023-01-01"
+        },
+        {
+          "name": "transaction_ref",
+          "type": "TEXT",
+          "description": "Gateway reference (NULL for COD)",
+          "nullable": true,
+          "example": "TXN3375021494"
+        }
+      ]
+    },
+    {
+      "name": "returns",
+      "rowCount": 1909,
+      "description": "Returned line items.",
+      "columns": [
+        {
+          "name": "return_id",
+          "type": "INTEGER",
+          "description": "Return identifier (primary key)",
+          "nullable": false,
+          "example": "3"
+        },
+        {
+          "name": "order_item_id",
+          "type": "INTEGER",
+          "description": "FK to order_items.order_item_id",
+          "nullable": false,
+          "example": "36"
+        },
+        {
+          "name": "order_id",
+          "type": "INTEGER",
+          "description": "FK to orders.order_id",
+          "nullable": false,
+          "example": "21"
+        },
+        {
+          "name": "return_date",
+          "type": "DATE",
+          "description": "Date the return was raised",
+          "nullable": false,
+          "example": "2023-01-14"
+        },
+        {
+          "name": "return_reason",
+          "type": "TEXT",
+          "description": "Customer reason",
+          "nullable": false,
+          "example": "Wrong item sent"
+        },
+        {
+          "name": "return_status",
+          "type": "TEXT",
+          "description": "Refunded, Rejected or Pickup Pending",
+          "nullable": false,
+          "example": "Refunded"
+        },
+        {
+          "name": "refund_amount",
+          "type": "REAL",
+          "description": "Refund in INR (NULL when rejected)",
+          "nullable": true,
+          "example": "971.28"
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "from": "orders.customer_id",
+      "to": "customers.customer_id",
+      "type": "many-to-one"
+    },
+    {
+      "from": "order_items.order_id",
+      "to": "orders.order_id",
+      "type": "many-to-one"
+    },
+    {
+      "from": "order_items.product_id",
+      "to": "products.product_id",
+      "type": "many-to-one"
+    },
+    {
+      "from": "payments.order_id",
+      "to": "orders.order_id",
+      "type": "many-to-one"
+    },
+    {
+      "from": "returns.order_item_id",
+      "to": "order_items.order_item_id",
+      "type": "many-to-one"
+    },
+    {
+      "from": "returns.order_id",
+      "to": "orders.order_id",
+      "type": "many-to-one"
+    }
+  ],
+  "qualityIssues": [
+    "orders: ~1% of rows (about 100) are exact duplicates (same order_id repeated); so orders.order_id has no PRIMARY KEY constraint.",
+    "customers: 20 exact duplicate customer rows; customers.customer_id is therefore not unique.",
+    "customers.email is NULL for ~8% of rows, phone ~3%, gender ~4%, city ~3% (state is NULL whenever city is NULL).",
+    "customers.city: ~10% of values have inconsistent casing or stray whitespace ('mumbai', ' Mumbai', 'DELHI ').",
+    "customers.signup_date_raw: free-text dates in four formats (YYYY-MM-DD, DD/MM/YYYY, '5 Mar 2023', 'Mar 5, 2023') and ~3% NULL; signup_date holds the clean value.",
+    "products.category: ~2% of values have inconsistent casing or whitespace.",
+    "order_items.unit_price: 12 rows are 100x too high (entry errors) which inflates order totals for those orders.",
+    "CSV only - orders.order_date: ~18% of rows are written as DD-MM-YYYY instead of YYYY-MM-DD.",
+    "CSV only - orders.total_amount: ~12% of rows are text like '₹1,234.50' (symbol and thousands commas).",
+    "CSV only - returns.refund_amount: ~50% of rows are text with rupee symbol and Indian digit grouping (e.g. '₹1,23,456.00').",
+    "payments: ~5% of online-paid orders have an extra earlier 'Failed' attempt row, so order_id is not unique in payments."
+  ],
+  "er": "erDiagram\n  customers {\n    INTEGER customer_id PK\n    TEXT full_name\n    TEXT email\n    TEXT phone\n    TEXT gender\n    TEXT city\n    TEXT state\n    TEXT signup_date\n    TEXT signup_date_raw\n    TEXT acquisition_channel\n    INTEGER is_prime\n  }\n  products {\n    INTEGER product_id PK\n    TEXT sku\n    TEXT product_name\n    TEXT category\n    TEXT sub_category\n    TEXT brand\n    REAL mrp\n    REAL cost_price\n    INTEGER is_active\n  }\n  orders {\n    INTEGER order_id PK\n    INTEGER customer_id FK\n    TEXT order_date\n    TEXT order_time\n    TEXT order_status\n    TEXT sales_channel\n    TEXT coupon_code\n    REAL discount_amount\n    REAL shipping_fee\n    REAL total_amount\n    TEXT delivery_date\n  }\n  order_items {\n    INTEGER order_item_id PK\n    INTEGER order_id FK\n    INTEGER product_id FK\n    INTEGER quantity\n    REAL unit_price\n    INTEGER discount_pct\n    REAL line_total\n  }\n  payments {\n    INTEGER payment_id PK\n    INTEGER order_id FK\n    TEXT payment_method\n    REAL amount\n    TEXT payment_status\n    TEXT payment_date\n    TEXT transaction_ref\n  }\n  returns {\n    INTEGER return_id PK\n    INTEGER order_item_id FK\n    INTEGER order_id FK\n    TEXT return_date\n    TEXT return_reason\n    TEXT return_status\n    REAL refund_amount\n  }\n  customers ||--o{ orders : \"customer_id\"\n  orders ||--o{ order_items : \"order_id\"\n  products ||--o{ order_items : \"product_id\"\n  orders ||--o{ payments : \"order_id\"\n  order_items ||--o{ returns : \"order_item_id\"\n  orders ||--o{ returns : \"order_id\"",
+  "downloads": {
+    "sqlite": "data/sqlite/ecommerce.sqlite",
+    "zip": "data/zip/ecommerce.zip",
+    "csv": [
+      "data/csv/ecommerce/customers.csv",
+      "data/csv/ecommerce/products.csv",
+      "data/csv/ecommerce/orders.csv",
+      "data/csv/ecommerce/order_items.csv",
+      "data/csv/ecommerce/payments.csv",
+      "data/csv/ecommerce/returns.csv"
+    ]
+  },
+  "signals": [
+    "[Instructor note] Festive spikes: order volume rises ~1.5-1.9x in the Diwali windows (Oct 8-16 2023, Nov 6-14 2023, Sep 27-Oct 6 2024, Oct 24-Nov 3 2024); weekends are ~18% higher; steady growth through 2024.",
+    "[Instructor note] Fashion and Footwear have return rates of ~21% and ~15% (mostly 'Size / fit issue'), versus ~1% for Grocery.",
+    "[Instructor note] COD orders are cancelled ~11% of the time and RTO another ~7%, versus ~3.5% cancellation for prepaid.",
+    "[Instructor note] Tier-2 cities use COD far more (~34% vs ~18%) and have longer delivery times.",
+    "[Instructor note] Prime members (22% of customers) place roughly twice the orders; customer activity is heavy-tailed (a minority of customers drive most orders).",
+    "[Instructor note] Data-entry outliers (12 order_items with 100x unit_price) distort average order value unless handled."
+  ]
+}

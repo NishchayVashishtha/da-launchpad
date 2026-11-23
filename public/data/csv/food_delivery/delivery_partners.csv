@@ -1,0 +1,909 @@
+partner_id,partner_name,city,vehicle_type,joined_date,phone,is_active
+1,Imran Deshmukh,Hyderabad,Bike,2021-08-06,9074515589,0
+2,Kunal Shah,Lucknow,Bike,2022-12-23,9114230551,1
+2,Kunal Shah,Lucknow,Bike,2022-12-23,9114230551,1
+3,Aditya Banerjee,lucknow,Bike,2021-06-22,8081241472,0
+4,Kunal Nair,Lucknow,Bike,2023-11-04,9570326552,1
+5,Amit Agarwal,Lucknow,Bike,2024-08-20,7987358035,1
+6,Rohan Qureshi,Bengaluru,Bike,2022-05-04,9073788639,1
+7,Karthik Sharma,Bengaluru,Bike,2024-03-26,7187929590,1
+8,Sandeep Thakur,Bengaluru,Bike,2022-08-09,9554467562,1
+9,Abhishek Bose,Bengaluru,Bike,2022-05-05,,1
+10,Aditya Sandhu,Hyderabad,Bike,2024-11-05,8844958622,1
+11,Nikhil Iyer,Ahmedabad,Bike,2021-10-27,9930728901,1
+12,Mohit Hegde,Jaipur,Bike,2023-04-30,9934603438,1
+13,Sunil Verma,Lucknow,Bike,2023-02-28,7797964202,1
+14,Siddharth Sandhu,Bengaluru,Bike,2024-08-24,6383392799,1
+15,Karan Patel,Jaipur,Bike,2023-12-24,8564844490,1
+16,Aarav Ghosh,Chennai,Bike,2021-09-10,9177190547,1
+17,Mohit Sen,Jaipur,Bike,2023-03-27,7080353938,0
+18,Mohit Thakur,Lucknow,Bike,2023-10-09,9357592630,1
+19,Vikram Saxena,chennai,Bike,2023-01-12,7708239668,1
+20,Yash Kapoor,Chennai,Bike,2022-06-21,6811699210,1
+21,Gurpreet Shah,Mumbai,Bike,2023-01-24,8179858571,1
+22,Manoj Ansari,Delhi,Bike,2021-12-27,7108092038,1
+23,Naveen Malhotra,Mumbai,Bike,2024-03-27,8177915727,1
+24,Sandeep Kulkarni,Mumbai,Bicycle,2024-06-29,7296006237,1
+25,Kunal Kurup,Chennai,Bike,2024-05-01,9712380901,1
+26,Amit Malhotra,Chennai,Bike,2023-03-22,9342794473,1
+27,Ishaan Mehta,Mumbai,Bike,2023-08-24,9694663632,1
+28,Vivaan Gupta,Lucknow,Bike,2021-07-03,,1
+29,Harpreet Chowdhury,Pune,Bike,2021-12-24,8012163007,1
+30,Sanjay Sharma,Mumbai,Bike,2021-06-03,9141370937,1
+31,Vivaan Qureshi,Bengaluru,Bike,2024-02-26,9139249315,1
+32,Sunil Chatterjee,KOLKATA,Bicycle,2021-08-05,9956165225,1
+33,Amit Kurup,Pune,Bike,2024-05-25,9297605365,1
+34,Siddharth Iyer,Mumbai,EV Scooter,2024-05-02,7986383501,1
+35,Deepak Ghosh,Ahmedabad,EV Scooter,2024-08-18,7933230171,1
+36,Karthik Thakur,Kolkata,EV Scooter,2023-04-14,9604551260,1
+37,Nikhil Reddy,Mumbai,Bicycle,2023-08-08,8458463695,1
+38,Amit Menon,Ahmedabad,Bike,2021-10-31,8590134495,1
+39,Ishaan Bansal,Kolkata,Bike,2024-04-03,7816403478,1
+40,Varun Qureshi,Chennai,Bike,2022-05-08,9755030583,1
+41,Sandeep Das,Mumbai,Bike,2023-04-30,9706678075,1
+42,Naveen Gill,Bengaluru,Bike,2021-08-21,9393962528,1
+43,Siddharth Sheikh,Mumbai,EV Scooter,2021-10-16,8975620556,1
+44,Aditya Chatterjee,Bengaluru ,Bike,2023-12-01,7954263750,1
+45,Mohit Qureshi,Ahmedabad,Bike,2022-09-21,7004089310,1
+46,Ravi Agarwal,Jaipur,Bike,2024-06-20,7234712174,1
+47,Varun Ansari, delhi  ,Bike,2024-04-06,9915370392,1
+48,Vikram Trivedi,Chennai,Bike,2021-12-14,9172043307,1
+49,Dinesh Sharma,Mumbai,Bike,2022-07-15,7406456819,1
+50,Naveen Banerjee,Delhi,Bike,2024-04-28,6779295360,1
+51,Aditya Pillai,pune,Bike,2022-09-10,9106917697,1
+52,Aditya Patel,Delhi,Bike,2024-04-18,9915832822,1
+53,Rohan Desai,Chennai,Bike,2022-02-21,9758035725,0
+54,Vivaan Mehta,Mumbai,Bicycle,2023-11-02,9789105116,1
+55,Harsh Kulkarni,Bengaluru,Bike,2024-11-22,8270304818,1
+56,Ishaan Rathore,Mumbai,Bike,2022-02-07,9504168853,1
+57,Gurpreet Singh,Mumbai,Bike,2021-08-15,9072091233,1
+58,Vikram Verma,Delhi,Bike,2021-09-18,7111672093,1
+59,Karan Chowdhury,Ahmedabad,Bicycle,2022-03-01,9667814693,1
+60,Sandeep Desai,Delhi,Bike,2023-04-09,9800294091,1
+61,Abhishek Mishra,Mumbai,Bike,2021-12-17,9715258078,1
+62,Deepak Naidu,Mumbai,Bicycle,2021-11-15,9650451554,1
+63,Rahul Deshmukh,Jaipur,Bicycle,2023-08-03,7099088134,1
+64,Anil Rathore,Delhi,Bike,2023-10-16,9676019388,1
+65,Gurpreet Mehta,Mumbai,EV Scooter,2024-10-08,9926321146,1
+66,Karan Das,Hyderabad,Bike,2022-08-23,9297306091,0
+67,Ishaan Ghosh,Chennai,Bike,2024-11-14,9405921744,1
+68,Vikram Mehta,Kolkata,Bicycle,2021-06-23,8046505726,0
+69,Sanjay Reddy,Delhi,Bike,2023-07-30,9866139534,1
+70,Dinesh Kapoor,Hyderabad,Bike,2024-06-07,9138526963,1
+71,Vivaan Patel,Hyderabad,Bike,2022-06-03,9397324975,1
+72,Ishaan Joshi,Delhi,Bike,2024-04-28,8925088901,1
+73,Anil Patil,Pune,Bike,2024-07-25,8888000411,0
+74,Prakash Kurup,Bengaluru,Bike,2021-10-23,7189304866,1
+75,Amit Verma,Mumbai,Bike,2023-07-07,7744724499,1
+76,Mohit Ghosh,Ahmedabad,Bike,2023-06-07,9367769420,0
+77,Imran Trivedi,Mumbai,Bike,2021-08-25,9779095708,1
+78,Imran Qureshi,Lucknow,Bicycle,2024-11-30,7411393102,1
+79,Sandeep Menon,Pune,Bike,2021-07-23,8878525926,1
+80,Sanjay Gupta,Mumbai,Bicycle,2021-10-13,8578311933,1
+81,Anil Malhotra,Bengaluru,Bike,2021-12-21,9232844324,1
+82,Dinesh Patil,Hyderabad,Bike,2021-07-23,9237220724,1
+83,Venkat Gill,Delhi,Bike,2021-09-07,9156600983,1
+84,Ravi Verma,Mumbai,Bike,2023-06-16,8065699742,1
+85,Karthik Nair,Kolkata,Bike,2023-09-24,7053122563,1
+86,Nikhil Ghosh,Pune,Bike,2024-08-01,8227995848,1
+87,Yash Reddy,Jaipur,Bike,2022-07-19,9895649995,1
+88,Gurpreet Iyer,Chennai,Bike,2024-03-21,8705369137,0
+89,Imran Desai,Delhi,Bike,2022-04-28,7446822710,1
+90,Arun Reddy,MUMBAI,Bike,2021-09-14,9255819508,1
+91,Arun Malhotra,Hyderabad,Bike,2021-09-10,9720843210,1
+92,Nikhil Iyer,Pune,Bike,2024-04-20,8729732574,1
+93,Gurpreet Tiwari,Pune,EV Scooter,2022-07-23,8694549577,1
+94,Harpreet Rao,Bengaluru,Bike,2023-12-13,9810837579,1
+95,Suresh Iyer, Kolkata,Bike,2022-09-21,9243598511,1
+96,Mohit Sharma,Jaipur,Bike,2024-05-30,8838017265,1
+96,Mohit Sharma,Jaipur,Bike,2024-05-30,8838017265,1
+97,Pranav Patel,Chennai,Bike,2023-03-18,8343671834,1
+98,Suresh Bansal,Delhi,Bike,2023-11-30,9552427371,1
+99,Imran Trivedi,Pune,Bike,2021-12-05,9845920348,1
+100,Imran Bose,Chennai,Bike,2022-01-25,9803450919,0
+101,Harpreet Chatterjee,Bengaluru,Bike,2022-07-18,9135267003,1
+102,Yash Singh,Mumbai,Bike,2022-11-06,8968446106,1
+103,Rahul Jain,Delhi,Bike,2024-09-06,8856574566,0
+104,Ravi Hegde,Mumbai,Bicycle,2023-04-11,7737057315,1
+105,Amit Hegde,Hyderabad,Bike,2021-11-02,9648810891,1
+106,Harsh Gill,Hyderabad ,Bike,2022-06-16,6392675656,1
+107,Kunal Banerjee,Chennai,Bike,2024-03-28,9711670317,1
+108,Sanjay Singh,Delhi,Bike,2022-10-18,9461671043,1
+109,Deepak Deshmukh,Mumbai,Bike,2023-09-26,7703192267,1
+110,Karthik Kapoor,Lucknow,Bike,2022-08-13,7653521726,1
+111,Abhishek Das,Delhi,EV Scooter,2022-05-16,8131919605,1
+112,Rahul Pandey,Mumbai,Bike,2022-07-22,6153565737,1
+113,Vikram Ansari,Delhi,Bicycle,2023-04-26,9314822657,1
+114,Ravi Yadav,Mumbai,Bike,2023-10-10,8012091102,1
+115,Vikram Patel,Chennai,Bike,2021-10-14,9987452704,0
+116,Sandeep Hegde,Bengaluru,Bike,2023-10-26,7384041603,1
+117,Gurpreet Pillai,Chennai,Bike,2023-12-08,9165353175,1
+118,Vivaan Ghosh,Chennai,Bike,2022-07-25,7621682292,0
+119,Kunal Reddy,Lucknow,Bike,2024-12-18,8324587958,1
+120,Karan Patil,Pune,EV Scooter,2022-11-04,9429332689,1
+121,Arjun Joshi,Hyderabad,Bike,2021-06-16,9261097872,1
+122,Naveen Sen,Delhi,Bike,2021-08-28,9604948624,1
+123,Tarun Desai,Bengaluru,Bike,2024-01-24,8663373944,1
+124,Dinesh Yadav,Kolkata,Bike,2021-07-27,9929091684,1
+125,Gurpreet Das,Mumbai,Bike,2024-12-20,9780030908,1
+126,Arjun Kurup,Hyderabad,EV Scooter,2023-01-26,6216768293,1
+127,Varun Hegde,Kolkata,Bike,2021-12-01,9301719716,1
+128,Kunal Trivedi,Delhi,Bike,2021-11-25,9655003468,1
+129,Gurpreet Verma,Mumbai,Bike,2023-04-13,8843374126,1
+130,Nikhil Kurup,Hyderabad,Bike,2023-01-09,8246641615,1
+131,Naveen Sheikh,Kolkata,Bike,2023-09-17,7325774827,1
+132,Naveen Rao,Mumbai,Bike,2021-06-17,8602168707,1
+133,Deepak Das,Pune,Bike,2024-01-08,6881510850,1
+134,Gurpreet Qureshi,Delhi,Bike,2022-03-17,9914022287,1
+135,Rohan Sharma,Mumbai,Bike,2021-12-18,9119286173,0
+136,Amit Sen,Ahmedabad,Bicycle,2024-09-28,8456460192,1
+137,Manoj Nair,Kolkata,Bike,2022-02-06,9202695428,0
+138,Arun Singh,Delhi,Bike,2022-11-01,6231596336,1
+139,Nikhil Gupta,Kolkata,Bike,2022-10-10,8272304161,1
+139,Nikhil Gupta,Kolkata,Bike,2022-10-10,8272304161,1
+140,Gurpreet Thakur,Ahmedabad,Bike,2023-11-01,,1
+141,Sanjay Qureshi,Lucknow,Bike,2023-05-05,7405414664,0
+142,Manoj Mehta,Hyderabad,Bike,2024-11-10,8036915988,0
+143,Suresh Rathore,Pune,Bike,2023-03-09,9908174137,1
+144,Manoj Trivedi,Kolkata,Bike,2024-10-09,9705568949,1
+145,Sunil Shetty,Chennai,Bike,2021-11-18,7398521808,1
+146,Nikhil Verma,Pune,Bike,2023-10-10,9225432566,1
+147,Amit Pandey,Kolkata,Bike,2023-07-30,9587398460,0
+148,Suresh Bose,Ahmedabad,Bike,2023-03-24,7496753318,1
+149,Tarun Patil,Jaipur,Bike,2023-09-29,8655441241,1
+150,Venkat Bansal,Bengaluru,Bicycle,2023-08-02,9626184186,1
+151,Karthik Sheikh,Delhi,EV Scooter,2021-09-20,9070671151,1
+152,Venkat Agarwal,Hyderabad,Bike,2023-01-12,7538613162,1
+153,Sunil Yadav,Pune,Bike,2022-09-11,8971309420,1
+154,Karthik Ansari,Hyderabad,Bike,2023-01-25,9829854465,1
+155,Deepak Kapoor,Delhi,Bike,2023-08-18,8900654781,1
+156,Nikhil Desai,Mumbai,Bike,2021-08-05,,1
+157,Nikhil Saxena,Chennai,Bike,2022-01-01,9716156399,1
+158,Anil Jain,Mumbai,Bike,2023-08-29,7426526553,1
+159,Tarun Pandey,Chennai,Bike,2023-07-25,9793372219,1
+160,Venkat Nair,Delhi,Bike,2024-08-07,8187829077,1
+161,Harpreet Sheikh,Delhi,EV Scooter,2024-02-17,7434307539,0
+162,Sanjay Mishra,Bengaluru,Bike,2024-03-11,9110375689,1
+163,Arun Desai,Pune,Bike,2022-11-15,7793049943,0
+164,Ravi Thakur,Mumbai,Bike,2024-05-31,9218278118,1
+165,Prakash Naidu,Bengaluru,Bike,2023-10-16,8693488641,1
+166,Mohit Gill,Mumbai,Bike,2024-01-01,8169771631,1
+167,Ishaan Tiwari,Mumbai,EV Scooter,2023-02-28,,1
+168,Rahul Khan,Lucknow,Bike,2024-03-13,9907385371,1
+169,Pranav Hegde,Hyderabad,Bike,2021-06-29,7547031062,0
+170,Kunal Jain, Chennai,Bicycle,2022-02-03,7895068999,1
+171,Tarun Bhatia,Mumbai,Bike,2023-09-30,8226395803,1
+172,Nikhil Gill, Delhi,Bike,2021-08-26,9699925990,1
+173,Vikram Tiwari,Lucknow,Bike,2023-10-22,8224509880,1
+174,Abhishek Tiwari,Jaipur,Bike,2024-03-03,9078539207,1
+175,Kunal Verma,Mumbai,Bike,2022-11-08,7682980898,1
+176,Varun Saxena,Bengaluru,Bike,2024-01-22,9177114737,1
+177,Ravi Joshi,Hyderabad,Bike,2023-02-08,8265582823,1
+178,Suresh Das,Chennai,Bike,2021-06-04,9897731377,1
+179,Venkat Das,Mumbai,EV Scooter,2022-06-28,7777145750,1
+180,Amit Mishra,Delhi,Bike,2024-02-13,,1
+181,Vivaan Bose,Bengaluru,Bike,2021-06-06,9684256376,1
+182,Tarun Reddy,Kolkata,Bike,2023-04-14,9056526385,1
+183,Ishaan Joshi,Ahmedabad,EV Scooter,2021-08-22,9762771972,1
+184,Anil Shetty,Ahmedabad,Bike,2021-09-21,9660932305,1
+185,Ramesh Hegde,Hyderabad,Bike,2022-12-24,8120541822,1
+186,Imran Ghosh,Delhi,Bike,2023-11-18,8452828184,1
+187,Faisal Qureshi,Jaipur,Bicycle,2024-06-28,6654458029,1
+188,Sandeep Deshmukh,Mumbai,Bike,2022-03-05,9366240129,1
+189,Mohit Das,Chennai,Bike,2021-07-31,9396423390,1
+190,Sandeep Deshmukh,Chennai,Bike,2022-01-15,7324880186,1
+191,Abhishek Ghosh,Mumbai,Bike,2023-08-06,9974733853,0
+192,Amit Mishra,Delhi,Bike,2023-05-16,9768085430,1
+193,Manoj Chatterjee, Mumbai,Bike,2024-08-06,7596832958,1
+194,Faisal Tiwari,Delhi,Bicycle,2021-11-20,8340655717,1
+195,Sunil Patil,Chennai,Bicycle,2024-11-20,8635023413,0
+196,Arjun Joshi,Bengaluru,Bike,2023-06-22,7650205269,0
+197,Varun Singh,Pune,Bike,2022-07-19,8918295754,1
+198,Ishaan Thakur,hyderabad,Bike,2023-08-13,8525410415,1
+199,Yash Saxena,Mumbai,Bicycle,2024-05-26,9361132600,1
+200,Nikhil Bose,Mumbai,Bike,2024-07-10,7195360601,1
+201,Siddharth Bose,Bengaluru,Bike,2024-08-20,9146988697,1
+202,Harsh Rathore,Mumbai ,Bike,2024-12-16,8488945204,1
+203,Dinesh Das,Ahmedabad,Bike,2022-06-26,7586140479,1
+204,Yash Qureshi,Hyderabad,Bike,2021-11-20,8559412294,1
+205,Abhishek Verma,Kolkata,Bike,2024-07-09,7300308324,1
+206,Abhishek Deshmukh,Delhi,Bike,2024-03-13,7212252365,1
+207,Gurpreet Mehta,Mumbai,Bike,2022-10-22,9604473241,1
+208,Harpreet Shetty,Jaipur,Bike,2022-11-15,7298963777,1
+209,Gurpreet Thakur,Ahmedabad,Bike,2024-12-03,9931966617,1
+210,Dinesh Menon,Mumbai,Bicycle,2021-07-28,8262178025,1
+211,Ravi Pandey,Chennai,Bike,2022-05-23,8330999359,1
+212,Sanjay Mishra,Mumbai,Bike,2021-06-12,,1
+213,Dinesh Verma,Bengaluru,Bike,2023-01-29,9514944654,0
+214,Arjun Das,Delhi,Bike,2024-05-17,9589866319,1
+215,Rohan Rao,Chennai,Bike,2022-10-13,6613986898,1
+216,Amit Das,Kolkata,Bike,2024-10-08,9856077724,1
+217,Sunil Iyer,Chennai,EV Scooter,2022-05-11,8222363915,1
+218,Karthik Chowdhury,Mumbai,Bike,2022-06-04,8568720981,1
+219,Sanjay Bansal,Pune,Bike,2021-06-22,8579125851,1
+220,Anil Kurup,Ahmedabad,Bike,2024-05-17,8734887626,1
+221,Tarun Thakur,Pune,EV Scooter,2022-04-07,9372994520,1
+222,Imran Chatterjee, hyderabad  ,Bike,2021-07-04,,1
+223,Manoj Naidu,Mumbai,Bike,2021-10-04,9191137734,1
+224,Anil Verma,Delhi,Bike,2023-05-18,9881148179,1
+225,Aditya Chopra,AHMEDABAD,Bike,2023-06-25,6249199035,1
+226,Sandeep Chopra,Delhi,Bike,2024-01-25,7595783284,1
+227,Nikhil Patel,Mumbai,EV Scooter,2021-06-03,9923667478,1
+228,Ravi Pillai,Chennai,Bike,2023-06-14,9681327304,1
+229,Amit Patil,Delhi,Bike,2021-06-11,7020990320,1
+230,Sunil Gupta,Delhi,Bike,2024-11-06,7052348971,1
+231,Gurpreet Sharma,Bengaluru,EV Scooter,2023-10-25,7381372310,1
+232,Prakash Shetty,Bengaluru,EV Scooter,2024-12-05,6668920974,0
+233,Venkat Kapoor,bengaluru,Bike,2022-02-11,9904853107,1
+234,Vivaan Trivedi,Pune,Bike,2024-11-02,8409730027,1
+235,Aarav Jain,Mumbai,Bike,2023-06-03,9199980953,1
+236,Rahul Banerjee,Chennai,Bike,2022-09-12,9178833387,1
+237,Arun Kapoor,Hyderabad,Bike,2024-02-23,8468534461,1
+238,Harpreet Sharma,Kolkata,Bike,2021-08-18,,1
+239,Aarav Malhotra,Mumbai,Bike,2024-02-14,7072265419,1
+240,Ravi Trivedi,Chennai,Bike,2023-08-22,7158820422,1
+241,Harpreet Hegde,Delhi,Bike,2023-08-20,9518901188,1
+242,Yash Tiwari,Pune,Bike,2023-12-01,8901314686,1
+243,Naveen Chowdhury,Hyderabad,Bike,2022-12-18,9548392249,1
+244,Harsh Tiwari,Mumbai,Bike,2024-10-14,9078403842,1
+245,Mohit Shah,Kolkata,EV Scooter,2023-08-22,8152492380,0
+246,Yash Kulkarni,Lucknow,Bike,2022-10-16,9943710472,1
+247,Mohit Reddy,Delhi,Bicycle,2022-06-29,9933099116,0
+248,Gurpreet Nair,Delhi,Bike,2021-08-29,8965211583,1
+249,Sandeep Yadav,Mumbai,Bike,2024-02-05,8892860475,1
+250,Kunal Nair,Pune,Bike,2023-08-12,7730454670,1
+251,Amit Malhotra,Kolkata,Bike,2024-09-18,9342016658,1
+252,Arun Das,Mumbai,Bike,2024-06-04,8694926720,1
+253,Ramesh Rao,Chennai,Bike,2021-11-27,8961471260,1
+254,Sunil Shetty,Bengaluru,Bike,2024-04-29,9839820381,1
+255,Mohit Kurup,Bengaluru,Bike,2021-09-24,7919895795,0
+256,Mohit Bhatia,Mumbai,EV Scooter,2022-09-02,,1
+257,Pranav Khan,Bengaluru,Bicycle,2022-02-09,8593485178,0
+258,Gaurav Rao,Mumbai,Bike,2023-10-31,9952149755,1
+259,Mohit Shah,Mumbai,Bike,2023-08-17,9187992035,1
+260,Abhishek Yadav,BENGALURU,Bike,2022-06-25,9166348758,1
+261,Aarav Gupta,Delhi,Bike,2024-10-21,7324889758,1
+262,Aarav Joshi,Kolkata,Bike,2023-03-09,7116350201,1
+263,Imran Menon,Delhi,Bike,2023-08-22,8643757382,0
+264,Abhishek Sheikh,Pune ,Bike,2021-08-14,7706038455,1
+265,Faisal Bansal,Kolkata,Bike,2021-07-31,6800757374,0
+266,Prakash Saxena,Lucknow,Bike,2023-04-19,8891890388,1
+267,Rohan Mishra,Bengaluru,Bicycle,2024-05-05,8570451383,1
+268,Karthik Singh,Jaipur,EV Scooter,2023-04-12,8372428865,1
+269,Imran Mehta,Mumbai,Bike,2021-07-27,6765721972,1
+270,Suresh Mehta,Bengaluru,Bike,2022-11-29,8913762311,1
+271,Karthik Naidu,Kolkata,EV Scooter,2021-11-21,7461109105,1
+272,Aarav Ghosh,Hyderabad,Bike,2024-10-01,6732957334,1
+273,Faisal Rao,Bengaluru,EV Scooter,2021-12-17,9116767721,1
+274,Sunil Gill,Delhi,EV Scooter,2022-06-28,7637429898,1
+275,Abhishek Gupta,Ahmedabad ,Bike,2024-09-13,7067292087,1
+276,Deepak Shah,Bengaluru,Bike,2022-01-24,9098042628,1
+277,Anil Kapoor,Hyderabad,Bike,2023-08-08,9150800527,1
+278,Faisal Patel,Hyderabad,Bike,2022-07-12,9573318563,1
+279,Siddharth Ghosh,Bengaluru,Bike,2024-05-15,6685911903,1
+280,Vikram Joshi,Mumbai,Bike,2024-10-14,6244678671,1
+281,Arjun Mishra,Bengaluru,Bike,2023-10-05,7419318082,1
+282,Manoj Reddy,Lucknow,Bike,2023-06-03,9399473577,1
+283,Tarun Qureshi,Delhi,Bike,2024-02-05,9579330581,1
+284,Sunil Singh,Pune,EV Scooter,2024-01-24,7899331237,1
+285,Arjun Sharma,Chennai,Bike,2023-03-09,9623882529,1
+286,Sandeep Desai,Pune,Bike,2023-07-26,8384890455,0
+287,Vivaan Mishra,Bengaluru,Bike,2023-04-01,7308150391,1
+287,Vivaan Mishra,Bengaluru,Bike,2023-04-01,7308150391,1
+288,Gurpreet Desai,Mumbai,Bicycle,2023-10-14,9392304884,1
+289,Karan Deshmukh,Kolkata,Bike,2023-03-01,7798369044,1
+290,Arjun Trivedi,Mumbai,Bike,2021-09-18,9796254939,1
+291,Sandeep Ansari,Kolkata,Bicycle,2023-01-07,7819804805,1
+292,Harpreet Ghosh,Delhi,EV Scooter,2022-05-30,,0
+293,Gurpreet Thakur,Delhi,Bike,2021-12-06,9320928125,1
+294,Ravi Thakur,Lucknow,Bike,2024-09-03,9218140244,1
+295,Harsh Joshi,Delhi,Bike,2023-11-05,9841742096,1
+296,Yash Sharma,Chennai,Bike,2022-11-11,7330481580,1
+297,Amit Khan,Kolkata,Bike,2024-02-23,9842529423,1
+298,Sandeep Menon,Bengaluru,EV Scooter,2023-01-13,9300677069,1
+299,Varun Reddy,Delhi,Bike,2022-03-07,,1
+300,Pranav Sen,Jaipur,Bike,2022-03-18,9951259828,1
+301,Ramesh Chatterjee,Bengaluru,Bike,2022-08-25,8995239427,0
+302,Kunal Deshmukh,Mumbai,Bike,2024-07-30,9417314627,1
+303,Harsh Chowdhury,Kolkata,Bike,2023-04-06,9073134953,1
+303,Harsh Chowdhury,Kolkata,Bike,2023-04-06,9073134953,1
+304,Faisal Chatterjee,Lucknow,Bike,2021-10-26,9749255384,1
+305,Amit Deshmukh,Pune,Bike,2022-03-03,9027777777,1
+306,Ravi Ghosh, Delhi,Bike,2023-11-27,8913037396,1
+307,Deepak Reddy,Ahmedabad,Bike,2024-09-24,9916680414,1
+308,Kunal Sharma,Bengaluru,Bike,2023-11-09,8559620433,1
+309,Arun Trivedi,Delhi,Bike,2024-08-30,9138349710,1
+310,Anil Mehta,Delhi,Bike,2024-11-24,7906223998,1
+311,Prakash Gupta,Lucknow,Bike,2022-10-25,7769857834,1
+312,Gurpreet Malhotra,Hyderabad,EV Scooter,2024-05-03,9473486050,1
+313,Venkat Chatterjee,Hyderabad,Bike,2024-02-05,9648071559,1
+314,Vivaan Iyer,Hyderabad,EV Scooter,2023-02-02,9706008369,1
+315,Rahul Tiwari,Mumbai,Bike,2024-06-25,9067364413,1
+316,Harpreet Reddy,Lucknow,Bike,2022-02-28,8388023392,1
+317,Suresh Hegde,Mumbai,Bike,2023-10-13,,1
+318,Suresh Desai,Delhi,Bike,2021-11-26,,1
+319,Yash Iyer,Mumbai,Bike,2022-07-02,8360330321,1
+320,Sanjay Chopra, kolkata  ,Bike,2023-07-27,9775441574,1
+321,Sandeep Trivedi,Mumbai,Bike,2022-01-28,9238193068,1
+322,Arun Yadav,Hyderabad,EV Scooter,2023-03-17,9150364404,0
+323,Ramesh Trivedi,Bengaluru,Bike,2023-03-26,9080135029,1
+324,Dinesh Chopra,AHMEDABAD,Bike,2022-11-05,9737958200,1
+325,Deepak Bansal,Chennai,Bike,2021-09-02,9436689355,0
+326,Mohit Pillai,pune,Bike,2022-08-08,9738629791,1
+327,Tarun Malhotra,Bengaluru,Bike,2021-06-07,9710481995,1
+328,Faisal Menon,Delhi,Bike,2023-10-06,7113187589,1
+329,Ramesh Das,Chennai,Bike,2024-10-08,8482785892,1
+330,Ishaan Mishra,Mumbai,Bicycle,2022-06-09,,1
+331,Sunil Iyer,Delhi,Bike,2024-06-09,,1
+332,Deepak Trivedi,Kolkata,Bike,2024-01-02,,1
+333,Manoj Menon,Delhi,Bike,2024-11-11,7518221011,1
+334,Ravi Bansal,Ahmedabad,Bike,2023-06-23,7500986118,1
+335,Naveen Rathore,Mumbai,Bike,2022-01-10,7145695908,1
+336,Ishaan Yadav,Bengaluru,Bike,2022-11-11,9732047359,1
+337,Arjun Gupta, Bengaluru,Bike,2023-05-04,8732446327,1
+338,Karan Patel,Mumbai,Bike,2023-12-15,7969924158,1
+339,Prakash Shah,Lucknow,Bicycle,2021-11-10,9099105316,1
+340,Gaurav Rathore,Delhi,Bike,2021-12-10,,1
+341,Sunil Bhatia,Delhi,Bike,2024-06-29,8154849716,1
+342,Ramesh Sen,Ahmedabad,EV Scooter,2024-02-06,7761338597,1
+343,Pranav Agarwal,Pune,Bike,2021-08-12,9952582873,1
+343,Pranav Agarwal,Pune,Bike,2021-08-12,9952582873,1
+344,Dinesh Chopra,Delhi,Bike,2024-04-10,9356207569,1
+345,Venkat Menon,Bengaluru,Bike,2022-10-15,9244900897,0
+346,Imran Joshi,Jaipur,Bike,2023-05-22,9152634689,1
+347,Ishaan Patel,Bengaluru,EV Scooter,2021-12-30,9786458837,1
+348,Abhishek Menon,Hyderabad,EV Scooter,2024-06-21,,1
+349,Sunil Chopra, chennai  ,Bike,2024-06-06,9341550704,1
+350,Suresh Deshmukh,Chennai,EV Scooter,2022-09-13,8581807404,1
+351,Faisal Kulkarni,Mumbai,Bike,2022-09-13,6944400130,1
+352,Aditya Menon,Kolkata,Bike,2023-03-21,9125406711,1
+353,Ishaan Ansari,Bengaluru,Bike,2023-03-08,9096163663,1
+354,Ravi Thakur,Delhi,Bike,2022-05-10,8103405797,1
+355,Deepak Thakur,Kolkata,Bike,2024-07-07,6999315131,1
+356,Rohan Saxena,Ahmedabad,Bike,2021-12-30,9352620398,0
+357,Karan Bose,Bengaluru,Bike,2021-09-20,7043096522,0
+358,Ramesh Saxena,Ahmedabad,Bicycle,2022-12-26,8418374235,1
+359,Deepak Saxena,Bengaluru,EV Scooter,2022-10-18,,1
+360,Sanjay Malhotra,Pune,Bike,2024-02-10,9678058785,1
+361,Varun Banerjee,Ahmedabad,Bike,2021-10-26,9593743264,1
+362,Anil Chowdhury,Hyderabad,Bike,2022-08-28,8260472751,0
+363,Suresh Ansari,Hyderabad,Bike,2021-10-24,8443911963,1
+364,Mohit Qureshi,Chennai,Bike,2024-08-29,9552110177,1
+365,Suresh Jain,Kolkata,Bike,2023-01-09,,1
+366,Dinesh Shah,Delhi,Bike,2023-04-05,6743428888,1
+367,Karan Kurup,Mumbai,Bike,2023-01-04,7621593036,1
+368,Gaurav Patil,Jaipur,Bike,2021-09-01,9902016345,1
+369,Anil Jain,Delhi,Bike,2024-12-02,8785236813,1
+370,Yash Kapoor,Lucknow,Bike,2023-05-12,8883299186,0
+371,Gaurav Pillai,Bengaluru,Bike,2023-11-02,9855011719,0
+372,Dinesh Mehta,Jaipur,EV Scooter,2023-08-07,9345991727,1
+373,Faisal Ansari,Delhi,Bike,2023-09-08,9836692522,1
+374,Sanjay Yadav,Mumbai,Bike,2022-07-02,9068271917,1
+375,Ishaan Thakur,Pune,Bike,2024-02-07,7858897126,1
+376,Amit Nair,Mumbai,Bike,2024-06-07,9844451764,1
+377,Nikhil Shah,Kolkata,Bike,2021-10-23,9557206750,1
+378,Gaurav Chatterjee,Mumbai,Bike,2022-08-24,8095647803,1
+379,Aarav Joshi,Chennai,Bike,2021-06-05,8303818595,1
+380,Rahul Verma,Delhi,Bike,2022-12-12,7645509625,1
+381,Manoj Kulkarni,Ahmedabad,Bike,2024-07-11,9297085422,0
+382,Siddharth Yadav,Delhi,Bike,2024-10-28,7302627339,1
+383,Venkat Chopra,Mumbai,EV Scooter,2022-02-06,9035035948,1
+384,Rohan Desai,Kolkata,Bike,2022-02-01,9639499233,1
+385,Sunil Bhatia,Jaipur,Bike,2021-08-27,,1
+386,Amit Malhotra,Chennai,Bike,2021-12-22,7524601042,1
+387,Vivaan Saxena,Delhi,Bike,2024-06-09,8782035810,1
+388,Amit Chatterjee,Hyderabad,Bike,2023-01-25,8383844901,1
+389,Dinesh Trivedi,Hyderabad,Bike,2024-09-19,7623907417,1
+390,Siddharth Pandey,Ahmedabad,Bike,2023-01-27,9649126473,1
+391,Vivaan Patil,Hyderabad,Bike,2023-01-19,8853210695,1
+392,Faisal Jain,Chennai,Bike,2022-09-28,8487002782,1
+393,Mohit Rathore,Kolkata,Bike,2022-06-01,9776275776,1
+394,Mohit Deshmukh,Delhi,Bike,2023-09-23,7378361829,1
+395,Sandeep Nair,Delhi,Bike,2023-02-04,8348130179,1
+396,Siddharth Jain,Mumbai,Bike,2023-11-30,8755584553,1
+397,Abhishek Khan,Mumbai,EV Scooter,2022-12-24,9984617373,1
+398,Manoj Nair,Bengaluru,Bike,2022-07-04,8690541407,1
+399,Suresh Kulkarni,Hyderabad,Bike,2023-12-09,8753386310,1
+400,Nikhil Patel,Chennai,Bike,2023-02-08,8678702207,1
+401,Manoj Kapoor,Chennai,Bike,2023-05-19,,1
+402,Sandeep Verma,Delhi,EV Scooter,2023-02-26,9736332757,1
+403,Nikhil Shetty,Mumbai,EV Scooter,2024-05-14,9543832777,1
+404,Vivaan Gupta,Kolkata,EV Scooter,2022-12-11,,1
+405,Venkat Deshmukh,Kolkata,Bike,2023-09-06,9200997266,1
+406,Sanjay Bose,Kolkata,Bike,2024-07-28,9029174903,1
+407,Ramesh Pandey,Pune,Bike,2021-12-01,9675868557,1
+408,Rohan Iyer,Bengaluru,Bike,2023-04-11,9143280636,1
+409,Amit Yadav,Bengaluru,Bike,2024-09-11,8015350772,1
+410,Anil Verma,Bengaluru,Bike,2023-09-26,8165243881,1
+411,Rahul Iyer,Kolkata,Bike,2021-07-04,9732465835,1
+412,Rahul Kulkarni,Mumbai,Bike,2023-12-07,8844266801,0
+413,Rohan Bose,Bengaluru,Bike,2024-07-18,9578956546,1
+414,Siddharth Agarwal,Delhi,Bike,2022-08-06,8051614786,1
+415,Deepak Trivedi,Pune,Bike,2024-05-27,9021961589,0
+416,Vikram Reddy,Mumbai,EV Scooter,2021-06-24,8115268749,1
+417,Rahul Chatterjee,Chennai,Bike,2024-10-28,7093048011,1
+418,Imran Sheikh,Mumbai,Bicycle,2021-08-31,,1
+419,Ishaan Mehta,Lucknow,Bike,2021-10-12,9333790757,1
+420,Ravi Rathore,Mumbai ,Bike,2024-01-29,9599878035,0
+421,Gurpreet Shah,Delhi,Bike,2023-04-26,7861384435,1
+422,Sandeep Bhatia,Chennai,Bike,2022-09-23,7336833783,1
+423,Suresh Sheikh,Pune,EV Scooter,2024-08-19,8178132028,1
+424,Pranav Patil,Lucknow,Bike,2022-08-13,9814187523,1
+425,Aarav Verma,Mumbai,EV Scooter,2022-03-02,9985208344,1
+426,Kunal Singh,bengaluru,Bike,2022-11-12,,1
+427,Kunal Agarwal,Bengaluru,Bike,2023-06-07,7280914375,1
+428,Vikram Malhotra,Delhi,Bicycle,2023-11-08,8228534004,1
+429,Gaurav Sen,Pune,Bike,2021-06-23,7642080318,1
+430,Harpreet Bose,Mumbai,Bike,2021-12-13,9481370883,1
+431,Naveen Nair,Chennai,Bike,2024-11-01,7308771171,1
+432,Arun Reddy,Jaipur,Bike,2024-01-22,,0
+433,Abhishek Kurup,Kolkata,Bike,2024-02-02,9046158761,1
+434,Aditya Agarwal,Kolkata,EV Scooter,2021-09-22,7490890349,1
+435,Naveen Pillai,Hyderabad,Bike,2022-08-09,9548274043,1
+436,Faisal Chopra,Mumbai,Bike,2024-06-26,9327616202,1
+437,Tarun Deshmukh,Kolkata,Bike,2024-10-20,9012817569,1
+438,Ravi Chowdhury,Pune,Bike,2021-06-22,,1
+439,Naveen Saxena,Delhi,Bike,2022-11-04,9656351206,1
+440,Ishaan Chowdhury,Bengaluru,Bike,2022-10-09,9002946962,1
+441,Vikram Saxena,Ahmedabad,Bike,2023-04-03,6489505072,1
+442,Abhishek Thakur,Bengaluru,Bike,2021-10-25,,1
+443,Manoj Shah,Delhi,Bike,2023-02-17,8948450648,1
+444,Gurpreet Menon,Kolkata,Bike,2022-08-22,9297859985,1
+445,Faisal Bansal,Kolkata,Bike,2023-06-02,7460417103,1
+446,Ramesh Deshmukh,Hyderabad,Bike,2022-11-17,6395242965,1
+447,Naveen Shetty,Kolkata,Bike,2022-10-23,8103126630,1
+448,Rahul Kulkarni,Mumbai,Bike,2022-01-11,8732278473,1
+449,Manoj Bose,Jaipur,Bike,2022-07-20,9433247244,1
+450,Vikram Chatterjee,Chennai,Bike,2022-11-30,8130172711,0
+451,Venkat Mishra,Chennai,Bike,2022-12-16,9103696052,1
+452,Prakash Trivedi,Jaipur,Bike,2023-11-25,9274919772,1
+453,Pranav Naidu,Bengaluru,Bike,2024-06-08,8966756617,1
+454,Faisal Sen, Bengaluru,Bike,2023-01-07,9399737577,1
+455,Nikhil Jain,Delhi,Bike,2021-07-21,7604086307,1
+456,Sandeep Pandey,Delhi,EV Scooter,2022-01-07,9279048188,1
+457,Imran Banerjee,Ahmedabad,Bike,2024-10-14,9197706330,1
+458,Karan Sheikh,Delhi,Bicycle,2022-08-14,9571366108,1
+459,Arun Qureshi,Kolkata,Bike,2024-02-11,8027334433,1
+460,Vivaan Sandhu,Kolkata,Bike,2023-04-06,7759837898,0
+461,Sunil Bhatia,Mumbai,Bike,2024-06-07,7721633795,1
+462,Harsh Joshi,Delhi,Bike,2024-06-20,7896736017,1
+463,Gaurav Shetty,Bengaluru,Bike,2022-06-06,7473711010,1
+464,Sandeep Jain,Delhi,Bike,2023-09-04,9987669270,1
+465,Karan Shetty,Mumbai,Bike,2023-11-29,8035271131,0
+466,Aditya Yadav,Chennai,Bike,2022-02-10,9516970069,1
+467,Vivaan Chopra,Delhi,Bike,2021-08-12,8013016063,1
+468,Ramesh Reddy,Pune,Bike,2022-08-16,9729795095,1
+469,Amit Saxena,Hyderabad,Bike,2021-06-05,7202781805,1
+470,Karan Shetty,Hyderabad,Bike,2024-02-06,7668876104,1
+471,Gaurav Patil,Delhi,EV Scooter,2024-06-10,8165821932,1
+472,Arjun Nair,Ahmedabad,Bike,2021-06-03,7461909096,1
+473,Aditya Patil,Chennai,Bicycle,2022-06-04,9663601288,1
+474,Varun Joshi,Mumbai,Bicycle,2021-12-16,9082962595,1
+475,Siddharth Iyer,Bengaluru,Bike,2021-11-07,,1
+476,Arun Mishra,Mumbai,Bike,2022-03-05,9217117617,1
+477,Ishaan Kapoor,Delhi,Bike,2022-01-28,8726001909,0
+478,Naveen Mishra,Pune,Bike,2022-02-08,9778887974,0
+479,Yash Banerjee,Mumbai,Bike,2022-12-09,,1
+480,Ishaan Bansal,Ahmedabad,Bike,2024-12-18,8900787812,1
+481,Tarun Shetty,Delhi,Bike,2023-08-23,8457611876,1
+482,Varun Bhatia,Chennai,Bike,2023-02-03,,1
+483,Dinesh Nair,Hyderabad,Bike,2022-08-16,9043255431,0
+484,Karthik Malhotra,Hyderabad,Bike,2023-12-15,7816381342,0
+485,Manoj Chopra,Pune,Bike,2024-12-12,9735795493,1
+486,Yash Thakur,Mumbai,Bike,2022-05-22,7188872543,0
+487,Ramesh Bose,Mumbai,Bike,2024-11-28,9454173253,1
+488,Vivaan Menon,Hyderabad,EV Scooter,2023-04-26,9362348444,1
+489,Siddharth Reddy,Chennai,Bike,2021-07-29,7387733296,1
+490,Siddharth Das,Mumbai,Bike,2024-02-26,8566750871,1
+491,Deepak Jain,Jaipur,Bike,2024-03-13,8026774161,1
+492,Karthik Gupta,Delhi,Bike,2021-07-21,7977049878,0
+493,Sandeep Tiwari,Hyderabad,Bike,2021-10-01,9602250550,1
+494,Yash Patel,Pune,Bike,2022-06-20,9994318580,0
+495,Anil Sharma,Chennai,Bike,2024-07-11,7713597249,0
+496,Aditya Chowdhury,Mumbai,Bike,2023-08-14,9622661856,1
+497,Imran Pandey,Bengaluru,Bike,2022-06-29,9972347646,1
+498,Ramesh Yadav,mumbai,Bike,2024-03-03,9332192663,1
+499,Tarun Saxena,Chennai,Bike,2024-09-26,9504425317,1
+500,Deepak Rathore,Mumbai,Bike,2023-01-12,9746667488,1
+501,Varun Reddy,Bengaluru,EV Scooter,2024-11-10,7189593162,1
+502,Sanjay Rathore,Hyderabad,Bike,2023-09-08,,1
+503,Aarav Chopra,Delhi,Bike,2023-02-13,9627870508,1
+504,Rahul Khan,Mumbai,Bike,2024-11-20,9994199739,1
+505,Suresh Pillai,Bengaluru,Bike,2023-10-11,8104452898,1
+506,Vivaan Shah,Ahmedabad,Bicycle,2022-09-11,9792687229,1
+507,Ravi Reddy,bengaluru,Bike,2023-08-05,,1
+508,Rahul Thakur,Ahmedabad,EV Scooter,2023-10-06,9005536269,1
+509,Pranav Sen,Mumbai,Bike,2021-09-30,9988480455,1
+510,Deepak Kurup,Ahmedabad,EV Scooter,2023-11-01,7810086051,1
+511,Arun Sharma,Pune,Bike,2023-03-30,9075009910,0
+512,Gaurav Das,Mumbai,EV Scooter,2024-08-26,9540174150,1
+513,Mohit Ansari,DELHI,Bike,2022-12-15,9774540636,1
+514,Karthik Sharma,Mumbai,Bike,2022-12-18,7184697142,1
+515,Prakash Chatterjee,Ahmedabad,Bicycle,2021-12-28,9250815813,1
+516,Naveen Joshi, Mumbai,Bike,2023-11-11,8932438233,1
+517,Nikhil Das,Lucknow,Bike,2021-08-06,9982690747,1
+518,Mohit Naidu,Ahmedabad,Bike,2024-12-05,8040753486,1
+519,Rohan Qureshi,Bengaluru,Bike,2024-10-12,6333111552,1
+520,Sandeep Joshi,Chennai,Bike,2022-05-21,9692485194,0
+521,Imran Deshmukh,Hyderabad,Bike,2024-08-09,7022897816,1
+522,Pranav Banerjee,Delhi,Bike,2024-09-03,9544583030,1
+522,Pranav Banerjee,Delhi,Bike,2024-09-03,9544583030,1
+523,Kunal Chopra,Delhi,Bike,2022-05-04,7892076112,1
+524,Ramesh Sheikh,mumbai,Bike,2023-10-24,8521320918,1
+525,Tarun Thakur, Delhi,Bike,2023-12-31,7312435819,1
+526,Siddharth Reddy,Chennai,Bicycle,2024-07-05,7256575642,0
+527,Harsh Thakur,Chennai,Bike,2024-04-04,9330935819,0
+528,Ishaan Gupta,Hyderabad,Bike,2024-07-30,9700115643,1
+529,Manoj Malhotra,Pune,Bike,2023-12-16,8170599862,1
+530,Siddharth Ghosh,Delhi,EV Scooter,2022-07-03,,0
+531,Mohit Chowdhury,Chennai,Bike,2024-11-28,7021797204,1
+532,Dinesh Banerjee,Pune,Bike,2022-06-18,9687572707,1
+533,Abhishek Sandhu,Hyderabad,Bike,2024-08-21,9521833463,1
+534,Anil Menon,Kolkata,Bike,2024-10-08,7944452229,1
+535,Imran Ghosh,Chennai,Bike,2023-09-01,8601788205,1
+536,Sanjay Patil,Mumbai,Bike,2022-10-13,7871763879,1
+537,Ishaan Mishra,Mumbai,Bike,2022-10-02,9125570377,1
+538,Yash Gupta,Delhi,Bike,2024-02-02,8636632210,1
+539,Gurpreet Shetty, chennai  ,Bike,2022-11-18,9883165295,1
+540,Vivaan Mishra,Hyderabad,Bike,2021-07-19,9791719175,1
+541,Imran Gupta,Mumbai,Bike,2021-06-07,9788928388,1
+542,Suresh Chatterjee,Chennai,Bike,2022-02-10,8511166191,1
+543,Sanjay Chopra,Bengaluru,Bike,2023-06-18,6215383012,1
+544,Varun Iyer,Bengaluru,Bike,2024-08-08,7672689358,1
+545,Arun Kurup,Bengaluru,Bike,2024-04-15,8672905228,1
+546,Rahul Naidu,Lucknow,Bike,2024-04-01,9305961893,0
+547,Arjun Chowdhury,Pune,Bike,2021-08-18,7779080112,1
+548,Ishaan Thakur,Chennai,Bike,2021-08-26,7823341365,1
+549,Nikhil Gupta,Jaipur,Bike,2021-11-05,8359520575,1
+550,Karan Kurup,Bengaluru,Bike,2021-12-25,7644534643,1
+551,Aarav Gill,Mumbai,Bike,2024-11-24,6850454891,1
+552,Deepak Deshmukh,Chennai,Bike,2024-07-30,9467219949,0
+553,Harsh Patel,Chennai,Bike,2022-02-02,7632487832,1
+554,Manoj Bhatia,Mumbai,Bike,2023-11-15,9751637889,1
+555,Pranav Deshmukh,Mumbai,Bike,2022-10-29,9193119277,1
+556,Gurpreet Mehta,Jaipur,Bike,2022-11-16,6097566919,1
+557,Abhishek Qureshi,Lucknow,Bike,2023-04-29,9112512070,1
+558,Sunil Shah,Bengaluru,Bike,2023-05-30,6754145359,1
+559,Ishaan Khan,Pune,Bike,2023-04-27,7367434895,1
+560,Vikram Patel,Ahmedabad,EV Scooter,2024-10-18,7011458098,1
+561,Arjun Yadav,Hyderabad,EV Scooter,2024-03-03,,1
+562,Faisal Menon,Delhi,EV Scooter,2024-07-09,9960889617,1
+562,Faisal Menon,Delhi,EV Scooter,2024-07-09,9960889617,1
+563,Vivaan Das,Delhi,Bike,2022-01-07,7408380411,1
+564,Dinesh Gill,Bengaluru,EV Scooter,2024-04-04,9096444781,1
+565,Amit Desai,Ahmedabad,Bike,2023-01-30,9327407103,1
+566,Rahul Ghosh,Hyderabad,Bike,2021-07-14,6336668781,1
+567,Ravi Mehta,hyderabad,Bicycle,2021-11-22,8576212778,0
+568,Arun Singh,Mumbai,Bike,2024-06-07,9471130190,0
+569,Gaurav Singh,Bengaluru,Bike,2024-12-02,9830588645,1
+570,Prakash Qureshi,Bengaluru,Bike,2022-08-29,9496344751,1
+571,Deepak Jain,Kolkata,Bicycle,2022-08-17,7333944055,1
+572,Venkat Bose,Kolkata,Bicycle,2023-09-06,9872232657,1
+573,Pranav Pillai,Jaipur,Bicycle,2022-03-03,7181601892,1
+574,Aarav Iyer,Bengaluru,Bike,2022-03-12,9607505384,1
+575,Harpreet Patel,Mumbai,EV Scooter,2022-06-18,8768557444,1
+576,Harpreet Chowdhury,Chennai,Bike,2023-03-06,9381807964,1
+577,Rohan Verma,Mumbai,Bike,2021-10-17,9572199847,1
+578,Ravi Verma,Ahmedabad,Bike,2022-01-17,9870889342,1
+579,Mohit Kulkarni,Bengaluru,Bike,2022-05-24,9880811395,1
+580,Arjun Saxena,Pune,Bike,2022-09-28,8989372621,1
+581,Anil Chopra,Ahmedabad,Bike,2023-08-18,8977846410,1
+582,Suresh Shetty,Mumbai,Bike,2023-12-10,7829202106,1
+583,Imran Verma,Hyderabad,Bike,2024-09-08,,1
+584,Kunal Patel,Mumbai,Bike,2024-06-27,9694393209,1
+585,Rohan Joshi,Bengaluru,EV Scooter,2024-07-03,9064907175,0
+586,Mohit Ansari,Pune,Bike,2024-03-11,9704351056,1
+587,Gurpreet Gupta,Mumbai,Bicycle,2024-04-16,,1
+588,Ramesh Patil,Bengaluru,Bike,2022-01-05,,1
+589,Kunal Sheikh,Bengaluru,Bike,2022-03-05,9325361875,1
+590,Abhishek Bose,Bengaluru,Bike,2021-11-19,8482124672,1
+591,Ishaan Kapoor,Ahmedabad,EV Scooter,2022-09-08,7178504879,1
+592,Aditya Singh,Chennai,Bike,2023-11-23,9146416339,0
+593,Manoj Ansari,Lucknow,Bike,2021-07-04,9292750353,1
+594,Prakash Patel,Ahmedabad,Bike,2022-06-29,9414800330,0
+595,Gaurav Nair,Mumbai,Bike,2024-12-17,9077152056,1
+596,Prakash Bhatia,Delhi,EV Scooter,2024-03-19,9080445101,1
+597,Sandeep Khan,Mumbai,Bicycle,2024-10-24,7086858603,0
+598,Kunal Menon,Jaipur,Bike,2023-05-05,9776406491,1
+599,Imran Shetty,Bengaluru,Bike,2021-07-21,6796704189,0
+600,Aditya Das,Jaipur,Bike,2024-09-15,9915123225,1
+601,Vivaan Singh,Kolkata,EV Scooter,2023-12-20,7474627289,1
+602,Dinesh Mishra,Kolkata,Bike,2023-08-07,6375559000,1
+603,Mohit Kapoor,Bengaluru,Bike,2022-01-15,9200733138,1
+604,Aditya Kurup, Mumbai,Bike,2022-06-18,9337668121,1
+605,Gaurav Pandey,Kolkata,EV Scooter,2022-08-31,9317165333,1
+606,Ishaan Gill,Ahmedabad,Bike,2022-09-03,9212755337,1
+607,Venkat Kapoor,Bengaluru,Bike,2024-07-16,9299537761,1
+608,Tarun Ansari,Bengaluru,Bike,2023-01-16,9402471328,1
+609,Rohan Ansari,Bengaluru,Bike,2024-09-28,9016751756,1
+610,Anil Bansal,Kolkata,Bike,2021-10-14,9412595521,1
+611,Ishaan Agarwal,Kolkata,Bike,2023-04-01,8162437759,1
+612,Anil Qureshi,Lucknow,Bike,2022-05-31,,1
+613,Rohan Rao,Chennai,Bike,2023-05-23,8680831417,1
+614,Karthik Mehta,Mumbai,Bike,2023-12-07,9128503883,1
+615,Kunal Nair,Mumbai,Bike,2022-11-22,9233995996,1
+616,Faisal Pandey,Pune,Bike,2024-02-02,9172943339,1
+617,Sandeep Gill,Hyderabad,EV Scooter,2022-02-25,9812208138,1
+618,Yash Thakur,Bengaluru,Bike,2024-11-21,7207310013,1
+619,Siddharth Sen,Mumbai,Bike,2023-11-11,9549412112,1
+620,Imran Pillai,Mumbai,Bike,2024-06-08,9516192283,1
+621,Arjun Bhatia,Ahmedabad,Bike,2022-06-04,9314701608,0
+622,Gaurav Sharma,Mumbai,Bicycle,2022-08-06,7697070624,1
+623,Rohan Kulkarni,Bengaluru,Bike,2023-02-26,8682778457,1
+624,Pranav Patel,Delhi,Bike,2023-09-07,6263995555,1
+625,Naveen Gill,Mumbai,Bike,2024-02-25,9667592429,1
+626,Sunil Sheikh,Kolkata,Bike,2023-02-04,8911910844,1
+627,Sanjay Khan,Delhi,Bike,2023-01-11,8947233960,1
+628,Naveen Kulkarni,Pune,Bike,2022-02-14,9812945215,1
+629,Dinesh Reddy,Delhi,Bike,2024-07-15,9218382971,1
+630,Pranav Kulkarni,Chennai,EV Scooter,2022-12-30,7794742670,1
+631,Aditya Rathore,Delhi,Bike,2024-07-10,7088434916,0
+632,Aarav Verma,Ahmedabad,Bike,2023-07-05,6967087049,1
+633,Nikhil Chatterjee,Bengaluru,EV Scooter,2023-07-27,9812018152,1
+634,Dinesh Sharma,Mumbai,Bike,2024-11-02,,0
+635,Manoj Patil,Kolkata,Bike,2023-01-22,9013544973,1
+636,Kunal Malhotra,Hyderabad,Bike,2021-09-18,9098695814,1
+637,Imran Bansal,Ahmedabad,EV Scooter,2024-08-20,9694114508,1
+638,Ramesh Nair,Hyderabad,Bike,2023-04-05,6299055101,1
+639,Arjun Rathore,Delhi,Bike,2023-04-11,9224226729,1
+640,Ishaan Sheikh,Bengaluru,Bike,2021-12-21,9597207875,1
+641,Arjun Bhatia,Chennai,Bike,2021-07-03,7960183726,1
+642,Siddharth Saxena,Mumbai,Bike,2022-01-29,6985526878,1
+643,Naveen Bansal,Lucknow,EV Scooter,2021-10-14,8330650327,1
+644,Vivaan Menon,Mumbai,Bike,2023-03-17,9354635527,1
+645,Sanjay Joshi,Ahmedabad,Bike,2024-08-05,7824263851,1
+646,Manoj Khan,Pune,Bike,2023-04-17,9802515819,1
+647,Imran Hegde,Kolkata,Bike,2023-01-29,9986148504,1
+648,Vikram Iyer,Delhi,Bicycle,2024-05-09,7518232696,0
+649,Abhishek Patel,Jaipur,Bike,2024-04-01,9138776157,1
+650,Suresh Shah,Mumbai,Bike,2021-09-09,6466668354,1
+651,Abhishek Thakur,Mumbai,Bike,2023-12-03,7609132997,1
+652,Faisal Thakur,Pune,Bike,2024-05-06,8675487333,0
+653,Arjun Singh,Pune,Bike,2021-11-14,9436485138,1
+654,Harpreet Chatterjee,Lucknow,Bike,2023-04-25,7603463160,1
+655,Manoj Yadav,Ahmedabad,Bike,2021-10-09,9450410891,1
+656,Mohit Hegde,Chennai,Bike,2023-06-23,7309411714,1
+657,Nikhil Reddy,Pune,Bike,2021-12-25,7061428309,1
+658,Amit Kulkarni,Chennai,Bike,2022-09-26,8090388328,1
+659,Rohan Pillai,Hyderabad,EV Scooter,2023-07-21,9615005987,0
+660,Harpreet Malhotra,Hyderabad,Bike,2021-09-04,8943710499,1
+661,Mohit Saxena,Mumbai,Bike,2021-07-25,8458164977,1
+662,Nikhil Ansari,Bengaluru,Bike,2022-04-27,8042530645,1
+663,Anil Reddy,Bengaluru,Bike,2024-10-11,7571277502,0
+664,Rahul Deshmukh,Ahmedabad,Bike,2024-05-09,7862038748,1
+665,Aarav Bansal,Pune,EV Scooter,2022-10-13,7839620730,1
+666,Vikram Chopra,Hyderabad,Bike,2023-10-25,9970625721,1
+667,Gurpreet Bose,Pune,Bike,2022-07-09,9888897920,1
+668,Aditya Khan,Bengaluru,Bike,2023-11-23,9003481556,1
+669,Karthik Kulkarni,Hyderabad,Bicycle,2021-11-06,7168697565,1
+670,Mohit Bose,Mumbai,Bike,2022-10-12,6063258014,1
+671,Suresh Deshmukh,Bengaluru,Bike,2024-03-20,8505531121,1
+672,Faisal Sandhu,Mumbai,EV Scooter,2022-12-12,8621935721,1
+673,Vikram Sheikh,Mumbai,Bike,2021-10-27,9303483179,1
+674,Arjun Sharma,Lucknow,Bike,2024-06-23,7464601413,1
+675,Gurpreet Joshi,Chennai ,Bike,2024-11-17,9432404169,1
+676,Harpreet Chopra,Chennai,Bike,2021-08-07,9142141199,1
+677,Sanjay Sheikh,Delhi,Bike,2024-01-05,8113048622,1
+678,Rohan Malhotra,Bengaluru,Bike,2024-05-15,7981757753,1
+679,Varun Hegde,Pune,Bike,2024-01-14,8834703633,1
+680,Aditya Bansal,Mumbai,Bike,2022-08-18,9349417742,1
+681,Ishaan Shah,Delhi,Bike,2023-03-25,9926420712,1
+682,Sunil Patel,Delhi,Bike,2022-02-20,8097926776,1
+683,Arun Malhotra,Kolkata,Bike,2023-12-25,8556001174,0
+684,Gaurav Kurup,Pune,Bike,2024-11-08,9672050904,1
+685,Rohan Patil,Ahmedabad,Bike,2021-09-29,8261406115,1
+686,Abhishek Pandey,Mumbai,Bike,2024-12-19,7671374321,1
+687,Dinesh Trivedi,Mumbai,Bike,2024-08-25,,1
+688,Abhishek Verma,Ahmedabad,Bike,2024-08-21,9705697164,1
+689,Faisal Chatterjee,Bengaluru,Bike,2024-08-25,9252675299,1
+690,Ramesh Jain,Mumbai,Bike,2023-05-24,9361250989,1
+691,Manoj Bose,Bengaluru,Bike,2023-09-15,6890198829,1
+692,Sandeep Chatterjee,chennai,Bike,2024-04-24,8939524312,0
+693,Sanjay Gupta,Delhi,Bike,2021-07-09,8258628800,0
+694,Harsh Tiwari,Mumbai,Bike,2024-11-02,6600023025,1
+695,Mohit Sen,Bengaluru,Bicycle,2022-08-24,7548560965,1
+696,Arun Yadav,Mumbai,Bike,2023-11-27,6039682160,1
+697,Vikram Hegde,Ahmedabad,EV Scooter,2021-10-04,8941019659,1
+698,Harpreet Nair,Mumbai,Bike,2024-10-14,7286550786,1
+699,Ravi Menon,Delhi,Bike,2024-08-19,9552681997,1
+700,Karthik Qureshi,Kolkata,Bike,2024-09-10,7293154288,1
+701,Manoj Hegde,Mumbai,Bike,2024-11-04,8208413633,1
+702,Tarun Mishra,Mumbai,Bike,2021-06-25,9931502756,1
+703,Dinesh Shetty,Bengaluru,Bike,2021-07-30,9102300610,1
+704,Mohit Menon,hyderabad,Bike,2023-05-01,8059328257,1
+705,Gurpreet Chowdhury,Bengaluru,Bike,2023-10-20,8656012498,1
+706,Karthik Sheikh,Lucknow,Bike,2024-08-09,7856270380,1
+707,Amit Mehta,Mumbai,Bike,2024-04-26,9101423533,1
+708,Nikhil Menon,Delhi,Bike,2021-08-18,9638223668,1
+709,Suresh Patel,Lucknow,Bike,2023-01-10,7893264296,1
+710,Siddharth Desai,Mumbai,Bike,2023-12-05,8066887699,1
+711,Deepak Kulkarni,Delhi,EV Scooter,2024-01-30,9806981646,1
+712,Yash Chowdhury,Delhi,Bike,2024-11-01,6920743463,1
+713,Sunil Chopra,Lucknow,Bike,2024-06-19,9831370873,1
+714,Prakash Verma,Delhi,Bike,2021-11-12,8673800785,1
+715,Siddharth Gupta,Bengaluru,Bike,2021-07-18,9125861314,1
+716,Pranav Iyer,Hyderabad,EV Scooter,2024-12-04,7945645056,1
+717,Tarun Sharma,Mumbai,EV Scooter,2023-08-05,7076057774,1
+718,Gaurav Bhatia,Mumbai,EV Scooter,2022-01-19,9234647754,1
+719,Ramesh Saxena,Delhi,Bike,2024-02-20,8707298971,1
+720,Kunal Saxena,Pune,Bike,2024-05-17,9447674305,1
+721,Karthik Chatterjee,Delhi,Bike,2023-06-11,9064875447,1
+722,Kunal Kulkarni,Kolkata,Bike,2023-02-27,8466485429,1
+723,Ishaan Mishra,Bengaluru,EV Scooter,2021-09-12,9650389541,0
+724,Nikhil Shetty,Chennai,EV Scooter,2021-12-10,7273397313,1
+725,Naveen Tiwari,Delhi,Bike,2023-06-04,9929412452,1
+726,Varun Das,Delhi,Bike,2024-10-07,8983137202,1
+727,Abhishek Jain,Mumbai,Bike,2023-09-17,8357595562,1
+728,Yash Desai,Jaipur,Bike,2023-11-29,9127552732,1
+729,Ravi Ansari,Mumbai,Bike,2023-06-28,9681557140,1
+730,Gurpreet Rao,Ahmedabad,Bike,2022-12-13,8794686762,1
+731,Harpreet Chopra,Kolkata,Bike,2023-01-10,9003178089,1
+732,Harsh Sandhu,Pune,Bike,2021-08-05,7217835887,1
+733,Gaurav Chopra,Chennai,Bike,2024-02-14,9208976655,1
+734,Kunal Shah,Mumbai,EV Scooter,2023-08-23,9773482459,1
+735,Mohit Yadav,Mumbai,Bike,2023-11-28,7583125716,1
+736,Varun Joshi,chennai,Bike,2024-09-01,7964857741,1
+737,Gurpreet Banerjee,Chennai,Bike,2023-10-12,9618092682,1
+738,Mohit Shah,Mumbai,Bike,2024-08-21,8065455356,1
+739,Sanjay Mehta,Bengaluru,Bike,2022-01-26,7945663705,1
+740,Nikhil Tiwari,Ahmedabad,Bike,2023-12-06,9139316055,1
+741,Varun Desai,Chennai,Bike,2022-01-08,7071861348,1
+742,Arun Das,Mumbai,EV Scooter,2022-06-15,9066441588,1
+743,Kunal Sandhu,Delhi,Bike,2022-10-21,9733125210,1
+744,Ravi Pandey,Mumbai,Bike,2021-12-14,9895128228,0
+745,Dinesh Mehta,Chennai,Bike,2022-04-15,8671174811,1
+746,Siddharth Saxena,Delhi,EV Scooter,2023-11-20,8919725909,0
+747,Ishaan Yadav,Bengaluru,Bike,2024-06-04,9173104383,1
+748,Suresh Pandey,Hyderabad,Bicycle,2024-05-06,8656624565,0
+749,Mohit Kurup,Delhi,Bike,2024-03-07,9960214015,1
+750,Aditya Patil,Delhi,Bike,2023-10-04,,1
+751,Anil Nair,Chennai,Bike,2024-06-17,6097959096,1
+752,Arjun Banerjee,Hyderabad,Bike,2023-04-07,9117087851,1
+753,Mohit Saxena,Bengaluru,Bike,2024-09-14,9612607988,1
+754,Gaurav Hegde,Lucknow,Bike,2023-11-21,9046894246,1
+755,Karan Joshi,Bengaluru,Bike,2023-05-11,7740464405,1
+756,Rahul Menon,Delhi,Bike,2024-03-12,8562531061,0
+757,Harpreet Sen,Mumbai,Bike,2024-07-05,7551838590,1
+758,Gurpreet Gill,Delhi,EV Scooter,2024-05-13,7217720260,1
+759,Suresh Sandhu,Bengaluru,Bike,2024-04-18,,0
+760,Aditya Rathore,Jaipur,Bicycle,2023-01-18,8701773332,1
+761,Aditya Iyer,Kolkata,Bike,2023-08-02,7495058345,1
+762,Imran Singh,Delhi,Bike,2022-10-06,7007070282,1
+763,Anil Shetty,Bengaluru,Bike,2023-11-02,6014288767,1
+764,Ramesh Naidu,Chennai,Bike,2024-11-28,8294143221,1
+765,Deepak Verma,DELHI,Bike,2022-09-07,7577536177,1
+766,Harpreet Chowdhury,Mumbai,Bicycle,2023-08-22,9671840674,1
+767,Suresh Mishra, bengaluru  ,Bike,2023-05-10,7418309559,1
+768,Rohan Chatterjee, delhi  ,Bike,2022-03-29,9698470015,1
+769,Nikhil Trivedi,Chennai,Bike,2022-10-28,7809835786,1
+770,Yash Qureshi,Hyderabad,Bike,2022-09-23,9022856538,1
+771,Ishaan Iyer,Kolkata,Bike,2024-03-16,7732663977,1
+772,Gaurav Sandhu,Pune,Bike,2024-01-27,9648272475,1
+773,Aditya Joshi,Chennai,Bike,2024-09-15,9137414875,1
+774,Arjun Saxena,Hyderabad,Bike,2023-01-23,8536911339,0
+775,Aarav Mishra,Mumbai,Bike,2023-06-14,9026596246,1
+776,Mohit Trivedi,Mumbai,Bike,2021-07-09,9981768930,1
+777,Abhishek Mishra,Delhi,Bike,2022-12-04,9141269191,1
+778,Ravi Verma,Delhi,Bike,2023-06-23,9207952445,1
+779,Arjun Pandey,Chennai,Bike,2022-04-08,9568240637,1
+780,Mohit Tiwari, Delhi,Bike,2023-04-11,9161875947,1
+781,Dinesh Pillai,Pune,Bike,2021-11-25,7458605476,1
+782,Venkat Menon,Bengaluru,Bike,2023-01-01,9397587910,1
+783,Tarun Patil,Chennai,Bike,2023-01-07,9300822473,1
+784,Suresh Ghosh,Bengaluru,Bike,2022-07-29,6500829068,1
+785,Vikram Gupta,Lucknow,Bike,2022-05-04,7166466773,1
+786,Karan Patil,Delhi,Bike,2023-08-26,9502964213,1
+787,Anil Khan,Delhi,Bike,2024-04-15,9592922121,1
+788,Suresh Malhotra,Hyderabad,Bike,2023-10-22,9442365307,1
+789,Sunil Jain,Mumbai,Bike,2024-04-09,8713575308,1
+790,Abhishek Malhotra,Mumbai,Bike,2023-03-25,7885066665,1
+791,Yash Shetty,Chennai,EV Scooter,2022-03-25,9092526683,1
+792,Vikram Bose, Kolkata,Bike,2024-04-01,8046449611,1
+793,Yash Kurup,Kolkata ,EV Scooter,2024-02-20,8507115078,1
+794,Harpreet Shetty,Bengaluru,Bike,2024-07-26,8247896013,1
+795,Aditya Sheikh,Delhi,Bike,2023-11-03,9469474880,1
+796,Nikhil Sen,Bengaluru,Bike,2024-02-07,7626155407,1
+797,Varun Nair,Chennai,Bike,2024-05-02,9357345325,1
+798,Aditya Joshi,Bengaluru,Bike,2021-11-26,7935785338,1
+799,Rahul Mehta,Mumbai,Bike,2022-11-15,9486902366,0
+800,Abhishek Jain,Mumbai,Bicycle,2023-10-06,8114858862,1
+801,Amit Menon,Pune,EV Scooter,2021-09-09,9740427577,0
+802,Sanjay Banerjee,Lucknow,Bike,2021-07-15,9465830035,1
+803,Gaurav Chowdhury, mumbai  ,Bike,2023-12-16,9663855720,1
+804,Rahul Das,Delhi,Bike,2024-05-27,9901822615,1
+805,Ishaan Rathore,Mumbai,Bike,2022-08-03,8743294506,1
+806,Rohan Naidu,Bengaluru,Bike,2023-07-25,9236480509,1
+807,Dinesh Sen,Lucknow,Bike,2022-02-20,9209221777,1
+808,Anil Sharma,Delhi,EV Scooter,2023-10-11,9203356438,1
+809,Rahul Chatterjee,Bengaluru,Bike,2021-12-07,9923621295,1
+810,Siddharth Khan,Ahmedabad,Bike,2023-12-29,7293961852,1
+811,Imran Sandhu,Mumbai,Bike,2023-09-06,9770948549,1
+812,Imran Sheikh,Mumbai,Bike,2024-01-01,7900484439,1
+813,Imran Hegde,Pune,Bike,2021-10-03,8836921928,1
+814,Vivaan Nair,Chennai,Bike,2023-08-31,6268665091,0
+815,Siddharth Iyer,Chennai,Bike,2023-04-12,8623870746,1
+816,Naveen Khan,Mumbai,EV Scooter,2024-06-03,8632712854,1
+817,Vikram Kapoor,Lucknow,Bike,2023-12-16,9561880201,1
+818,Venkat Chowdhury,Mumbai,Bike,2022-10-07,9276292020,1
+819,Karan Kulkarni,Pune,Bike,2022-06-14,9707108919,0
+820,Faisal Sen,Delhi,Bike,2022-04-27,9251109095,1
+821,Rahul Ansari,Ahmedabad,Bike,2024-09-06,8376748006,0
+822,Karan Mehta,Bengaluru,Bike,2024-05-10,9163281398,1
+823,Ravi Bansal,Hyderabad,Bike,2022-10-04,9294682975,1
+824,Rohan Mishra,Chennai,Bike,2021-06-23,9401041617,1
+825,Dinesh Tiwari,Delhi,Bike,2024-04-30,7757253108,1
+826,Varun Shetty,Delhi,Bike,2024-05-23,8936282042,1
+827,Ramesh Nair, jaipur  ,Bike,2023-10-26,7960326937,1
+828,Varun Malhotra,Pune,Bicycle,2023-03-23,9774786327,1
+829,Faisal Reddy,Bengaluru,Bicycle,2024-03-31,9004541251,1
+830,Mohit Gill,Delhi,Bike,2023-02-06,9596931506,1
+831,Nikhil Malhotra,Delhi,Bike,2022-01-07,9224290240,1
+832,Kunal Pillai,Chennai,Bike,2024-02-03,9102738567,1
+833,Amit Reddy,Pune,Bike,2024-12-13,9535185347,1
+834,Vivaan Khan,Bengaluru,EV Scooter,2024-10-21,7422044911,1
+835,Varun Kurup,Pune,Bike,2023-01-23,9973429601,1
+836,Gaurav Kurup,Delhi,Bike,2021-11-29,9456724529,1
+837,Kunal Thakur,Bengaluru,Bike,2021-08-19,8738509510,1
+838,Vivaan Trivedi,Hyderabad,Bike,2022-09-10,9381305854,1
+839,Varun Agarwal,Hyderabad,Bike,2023-01-29,7287618084,0
+840,Rahul Yadav,Ahmedabad,Bike,2022-07-02,7027446650,1
+841,Ishaan Bansal,Hyderabad,Bike,2024-06-12,9471104282,0
+842,Mohit Desai,Chennai,Bike,2023-06-11,9403372308,1
+843,Rahul Nair,Mumbai,EV Scooter,2021-09-08,9842638097,1
+844,Aditya Khan,Mumbai,Bike,2022-08-11,9378385586,0
+845,Ravi Iyer,Pune,Bike,2022-10-15,9246735585,1
+846,Ishaan Gupta,Delhi,EV Scooter,2023-05-29,9835800066,1
+847,Rahul Agarwal,Chennai,Bike,2023-06-10,9816169237,1
+848,Amit Trivedi,Hyderabad,Bike,2023-09-05,9069917992,1
+849,Arun Mehta,Kolkata,EV Scooter,2022-07-31,9768827001,1
+850,Sanjay Rathore,Delhi,EV Scooter,2021-07-06,7042724258,1
+851,Pranav Sharma,Delhi,EV Scooter,2022-12-02,7701466093,1
+852,Aditya Banerjee,Chennai,Bike,2022-06-08,9350798621,0
+853,Karthik Chowdhury,Mumbai,Bike,2022-07-09,9459471837,0
+854,Naveen Tiwari,Delhi,Bike,2021-07-26,8078664963,0
+855,Prakash Rao,Chennai,Bike,2022-02-08,7229798711,1
+856,Ravi Chowdhury,Ahmedabad,Bike,2022-03-28,8684854459,1
+857,Harsh Sheikh,Ahmedabad,Bike,2024-03-24,9164079919,1
+858,Gurpreet Yadav,PUNE,Bike,2022-05-02,9802826158,1
+859,Dinesh Shah,Ahmedabad,Bike,2023-10-13,8547954110,1
+860,Mohit Patil,Hyderabad,Bike,2023-11-05,9979262522,1
+861,Faisal Sen,mumbai,Bike,2022-12-12,9229825759,1
+862,Dinesh Deshmukh,Pune,Bike,2023-12-15,9066729289,1
+863,Kunal Chowdhury,Chennai,Bike,2023-09-27,6247874926,1
+864,Rohan Sharma,Mumbai,Bike,2023-02-12,9761981474,0
+865,Vikram Ansari,Lucknow,Bike,2023-12-10,8035240020,1
+866,Karthik Patel,Delhi,EV Scooter,2024-01-31,7240226077,1
+867,Manoj Gupta,Kolkata,Bike,2022-11-08,7941577073,1
+868,Kunal Bansal,Ahmedabad,Bike,2024-02-03,7828068984,0
+869,Kunal Chatterjee,Mumbai,Bike,2021-09-09,8115634947,0
+870,Faisal Nair,Ahmedabad,Bike,2024-04-11,8970586757,1
+871,Sandeep Verma,Mumbai,Bike,2021-07-15,8942708200,1
+872,Suresh Sheikh,Mumbai,Bike,2023-11-24,9318573969,0
+873,Imran Sheikh, Delhi,EV Scooter,2023-09-07,8224689949,1
+874,Amit Gill,Kolkata,EV Scooter,2022-10-29,9960277066,1
+875,Kunal Pandey,Pune,Bike,2022-04-21,9640141267,0
+876,Ishaan Joshi,Hyderabad,EV Scooter,2024-03-09,9561258943,1
+877,Sunil Gupta,Jaipur,Bike,2024-03-07,7422452101,1
+878,Sanjay Ansari,Kolkata,Bike,2024-09-14,9584611516,1
+879,Venkat Singh,Bengaluru,Bike,2022-06-26,9669502834,1
+880,Rahul Thakur,mumbai,Bike,2023-11-10,8628505137,1
+881,Abhishek Kulkarni,Ahmedabad,Bike,2024-02-17,9412776601,1
+882,Dinesh Mishra,Chennai,Bike,2022-05-18,9590581090,1
+883,Amit Jain,Bengaluru,Bike,2023-02-27,9640684919,1
+884,Rahul Tiwari,Delhi,Bike,2023-03-26,9932709075,1
+885,Ravi Bose,Jaipur,Bike,2023-08-06,9733585095,1
+886,Nikhil Gupta,Delhi,EV Scooter,2021-07-30,9304814651,1
+887,Nikhil Banerjee,Delhi,Bike,2024-12-15,8180081886,1
+888,Varun Saxena,Delhi,Bike,2024-04-16,9864815701,1
+889,Anil Chowdhury,Hyderabad,EV Scooter,2024-04-25,,1
+890,Varun Khan,Chennai,Bike,2024-03-06,8401141588,1
+891,Faisal Jain,Hyderabad,Bike,2024-01-21,9751115688,1
+892,Yash Agarwal,Delhi,Bike,2023-06-18,9193743926,1
+893,Sanjay Desai,Chennai ,Bike,2024-01-20,7263816734,0
+894,Ishaan Kulkarni,HYDERABAD,Bike,2021-10-14,9922556284,1
+895,Tarun Kulkarni,Delhi,Bike,2023-03-03,7391397530,1
+896,Harsh Qureshi,Jaipur,Bike,2023-07-15,8366870413,1
+897,Kunal Banerjee,Hyderabad,Bike,2023-06-08,7767721984,1
+898,Arun Rao,Mumbai,Bike,2022-12-11,7071023429,1
+899,Sanjay Agarwal,Chennai,Bike,2023-04-12,9520704621,1
+900,Nikhil Mishra,Delhi,Bike,2023-05-05,9944610285,1

@@ -1,0 +1,545 @@
+attrition_id,employee_id,exit_date,exit_type,exit_reason,notice_period_days,regretted_loss,exit_interview_score
+1,896,2023-01-07,Resignation,Work-life balance / overtime,30,0,5
+2,628,2023-01-11,Resignation,Better compensation,90,0,2
+3,669,2023-01-14,Resignation,Better compensation,30,0,3
+4,1169,2023-01-18,Resignation,Better compensation,60,0,
+5,1079,2023-01-27,Resignation,Personal reasons,30,0,4
+6,783,2023-01-28,Resignation,Better compensation,30,0,
+7,1066,2023-01-31,Termination,Performance / conduct,0,0,3
+8,24,2023-02-04,Resignation,Personal reasons,60,0,
+9,710,2023-02-07,Resignation,Work-life balance / overtime,30,0,
+10,1081,2023-02-09,Resignation,Career growth,60,0,
+11,1314,2023-02-09,Retirement,Retirement,15,0,
+12,192,2023-02-10,Termination,Performance / conduct,0,0,3
+13,855,2023-02-10,Resignation,Manager issues,60,0,
+14,1048,2023-02-13,Resignation,Better compensation,30,0,
+15,135,2023-02-20,Resignation,Manager issues,60,0,2
+16,660,2023-02-23,Resignation,Higher studies,90,0,
+17,1042,2023-02-24,Resignation,Better compensation,30,0,3
+18,1092,2023-02-24,Resignation,Career growth,60,0,
+19,703,2023-02-27,Resignation,Better compensation,90,1,3
+20,900,2023-02-27,Resignation,Higher studies,60,0,3
+21,384,2023-03-06,Resignation,Career growth,90,0,2
+22,1340,2023-03-08,Resignation,Better compensation,90,0,1
+23,1228,2023-03-15,Termination,Performance / conduct,0,0,1
+24,808,2023-03-16,Resignation,Personal reasons,60,0,4
+25,421,2023-03-18,Resignation,Manager issues,30,0,
+26,1299,2023-03-19,Resignation,Relocation,30,0,3
+27,1274,2023-03-21,Resignation,Career growth,60,0,
+28,1336,2023-03-26,Resignation,Career growth,30,0,2
+29,545,2023-03-30,Resignation,Relocation,30,0,2
+30,425,2023-03-31,Resignation,Better compensation,60,0,
+31,97,2023-04-01,Resignation,Career growth,30,0,2
+32,1189,2023-04-01,Resignation,Manager issues,90,0,
+33,1241,2023-04-01,Resignation,Personal reasons,60,1,4
+34,292,2023-04-03,Resignation,Better compensation,60,0,2
+35,305,2023-04-04,Resignation,Work-life balance / overtime,90,0,1
+36,805,2023-04-04,Resignation,Career growth,60,0,
+37,1185,2023-04-04,Resignation,Career growth,30,0,4
+38,796,2023-04-05,Resignation,Personal reasons,60,1,
+39,988,2023-04-06,Resignation,Manager issues,90,0,4
+40,301,2023-04-08,Resignation,Work-life balance / overtime,60,0,3
+41,1394,2023-04-08,Resignation,Career growth,60,0,2
+42,1401,2023-04-09,Resignation,Manager issues,60,0,3
+43,813,2023-04-10,Resignation,Career growth,60,0,1
+44,858,2023-04-11,Resignation,Relocation,90,0,5
+45,1179,2023-04-11,End of Contract,Contract ended,15,0,3
+46,834,2023-04-18,Resignation,Relocation,60,0,2
+47,156,2023-04-19,End of Contract,Contract ended,15,0,2
+48,1093,2023-04-20,Resignation,Better compensation,60,0,3
+49,1420,2023-04-20,Resignation,Work-life balance / overtime,90,0,
+50,66,2023-04-23,Resignation,Better compensation,60,0,4
+51,1419,2023-04-24,Resignation,Better compensation,60,0,4
+52,1089,2023-05-01,Termination,Performance / conduct,0,0,
+53,1406,2023-05-02,Resignation,Career growth,60,0,3
+54,386,2023-05-03,Resignation,Relocation,30,0,
+55,949,2023-05-08,Resignation,Better compensation,60,1,3
+56,1248,2023-05-08,Resignation,Manager issues,60,0,3
+57,444,2023-05-09,Termination,Performance / conduct,0,0,3
+58,1352,2023-05-14,Resignation,Career growth,90,1,4
+59,113,2023-05-17,Resignation,Career growth,30,1,
+60,1337,2023-05-17,Resignation,Career growth,90,1,5
+61,803,2023-05-21,Retirement,Retirement,15,0,2
+62,463,2023-05-23,Termination,Performance / conduct,0,0,1
+63,1431,2023-05-23,Resignation,Personal reasons,60,0,3
+64,194,2023-05-27,Resignation,Higher studies,30,0,
+65,1473,2023-05-30,Resignation,Relocation,30,0,3
+66,140,2023-05-31,Resignation,Career growth,90,0,
+67,540,2023-05-31,Resignation,Better compensation,30,0,3
+68,961,2023-05-31,Resignation,Career growth,60,0,4
+69,445,2023-06-02,Termination,Performance / conduct,0,0,3
+70,1180,2023-06-02,Resignation,Career growth,30,0,
+71,655,2023-06-04,Resignation,Career growth,60,1,
+72,37,2023-06-05,Resignation,Manager issues,60,0,
+73,765,2023-06-05,Resignation,Manager issues,60,0,
+74,1363,2023-06-08,Resignation,Personal reasons,60,0,
+75,894,2023-06-09,Resignation,Better compensation,60,0,4
+76,1477,2023-06-10,Resignation,Career growth,90,0,
+77,1517,2023-06-10,Resignation,Personal reasons,30,0,4
+78,426,2023-06-11,Resignation,Work-life balance / overtime,60,0,4
+79,787,2023-06-11,Resignation,Higher studies,60,0,1
+80,731,2023-06-12,Resignation,Manager issues,90,0,2
+81,242,2023-06-13,Resignation,Career growth,90,0,2
+82,932,2023-06-14,Resignation,Better compensation,60,1,2
+83,1290,2023-06-17,Retirement,Retirement,15,0,2
+84,1471,2023-06-17,Resignation,Better compensation,30,0,1
+85,75,2023-06-18,Resignation,Better compensation,60,0,3
+86,309,2023-06-21,Resignation,Better compensation,30,0,
+87,1053,2023-06-22,Resignation,Manager issues,90,0,
+88,95,2023-06-24,Resignation,Work-life balance / overtime,30,1,2
+89,399,2023-06-24,Resignation,Better compensation,30,1,3
+90,92,2023-06-28,Resignation,Better compensation,60,0,
+91,261,2023-06-29,Resignation,Personal reasons,90,0,1
+92,683,2023-06-30,Resignation,Manager issues,60,0,
+93,1529,2023-07-02,Resignation,Personal reasons,60,1,2
+94,1539,2023-07-10,Resignation,Better compensation,90,1,
+95,519,2023-07-11,Resignation,Relocation,90,0,
+96,1260,2023-07-13,Resignation,Relocation,90,0,4
+97,830,2023-07-14,Resignation,Career growth,60,0,
+98,1432,2023-07-21,Termination,Performance / conduct,0,0,
+99,1497,2023-07-24,Resignation,Higher studies,90,0,4
+100,973,2023-07-25,Resignation,Personal reasons,30,0,
+101,688,2023-07-26,Termination,Performance / conduct,0,0,1
+102,828,2023-07-28,Resignation,Better compensation,90,0,4
+103,1140,2023-07-28,Resignation,Better compensation,90,1,2
+104,1443,2023-07-31,Termination,Performance / conduct,0,0,5
+105,1585,2023-08-01,Resignation,Personal reasons,90,0,
+106,588,2023-08-04,Resignation,Manager issues,30,0,3
+107,847,2023-08-08,Resignation,Personal reasons,30,0,
+108,1341,2023-08-10,Resignation,Personal reasons,90,0,
+109,1505,2023-08-18,End of Contract,Contract ended,15,0,4
+110,1593,2023-08-19,Termination,Performance / conduct,0,0,3
+111,1567,2023-08-20,Resignation,Career growth,30,0,4
+112,582,2023-08-21,Resignation,Career growth,90,0,3
+113,1421,2023-08-24,Resignation,Work-life balance / overtime,60,1,2
+114,1257,2023-08-26,Resignation,Work-life balance / overtime,60,0,
+115,210,2023-08-27,Resignation,Career growth,90,0,3
+116,1348,2023-08-27,Resignation,Relocation,30,0,4
+117,1020,2023-08-28,Resignation,Better compensation,90,0,2
+118,509,2023-08-29,Resignation,Manager issues,60,1,
+119,1369,2023-09-02,Resignation,Personal reasons,60,0,4
+120,1559,2023-09-04,Resignation,Relocation,90,0,3
+121,1619,2023-09-05,Resignation,Better compensation,60,0,1
+122,1653,2023-09-11,Resignation,Relocation,60,0,
+123,1054,2023-09-14,Resignation,Better compensation,90,0,2
+124,322,2023-09-17,Resignation,Better compensation,90,0,4
+125,566,2023-09-17,Resignation,Better compensation,60,0,2
+126,940,2023-09-18,End of Contract,Contract ended,15,0,
+127,1237,2023-09-21,Resignation,Better compensation,90,0,2
+128,1634,2023-09-22,Resignation,Higher studies,60,0,5
+129,1650,2023-09-22,Resignation,Career growth,90,0,
+130,1451,2023-09-25,Resignation,Personal reasons,30,0,5
+131,1476,2023-09-26,Retirement,Retirement,15,0,3
+132,169,2023-09-27,Resignation,Work-life balance / overtime,30,0,4
+133,601,2023-09-30,Resignation,Manager issues,30,0,2
+134,1669,2023-10-01,Resignation,Career growth,90,0,5
+135,811,2023-10-02,Resignation,Personal reasons,30,0,2
+136,172,2023-10-07,Resignation,Work-life balance / overtime,90,0,
+137,1170,2023-10-07,Resignation,Career growth,30,0,2
+138,1621,2023-10-07,Resignation,Higher studies,30,0,
+139,638,2023-10-09,Resignation,Work-life balance / overtime,60,0,3
+140,1309,2023-10-10,Termination,Performance / conduct,0,0,
+141,590,2023-10-11,Resignation,Better compensation,90,0,3
+142,881,2023-10-11,Termination,Performance / conduct,0,0,3
+143,678,2023-10-17,Resignation,Work-life balance / overtime,30,0,3
+144,356,2023-10-20,Resignation,Higher studies,30,0,2
+145,33,2023-10-22,End of Contract,Contract ended,15,0,
+146,980,2023-10-22,Resignation,Career growth,30,1,3
+147,1699,2023-10-22,Resignation,Manager issues,90,0,2
+148,457,2023-10-25,Resignation,Better compensation,60,0,
+149,365,2023-11-01,End of Contract,Contract ended,15,0,4
+150,788,2023-11-01,Resignation,Work-life balance / overtime,60,0,5
+151,1128,2023-11-01,Resignation,Personal reasons,60,0,
+152,245,2023-11-02,Resignation,Personal reasons,90,0,
+153,1655,2023-11-02,Resignation,Higher studies,30,0,
+154,836,2023-11-04,Resignation,Higher studies,30,0,
+155,348,2023-11-08,Resignation,Career growth,60,0,
+156,746,2023-11-08,Resignation,Career growth,60,0,4
+157,766,2023-11-11,Resignation,Manager issues,60,0,2
+158,1007,2023-11-12,Resignation,Personal reasons,60,0,3
+159,816,2023-11-14,Resignation,Manager issues,30,0,3
+160,1463,2023-11-15,Termination,Performance / conduct,0,0,4
+161,1495,2023-11-16,Termination,Performance / conduct,0,0,2
+162,1303,2023-11-17,Resignation,Better compensation,90,0,3
+163,409,2023-11-22,Resignation,Manager issues,90,1,3
+164,468,2023-11-23,Resignation,Work-life balance / overtime,90,1,
+165,1549,2023-11-26,Resignation,Career growth,60,0,3
+166,436,2023-11-27,Resignation,Manager issues,30,0,1
+167,548,2023-11-27,Resignation,Work-life balance / overtime,30,0,3
+168,324,2023-12-03,Resignation,Career growth,30,0,
+169,1127,2023-12-03,Resignation,Work-life balance / overtime,60,0,
+170,1703,2023-12-03,Resignation,Better compensation,60,0,2
+171,1278,2023-12-04,Resignation,Work-life balance / overtime,30,0,4
+172,572,2023-12-06,Resignation,Better compensation,90,0,
+173,1322,2023-12-08,Resignation,Higher studies,90,0,5
+174,1736,2023-12-08,Resignation,Work-life balance / overtime,60,0,
+175,100,2023-12-09,Resignation,Manager issues,30,0,
+176,404,2023-12-10,Resignation,Career growth,60,0,3
+177,824,2023-12-11,End of Contract,Contract ended,15,0,2
+178,1334,2023-12-12,Resignation,Manager issues,60,0,3
+179,1566,2023-12-12,Resignation,Better compensation,60,0,3
+180,1759,2023-12-12,Resignation,Career growth,90,0,3
+181,182,2023-12-13,Resignation,Career growth,60,0,2
+182,1049,2023-12-13,Resignation,Better compensation,60,0,2
+183,1729,2023-12-13,Resignation,Better compensation,90,0,
+184,1325,2023-12-15,Resignation,Manager issues,60,0,2
+185,139,2023-12-17,Resignation,Better compensation,90,0,3
+186,211,2023-12-18,Termination,Performance / conduct,0,0,3
+187,821,2023-12-20,Resignation,Career growth,90,0,4
+188,339,2023-12-21,Resignation,Work-life balance / overtime,30,0,3
+189,815,2023-12-22,End of Contract,Contract ended,15,0,4
+190,1705,2023-12-22,Resignation,Better compensation,30,0,2
+191,739,2023-12-24,Resignation,Better compensation,60,0,
+192,1106,2023-12-24,Resignation,Career growth,60,1,
+193,488,2023-12-26,Resignation,Career growth,60,0,4
+194,1111,2023-12-26,Resignation,Personal reasons,60,0,
+195,1598,2023-12-26,Resignation,Relocation,60,0,
+196,1158,2023-12-27,Resignation,Work-life balance / overtime,60,0,4
+197,374,2023-12-28,Resignation,Career growth,60,0,1
+198,1782,2023-12-28,Resignation,Manager issues,30,0,1
+199,1082,2023-12-29,End of Contract,Contract ended,15,0,3
+200,1383,2023-12-29,Resignation,Personal reasons,60,0,4
+201,1537,2023-12-29,Resignation,Manager issues,30,1,3
+202,1362,2023-12-30,Resignation,Career growth,30,1,3
+203,1067,2023-12-31,Resignation,Relocation,90,0,
+204,1642,2024-01-01,Resignation,Career growth,30,0,4
+205,1737,2024-01-01,Resignation,Higher studies,30,0,
+206,1744,2024-01-01,Resignation,Work-life balance / overtime,90,0,
+207,1681,2024-01-03,Resignation,Better compensation,60,0,3
+208,1761,2024-01-06,Resignation,Career growth,90,0,2
+209,230,2024-01-07,Resignation,Better compensation,30,0,3
+210,653,2024-01-07,End of Contract,Contract ended,15,0,
+211,1284,2024-01-11,Resignation,Higher studies,60,0,
+212,1357,2024-01-11,Resignation,Better compensation,60,1,4
+213,1090,2024-01-12,End of Contract,Contract ended,15,0,3
+214,1040,2024-01-13,End of Contract,Contract ended,15,0,
+215,471,2024-01-15,Resignation,Career growth,30,0,
+216,876,2024-01-15,Resignation,Manager issues,60,0,
+217,1542,2024-01-17,Resignation,Manager issues,30,0,2
+218,1770,2024-01-17,Resignation,Better compensation,60,0,3
+219,1540,2024-01-19,Resignation,Higher studies,30,0,
+220,681,2024-01-20,Resignation,Better compensation,30,0,2
+221,1028,2024-01-22,Termination,Performance / conduct,0,0,3
+222,361,2024-01-23,End of Contract,Contract ended,15,0,4
+223,1784,2024-01-23,Resignation,Career growth,60,0,
+224,460,2024-01-25,Resignation,Work-life balance / overtime,30,0,2
+225,851,2024-01-27,Resignation,Career growth,60,1,
+226,1296,2024-01-29,Resignation,Career growth,90,0,3
+227,1626,2024-01-29,Resignation,Higher studies,30,1,1
+228,1786,2024-01-30,End of Contract,Contract ended,15,0,4
+229,886,2024-02-01,Resignation,Career growth,60,0,2
+230,1442,2024-02-12,Resignation,Higher studies,90,0,1
+231,1612,2024-02-12,Resignation,Better compensation,30,0,
+232,1773,2024-02-13,Resignation,Better compensation,90,1,2
+233,1807,2024-02-13,Resignation,Manager issues,60,0,
+234,1144,2024-02-14,Resignation,Better compensation,90,0,
+235,897,2024-02-15,Resignation,Manager issues,90,0,2
+236,1019,2024-02-16,Resignation,Manager issues,30,1,3
+237,1778,2024-02-17,End of Contract,Contract ended,15,0,3
+238,1831,2024-02-17,Resignation,Higher studies,60,0,
+239,1794,2024-02-18,Resignation,Career growth,60,0,5
+240,1604,2024-02-21,Resignation,Better compensation,90,1,4
+241,1077,2024-02-22,Termination,Performance / conduct,0,0,
+242,1611,2024-02-22,Resignation,Career growth,30,0,
+243,1644,2024-02-22,Resignation,Better compensation,30,0,3
+244,1756,2024-02-25,Resignation,Better compensation,60,0,4
+245,307,2024-02-26,Resignation,Work-life balance / overtime,30,0,
+246,617,2024-02-26,Resignation,Better compensation,90,0,3
+247,749,2024-02-28,Resignation,Better compensation,60,0,2
+248,838,2024-02-28,Resignation,Personal reasons,60,0,4
+249,1796,2024-02-29,Resignation,Manager issues,90,0,2
+250,552,2024-03-01,Resignation,Career growth,60,0,3
+251,1828,2024-03-05,Resignation,Career growth,60,0,5
+252,1645,2024-03-06,Resignation,Work-life balance / overtime,90,0,3
+253,1453,2024-03-07,Resignation,Relocation,90,0,3
+254,1633,2024-03-07,Resignation,Better compensation,30,0,
+255,885,2024-03-10,Resignation,Better compensation,30,0,
+256,698,2024-03-12,Resignation,Work-life balance / overtime,30,0,
+257,1198,2024-03-12,Resignation,Career growth,90,0,
+258,586,2024-03-13,Resignation,Career growth,30,0,4
+259,914,2024-03-14,Termination,Performance / conduct,0,0,2
+260,207,2024-03-15,Resignation,Work-life balance / overtime,90,1,2
+261,1827,2024-03-15,Resignation,Relocation,60,0,4
+262,1818,2024-03-17,Resignation,Personal reasons,90,0,
+263,1674,2024-03-18,Resignation,Work-life balance / overtime,30,0,
+264,1864,2024-03-18,Resignation,Work-life balance / overtime,60,0,2
+265,526,2024-03-21,Resignation,Higher studies,90,0,4
+266,919,2024-03-22,Retirement,Retirement,15,0,
+267,1361,2024-03-25,Resignation,Higher studies,60,1,
+268,1696,2024-03-25,Resignation,Manager issues,90,0,1
+269,441,2024-03-27,Resignation,Better compensation,60,1,2
+270,1867,2024-03-27,Termination,Performance / conduct,0,0,3
+271,644,2024-03-30,Resignation,Higher studies,60,0,4
+272,11,2024-04-01,Resignation,Better compensation,90,0,
+273,58,2024-04-01,Resignation,Higher studies,90,0,4
+274,1414,2024-04-02,Resignation,Career growth,90,0,
+275,406,2024-04-05,Resignation,Higher studies,30,0,2
+276,1870,2024-04-05,Resignation,Personal reasons,60,0,3
+277,1283,2024-04-06,Termination,Performance / conduct,0,0,2
+278,1568,2024-04-08,Resignation,Career growth,60,0,3
+279,720,2024-04-10,Resignation,Better compensation,90,0,4
+280,429,2024-04-12,Resignation,Better compensation,90,0,3
+281,179,2024-04-14,Resignation,Better compensation,60,0,3
+282,1204,2024-04-14,Resignation,Career growth,30,1,3
+283,845,2024-04-15,Resignation,Personal reasons,90,0,
+284,1758,2024-04-15,Resignation,Manager issues,30,0,3
+285,65,2024-04-16,Resignation,Career growth,60,0,
+286,431,2024-04-17,Resignation,Career growth,60,0,3
+287,1059,2024-04-19,Resignation,Work-life balance / overtime,60,0,1
+288,717,2024-04-20,Resignation,Personal reasons,60,0,
+289,1863,2024-04-20,End of Contract,Contract ended,15,0,
+290,1877,2024-04-20,Resignation,Better compensation,60,0,3
+291,1039,2024-04-21,Resignation,Manager issues,30,1,
+292,753,2024-04-25,End of Contract,Contract ended,15,0,
+293,951,2024-04-25,Resignation,Career growth,30,0,
+294,1479,2024-04-25,Termination,Performance / conduct,0,0,3
+295,1874,2024-04-26,Resignation,Career growth,90,0,2
+296,592,2024-04-27,End of Contract,Contract ended,15,0,3
+297,1595,2024-04-27,Resignation,Career growth,30,0,2
+298,1004,2024-05-02,Resignation,Better compensation,30,1,2
+299,960,2024-05-03,Termination,Performance / conduct,0,0,2
+300,1068,2024-05-03,Resignation,Career growth,30,0,
+301,1276,2024-05-03,Resignation,Career growth,30,0,3
+302,1910,2024-05-03,Resignation,Career growth,60,0,3
+303,1050,2024-05-04,Resignation,Better compensation,90,0,
+304,1454,2024-05-04,Resignation,Career growth,60,0,
+305,1925,2024-05-05,Resignation,Personal reasons,90,0,3
+306,1817,2024-05-06,Resignation,Career growth,60,1,5
+307,381,2024-05-07,Resignation,Better compensation,90,1,1
+308,492,2024-05-07,Resignation,Manager issues,60,0,
+309,226,2024-05-09,Resignation,Career growth,60,0,4
+310,371,2024-05-09,Resignation,Better compensation,60,0,3
+311,1895,2024-05-10,Resignation,Manager issues,30,0,2
+312,1564,2024-05-11,Resignation,Career growth,60,0,2
+313,1930,2024-05-12,Resignation,Higher studies,90,0,1
+314,711,2024-05-13,Resignation,Better compensation,30,0,4
+315,639,2024-05-14,Resignation,Personal reasons,60,0,4
+316,1110,2024-05-15,Resignation,Personal reasons,30,0,5
+317,999,2024-05-17,Retirement,Retirement,15,0,1
+318,1711,2024-05-17,Resignation,Better compensation,90,0,1
+319,1428,2024-05-18,Resignation,Relocation,90,0,
+320,1671,2024-05-19,Resignation,Career growth,90,0,3
+321,1429,2024-05-20,Termination,Performance / conduct,0,0,3
+322,995,2024-05-21,Resignation,Manager issues,60,1,3
+323,1538,2024-05-21,Termination,Performance / conduct,0,0,2
+324,1962,2024-05-21,Resignation,Career growth,30,0,3
+325,1587,2024-05-22,Resignation,Career growth,30,0,
+326,1951,2024-05-22,Termination,Performance / conduct,0,0,
+327,1433,2024-05-23,Resignation,Personal reasons,30,0,
+328,1682,2024-05-23,Termination,Performance / conduct,0,0,
+329,1889,2024-05-24,Resignation,Career growth,90,0,
+330,168,2024-05-26,Resignation,Work-life balance / overtime,90,0,2
+331,721,2024-05-26,Resignation,Personal reasons,60,1,
+332,1032,2024-05-29,Resignation,Better compensation,90,0,
+333,1594,2024-05-29,Resignation,Personal reasons,60,0,4
+334,1904,2024-05-30,Resignation,Better compensation,60,0,2
+335,1977,2024-05-30,Resignation,Work-life balance / overtime,90,0,3
+336,1553,2024-05-31,Resignation,Higher studies,90,0,
+337,1113,2024-06-01,Resignation,Career growth,60,0,3
+338,1343,2024-06-02,Resignation,Work-life balance / overtime,60,0,
+339,1852,2024-06-03,Termination,Performance / conduct,0,0,
+340,1945,2024-06-04,Resignation,Better compensation,60,0,4
+341,1953,2024-06-04,Resignation,Manager issues,60,0,4
+342,1446,2024-06-07,Resignation,Manager issues,60,0,3
+343,1969,2024-06-07,Resignation,Higher studies,90,0,4
+344,1353,2024-06-09,Resignation,Better compensation,60,0,3
+345,1996,2024-06-09,Resignation,Better compensation,30,0,3
+346,1208,2024-06-10,Termination,Performance / conduct,0,0,3
+347,1939,2024-06-13,Resignation,Better compensation,30,0,
+348,1935,2024-06-14,Resignation,Career growth,60,0,
+349,1967,2024-06-14,Resignation,Better compensation,30,0,1
+350,1206,2024-06-15,Resignation,Work-life balance / overtime,90,0,
+351,546,2024-06-17,Resignation,Better compensation,60,0,5
+352,15,2024-06-18,Resignation,Better compensation,90,0,1
+353,1968,2024-06-18,Resignation,Work-life balance / overtime,30,0,
+354,1992,2024-06-20,End of Contract,Contract ended,15,0,1
+355,1894,2024-06-21,Resignation,Personal reasons,30,0,2
+356,1272,2024-06-22,Termination,Performance / conduct,0,0,4
+357,1581,2024-06-23,Resignation,Manager issues,60,0,3
+358,1043,2024-06-24,Resignation,Higher studies,30,0,
+359,1129,2024-06-24,Resignation,Better compensation,30,0,3
+360,558,2024-06-27,Resignation,Higher studies,90,0,4
+361,2002,2024-06-28,Resignation,Career growth,60,0,4
+362,1978,2024-06-29,Resignation,Relocation,60,0,3
+363,1815,2024-06-30,Resignation,Manager issues,90,1,2
+364,1859,2024-06-30,Resignation,Better compensation,90,0,
+365,1033,2024-07-04,Termination,Performance / conduct,0,0,2
+366,412,2024-07-06,Resignation,Manager issues,90,1,3
+367,1389,2024-07-06,Termination,Performance / conduct,0,0,2
+368,2021,2024-07-07,Resignation,Work-life balance / overtime,90,0,4
+369,1972,2024-07-08,Resignation,Better compensation,60,0,1
+370,1579,2024-07-10,Resignation,Work-life balance / overtime,90,0,3
+371,1685,2024-07-12,Resignation,Better compensation,60,0,3
+372,1466,2024-07-13,Resignation,Career growth,90,0,2
+373,1397,2024-07-14,Resignation,Career growth,90,0,3
+374,1512,2024-07-14,End of Contract,Contract ended,15,0,4
+375,1987,2024-07-14,Resignation,Better compensation,30,0,
+376,1670,2024-07-15,Resignation,Career growth,90,0,
+377,1985,2024-07-16,Resignation,Career growth,90,0,4
+378,2026,2024-07-17,Resignation,Career growth,60,1,
+379,423,2024-07-18,Termination,Performance / conduct,0,0,3
+380,1676,2024-07-18,Resignation,Relocation,60,0,2
+381,1730,2024-07-21,Resignation,Career growth,60,0,2
+382,1668,2024-07-22,Resignation,Better compensation,90,0,
+383,1813,2024-07-22,Resignation,Manager issues,60,0,2
+384,2066,2024-07-23,Resignation,Career growth,30,0,2
+385,277,2024-07-26,End of Contract,Contract ended,15,0,2
+386,1499,2024-07-27,Resignation,Relocation,60,0,1
+387,1715,2024-07-29,Resignation,Career growth,60,0,1
+388,2014,2024-07-30,Resignation,Personal reasons,90,0,3
+389,1597,2024-08-02,Resignation,Career growth,90,0,3
+390,1995,2024-08-03,Termination,Performance / conduct,0,0,4
+391,1531,2024-08-04,End of Contract,Contract ended,15,0,2
+392,2044,2024-08-04,Resignation,Manager issues,60,0,2
+393,2000,2024-08-05,Resignation,Personal reasons,90,0,
+394,2016,2024-08-06,Resignation,Higher studies,90,0,3
+395,2011,2024-08-08,Resignation,Better compensation,30,0,
+396,2072,2024-08-10,Resignation,Better compensation,90,0,5
+397,2079,2024-08-11,Resignation,Higher studies,90,0,3
+398,2082,2024-08-12,Termination,Performance / conduct,0,0,4
+399,1233,2024-08-13,Resignation,Personal reasons,60,0,
+400,1073,2024-08-14,Resignation,Career growth,30,0,
+401,1798,2024-08-14,Resignation,Work-life balance / overtime,60,0,3
+402,222,2024-08-16,Resignation,Better compensation,60,0,3
+403,1998,2024-08-16,Resignation,Manager issues,90,0,3
+404,2057,2024-08-16,Resignation,Manager issues,60,1,3
+405,525,2024-08-17,Termination,Performance / conduct,0,0,
+406,2076,2024-08-18,Resignation,Manager issues,30,0,3
+407,785,2024-08-22,Resignation,Relocation,30,0,
+408,2093,2024-08-22,Resignation,Career growth,60,1,5
+409,959,2024-08-23,Resignation,Better compensation,60,0,2
+410,1578,2024-08-29,Resignation,Better compensation,90,0,4
+411,2060,2024-08-29,Resignation,Better compensation,90,0,5
+412,1560,2024-08-31,Resignation,Career growth,60,0,3
+413,1478,2024-09-02,Resignation,Higher studies,60,0,3
+414,2069,2024-09-03,Resignation,Personal reasons,60,0,3
+415,2091,2024-09-03,End of Contract,Contract ended,15,0,
+416,971,2024-09-04,Resignation,Career growth,60,1,2
+417,2104,2024-09-05,Resignation,Career growth,90,0,2
+418,191,2024-09-06,Resignation,Manager issues,30,0,
+419,2097,2024-09-06,Termination,Performance / conduct,0,0,1
+420,1319,2024-09-07,Resignation,Higher studies,90,1,3
+421,2058,2024-09-07,Resignation,Relocation,60,0,
+422,1746,2024-09-09,Resignation,Better compensation,30,0,
+423,2112,2024-09-10,Resignation,Better compensation,60,1,3
+424,2130,2024-09-10,Termination,Performance / conduct,0,0,3
+425,2024,2024-09-11,Resignation,Manager issues,90,0,3
+426,2075,2024-09-12,Resignation,Work-life balance / overtime,30,0,1
+427,2133,2024-09-12,Resignation,Work-life balance / overtime,90,0,1
+428,2138,2024-09-12,Resignation,Better compensation,60,0,
+429,502,2024-09-14,Resignation,Higher studies,60,0,2
+430,1856,2024-09-14,Resignation,Career growth,60,0,3
+431,1881,2024-09-17,Resignation,Personal reasons,90,0,4
+432,2145,2024-09-18,Resignation,Better compensation,60,1,3
+433,2025,2024-09-20,Resignation,Higher studies,60,1,4
+434,2077,2024-09-21,Resignation,Career growth,60,1,5
+435,2081,2024-09-23,Retirement,Retirement,15,0,1
+436,2102,2024-09-23,Termination,Performance / conduct,0,0,2
+437,2131,2024-09-23,Resignation,Career growth,60,1,
+438,320,2024-09-24,Resignation,Higher studies,90,0,2
+439,351,2024-09-24,Resignation,Career growth,60,0,3
+440,1580,2024-09-24,Resignation,Relocation,30,0,2
+441,280,2024-09-25,Resignation,Better compensation,60,0,
+442,336,2024-09-25,Resignation,Work-life balance / overtime,90,0,
+443,1392,2024-09-27,End of Contract,Contract ended,15,0,1
+444,1524,2024-09-27,Resignation,Higher studies,60,0,
+445,2107,2024-09-27,Resignation,Manager issues,60,0,1
+446,2108,2024-09-28,Resignation,Career growth,30,0,3
+447,2012,2024-09-29,Resignation,Better compensation,30,0,3
+448,249,2024-09-30,Resignation,Work-life balance / overtime,90,0,
+449,2036,2024-09-30,Retirement,Retirement,15,0,
+450,1240,2024-10-01,Resignation,Career growth,90,0,
+451,147,2024-10-03,Resignation,Career growth,60,0,2
+452,1120,2024-10-07,Resignation,Better compensation,30,0,1
+453,1506,2024-10-08,Resignation,Better compensation,60,0,2
+454,2162,2024-10-10,Resignation,Career growth,60,0,3
+455,2164,2024-10-10,Resignation,Better compensation,60,0,
+456,2173,2024-10-11,Resignation,Personal reasons,60,1,2
+457,1390,2024-10-14,Resignation,Manager issues,90,0,
+458,1558,2024-10-14,Resignation,Better compensation,60,0,2
+459,1908,2024-10-15,Resignation,Better compensation,90,0,3
+460,79,2024-10-18,Resignation,Career growth,90,0,
+461,835,2024-10-21,Resignation,Better compensation,60,1,
+462,532,2024-10-22,Resignation,Manager issues,60,0,3
+463,1490,2024-10-23,Resignation,Manager issues,60,0,3
+464,1355,2024-10-24,Resignation,Better compensation,90,0,3
+465,2179,2024-10-24,Resignation,Better compensation,60,0,3
+466,2180,2024-10-25,Resignation,Manager issues,60,0,3
+467,1190,2024-10-26,Resignation,Work-life balance / overtime,90,0,
+468,2135,2024-10-26,Resignation,Relocation,30,1,
+469,2139,2024-10-26,Resignation,Better compensation,30,1,2
+470,1723,2024-10-27,Resignation,Personal reasons,30,0,4
+471,2119,2024-10-27,Resignation,Work-life balance / overtime,30,0,1
+472,2178,2024-10-27,Resignation,Work-life balance / overtime,60,0,4
+473,2103,2024-10-28,Resignation,Personal reasons,90,0,3
+474,2129,2024-10-29,Termination,Performance / conduct,0,0,
+475,1445,2024-10-30,Resignation,Better compensation,60,0,2
+476,1808,2024-10-31,End of Contract,Contract ended,15,0,
+477,579,2024-11-03,Resignation,Personal reasons,30,1,1
+478,908,2024-11-03,Resignation,Personal reasons,90,0,4
+479,1214,2024-11-03,Resignation,Manager issues,90,0,4
+480,1417,2024-11-04,Resignation,Manager issues,90,0,4
+481,2118,2024-11-07,Resignation,Relocation,60,0,4
+482,1823,2024-11-08,Resignation,Manager issues,90,0,
+483,2140,2024-11-08,Resignation,Better compensation,30,0,4
+484,2192,2024-11-08,Resignation,Higher studies,60,0,3
+485,1318,2024-11-09,Resignation,Relocation,60,1,3
+486,2147,2024-11-09,Resignation,Work-life balance / overtime,90,0,
+487,103,2024-11-11,Resignation,Personal reasons,60,0,
+488,1013,2024-11-11,Resignation,Career growth,60,0,5
+489,170,2024-11-12,Resignation,Higher studies,90,1,
+490,1725,2024-11-13,Resignation,Work-life balance / overtime,60,0,
+491,2149,2024-11-14,Resignation,Better compensation,30,0,3
+492,1772,2024-11-19,Resignation,Work-life balance / overtime,60,0,3
+493,231,2024-11-20,Resignation,Career growth,90,0,
+494,1706,2024-11-20,Resignation,Career growth,90,0,2
+495,2155,2024-11-20,Resignation,Work-life balance / overtime,90,0,3
+496,1975,2024-11-21,Resignation,Manager issues,60,0,2
+497,482,2024-11-22,Resignation,Personal reasons,90,0,
+498,1810,2024-11-23,Resignation,Better compensation,90,0,2
+499,1327,2024-11-24,Resignation,Better compensation,30,0,4
+500,1543,2024-11-26,Resignation,Manager issues,90,0,3
+501,2171,2024-11-26,Resignation,Manager issues,60,0,
+502,614,2024-11-27,Resignation,Work-life balance / overtime,90,1,2
+503,1552,2024-11-27,Resignation,Work-life balance / overtime,30,0,2
+504,1656,2024-11-27,Resignation,Better compensation,60,0,3
+505,2194,2024-11-28,Resignation,Manager issues,60,0,
+506,934,2024-11-29,Resignation,Career growth,60,0,3
+507,1094,2024-11-29,Resignation,Manager issues,90,1,4
+508,1666,2024-11-29,Resignation,Better compensation,90,1,2
+509,668,2024-11-30,Resignation,Career growth,60,0,2
+510,1469,2024-11-30,Resignation,Career growth,30,1,
+511,2215,2024-12-02,Resignation,Personal reasons,60,0,5
+512,340,2024-12-03,Termination,Performance / conduct,0,0,1
+513,2188,2024-12-03,Resignation,Personal reasons,90,0,2
+514,1509,2024-12-04,Retirement,Retirement,15,0,
+515,942,2024-12-06,Resignation,Work-life balance / overtime,60,0,2
+516,2241,2024-12-06,Resignation,Relocation,60,0,4
+517,1038,2024-12-07,Resignation,Work-life balance / overtime,30,1,3
+518,2181,2024-12-07,Termination,Performance / conduct,0,0,3
+519,2218,2024-12-07,Resignation,Work-life balance / overtime,60,0,1
+520,414,2024-12-08,Resignation,Personal reasons,30,1,
+521,1502,2024-12-08,Resignation,Career growth,60,0,3
+522,1095,2024-12-12,Resignation,Better compensation,30,0,1
+523,1743,2024-12-13,Resignation,Better compensation,90,0,2
+524,132,2024-12-15,Resignation,Manager issues,30,0,
+525,313,2024-12-15,Resignation,Career growth,30,0,2
+526,1367,2024-12-15,Resignation,Manager issues,60,0,1
+527,1457,2024-12-18,Resignation,Manager issues,90,1,
+528,1673,2024-12-18,Termination,Performance / conduct,0,0,
+529,2250,2024-12-18,Resignation,Career growth,30,0,3
+530,1501,2024-12-19,Resignation,Relocation,60,0,2
+531,2190,2024-12-21,Resignation,Personal reasons,90,1,3
+532,1574,2024-12-22,Resignation,Better compensation,30,0,3
+533,1646,2024-12-23,Resignation,Relocation,30,1,
+534,2224,2024-12-23,Resignation,Better compensation,90,0,4
+535,2239,2024-12-23,End of Contract,Contract ended,15,0,
+536,1573,2024-12-24,Resignation,Manager issues,90,0,3
+537,2080,2024-12-24,Termination,Performance / conduct,0,0,2
+538,2279,2024-12-26,Resignation,Career growth,60,0,2
+539,1003,2024-12-29,Resignation,Career growth,60,0,4
+540,2206,2024-12-29,Termination,Performance / conduct,0,0,
+541,2207,2024-12-29,Resignation,Career growth,90,1,2
+542,2225,2024-12-30,Resignation,Higher studies,60,0,
+543,2269,2024-12-31,Resignation,Better compensation,90,0,2
+544,2274,2024-12-31,Resignation,Relocation,60,0,

@@ -1,0 +1,601 @@
+restaurant_id,restaurant_name,cuisine,city,price_band,avg_prep_minutes,is_cloud_kitchen,onboarded_date
+1,Dosa Junction,South Indian,Hyderabad,Mid,14,0,2022-06-25
+2,Curry Express,Street Food,Bengaluru,Budget,18,0,2021-08-28
+3,Masala Kitchen,Biryani,Kolkata,Budget,12,0,2021-09-15
+4,Royal Magic,South Indian,Bengaluru,Budget,22,0,2021-07-02
+5,Punjabi House,Healthy,Mumbai,Mid,21,0,2021-12-16
+6,Masala Bhavan,Chinese,Lucknow,Mid,16,0,2023-01-14
+7,Kolkata Hub,North Indian,Ahmedabad,Budget,23,1,2024-06-21
+8,Madras Corner,South Indian,Hyderabad,Mid,11,0,2021-04-21
+9,Tandoor Corner,Chinese,Lucknow,Mid,18,0,2021-05-15
+10,Madras Magic,North Indian,Bengaluru,Premium,16,0,2023-12-30
+11,Madras House,South Indian,Bengaluru,Mid,18,0,2024-06-07
+12,Royal Express,Healthy,Mumbai,Budget,17,0,2021-08-22
+13,Saffron Darbar,Street Food,Mumbai,Mid,17,0,2023-05-19
+14,Annapoorna Junction,North Indian, delhi  ,Budget,14,0,2022-06-23
+15,Chaat Bhavan,Burgers,Ahmedabad,Budget,16,0,2022-05-24
+16,Biryani Bhavan,Desserts,,Mid,20,0,2024-06-19
+17,Dilli House,South Indian,Hyderabad,Mid,16,0,2023-06-05
+18,Annapoorna Hub,Mughlai,Delhi,Budget,16,1,2022-02-22
+19,Zaika Magic,Street Food,Bengaluru,Budget,14,0,2023-09-22
+20,Dilli Hub,Healthy,Delhi,Mid,22,0,2022-05-17
+21,Saffron Point,Desserts,Mumbai,Mid,10,0,2021-01-06
+22,Punjabi Hub,Bengali,Pune,Budget,18,1,2021-01-04
+23,Spice House,Burgers,Mumbai,Budget,19,0,2023-11-11
+24,Dosa Magic,Biryani,Hyderabad,Mid,14,0,2021-04-09
+25,Tandoor Magic,Gujarati Thali,Delhi,Budget,14,1,2024-04-16
+26,Zaika Darbar,Biryani,Lucknow,Mid,20,0,2023-05-20
+27,Curry Darbar,North Indian,Bengaluru,Mid,11,0,2024-04-15
+28,Tandoor Magic,Biryani,Kolkata,Budget,13,0,2023-12-09
+29,Spice Corner,South Indian,Hyderabad,Premium,18,0,2022-02-25
+30,Zaika Express,Biryani,Delhi,Mid,19,0,2024-10-20
+31,Chaat Rasoi,Burgers,Delhi,Budget,20,0,2021-12-27
+32,Kolkata Villa,Mughlai,DELHI,Budget,14,0,2023-05-10
+33,Royal Darbar,North Indian,Jaipur,Mid,19,0,2022-10-12
+34,Biryani Darbar,Mughlai,Hyderabad,Mid,13,0,2021-01-19
+35,Masala Darbar,Pizza,Jaipur,Premium,18,0,2022-12-10
+36,Punjabi Villa,Pizza,Ahmedabad,Budget,18,1,2022-06-03
+37,Madras Rasoi,Biryani,Delhi,Premium,16,0,2022-12-11
+38,Biryani Villa,South Indian,Delhi,Mid,15,0,2024-04-21
+39,Dilli Express,North Indian,Pune,Mid,20,1,2024-08-30
+40,Punjabi Bhavan,Chinese,Delhi,Mid,14,0,2024-01-19
+41,Royal Hub,Desserts,Mumbai,Premium,21,1,2021-08-27
+42,Biryani Junction,Chinese,Kolkata,Mid,19,0,2023-09-05
+43,Annapoorna Magic,North Indian,Chennai,Budget,22,0,2023-07-04
+44,Kolkata Bhavan,Desserts,Chennai,Mid,21,1,2021-09-01
+45,Dosa Kitchen,North Indian,Hyderabad,Premium,21,0,2023-11-17
+46,Chaat Kitchen,Healthy,Mumbai,Premium,23,1,2022-04-02
+47,Dilli Rasoi,North Indian,Bengaluru,Budget,19,0,2023-10-16
+48,Dosa Bhavan,South Indian,,Mid,14,0,2022-02-05
+49,Dilli Kitchen,Mughlai,Ahmedabad,Budget,12,0,2022-01-09
+50,Madras Express,North Indian,Jaipur,Mid,16,0,2023-05-15
+51,Dilli Rasoi,Biryani,Mumbai,Premium,17,0,2024-10-03
+52,Saffron Corner,South Indian,Hyderabad,Budget,15,0,2021-11-09
+53,Punjabi Magic,Biryani,Pune,Mid,14,0,2024-10-07
+54,Kolkata Darbar,Pizza,Kolkata,Budget,15,0,2022-03-06
+55,Masala Kitchen,Street Food,Bengaluru,Budget,17,1,2021-08-07
+56,Punjabi Villa,North Indian,Delhi,Premium,20,0,2024-08-13
+57,Dilli Corner,North Indian,Kolkata,Budget,16,1,2023-08-02
+58,Zaika Rasoi,Pizza,Delhi,Budget,20,1,2023-10-14
+59,Punjabi Villa,Healthy,Ahmedabad,Mid,14,0,2021-05-30
+60,Annapoorna Express,North Indian,Kolkata,Mid,23,0,2023-05-20
+61,Zaika Junction,North Indian,Chennai,Mid,21,0,2021-11-14
+62,Royal Bhavan,Biryani,Lucknow,Budget,14,0,2022-12-30
+63,Curry Corner,Healthy,Chennai,Mid,20,0,2021-02-06
+64,Zaika Magic,Desserts,Chennai,Budget,14,0,2023-08-17
+65,Spice Darbar,Healthy,BENGALURU,Budget,15,1,2022-05-23
+66,Dosa Bhavan,South Indian,,Budget,14,0,2021-04-21
+67,Spice Express,South Indian,Kolkata,Mid,14,0,2023-03-16
+68,Saffron Rasoi,Mughlai,Delhi,Mid,18,1,2021-12-15
+69,Tandoor Junction,South Indian,Ahmedabad,Mid,18,0,2021-11-27
+70,Royal Villa,Street Food,Chennai,Budget,18,0,2022-04-02
+71,Saffron Darbar,North Indian,Delhi,Premium,22,0,2022-05-01
+72,Royal Rasoi,South Indian,Kolkata,Mid,9,0,2023-09-14
+73,Spice Junction,North Indian,Jaipur ,Mid,17,1,2024-05-28
+74,Zaika Point,Pizza,Delhi,Mid,15,0,2024-06-17
+75,Chaat Junction,North Indian,Hyderabad,Mid,9,0,2022-07-03
+76,Masala Rasoi,Healthy,Delhi,Budget,13,0,2023-04-20
+77,Dilli Magic,Healthy,Mumbai,Mid,17,0,2023-11-24
+78,Biryani Corner,Street Food,Pune,Mid,14,0,2022-10-28
+79,Dosa Corner,South Indian,Delhi,Mid,19,0,2022-01-20
+80,Annapoorna Express,Burgers,Bengaluru,Mid,7,0,2022-12-10
+81,Dosa Express,Desserts,Kolkata,Mid,16,0,2024-05-05
+82,Kolkata House,South Indian,Kolkata,Budget,27,0,2023-10-20
+83,Curry Rasoi,Healthy,Bengaluru,Budget,18,0,2022-01-07
+84,Punjabi Kitchen,Biryani,Hyderabad,Budget,15,0,2023-03-18
+85,Curry Express,Biryani,Mumbai,Budget,10,0,2021-11-26
+86,Madras Magic,Healthy,Mumbai,Premium,16,0,2023-11-06
+87,Madras Kitchen,Pizza,Bengaluru,Budget,24,0,2024-04-05
+88,Annapoorna Magic,Street Food,Mumbai,Mid,14,0,2024-02-26
+89,Annapoorna Kitchen,Biryani,Lucknow,Mid,14,1,2024-09-02
+90,Tandoor Kitchen,Chinese,Delhi,Budget,9,0,2021-11-14
+91,Madras Junction,North Indian,Mumbai,Budget,19,0,2024-10-04
+92,Tandoor Darbar,Desserts,Delhi,Mid,17,0,2023-05-15
+93,Dosa Hub,South Indian,Bengaluru,Budget,20,0,2022-09-22
+94,Zaika Hub,Burgers,Kolkata,Budget,15,0,2022-08-16
+95,Royal House,Street Food,Mumbai,Budget,13,0,2021-11-20
+96,Masala Corner,North Indian,Bengaluru,Budget,13,0,2024-10-19
+97,Madras Villa,Gujarati Thali,Chennai,Mid,13,0,2023-07-22
+98,Madras Express,Pizza,Chennai,Budget,16,1,2023-01-17
+99,Tandoor Villa,Pizza,Delhi,Budget,19,1,2024-07-11
+100,Dilli Junction,Chinese,Chennai,Budget,15,0,2021-08-02
+101,Annapoorna Express,Biryani,,Budget,15,1,2022-03-15
+102,Curry Kitchen,Chinese,Chennai,Budget,23,0,2021-03-17
+103,Annapoorna Rasoi,North Indian,Pune,Budget,17,0,2024-06-15
+104,Dilli House,Biryani,Lucknow,Mid,12,0,2021-04-23
+105,Saffron House,Pizza,Delhi,Mid,19,0,2023-09-24
+106,Chaat Magic,Biryani,Delhi,Mid,13,0,2021-08-03
+107,Chaat Hub,North Indian,Mumbai,Budget,20,0,2024-03-28
+108,Dosa House,South Indian,Bengaluru,Mid,18,0,2021-10-01
+109,Zaika Bhavan,Mughlai,Pune,Budget,16,0,2022-12-12
+110,Saffron Express,South Indian,delhi,Mid,17,0,2023-02-26
+111,Dosa Bhavan,Chinese,Delhi,Budget,14,0,2024-02-10
+112,Masala House,Gujarati Thali,Bengaluru,Premium,21,0,2024-07-28
+113,Spice Point,Chinese,Hyderabad,Mid,18,0,2023-02-19
+114,Dilli Darbar,Chinese,Pune,Mid,16,0,2023-11-26
+115,Spice Villa,Biryani,Delhi,Mid,20,0,2023-11-06
+116,Madras Darbar,Mughlai,Mumbai,Mid,23,0,2024-06-28
+117,Kolkata Rasoi,Pizza,Chennai,Budget,18,0,2024-02-16
+118,Royal Rasoi,Pizza,Kolkata,Budget,19,1,2023-04-19
+119,Masala Point,North Indian,Mumbai,Budget,18,0,2022-11-27
+120,Royal Kitchen,South Indian,lucknow,Mid,18,0,2023-08-03
+121,Curry Point,North Indian,Bengaluru,Mid,21,1,2022-10-21
+122,Biryani Rasoi,North Indian,Chennai,Mid,15,0,2021-11-23
+123,Zaika Point,North Indian,Ahmedabad,Mid,15,1,2022-08-18
+124,Spice Kitchen,North Indian,Pune,Mid,14,0,2021-05-30
+125,Biryani Villa,North Indian,Bengaluru ,Mid,13,0,2022-02-10
+126,Chaat Express,Street Food,Kolkata,Mid,20,0,2022-03-12
+127,Dosa Express,Healthy,Hyderabad,Mid,11,1,2021-07-20
+128,Annapoorna Rasoi,North Indian,Bengaluru,Budget,20,0,2021-11-19
+129,Madras Hub,Chinese,hyderabad,Mid,18,0,2021-09-27
+130,Punjabi Express,Mughlai,Pune ,Budget,16,1,2023-10-17
+131,Kolkata Magic,South Indian,Kolkata,Mid,13,0,2024-02-29
+132,Spice Villa,Gujarati Thali,Mumbai,Budget,15,0,2021-01-15
+133,Curry Corner,Biryani,Bengaluru,Budget,17,1,2023-12-10
+134,Chaat Junction,Pizza,Chennai,Mid,7,0,2023-04-27
+135,Saffron Villa,South Indian,Mumbai,Mid,15,0,2022-03-01
+136,Saffron Rasoi,Burgers,Pune,Mid,19,1,2022-05-26
+137,Madras Magic,North Indian,Lucknow,Budget,13,0,2022-12-14
+138,Curry Point,South Indian, kolkata  ,Premium,20,0,2021-08-17
+139,Annapoorna Junction,North Indian,Lucknow,Mid,23,0,2024-06-07
+140,Royal Junction,Biryani,Hyderabad,Premium,11,0,2021-09-28
+141,Biryani Darbar,South Indian,Bengaluru,Budget,25,0,2021-01-31
+142,Dosa Point,North Indian,Mumbai,Mid,10,0,2022-04-23
+143,Dilli Point,Street Food,Bengaluru,Premium,22,0,2022-11-14
+144,Punjabi Rasoi,Street Food,Hyderabad,Premium,20,0,2021-04-10
+145,Masala Bhavan,North Indian,Bengaluru,Budget,15,0,2024-06-28
+146,Punjabi Magic,Street Food,Mumbai,Mid,15,0,2024-05-09
+147,Chaat Point,Biryani,Mumbai,Premium,22,0,2023-03-01
+148,Spice Express,South Indian,Mumbai ,Budget,13,0,2023-05-22
+149,Dilli Magic,Street Food,Mumbai,Budget,10,0,2022-02-12
+150,Curry Junction,Street Food,Bengaluru,Mid,23,0,2022-08-24
+151,Chaat Kitchen,Desserts,,Mid,17,0,2021-10-21
+152,Annapoorna Hub,Biryani,Kolkata,Premium,22,0,2022-03-01
+153,Chaat Junction,Bengali,Bengaluru,Budget,9,0,2023-06-18
+154,Tandoor Bhavan,South Indian,Kolkata,Mid,18,0,2023-05-31
+155,Punjabi Hub,Pizza,Mumbai,Budget,13,1,2021-05-27
+156,Madras Darbar,Pizza,Bengaluru,Mid,17,0,2024-07-07
+157,Chaat Junction,North Indian,Delhi,Mid,18,0,2022-05-02
+158,Dilli Rasoi,Bengali,Delhi,Budget,19,0,2022-09-04
+159,Spice Express,Burgers,Kolkata,Budget,20,0,2023-04-05
+160,Kolkata Kitchen,Desserts,Kolkata,Premium,16,0,2023-09-05
+161,Zaika Darbar,Pizza,MUMBAI,Mid,18,0,2021-03-02
+162,Tandoor Hub,Biryani,Delhi,Budget,22,0,2022-03-05
+163,Dosa Corner,North Indian,Kolkata,Premium,28,0,2021-04-12
+164,Madras Point,North Indian,Delhi,Budget,13,0,2021-08-11
+165,Biryani Hub,Desserts,Ahmedabad,Mid,11,0,2021-12-16
+166,Tandoor Darbar,Bengali,Pune,Mid,19,1,2024-03-08
+167,Punjabi Hub,South Indian,Kolkata,Mid,13,0,2022-04-26
+168,Dilli Rasoi,Gujarati Thali,,Mid,15,0,2023-12-06
+169,Dosa Villa,Chinese,Ahmedabad,Mid,17,1,2023-02-28
+170,Dilli Express,Pizza,Pune,Mid,16,0,2021-09-21
+171,Punjabi Bhavan,North Indian,Hyderabad,Mid,18,0,2022-11-16
+172,Curry Point,Biryani,Bengaluru,Premium,17,0,2024-03-13
+173,Saffron Point,North Indian,Chennai,Mid,17,1,2023-07-30
+174,Annapoorna Bhavan,Desserts,Delhi,Mid,20,0,2023-05-04
+175,Royal Junction,Burgers,Delhi,Budget,14,0,2021-12-10
+176,Dilli Express,Burgers,Mumbai,Mid,14,0,2022-02-07
+177,Dosa Point,Burgers,Delhi,Mid,14,0,2021-02-23
+178,Annapoorna House,Mughlai,Delhi,Budget,22,0,2021-05-09
+179,Kolkata Magic,North Indian,Mumbai,Mid,21,0,2022-05-31
+180,Royal Junction,South Indian, ahmedabad  ,Mid,24,1,2023-10-02
+181,Curry Junction,North Indian,Bengaluru,Budget,19,0,2023-05-05
+182,Madras Corner,South Indian, delhi  ,Budget,20,0,2022-07-29
+183,Royal Villa,South Indian,Ahmedabad,Budget,17,0,2021-05-20
+184,Royal House,Chinese,Bengaluru,Premium,23,0,2021-01-30
+185,Biryani Kitchen,Healthy,Bengaluru,Mid,16,0,2022-02-06
+186,Royal Bhavan,Biryani,Pune,Budget,23,1,2021-08-15
+187,Kolkata Villa,North Indian,Mumbai,Mid,9,0,2024-05-29
+188,Curry Bhavan,North Indian,Kolkata,Mid,15,0,2022-03-16
+189,Kolkata Express,South Indian,Delhi,Mid,21,0,2023-03-19
+190,Chaat Bhavan,Desserts,Delhi,Mid,10,0,2021-05-25
+191,Dilli House,Burgers,Chennai,Budget,16,0,2021-10-29
+192,Dilli Bhavan,Biryani,Delhi,Budget,13,0,2021-06-11
+193,Dosa Bhavan,Healthy,Mumbai,Budget,15,0,2021-11-24
+194,Curry Junction,North Indian,,Mid,13,0,2023-08-15
+195,Masala Bhavan,Biryani,Hyderabad,Mid,16,1,2023-09-05
+196,Masala Hub,Chinese,Chennai,Mid,17,1,2021-11-14
+197,Masala Villa,North Indian,Ahmedabad,Mid,11,0,2021-05-05
+198,Zaika Villa,Gujarati Thali,Mumbai,Budget,18,0,2024-10-29
+199,Zaika Junction,Pizza,Mumbai,Mid,10,0,2023-12-30
+200,Dilli Corner,North Indian, lucknow  ,Budget,14,0,2021-05-20
+201,Dosa Bhavan,North Indian,Bengaluru,Budget,24,0,2022-08-14
+202,Madras Darbar,Chinese,Mumbai,Mid,16,1,2024-05-28
+203,Spice Express,Biryani,Hyderabad,Mid,20,0,2023-10-04
+204,Annapoorna Villa,South Indian,Hyderabad,Premium,12,0,2024-02-17
+205,Dosa House,Gujarati Thali,Pune,Budget,18,0,2024-01-03
+206,Dosa Point,North Indian,Delhi,Budget,12,0,2023-11-12
+207,Annapoorna Bhavan,South Indian,Delhi,Budget,15,0,2024-08-26
+208,Masala Junction,Pizza,Kolkata,Budget,20,0,2023-05-05
+209,Punjabi Bhavan,Bengali,Lucknow,Budget,17,0,2021-01-17
+210,Punjabi Kitchen,North Indian,Pune,Premium,20,0,2021-02-18
+211,Annapoorna Kitchen,Burgers,Bengaluru,Budget,25,0,2024-08-02
+212,Annapoorna Point,Biryani,Mumbai,Mid,18,0,2023-02-04
+213,Kolkata Villa,South Indian,Kolkata,Budget,17,1,2022-12-04
+214,Chaat Magic,Healthy,Pune,Mid,16,1,2024-09-15
+215,Curry Bhavan,Biryani,Mumbai,Budget,20,0,2021-01-06
+216,Chaat Magic,North Indian,Bengaluru,Budget,13,0,2022-05-30
+217,Biryani Point,Desserts,Pune,Budget,22,0,2024-10-08
+218,Madras Hub,Desserts,Bengaluru,Premium,15,0,2021-07-09
+219,Tandoor Rasoi,Desserts,Mumbai,Budget,16,0,2022-02-05
+220,Chaat Bhavan,Desserts,Delhi,Premium,22,0,2023-04-16
+221,Curry Magic,Desserts,Chennai,Premium,25,0,2022-03-10
+222,Chaat Magic,Biryani,Bengaluru,Mid,19,1,2021-07-05
+223,Curry Corner,Street Food,Mumbai,Premium,21,0,2022-12-29
+224,Masala Magic,Mughlai,Mumbai,Mid,14,0,2021-04-24
+225,Annapoorna Express,South Indian,Chennai,Mid,14,0,2022-03-13
+226,Saffron Darbar,North Indian,Pune,Budget,13,0,2021-03-19
+227,Biryani Junction,South Indian,Kolkata,Budget,17,0,2021-01-02
+228,Kolkata Villa,Biryani,Pune,Mid,13,1,2021-12-15
+229,Dilli Rasoi,Street Food,Bengaluru,Budget,19,0,2023-06-17
+230,Dilli Bhavan,Biryani,Ahmedabad,Budget,18,0,2021-11-05
+231,Dilli Point,Desserts,Hyderabad ,Mid,20,0,2024-07-16
+232,Saffron Darbar,Desserts,Bengaluru,Budget,14,0,2023-08-25
+233,Spice Darbar,North Indian,Delhi,Mid,14,0,2021-12-01
+234,Masala Express,Biryani,Kolkata,Mid,23,0,2022-11-05
+235,Tandoor Junction,Pizza,Ahmedabad,Mid,18,0,2022-07-23
+236,Masala Point,North Indian,Bengaluru,Mid,16,0,2024-02-16
+237,Biryani House,Chinese,Mumbai,Mid,13,0,2024-05-20
+238,Tandoor Magic,Chinese,Mumbai,Premium,21,0,2022-03-05
+239,Punjabi Villa,Biryani,Mumbai,Budget,21,0,2023-10-24
+240,Masala Kitchen,Burgers,Hyderabad,Premium,16,0,2024-05-28
+241,Annapoorna Kitchen,Bengali,Mumbai,Budget,13,1,2023-10-14
+242,Masala Express,Biryani,Lucknow,Mid,17,0,2024-03-25
+243,Dilli Point,South Indian,Ahmedabad,Mid,18,1,2021-10-12
+244,Annapoorna Junction,North Indian,Mumbai,Budget,18,0,2021-08-19
+245,Saffron Express,Biryani,mumbai,Mid,11,1,2024-06-22
+246,Spice House,Biryani,MUMBAI,Mid,20,0,2022-07-26
+247,Biryani Hub,Biryani,Kolkata,Mid,15,1,2021-06-07
+248,Masala Darbar,South Indian,Bengaluru,Premium,23,0,2024-07-17
+249,Chaat House,North Indian,Ahmedabad,Mid,8,0,2022-04-30
+250,Biryani Corner,South Indian,Kolkata,Mid,11,0,2022-03-21
+251,Madras House,Street Food,Ahmedabad,Mid,19,0,2023-10-21
+252,Kolkata Point,Burgers,Lucknow,Budget,14,0,2023-04-01
+253,Dilli Villa,North Indian,Kolkata,Mid,11,0,2023-06-22
+254,Madras Magic,Burgers,Mumbai,Mid,10,0,2022-11-25
+255,Saffron Darbar,Healthy,Pune,Budget,12,0,2024-03-12
+256,Dosa Junction,Pizza,Mumbai,Budget,23,0,2022-11-16
+257,Annapoorna House,Mughlai,Delhi,Budget,24,0,2024-02-05
+258,Dosa Darbar,North Indian,Bengaluru,Premium,25,0,2022-11-01
+259,Chaat Junction,North Indian,Delhi,Budget,18,0,2024-02-18
+260,Annapoorna Hub,Chinese,,Premium,23,0,2022-01-10
+261,Curry Hub,South Indian,Delhi,Budget,16,1,2021-10-26
+262,Spice Hub,South Indian,Ahmedabad,Mid,16,0,2022-09-02
+263,Madras Hub,South Indian,Bengaluru,Budget,21,0,2022-03-12
+264,Curry Magic,South Indian,Bengaluru,Mid,14,0,2023-07-10
+265,Zaika Express,Healthy,Chennai,Mid,16,1,2022-04-23
+266,Tandoor Point,Mughlai,Ahmedabad,Premium,24,0,2022-10-07
+267,Madras Express,Mughlai,Bengaluru,Budget,21,0,2024-07-31
+268,Spice Kitchen,South Indian,Bengaluru,Budget,22,0,2021-07-19
+269,Dosa Point,North Indian, delhi  ,Budget,18,0,2022-07-13
+270,Kolkata Junction,North Indian,Chennai,Budget,15,0,2022-07-31
+271,Saffron Corner,Healthy,Hyderabad,Budget,20,0,2021-11-10
+272,Biryani Darbar,North Indian,Delhi,Premium,17,0,2022-07-12
+273,Spice Magic,Desserts,Mumbai,Mid,13,0,2022-04-26
+274,Madras Express,Street Food,Hyderabad,Budget,22,0,2024-01-03
+275,Tandoor Magic,Chinese, mumbai  ,Budget,21,0,2024-07-18
+276,Dosa Corner,Healthy,Delhi,Budget,14,0,2022-11-05
+277,Zaika House,North Indian,Chennai,Premium,15,0,2021-02-12
+278,Spice Hub,Gujarati Thali,Hyderabad,Mid,15,0,2022-11-11
+279,Curry Hub,Pizza,Kolkata,Budget,16,0,2021-07-25
+280,Punjabi House,North Indian,Delhi,Budget,14,0,2024-10-27
+281,Madras Point,Burgers,Kolkata,Mid,15,0,2024-01-17
+282,Annapoorna Darbar,Chinese,Pune,Mid,17,1,2022-10-20
+283,Masala Corner,Street Food,Delhi,Mid,17,0,2021-01-19
+284,Royal Magic,North Indian,Mumbai,Budget,19,0,2021-10-26
+285,Madras Bhavan,Biryani,Hyderabad,Mid,21,1,2021-03-14
+286,Annapoorna Villa,Burgers,Pune ,Budget,26,0,2021-10-16
+287,Biryani Magic,South Indian,Pune,Premium,19,1,2023-08-09
+288,Curry Hub,Biryani,Chennai,Budget,21,0,2023-10-12
+289,Masala Magic,North Indian,Delhi,Premium,18,0,2022-03-13
+290,Tandoor Villa,North Indian,,Mid,13,1,2024-07-12
+291,Chaat Villa,North Indian,Bengaluru,Mid,17,1,2021-04-09
+292,Curry Rasoi,Mughlai,Delhi,Budget,7,0,2024-10-27
+293,Saffron Kitchen,Chinese,Delhi,Mid,17,0,2022-12-19
+294,Zaika House,Pizza,Delhi,Premium,23,0,2022-11-06
+295,Chaat Junction,South Indian,Chennai,Premium,21,0,2021-04-19
+296,Masala Junction,Healthy,Delhi,Mid,17,0,2022-02-16
+297,Kolkata Hub,Chinese,AHMEDABAD,Budget,19,0,2023-03-11
+298,Dilli Darbar,Mughlai,Hyderabad,Budget,12,1,2022-01-20
+299,Biryani Corner,North Indian,Hyderabad,Budget,18,0,2023-10-31
+300,Chaat Junction,South Indian,Bengaluru,Premium,24,0,2022-01-01
+301,Biryani Junction,North Indian,Pune,Mid,16,1,2022-01-10
+302,Biryani Darbar,North Indian,Kolkata,Budget,19,0,2022-10-20
+303,Annapoorna Rasoi,South Indian,Delhi,Budget,22,0,2021-04-29
+304,Tandoor Junction,Desserts,Delhi,Budget,18,0,2021-06-24
+305,Masala Magic,North Indian,Kolkata,Mid,20,1,2024-10-03
+306,Biryani Junction,Pizza,Delhi,Mid,21,0,2024-08-25
+307,Zaika House,Healthy,Pune,Mid,13,1,2022-06-15
+308,Saffron Magic,Street Food,Mumbai,Premium,21,0,2023-06-26
+309,Dilli Rasoi,North Indian,Mumbai,Budget,19,0,2021-09-09
+310,Curry Magic,Biryani,Lucknow,Mid,23,1,2024-08-21
+311,Annapoorna House,Chinese,Bengaluru,Budget,20,0,2024-04-20
+312,Royal Express,Street Food,Kolkata,Mid,17,0,2023-03-25
+313,Madras Villa,Biryani,Bengaluru,Mid,16,1,2022-04-12
+314,Dilli House,Pizza,Pune,Budget,13,0,2021-09-05
+315,Saffron Rasoi,Chinese,Jaipur,Mid,12,0,2022-07-09
+316,Dosa Magic,Street Food,Bengaluru,Premium,20,0,2022-05-01
+317,Zaika Express,Pizza,Mumbai,Mid,15,1,2021-03-05
+318,Zaika Villa,Mughlai,Bengaluru,Budget,13,0,2022-11-26
+319,Annapoorna Magic,Bengali, bengaluru  ,Premium,19,1,2022-08-16
+320,Biryani Kitchen,Chinese,Pune,Budget,11,0,2021-04-05
+321,Dosa Villa,Chinese,Delhi,Budget,20,0,2024-10-23
+322,Dosa Corner,Healthy,Kolkata,Budget,20,0,2022-07-04
+323,Kolkata Villa,South Indian,Delhi,Budget,17,0,2021-09-03
+324,Saffron Junction,North Indian,Mumbai,Budget,12,1,2023-01-12
+325,Masala Magic,Chinese,Lucknow,Mid,18,0,2021-07-27
+326,Zaika Darbar,Burgers,Lucknow,Mid,18,0,2023-02-04
+327,Tandoor Bhavan,North Indian,Delhi,Mid,13,1,2023-08-20
+328,Dilli Villa,South Indian,Lucknow,Budget,15,0,2022-09-09
+329,Biryani House,Gujarati Thali,Delhi,Premium,23,0,2023-09-26
+330,Punjabi Corner,Bengali,Mumbai,Budget,14,0,2023-12-04
+331,Annapoorna Villa,Biryani,Lucknow,Mid,12,0,2022-10-17
+332,Zaika Bhavan,South Indian,Delhi,Budget,15,0,2022-02-17
+333,Dosa Corner,Desserts,Delhi,Budget,21,0,2023-02-14
+334,Kolkata Magic,North Indian,Mumbai,Premium,23,0,2024-01-15
+335,Masala Junction,Gujarati Thali,Ahmedabad,Budget,21,0,2021-05-27
+336,Chaat Point,South Indian,Kolkata ,Budget,19,0,2023-12-04
+337,Dilli Express,North Indian,Lucknow,Budget,16,0,2021-09-27
+338,Punjabi Magic,South Indian,Chennai,Premium,26,0,2023-05-20
+339,Annapoorna Point,Pizza,AHMEDABAD,Mid,16,0,2024-02-09
+340,Madras Rasoi,Gujarati Thali,Bengaluru,Budget,15,1,2022-10-17
+341,Madras Corner,Burgers, mumbai  ,Mid,12,0,2021-05-30
+342,Zaika House,South Indian,PUNE,Mid,12,0,2024-02-04
+343,Dosa Kitchen,South Indian,Chennai,Budget,22,0,2021-08-16
+344,Curry Express,Street Food,Bengaluru,Budget,21,0,2023-12-14
+345,Dilli Junction,Healthy,Delhi,Mid,23,0,2023-02-23
+346,Saffron Express,Biryani,Mumbai,Mid,20,0,2023-05-17
+347,Masala Corner,Mughlai,Pune,Mid,15,0,2021-04-10
+348,Curry Bhavan,Healthy,Delhi,Budget,9,0,2022-12-13
+349,Annapoorna Corner,Desserts,Kolkata,Mid,22,0,2022-08-19
+350,Tandoor Magic,Mughlai,Lucknow,Budget,14,0,2022-11-18
+351,Biryani Junction,North Indian,Bengaluru,Mid,17,0,2022-03-29
+352,Curry Junction,North Indian,Ahmedabad,Mid,12,0,2024-02-24
+353,Madras Junction,Burgers,Mumbai,Mid,18,0,2022-12-19
+354,Punjabi Corner,Pizza,BENGALURU,Budget,15,1,2023-09-17
+355,Curry Rasoi,North Indian,Hyderabad,Mid,24,0,2023-05-28
+356,Annapoorna Rasoi,North Indian,Ahmedabad,Mid,17,0,2022-02-11
+357,Tandoor Express,Mughlai,Bengaluru,Budget,13,0,2021-09-25
+358,Annapoorna Corner,Desserts,Bengaluru,Mid,19,1,2023-08-19
+359,Curry Villa,Biryani,Chennai,Mid,21,1,2023-11-26
+360,Curry House,Street Food,Pune,Mid,24,0,2023-01-20
+361,Dilli Kitchen,North Indian,Bengaluru,Budget,18,0,2021-03-20
+362,Dilli Corner,Biryani,Mumbai,Mid,22,0,2024-06-28
+363,Biryani Point,Biryani,Ahmedabad,Premium,19,0,2023-11-15
+364,Punjabi Magic,Street Food,Delhi,Budget,16,0,2023-07-20
+365,Tandoor Villa,Chinese,Delhi,Mid,18,1,2021-11-10
+366,Madras Kitchen,Mughlai,Jaipur,Budget,11,0,2024-04-24
+367,Chaat Rasoi,North Indian,Mumbai,Mid,8,0,2023-09-02
+368,Royal Darbar,North Indian,Kolkata,Mid,17,0,2022-11-04
+369,Saffron Darbar,Healthy,Delhi,Budget,14,0,2024-07-19
+370,Royal Rasoi,Street Food,Chennai,Mid,26,1,2022-02-24
+371,Saffron Villa,Healthy,Delhi,Mid,16,0,2024-10-12
+372,Masala Darbar,Burgers,Mumbai,Budget,21,0,2021-03-15
+373,Chaat Point,Mughlai,Hyderabad,Budget,15,0,2021-02-02
+374,Spice Hub,Burgers,Hyderabad,Mid,14,1,2024-03-25
+375,Madras Bhavan,South Indian,Kolkata,Mid,17,1,2023-12-31
+376,Chaat Junction,South Indian,Lucknow,Budget,14,0,2022-01-30
+377,Madras Corner,Chinese,Hyderabad,Mid,14,1,2024-10-02
+378,Dilli Point,Gujarati Thali,Jaipur,Mid,17,0,2022-01-30
+379,Tandoor Point,North Indian,Bengaluru,Mid,19,0,2023-03-08
+380,Masala Corner,South Indian,Chennai,Mid,7,0,2022-06-06
+381,Annapoorna Darbar,Pizza,Pune,Mid,17,1,2021-11-29
+382,Tandoor Bhavan,North Indian,Mumbai,Premium,24,0,2022-08-17
+383,Zaika Point,North Indian,Kolkata,Budget,12,0,2022-12-13
+384,Tandoor Point,Burgers,Jaipur,Budget,22,0,2021-11-13
+385,Spice Villa,North Indian,Delhi ,Mid,12,1,2022-03-20
+386,Kolkata Junction,Mughlai,Delhi,Mid,12,0,2022-12-19
+387,Curry Kitchen,Biryani,Kolkata,Premium,23,1,2022-01-14
+388,Curry Rasoi,Biryani,Bengaluru,Budget,20,0,2024-10-20
+389,Dosa Junction,South Indian,Lucknow,Mid,18,1,2021-01-16
+390,Curry Point,Chinese,,Budget,17,0,2021-06-15
+391,Biryani Junction,Desserts,Delhi,Mid,20,0,2023-11-11
+392,Curry Magic,Desserts,Kolkata,Mid,18,0,2021-05-07
+393,Madras Express,North Indian,Jaipur,Budget,21,0,2021-08-14
+394,Kolkata Kitchen,North Indian,Mumbai,Budget,15,0,2022-10-23
+395,Punjabi Kitchen,Bengali,Hyderabad,Budget,12,1,2022-11-25
+396,Chaat Point,South Indian,Bengaluru,Budget,15,0,2024-04-23
+397,Dosa Corner,Pizza,Delhi,Budget,14,0,2021-02-13
+398,Chaat Hub,North Indian,Delhi,Mid,20,1,2024-04-14
+399,Curry Rasoi,Pizza,Chennai,Mid,18,0,2024-03-23
+400,Curry Bhavan,Chinese,Jaipur,Mid,17,0,2024-04-26
+401,Biryani Rasoi,Healthy,Pune,Premium,13,0,2023-05-24
+402,Kolkata Bhavan,Mughlai,Pune,Budget,12,0,2022-12-22
+403,Madras Villa,Street Food,Delhi,Mid,8,0,2021-06-19
+404,Royal Kitchen,Healthy,Delhi,Mid,18,0,2021-02-27
+405,Tandoor Express,Healthy,Kolkata,Budget,13,0,2024-08-01
+406,Chaat Rasoi,Biryani,Kolkata,Budget,15,0,2023-01-30
+407,Tandoor Magic,Desserts,Mumbai,Budget,16,1,2023-11-29
+408,Annapoorna Darbar,North Indian,Delhi,Mid,21,0,2023-07-28
+409,Annapoorna Villa,Biryani, delhi  ,Budget,18,1,2021-11-13
+410,Kolkata Kitchen,North Indian,Chennai,Mid,14,0,2022-01-01
+411,Dosa Darbar,Biryani,Hyderabad,Mid,14,0,2021-12-26
+412,Annapoorna Kitchen,North Indian,Mumbai,Mid,16,0,2024-08-12
+413,Spice Bhavan,Chinese,Chennai,Mid,22,0,2021-07-16
+414,Madras Hub,Pizza,Ahmedabad,Mid,18,0,2024-09-24
+415,Zaika Kitchen,Biryani,Mumbai,Budget,18,0,2023-11-02
+416,Royal Express,Street Food,Pune,Mid,20,0,2021-02-10
+417,Annapoorna Bhavan,South Indian,Mumbai,Premium,17,1,2023-10-12
+418,Kolkata Rasoi,Desserts,Mumbai,Budget,21,0,2024-08-02
+419,Dosa Junction,Mughlai,Mumbai,Mid,20,0,2024-08-01
+420,Chaat Darbar,Burgers,Bengaluru,Mid,15,0,2022-12-11
+421,Dilli Point,Desserts,Jaipur,Budget,16,0,2022-10-31
+422,Zaika House,Biryani,Delhi,Mid,11,0,2023-08-18
+423,Zaika Bhavan,Chinese,Chennai,Budget,14,0,2024-02-29
+424,Curry Hub,Biryani,Pune ,Budget,16,0,2024-01-20
+425,Spice Rasoi,South Indian,Mumbai,Mid,16,0,2023-10-21
+426,Kolkata Rasoi,North Indian,Bengaluru,Mid,10,1,2024-03-24
+427,Dosa Express,Gujarati Thali,Hyderabad,Mid,16,0,2024-06-19
+428,Annapoorna Villa,Desserts,Pune,Premium,19,0,2022-08-15
+429,Kolkata Express,Burgers,Lucknow,Mid,17,0,2023-06-07
+430,Biryani Villa,Street Food,Hyderabad,Budget,12,0,2024-05-20
+431,Masala House,Burgers,Jaipur,Mid,14,0,2022-11-16
+432,Biryani Express,Biryani,Mumbai,Budget,18,0,2022-05-10
+433,Dosa Point,Gujarati Thali,Ahmedabad,Mid,14,1,2024-02-03
+434,Saffron Corner,Bengali,Jaipur,Budget,17,0,2024-09-26
+435,Tandoor Express,Healthy,Jaipur,Premium,25,0,2021-09-23
+436,Masala Darbar,North Indian,Mumbai,Premium,19,0,2023-03-09
+437,Punjabi Magic,North Indian,Jaipur,Budget,17,0,2023-02-10
+438,Dilli Villa,Chinese,Mumbai,Mid,24,0,2023-03-17
+439,Kolkata Bhavan,Biryani,Lucknow,Budget,16,0,2022-10-12
+440,Masala Villa,North Indian,Jaipur,Budget,25,1,2022-05-25
+441,Spice Corner,South Indian,Hyderabad,Mid,17,0,2021-05-11
+442,Curry Point,North Indian,DELHI,Mid,13,0,2022-12-09
+443,Kolkata House,South Indian,Chennai,Budget,20,1,2021-11-15
+444,Chaat Hub,North Indian,Delhi,Premium,20,0,2024-03-23
+445,Royal Express,Mughlai,Hyderabad,Budget,15,0,2024-02-25
+446,Madras Rasoi,North Indian,Lucknow,Mid,10,0,2024-02-25
+447,Punjabi Hub,Bengali,Hyderabad,Budget,17,0,2023-09-18
+448,Madras Villa,South Indian,Bengaluru,Mid,20,0,2023-09-27
+449,Saffron Junction,Biryani,Chennai,Mid,7,0,2022-03-06
+450,Chaat Point,North Indian,Delhi,Budget,16,0,2024-07-21
+451,Zaika Express,North Indian,Lucknow,Budget,24,0,2021-09-08
+452,Saffron Magic,Gujarati Thali,Hyderabad,Budget,22,0,2024-08-14
+453,Madras Bhavan,Pizza, kolkata  ,Mid,17,1,2022-04-08
+454,Zaika Rasoi,North Indian,Bengaluru,Budget,24,0,2022-05-17
+455,Annapoorna Magic,Mughlai,Chennai,Mid,12,0,2024-03-10
+456,Masala Darbar,Gujarati Thali,Lucknow,Mid,15,0,2023-10-22
+457,Curry Kitchen,South Indian,Delhi,Budget,18,0,2024-09-11
+458,Zaika Rasoi,Chinese,Ahmedabad,Mid,19,0,2021-09-16
+459,Curry Corner,Pizza,Mumbai,Mid,14,0,2023-01-20
+460,Punjabi Darbar,North Indian,Bengaluru,Budget,17,0,2023-12-24
+461,Annapoorna Kitchen,South Indian,Mumbai,Mid,18,0,2021-07-09
+462,Chaat Rasoi,Biryani,Chennai,Budget,14,0,2024-08-07
+463,Annapoorna Junction,North Indian,Delhi,Mid,12,0,2023-09-04
+464,Tandoor Kitchen,North Indian,Mumbai,Premium,22,0,2021-08-28
+465,Dosa Express,Chinese,Delhi,Budget,20,0,2023-05-21
+466,Punjabi Rasoi,Mughlai,hyderabad,Premium,22,0,2021-01-26
+467,Royal Rasoi,Biryani,Ahmedabad,Mid,12,1,2022-12-20
+468,Masala Villa,Gujarati Thali,Bengaluru,Mid,21,0,2022-10-20
+469,Zaika Point,Bengali,Delhi,Budget,15,0,2021-05-05
+470,Curry Express,Street Food,Bengaluru,Budget,17,0,2021-10-13
+471,Annapoorna Junction,Pizza,Mumbai,Premium,12,1,2024-05-11
+472,Chaat Corner,North Indian,Hyderabad,Premium,20,0,2022-09-30
+473,Dosa Corner,North Indian,Delhi,Premium,20,0,2021-10-20
+474,Royal Rasoi,Street Food,Bengaluru,Mid,20,0,2021-12-24
+475,Royal Bhavan,Mughlai,Kolkata,Budget,14,0,2022-11-22
+476,Royal Rasoi,Street Food,Ahmedabad,Budget,17,0,2021-06-24
+477,Annapoorna Darbar,South Indian,Mumbai,Mid,14,0,2021-08-31
+478,Saffron Kitchen,North Indian,Lucknow,Mid,11,0,2024-09-18
+479,Dosa Magic,Pizza,Chennai,Mid,24,0,2024-09-09
+480,Tandoor Hub,Mughlai,Bengaluru,Mid,18,1,2024-08-17
+481,Zaika Bhavan,North Indian,Delhi,Budget,18,0,2022-09-01
+482,Masala Kitchen,North Indian,Mumbai,Mid,21,0,2022-01-16
+483,Spice Kitchen,Burgers,Chennai,Mid,23,0,2022-04-14
+484,Saffron Darbar,North Indian,Chennai,Premium,24,0,2021-09-09
+485,Spice Corner,North Indian,Bengaluru,Budget,19,0,2022-03-03
+486,Kolkata Junction,North Indian,Mumbai,Budget,7,0,2022-06-19
+487,Madras Point,North Indian,Hyderabad,Budget,12,1,2021-01-03
+488,Saffron Point,North Indian,Hyderabad,Budget,14,0,2021-08-11
+489,Kolkata Rasoi,Street Food,,Budget,8,0,2022-02-18
+490,Punjabi Bhavan,Chinese,,Premium,20,0,2021-09-11
+491,Kolkata House,Burgers,Bengaluru,Mid,11,0,2024-07-13
+492,Annapoorna Magic,North Indian,Pune,Mid,18,0,2023-08-20
+493,Dilli Kitchen,Chinese,Delhi,Premium,20,1,2021-06-29
+494,Kolkata House,Street Food,delhi,Mid,12,0,2023-09-13
+495,Biryani Rasoi,South Indian,Mumbai,Budget,13,0,2021-09-19
+496,Dilli Express,Street Food,Delhi,Mid,13,1,2021-12-23
+497,Tandoor Darbar,Biryani,Bengaluru,Mid,18,0,2022-02-07
+498,Kolkata Junction,Pizza,Pune,Budget,21,0,2023-02-14
+499,Dosa Villa,Desserts,,Mid,18,0,2023-06-14
+500,Curry Corner,Biryani,Hyderabad,Premium,24,0,2022-10-21
+501,Dosa Darbar,Chinese,Bengaluru,Budget,12,0,2023-12-03
+502,Tandoor Kitchen,Biryani,Chennai,Mid,15,1,2022-02-02
+503,Saffron Magic,North Indian,Kolkata,Premium,20,0,2021-06-05
+504,Tandoor Corner,South Indian,Kolkata,Budget,23,0,2023-12-12
+505,Chaat Kitchen,Burgers,Delhi,Mid,18,0,2021-08-21
+506,Dilli Express,South Indian,Lucknow,Budget,16,0,2023-07-27
+507,Royal Hub,Desserts,Delhi,Mid,19,0,2021-01-08
+508,Dilli Corner,Biryani,Delhi,Budget,9,0,2021-07-29
+509,Curry Hub,Chinese,Mumbai,Mid,24,0,2023-03-15
+510,Dosa Rasoi,North Indian, Kolkata,Budget,11,0,2023-02-10
+511,Saffron Express,Chinese,Bengaluru,Mid,16,1,2021-06-11
+512,Tandoor Express,Mughlai,,Mid,17,0,2023-11-19
+513,Dosa Express,Healthy,Kolkata,Budget,18,0,2021-09-18
+514,Masala Villa,South Indian, chennai  ,Budget,13,0,2024-10-03
+515,Dosa Kitchen,Mughlai,Bengaluru,Budget,12,1,2021-09-15
+516,Spice Magic,South Indian,Bengaluru,Mid,18,0,2022-10-01
+517,Curry Express,North Indian,Bengaluru,Mid,16,1,2022-12-10
+518,Punjabi House,North Indian,Bengaluru,Budget,17,0,2024-07-22
+519,Saffron Magic,Chinese,Mumbai,Budget,11,0,2023-10-05
+520,Dilli Bhavan,Biryani,Pune,Mid,19,0,2023-09-18
+521,Chaat Corner,South Indian,Mumbai,Budget,12,0,2024-10-20
+522,Zaika Hub,Chinese,Bengaluru,Mid,10,0,2024-03-28
+523,Masala Junction,Chinese,Hyderabad,Premium,14,0,2022-03-25
+524,Royal House,North Indian,Hyderabad,Budget,12,0,2023-01-14
+525,Dilli Express,Pizza,Lucknow,Mid,18,0,2024-05-08
+526,Masala House,Pizza,Mumbai,Budget,17,0,2024-08-05
+527,Zaika Darbar,Gujarati Thali,Bengaluru,Budget,16,0,2024-10-18
+528,Punjabi Darbar,North Indian,Delhi,Premium,15,0,2021-07-07
+529,Royal Point,Biryani,Bengaluru,Budget,18,0,2023-01-18
+530,Spice Hub,North Indian,Ahmedabad,Premium,19,1,2021-09-30
+531,Chaat Junction,Burgers,Bengaluru,Premium,21,0,2024-04-11
+532,Saffron Corner,Desserts, chennai  ,Budget,18,0,2022-07-09
+533,Madras Junction,Gujarati Thali,Bengaluru,Mid,22,0,2023-09-02
+534,Dilli Bhavan,Burgers,Delhi,Premium,22,0,2021-07-18
+535,Saffron Rasoi,Desserts,Mumbai,Mid,14,0,2024-06-18
+536,Chaat Bhavan,North Indian,Jaipur,Premium,25,0,2023-01-04
+537,Royal Darbar,Pizza,Delhi,Budget,10,0,2021-10-13
+538,Annapoorna Junction,Healthy,Mumbai,Mid,17,0,2022-04-23
+539,Dosa Corner,Mughlai,Mumbai,Premium,22,1,2023-12-25
+540,Zaika Magic,Gujarati Thali,Mumbai,Mid,13,1,2021-08-20
+541,Masala Villa,Biryani,Bengaluru,Budget,7,0,2021-04-16
+542,Tandoor House,Desserts,Bengaluru,Budget,16,0,2021-06-10
+543,Spice House,Pizza,Bengaluru,Budget,11,0,2022-04-20
+544,Masala Corner,North Indian,Mumbai,Budget,7,1,2024-09-14
+545,Royal Magic,Desserts,Pune,Mid,26,1,2022-09-06
+546,Curry Magic,Gujarati Thali,Delhi,Budget,13,0,2021-02-18
+547,Curry Hub,North Indian,,Mid,23,1,2024-03-11
+548,Masala Express,South Indian, Delhi,Mid,18,1,2024-04-21
+549,Royal Rasoi,Biryani,kolkata,Mid,15,1,2021-10-20
+550,Dilli Corner,Biryani,,Mid,17,1,2022-04-07
+551,Zaika Kitchen,Chinese,Chennai,Premium,24,0,2024-05-05
+552,Dilli Express,Chinese,Bengaluru,Budget,15,0,2024-06-17
+553,Curry Villa,Biryani,Mumbai,Mid,15,0,2023-09-29
+554,Biryani Villa,North Indian,Ahmedabad,Mid,12,0,2022-02-03
+555,Tandoor Point,North Indian,hyderabad,Mid,14,0,2023-02-07
+556,Tandoor Rasoi,Bengali,Mumbai,Mid,15,0,2024-10-04
+557,Dosa Bhavan,Burgers,Mumbai,Premium,26,1,2021-06-15
+558,Annapoorna Point,Street Food,Bengaluru,Mid,9,0,2024-01-28
+559,Zaika Point,Desserts,Kolkata,Mid,12,0,2024-06-13
+560,Tandoor Kitchen,Mughlai,Delhi,Budget,12,0,2023-10-27
+561,Spice Bhavan,North Indian,Mumbai,Budget,15,1,2021-09-20
+562,Zaika Corner,Biryani,Mumbai,Premium,17,0,2022-03-18
+563,Biryani Corner,North Indian,Pune,Budget,14,1,2023-04-06
+564,Biryani Villa,North Indian,Delhi,Budget,14,0,2023-03-08
+565,Annapoorna Junction,South Indian,Bengaluru,Premium,21,0,2021-10-16
+566,Chaat Hub,Pizza,Lucknow,Mid,12,1,2022-04-16
+567,Biryani Bhavan,Desserts,Bengaluru,Budget,19,0,2021-07-12
+568,Saffron Express,Chinese,Pune,Budget,13,1,2023-04-05
+569,Zaika Darbar,North Indian,Delhi,Budget,18,0,2021-01-10
+570,Madras Hub,Chinese,Mumbai,Premium,20,0,2022-02-23
+571,Zaika Rasoi,North Indian,Ahmedabad,Premium,21,0,2024-01-24
+572,Zaika Point,Healthy,Bengaluru,Mid,10,0,2022-10-16
+573,Royal Rasoi,Healthy,Mumbai,Mid,15,0,2021-08-05
+574,Spice Point,North Indian,Kolkata,Mid,17,0,2021-06-05
+575,Curry Bhavan,Healthy,Delhi,Premium,18,0,2021-06-21
+576,Annapoorna Express,North Indian,Hyderabad,Mid,22,1,2022-02-19
+577,Dilli Express,Chinese,Lucknow,Budget,15,0,2024-09-24
+578,Spice Magic,Gujarati Thali,Mumbai,Mid,15,0,2022-04-13
+579,Royal Magic,North Indian,Mumbai,Budget,18,1,2022-01-24
+580,Biryani House,Biryani, Delhi,Mid,16,1,2021-11-02
+581,Kolkata Bhavan,North Indian,Mumbai,Budget,16,0,2023-05-21
+582,Royal Express,Desserts,Jaipur,Mid,18,0,2022-12-21
+583,Tandoor Kitchen,Biryani,Chennai,Premium,20,0,2023-03-23
+584,Royal Express,South Indian,Lucknow,Mid,21,0,2021-12-04
+585,Kolkata Junction,South Indian,Mumbai,Budget,16,0,2021-03-03
+586,Kolkata Point,Desserts,Delhi,Budget,19,1,2022-01-03
+587,Biryani Hub,North Indian,Bengaluru,Premium,23,0,2023-11-09
+588,Royal Rasoi,Desserts,Pune,Premium,20,0,2024-01-16
+589,Dosa Kitchen,North Indian,Pune,Budget,10,0,2021-01-02
+590,Masala Kitchen,North Indian, Bengaluru,Mid,14,0,2023-10-21
+591,Dilli Magic,Healthy,Delhi,Mid,11,0,2022-06-12
+592,Masala Junction,Bengali,Hyderabad,Mid,15,0,2023-01-05
+593,Curry Bhavan,Burgers,Hyderabad,Mid,22,0,2024-02-17
+594,Biryani Magic,South Indian,Delhi,Budget,11,1,2022-08-18
+595,Biryani Darbar,Bengali,Ahmedabad,Mid,13,0,2021-09-27
+596,Annapoorna Kitchen,Mughlai,Mumbai,Mid,17,0,2021-09-02
+597,Dosa Corner,Healthy,Pune,Mid,14,1,2024-06-15
+598,Kolkata Junction,South Indian,Chennai,Mid,18,0,2021-10-12
+599,Spice Magic,Chinese,Pune,Mid,15,1,2021-03-24
+600,Masala Corner,Desserts,Pune,Mid,22,1,2024-05-26

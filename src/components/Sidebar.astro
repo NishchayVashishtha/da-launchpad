@@ -1,0 +1,31 @@
+---
+import { url } from '../lib/url';
+import { getNav } from '../lib/content';
+const nav = await getNav();
+const current = Astro.url.pathname;
+const norm = (p: string) => p.replace(/\/?$/, '/');
+---
+<aside class="sidebar no-print" aria-label="Course navigation">
+  {nav.map((m) => {
+    const open = norm(current).startsWith(norm(url(`/${m.slug}/`)));
+    return (
+      <details class="sb-mod" open={open}>
+        <summary><a href={url(`/${m.slug}/`)} style="color:inherit;text-decoration:none">{m.title}</a><span class="muted" style="font-weight:400">{m.lessons.length || ''}</span></summary>
+        {m.lessons.length > 0 && (
+          <ul>
+            {m.lessons.map((l) => (
+              <li><a class="sb-link" data-lesson-id={l.id} href={url(l.href)} aria-current={norm(current) === norm(url(l.href)) ? 'page' : undefined}><span class="tick" aria-hidden="true">✓</span>{l.title}</a></li>
+            ))}
+          </ul>
+        )}
+      </details>
+    );
+  })}
+</aside>
+<script>
+  import { load } from '../lib/progress';
+  const done = load().lessons;
+  document.querySelectorAll<HTMLElement>('[data-lesson-id]').forEach((a) => {
+    if (done[a.dataset.lessonId!]) { a.classList.add('is-done'); a.setAttribute('title', 'Completed'); }
+  });
+</script>

@@ -1,0 +1,22 @@
+---
+import Base from '../../layouts/Base.astro';
+import { datasets } from '../../lib/datasets';
+import { url } from '../../lib/url';
+---
+<Base title="Datasets" description="Practice datasets with data dictionaries, ER diagrams and downloads.">
+  <div style="max-width:60rem;margin:0 auto">
+    <h1 style="margin-top:0">Datasets</h1>
+    <p class="muted">Fictional, India-flavoured, deliberately messy. Use them in the SQL playground or download the CSV files for Excel, Power BI and Python.</p>
+    {datasets.length === 0 ? <p class="card">Datasets are being prepared.</p> : (
+      <div style="display:grid;gap:1rem;grid-template-columns:repeat(auto-fit,minmax(18rem,1fr))">
+        {datasets.map((d) => (
+          <a class="card" style="text-decoration:none;color:var(--text)" href={url(`/datasets/${d.id}/`)}>
+            <h2 style="font-size:1.1rem;margin:0 0 .3rem">{d.title}</h2>
+            <p class="muted" style="margin:0 0 .5rem;font-size:.9rem">{d.description}</p>
+            <span class="chip">{d.tables.length} tables</span> <span class="chip">{d.tables.reduce((n, t) => n + t.rowCount, 0).toLocaleString('en-IN')} rows</span>
+          </a>
+        ))}
+      </div>
+    )}
+  </div>
+</Base>

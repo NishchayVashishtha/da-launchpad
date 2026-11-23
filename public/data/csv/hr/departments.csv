@@ -1,0 +1,9 @@
+department_id,department_name,department_head,location,annual_budget_inr,cost_center_code
+1,Engineering,Rajiv Menon,Bengaluru,420000000,CC100
+2,Sales,Anita Kapoor,Mumbai,180000000,CC110
+3,Marketing,Sameer Joshi,Mumbai,90000000,CC120
+4,Customer Support,Lata Pillai,Chennai,120000000,CC130
+5,Finance,Harish Iyer,Pune,60000000,CC140
+6,Human Resources,Neelam Gupta,Pune,40000000,CC150
+7,Operations,Vikas Rathore,Hyderabad,140000000,CC160
+8,Product,Ishita Banerjee,Bengaluru,80000000,CC170

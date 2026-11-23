@@ -1,0 +1,51 @@
+---
+import { url } from '../lib/url';
+import tools from '../data/tools.json';
+const links = [
+  { href: '/', label: 'Dashboard' },
+  { href: '/practice/', label: 'Practice' },
+  { href: '/playground/', label: 'SQL Playground' },
+  { href: '/datasets/', label: 'Datasets' },
+  { href: '/profile/', label: 'Profile' },
+];
+const { hasSidebar = false } = Astro.props;
+---
+<header class="site-header no-print">
+  <div style="display:flex;align-items:center;gap:.5rem;max-width:90rem;margin:0 auto;padding:.5rem 1rem;min-height:56px">
+    {hasSidebar && <button class="btn btn-ghost menu-btn" id="menu-btn" aria-label="Toggle menu" aria-expanded="false">☰</button>}
+    <a href={url('/')} style="font-weight:800;text-decoration:none;color:var(--text);white-space:nowrap">DA <span style="color:var(--brand)">Launchpad</span></a>
+    <nav aria-label="Main" style="display:none;gap:.1rem;margin-left:1rem" class="main-nav">
+      {links.map((l) => <a class="btn btn-ghost btn-sm" href={url(l.href)}>{l.label}</a>)}
+      {tools.length > 0 && (
+        <details style="position:relative">
+          <summary class="btn btn-ghost btn-sm" style="list-style:none">Tools ▾</summary>
+          <div class="card" style="position:absolute;top:100%;left:0;min-width:14rem;z-index:50">
+            {(tools as { title: string; href: string }[]).map((t) => <a style="display:block;padding:.25rem 0" href={url(t.href)}>{t.title}</a>)}
+          </div>
+        </details>
+      )}
+    </nav>
+    <span style="flex:1"></span>
+    <button class="btn btn-sm" data-open-search aria-label="Search (Ctrl+K)">🔍 <span class="hide-sm">Search</span> <kbd class="hide-sm">Ctrl K</kbd></button>
+    <button class="btn btn-sm" id="theme-toggle" aria-label="Toggle dark mode">🌓</button>
+  </div>
+  <nav aria-label="Quick" class="mobile-nav" style="display:flex;gap:.1rem;overflow-x:auto;padding:0 .75rem .4rem;max-width:90rem;margin:0 auto">
+    {links.map((l) => <a class="btn btn-ghost btn-sm" href={url(l.href)} style="white-space:nowrap">{l.label}</a>)}
+  </nav>
+</header>
+<style>
+  @media (min-width: 900px) { .main-nav { display: flex !important; } .mobile-nav { display: none !important; } }
+  @media (max-width: 640px) { .hide-sm { display: none; } }
+</style>
+<script>
+  document.getElementById('theme-toggle')?.addEventListener('click', () => {
+    const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem('dal:theme', next); } catch {}
+  });
+  const mb = document.getElementById('menu-btn');
+  mb?.addEventListener('click', () => {
+    const open = document.body.classList.toggle('sidebar-open');
+    mb.setAttribute('aria-expanded', String(open));
+  });
+</script>

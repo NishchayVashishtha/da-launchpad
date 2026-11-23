@@ -1,0 +1,53 @@
+[
+  {
+    "id": "sample-sql-1",
+    "module": "start-here",
+    "topic": "sample",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "SAMPLE (delete me). Write a query that returns the number 1 in a column named `n`.",
+    "dataset": "none",
+    "hint": "Use SELECT with an alias.",
+    "solutionSql": "SELECT 1 AS n",
+    "expectedOutput": { "columns": ["n"], "rows": [[1]] },
+    "orderMatters": false,
+    "explanation": "SELECT can return constants. AS gives the column a name.",
+    "commonMistake": "Forgetting the alias, so the column is called `1`.",
+    "interviewFrequency": "low",
+    "estimatedMinutes": 1,
+    "tags": ["sample"]
+  },
+  {
+    "id": "sample-py-1",
+    "module": "start-here",
+    "topic": "sample",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "SAMPLE (delete me). Assign the sum of the numbers 1 to 10 to a variable named `result`.",
+    "dataset": "none",
+    "hint": "Use sum(range(...)).",
+    "solutionCode": "result = sum(range(1, 11))",
+    "expectedOutput": { "value": 55 },
+    "explanation": "range(1, 11) gives 1..10 and sum() adds them.",
+    "commonMistake": "Using range(1, 10), which stops at 9.",
+    "interviewFrequency": "low",
+    "estimatedMinutes": 2,
+    "tags": ["sample"]
+  },
+  {
+    "id": "sample-excel-1",
+    "module": "start-here",
+    "topic": "sample",
+    "difficulty": "hard",
+    "language": "excel",
+    "question": "SAMPLE (delete me). Which function removes extra spaces from text in a cell?",
+    "dataset": "none",
+    "hint": "It is a text function.",
+    "solution": "Use `=TRIM(A2)`. It removes leading, trailing and repeated spaces.",
+    "explanation": "TRIM is the first step of most cleaning tasks.",
+    "commonMistake": "Using SUBSTITUTE for every space and losing the spaces between words.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 1,
+    "tags": ["sample"]
+  }
+]
