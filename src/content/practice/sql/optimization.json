@@ -1,0 +1,130 @@
+[
+  {
+    "id": "sql-optimization-001",
+    "module": "sql",
+    "topic": "optimization",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "A dashboard query counts the unique orders of Q1 2024 with `WHERE strftime('%Y-%m', order_date) BETWEEN '2024-01' AND '2024-03'`, which cannot use an index on `order_date`. Rewrite the filter so that the bare column is compared to constants (a sargable range from 2024-01-01 up to, not including, 2024-04-01) and return the number of unique orders as `orders_q1_2024`.",
+    "dataset": "ecommerce",
+    "hint": "Replace the function with order_date >= '2024-01-01' AND order_date < '2024-04-01', and count DISTINCT order_id.",
+    "solutionSql": "SELECT COUNT(DISTINCT order_id) AS orders_q1_2024 FROM orders WHERE order_date >= '2024-01-01' AND order_date < '2024-04-01'",
+    "expectedOutput": {
+      "columns": [
+        "orders_q1_2024"
+      ],
+      "rows": [
+        [
+          1227
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Wrapping order_date in strftime forces the database to compute the function for every row, so an index on order_date is useless. Comparing the bare column with a half-open date range (start inclusive, next quarter start exclusive) lets the database jump straight into the index. The answer is identical, only the work changes. COUNT(DISTINCT order_id) ignores the duplicated order rows.",
+    "commonMistake": "Using BETWEEN '2024-01-01' AND '2024-03-31' on a column that has a time part. Any order timestamped on 31 March after midnight is silently left out.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "optimization",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-optimization-002",
+    "module": "sql",
+    "topic": "optimization",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "The payments team filters often on `payment_method` and `payment_status`. Create an index named `idx_pay_method_status` on `payments(payment_method, payment_status)` (drop it first if it exists, so the script can be re-run). Finish with a SELECT that shows the index from `sqlite_master`: `name` and `tbl_name`, filtered to this index name.",
+    "dataset": "ecommerce",
+    "hint": "DROP INDEX IF EXISTS, then CREATE INDEX name ON table(col1, col2), then SELECT from sqlite_master WHERE type = 'index' AND name = ...",
+    "solutionSql": "DROP INDEX IF EXISTS idx_pay_method_status;\nCREATE INDEX idx_pay_method_status ON payments(payment_method, payment_status);\nSELECT name, tbl_name FROM sqlite_master WHERE type = 'index' AND name = 'idx_pay_method_status';",
+    "expectedOutput": {
+      "columns": [
+        "name",
+        "tbl_name"
+      ],
+      "rows": [
+        [
+          "idx_pay_method_status",
+          "payments"
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "CREATE INDEX builds a sorted lookup on the two columns together, so filters on the first column, or on both, can use it. sqlite_master is SQLite's catalogue of every table, view and index, so selecting from it proves the index exists. In the playground this lives only in memory and disappears on reload.",
+    "commonMistake": "Forgetting DROP INDEX IF EXISTS before CREATE INDEX. Running the script a second time then fails with 'index already exists' and the final SELECT never runs.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "optimization",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-optimization-003",
+    "module": "sql",
+    "topic": "optimization",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Management asks: how many different customers have placed at least one Delivered order? The `customers` table contains 20 duplicated rows, so a join plus `SELECT DISTINCT` is slow and fragile. Answer with a semi-join instead: count the customers (unique `customer_id` from `customers`) for whom an `EXISTS` subquery finds a Delivered order in `orders`. Return one column `customers_with_delivered`.",
+    "dataset": "ecommerce",
+    "hint": "SELECT COUNT(DISTINCT c.customer_id) FROM customers c WHERE EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.customer_id AND o.order_status = 'Delivered').",
+    "solutionSql": "SELECT COUNT(DISTINCT c.customer_id) AS customers_with_delivered FROM customers c WHERE EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.customer_id AND o.order_status = 'Delivered')",
+    "expectedOutput": {
+      "columns": [
+        "customers_with_delivered"
+      ],
+      "rows": [
+        [
+          2166
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "EXISTS only asks 'is there at least one matching order?' and stops at the first match, so it never multiplies rows the way a join to a table with many orders per customer does. That makes the query faster and avoids using DISTINCT as a bandage over a fan-out. COUNT(DISTINCT customer_id) is still needed here only because the customer table has its own duplicated rows.",
+    "commonMistake": "Joining customers to orders and using COUNT(*). Each customer is counted once per delivered order, so the result is the number of delivered orders (thousands), not the number of customers.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 12,
+    "tags": [
+      "optimization",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-optimization-004",
+    "module": "sql",
+    "topic": "optimization",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Analysts constantly run `WHERE customer_id = ? AND order_date >= ?`: an equality on one column and a range on another. For such a filter a composite index works best with the equality column first and the range column second. Create the index `idx_orders_cust_date` on `orders` accordingly (drop it first if it exists), then show its columns in order using `pragma_index_info('idx_orders_cust_date')`. Return `seqno` and `name AS column_name`, ordered by `seqno`.",
+    "dataset": "ecommerce",
+    "hint": "CREATE INDEX idx_orders_cust_date ON orders(customer_id, order_date); then SELECT seqno, name AS column_name FROM pragma_index_info('idx_orders_cust_date') ORDER BY seqno.",
+    "solutionSql": "DROP INDEX IF EXISTS idx_orders_cust_date;\nCREATE INDEX idx_orders_cust_date ON orders(customer_id, order_date);\nSELECT seqno, name AS column_name FROM pragma_index_info('idx_orders_cust_date') ORDER BY seqno;",
+    "expectedOutput": {
+      "columns": [
+        "seqno",
+        "column_name"
+      ],
+      "rows": [
+        [
+          0,
+          "customer_id"
+        ],
+        [
+          1,
+          "order_date"
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "A composite index is sorted by its first column, then by the second within each first-column value. With customer_id first, the database jumps to one customer and then reads a contiguous slice of dates. If the order were reversed (order_date first), it would have to scan the whole date range for every customer. pragma_index_info lists the indexed columns in order, which proves the column order.",
+    "commonMistake": "Creating the index as (order_date, customer_id). The range column leads, so the equality on customer_id cannot narrow the search to one contiguous block and the index helps far less.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 12,
+    "tags": [
+      "optimization",
+      "sql"
+    ]
+  }
+]

@@ -1,0 +1,216 @@
+[
+  {
+    "id": "sql-ddl-dml-001",
+    "module": "sql",
+    "topic": "ddl-dml",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "Create a small lookup table `city_region_q` with columns `city` (TEXT, PRIMARY KEY) and `region` (TEXT, NOT NULL). Drop it first if it exists. Insert these five rows: ('Mumbai','West'), ('Delhi','North'), ('Chennai','South'), ('Kolkata','East'), ('Pune','West'). Finish with a SELECT that returns `city` and `region`, ordered by `city`.",
+    "dataset": "ecommerce",
+    "hint": "DROP TABLE IF EXISTS, CREATE TABLE with constraints, one INSERT with several value tuples, then SELECT.",
+    "solutionSql": "DROP TABLE IF EXISTS city_region_q;\nCREATE TABLE city_region_q (city TEXT PRIMARY KEY, region TEXT NOT NULL);\nINSERT INTO city_region_q (city, region) VALUES ('Mumbai','West'), ('Delhi','North'), ('Chennai','South'), ('Kolkata','East'), ('Pune','West');\nSELECT city, region FROM city_region_q ORDER BY city;",
+    "expectedOutput": {
+      "columns": [
+        "city",
+        "region"
+      ],
+      "rows": [
+        [
+          "Chennai",
+          "South"
+        ],
+        [
+          "Delhi",
+          "North"
+        ],
+        [
+          "Kolkata",
+          "East"
+        ],
+        [
+          "Mumbai",
+          "West"
+        ],
+        [
+          "Pune",
+          "West"
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "CREATE TABLE defines the structure and its rules: PRIMARY KEY stops the same city being inserted twice and NOT NULL forces every city to have a region. INSERT adds the five rows in one statement, and the final SELECT is how you check the result. DROP TABLE IF EXISTS makes the script safe to run again.",
+    "commonMistake": "Writing INSERT INTO city_region_q VALUES ... with the values in the wrong order or with a missing column. Without a column list, a swapped city and region are stored without any error.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "ddl-dml",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-ddl-dml-002",
+    "module": "sql",
+    "topic": "ddl-dml",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Finance approves a 10 percent budget increase for all `Google Search` campaigns. Do it on a copy, not on the original table: create `budget_copy_q` as `SELECT campaign_id, channel, budget_inr FROM campaigns` (drop it first if it exists), `UPDATE` the copy to multiply `budget_inr` by 1.10 for channel `Google Search` only, then return `channel` and `total_budget_inr` (sum of the copy's budget rounded to 2 decimals) for every channel, ordered by `channel`.",
+    "dataset": "marketing",
+    "hint": "CREATE TABLE ... AS SELECT, UPDATE ... SET budget_inr = budget_inr * 1.10 WHERE channel = 'Google Search', then SELECT with GROUP BY.",
+    "solutionSql": "DROP TABLE IF EXISTS budget_copy_q;\nCREATE TABLE budget_copy_q AS SELECT campaign_id, channel, budget_inr FROM campaigns;\nUPDATE budget_copy_q SET budget_inr = budget_inr * 1.10 WHERE channel = 'Google Search';\nSELECT channel, ROUND(SUM(budget_inr), 2) AS total_budget_inr FROM budget_copy_q GROUP BY channel ORDER BY channel;",
+    "expectedOutput": {
+      "columns": [
+        "channel",
+        "total_budget_inr"
+      ],
+      "rows": [
+        [
+          "Affiliate",
+          3000
+        ],
+        [
+          "Email",
+          0
+        ],
+        [
+          "Google Display",
+          13000
+        ],
+        [
+          "Google Search",
+          124300
+        ],
+        [
+          "Influencer",
+          52000
+        ],
+        [
+          "Meta Ads",
+          51000
+        ],
+        [
+          "WhatsApp",
+          1000
+        ],
+        [
+          "YouTube",
+          18000
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "CREATE TABLE AS SELECT copies the data so that the experiment cannot damage the original campaigns table. The WHERE clause limits the UPDATE to Google Search rows, and the final grouped SELECT verifies that only that channel's total changed. Rounding hides floating-point noise from multiplying by 1.10.",
+    "commonMistake": "Leaving out the WHERE clause in the UPDATE. Every campaign in every channel gets a 10 percent increase, and the totals for all channels change.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "ddl-dml",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-ddl-dml-003",
+    "module": "sql",
+    "topic": "ddl-dml",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Create a view `v_big_delivered_q` that lists unique (`SELECT DISTINCT`) Delivered orders with `total_amount` of at least 20000, with columns `order_id`, `customer_id` and `total_amount` (drop the view first if it exists). Then query the view and return `orders` (row count) and `avg_amount` (average `total_amount`, rounded to 2 decimals).",
+    "dataset": "ecommerce",
+    "hint": "DROP VIEW IF EXISTS, CREATE VIEW ... AS SELECT DISTINCT ..., then SELECT COUNT(*), ROUND(AVG(...), 2) FROM the view.",
+    "solutionSql": "DROP VIEW IF EXISTS v_big_delivered_q;\nCREATE VIEW v_big_delivered_q AS SELECT DISTINCT order_id, customer_id, total_amount FROM orders WHERE order_status = 'Delivered' AND total_amount >= 20000;\nSELECT COUNT(*) AS orders, ROUND(AVG(total_amount), 2) AS avg_amount FROM v_big_delivered_q;",
+    "expectedOutput": {
+      "columns": [
+        "orders",
+        "avg_amount"
+      ],
+      "rows": [
+        [
+          474,
+          31895.78
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "A view saves the SELECT under a name and stores no data, so every query on it runs the saved logic again against the current orders table. The DISTINCT inside the view means everyone who uses it automatically gets de-duplicated orders. The final query treats the view exactly like a table.",
+    "commonMistake": "Expecting the view to be a frozen snapshot. If new qualifying orders are added to the base table later, the view's count changes too, because it only stores the query.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "ddl-dml",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-ddl-dml-004",
+    "module": "sql",
+    "topic": "ddl-dml",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Simulate wallet transfers with a transaction. Create `accounts_q` (`acct` TEXT PRIMARY KEY, `balance_inr` REAL NOT NULL CHECK (balance_inr >= 0)), dropping it first if it exists, and insert ('Meera', 8000), ('Sameer', 2500), ('Tanvi', 0). Transaction 1 (BEGIN ... COMMIT): Meera pays Sameer 3000 and Tanvi 1500. Transaction 2 (BEGIN ... ROLLBACK): Tanvi pays Meera 500, but then you decide to cancel. Finish with a SELECT returning `acct` and `balance_inr` ordered by `acct`.",
+    "dataset": "fintech",
+    "hint": "Wrap each transfer in BEGIN; ... COMMIT; or ROLLBACK;. The rolled-back update must leave no trace.",
+    "solutionSql": "DROP TABLE IF EXISTS accounts_q;\nCREATE TABLE accounts_q (acct TEXT PRIMARY KEY, balance_inr REAL NOT NULL CHECK (balance_inr >= 0));\nINSERT INTO accounts_q VALUES ('Meera', 8000), ('Sameer', 2500), ('Tanvi', 0);\nBEGIN;\nUPDATE accounts_q SET balance_inr = balance_inr - 4500 WHERE acct = 'Meera';\nUPDATE accounts_q SET balance_inr = balance_inr + 3000 WHERE acct = 'Sameer';\nUPDATE accounts_q SET balance_inr = balance_inr + 1500 WHERE acct = 'Tanvi';\nCOMMIT;\nBEGIN;\nUPDATE accounts_q SET balance_inr = balance_inr - 500 WHERE acct = 'Tanvi';\nUPDATE accounts_q SET balance_inr = balance_inr + 500 WHERE acct = 'Meera';\nROLLBACK;\nSELECT acct, balance_inr FROM accounts_q ORDER BY acct;",
+    "expectedOutput": {
+      "columns": [
+        "acct",
+        "balance_inr"
+      ],
+      "rows": [
+        [
+          "Meera",
+          3500
+        ],
+        [
+          "Sameer",
+          5500
+        ],
+        [
+          "Tanvi",
+          1500
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "A transaction makes several updates succeed or fail together. The committed transfer moves Rs 4,500 out of Meera's account into two others, and the rolled-back transfer is undone completely, so Tanvi keeps 1,500 and Meera keeps 3,500. The total stays at Rs 10,500 throughout, which is what atomicity guarantees. The CHECK constraint is a second safety net against negative balances.",
+    "commonMistake": "Running the second pair of UPDATE statements without BEGIN and ROLLBACK. Each statement is committed on its own, so the 'cancelled' transfer actually happens and the balances end up different.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 12,
+    "tags": [
+      "ddl-dml",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-ddl-dml-005",
+    "module": "sql",
+    "topic": "ddl-dml",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Practise safe deduplication on a copy. Create `employees_dedup_q` as `SELECT * FROM employees` (drop it first if it exists). Delete the duplicate rows from the copy, keeping the row with the smallest `rowid` for each `employee_id`. Finish with one SELECT that returns `rows_after` (rows in the copy), `unique_ids` (distinct `employee_id` in the copy) and `rows_removed` (rows in the original `employees` minus rows in the copy).",
+    "dataset": "hr",
+    "hint": "DELETE FROM copy WHERE rowid NOT IN (SELECT MIN(rowid) FROM copy GROUP BY employee_id).",
+    "solutionSql": "DROP TABLE IF EXISTS employees_dedup_q;\nCREATE TABLE employees_dedup_q AS SELECT * FROM employees;\nDELETE FROM employees_dedup_q WHERE rowid NOT IN (SELECT MIN(rowid) FROM employees_dedup_q GROUP BY employee_id);\nSELECT COUNT(*) AS rows_after, COUNT(DISTINCT employee_id) AS unique_ids, (SELECT COUNT(*) FROM employees) - COUNT(*) AS rows_removed FROM employees_dedup_q;",
+    "expectedOutput": {
+      "columns": [
+        "rows_after",
+        "unique_ids",
+        "rows_removed"
+      ],
+      "rows": [
+        [
+          2400,
+          2400,
+          12
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "rowid is SQLite's hidden row number, so MIN(rowid) per employee_id picks exactly one row to keep from each group of copies. DELETE removes every row whose rowid is not one of those survivors. The final check proves the result: row count equals the number of unique ids, and the removed count matches the 12 duplicates found earlier.",
+    "commonMistake": "Deleting with GROUP BY and HAVING directly (DELETE ... WHERE employee_id IN (duplicated ids)). That removes every copy, including the one you wanted to keep, and those employees disappear completely.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 12,
+    "tags": [
+      "ddl-dml",
+      "sql"
+    ]
+  }
+]

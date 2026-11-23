@@ -1,0 +1,221 @@
+[
+  {
+    "id": "sql-pivot-001",
+    "module": "sql",
+    "topic": "pivot",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "HR leadership wants a one-line attrition summary. From `attrition`, return a single row with one column per exit type: `resignations`, `terminations`, `end_of_contract`, `retirements`, plus `total_exits`. Use `SUM(CASE WHEN ...)` conditional aggregation on `exit_type` (values: Resignation, Termination, End of Contract, Retirement).",
+    "dataset": "hr",
+    "hint": "SUM(CASE WHEN exit_type = 'Resignation' THEN 1 ELSE 0 END) for each column, with no GROUP BY.",
+    "solutionSql": "SELECT SUM(CASE WHEN exit_type = 'Resignation' THEN 1 ELSE 0 END) AS resignations, SUM(CASE WHEN exit_type = 'Termination' THEN 1 ELSE 0 END) AS terminations, SUM(CASE WHEN exit_type = 'End of Contract' THEN 1 ELSE 0 END) AS end_of_contract, SUM(CASE WHEN exit_type = 'Retirement' THEN 1 ELSE 0 END) AS retirements, COUNT(*) AS total_exits FROM attrition",
+    "expectedOutput": {
+      "columns": [
+        "resignations",
+        "terminations",
+        "end_of_contract",
+        "retirements",
+        "total_exits"
+      ],
+      "rows": [
+        [
+          464,
+          45,
+          26,
+          9,
+          544
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Each SUM(CASE ...) adds 1 for rows of one exit type and 0 for the others, so each type becomes its own column. With no GROUP BY the whole table is one group, giving one summary row. The four columns should add up to total_exits, which is a good check that no exit type was missed.",
+    "commonMistake": "Writing COUNT(CASE WHEN exit_type = 'Resignation' THEN 1 ELSE 0 END). COUNT counts every non-NULL value, including the 0s, so every column simply shows the total number of rows.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "pivot",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-pivot-002",
+    "module": "sql",
+    "topic": "pivot",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "The product team wants a plan-by-status table. From `subscriptions`, return one row per `plan` with columns `active`, `cancelled`, `trial_expired`, `trialing` (counts of subscriptions with that `status`) and `total`. Order by `plan`.",
+    "dataset": "subscription",
+    "hint": "One SUM(CASE WHEN status = '...' THEN 1 ELSE 0 END) per status, grouped by plan.",
+    "solutionSql": "SELECT plan, SUM(CASE WHEN status = 'active' THEN 1 ELSE 0 END) AS active, SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled, SUM(CASE WHEN status = 'trial_expired' THEN 1 ELSE 0 END) AS trial_expired, SUM(CASE WHEN status = 'trialing' THEN 1 ELSE 0 END) AS trialing, COUNT(*) AS total FROM subscriptions GROUP BY plan ORDER BY plan",
+    "expectedOutput": {
+      "columns": [
+        "plan",
+        "active",
+        "cancelled",
+        "trial_expired",
+        "trialing",
+        "total"
+      ],
+      "rows": [
+        [
+          "Basic",
+          145,
+          216,
+          631,
+          9,
+          1001
+        ],
+        [
+          "Premium",
+          112,
+          103,
+          455,
+          11,
+          681
+        ],
+        [
+          "Standard",
+          282,
+          335,
+          985,
+          24,
+          1626
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "GROUP BY plan gives one row per plan, and each conditional SUM spreads one status into its own column, like a pivot table in Excel. The status values are written exactly as they are stored (lowercase with underscores). Checking that the four columns add up to total confirms that no status value was missed or mistyped.",
+    "commonMistake": "Typing 'Active' or 'Trial Expired' instead of the stored values. The comparison never matches, so the column silently shows 0 for every plan.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "pivot",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-pivot-003",
+    "module": "sql",
+    "topic": "pivot",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Performance reviews store `manager_rating` and `self_rating` in two columns. Unpivot them with `UNION ALL` into `review_period`, `rating_type` ('manager' or 'self') and `rating`, using unique review rows only (`SELECT DISTINCT` on the whole table first). Then return the average rating (rounded to 2 decimals) as `avg_rating` for each `review_period` and `rating_type`, ordered by `review_period`, `rating_type`.",
+    "dataset": "hr",
+    "hint": "Two SELECTs joined by UNION ALL, each adding a literal label column. Aggregate over the stacked result.",
+    "solutionSql": "WITH r AS (SELECT DISTINCT * FROM performance_reviews), long AS (SELECT review_period, 'manager' AS rating_type, manager_rating AS rating FROM r UNION ALL SELECT review_period, 'self', self_rating FROM r) SELECT review_period, rating_type, ROUND(AVG(rating), 2) AS avg_rating FROM long GROUP BY review_period, rating_type ORDER BY review_period, rating_type",
+    "expectedOutput": {
+      "columns": [
+        "review_period",
+        "rating_type",
+        "avg_rating"
+      ],
+      "rows": [
+        [
+          "2023-H1",
+          "manager",
+          3.17
+        ],
+        [
+          "2023-H1",
+          "self",
+          3.6
+        ],
+        [
+          "2023-H2",
+          "manager",
+          3.19
+        ],
+        [
+          "2023-H2",
+          "self",
+          3.63
+        ],
+        [
+          "2024-H1",
+          "manager",
+          3.25
+        ],
+        [
+          "2024-H1",
+          "self",
+          3.71
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "UNION ALL stacks the two rating columns into one rating column and a label tells which is which. Long format makes the comparison easy: one GROUP BY covers both rating types. Employees rate themselves higher than their managers do, in every period.",
+    "commonMistake": "Using UNION instead of UNION ALL. UNION removes identical rows, so repeated ratings such as many employees with a 4 vanish and the averages become wrong.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "pivot",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-pivot-004",
+    "module": "sql",
+    "topic": "pivot",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Engineering suspects evening peaks cause failures. Using unique transactions (SELECT DISTINCT *), return one row per `payment_app` with: `peak_txns` and `peak_fail_pct` for hours 18, 19 and 20 (`CAST(strftime('%H', txn_datetime) AS INTEGER)`), and `offpeak_txns` and `offpeak_fail_pct` for all other hours. A failure is `status = 'FAILED'`. Round percentages to 2 decimals. Order by `payment_app`.",
+    "dataset": "fintech",
+    "hint": "Conditional aggregation twice: COUNT/SUM with CASE WHEN hour IN (18, 19, 20) ... and the opposite condition. 100.0 * failed / total.",
+    "solutionSql": "WITH t AS (SELECT DISTINCT *, CAST(strftime('%H', txn_datetime) AS INTEGER) AS hr FROM transactions) SELECT payment_app, SUM(CASE WHEN hr IN (18, 19, 20) THEN 1 ELSE 0 END) AS peak_txns, ROUND(100.0 * SUM(CASE WHEN hr IN (18, 19, 20) AND status = 'FAILED' THEN 1 ELSE 0 END) / SUM(CASE WHEN hr IN (18, 19, 20) THEN 1 ELSE 0 END), 2) AS peak_fail_pct, SUM(CASE WHEN hr NOT IN (18, 19, 20) THEN 1 ELSE 0 END) AS offpeak_txns, ROUND(100.0 * SUM(CASE WHEN hr NOT IN (18, 19, 20) AND status = 'FAILED' THEN 1 ELSE 0 END) / SUM(CASE WHEN hr NOT IN (18, 19, 20) THEN 1 ELSE 0 END), 2) AS offpeak_fail_pct FROM t GROUP BY payment_app ORDER BY payment_app",
+    "expectedOutput": {
+      "columns": [
+        "payment_app",
+        "peak_txns",
+        "peak_fail_pct",
+        "offpeak_txns",
+        "offpeak_fail_pct"
+      ],
+      "rows": [
+        [
+          "NammaPay",
+          918,
+          3.92,
+          2638,
+          2.62
+        ],
+        [
+          "PayZippy",
+          1806,
+          3.21,
+          5437,
+          2.39
+        ],
+        [
+          "QuickPaisa",
+          1393,
+          3.73,
+          4120,
+          3.08
+        ],
+        [
+          "RupeeRocket",
+          671,
+          3.58,
+          2026,
+          2.37
+        ],
+        [
+          "SabPay",
+          725,
+          4.83,
+          2266,
+          2.12
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Each rate is built from two conditional sums: failures in the time band divided by all transactions in the same band. This keeps numerator and denominator on the same population, which is the main thing to get right with rates. The band is derived once in a CTE, and DISTINCT removes duplicated transactions before anything is counted.",
+    "commonMistake": "Dividing the peak failures by the app's total transactions instead of its peak transactions. Peak failure percentages then come out far too small and are not comparable with the off-peak figure.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 12,
+    "tags": [
+      "pivot",
+      "sql"
+    ]
+  }
+]

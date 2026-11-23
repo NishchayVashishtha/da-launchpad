@@ -1,0 +1,152 @@
+[
+  {
+    "id": "sql-dedup-001",
+    "module": "sql",
+    "topic": "dedup",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "The data team suspects `transactions` was loaded twice for some rows. In one row, report how many `txn_id` values appear more than once (`duplicated_txn_ids`) and how many surplus rows those repeats create (`surplus_rows`).",
+    "dataset": "fintech",
+    "hint": "Group by txn_id with HAVING COUNT(*) > 1 in a subquery, then SUM(copies - 1).",
+    "solutionSql": "SELECT COUNT(*) AS duplicated_txn_ids, SUM(copies - 1) AS surplus_rows FROM (SELECT txn_id, COUNT(*) AS copies FROM transactions GROUP BY txn_id HAVING COUNT(*) > 1)",
+    "expectedOutput": {
+      "columns": [
+        "duplicated_txn_ids",
+        "surplus_rows"
+      ],
+      "rows": [
+        [
+          88,
+          88
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "GROUP BY txn_id puts all copies of one transaction in the same heap and HAVING COUNT(*) > 1 keeps only the repeated ones. Each id with c copies adds c - 1 surplus rows, which is why we sum copies - 1. This is the same as COUNT(*) minus COUNT(DISTINCT txn_id) for the whole table.",
+    "commonMistake": "Using WHERE COUNT(*) > 1. Aggregates are not allowed in WHERE, so SQL raises an error. Counting copies instead of copies - 1 would also report 2 surplus rows for every duplicated id instead of 1.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "dedup",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-dedup-002",
+    "module": "sql",
+    "topic": "dedup",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Using `ROW_NUMBER()` partitioned by `employee_id` to remove duplicated employee rows (keep row number 1), count the unique employees by `employment_status`. Return `employment_status` and `employees`, ordered by `employees` descending then `employment_status`.",
+    "dataset": "hr",
+    "hint": "Number rows with ROW_NUMBER() OVER (PARTITION BY employee_id ORDER BY employee_id) in a CTE, keep rn = 1, then GROUP BY status.",
+    "solutionSql": "WITH r AS (SELECT employee_id, employment_status, ROW_NUMBER() OVER (PARTITION BY employee_id ORDER BY employee_id) AS rn FROM employees) SELECT employment_status, COUNT(*) AS employees FROM r WHERE rn = 1 GROUP BY employment_status ORDER BY employees DESC, employment_status",
+    "expectedOutput": {
+      "columns": [
+        "employment_status",
+        "employees"
+      ],
+      "rows": [
+        [
+          "Active",
+          1856
+        ],
+        [
+          "Exited",
+          544
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "PARTITION BY employee_id puts the copies of one employee in one window, and ROW_NUMBER gives each copy a number. Keeping rn = 1 leaves exactly one row per employee. Because the copies are identical, which copy gets number 1 does not matter, otherwise the ORDER BY inside OVER would decide.",
+    "commonMistake": "Counting rows without removing duplicates. The 12 duplicated employees are counted twice, so the totals for their status are too high.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "dedup",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-dedup-003",
+    "module": "sql",
+    "topic": "dedup",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Some online orders have an earlier 'Failed' payment attempt and a later successful retry, so `payments` has several rows per order. Treat the attempt with the highest `payment_id` as the final one for each order. Return how many orders end in each final `payment_status` as `payment_status` and `orders`, ordered by `orders` descending then `payment_status`.",
+    "dataset": "ecommerce",
+    "hint": "ROW_NUMBER() OVER (PARTITION BY order_id ORDER BY payment_id DESC) and keep rn = 1.",
+    "solutionSql": "WITH p AS (SELECT order_id, payment_status, ROW_NUMBER() OVER (PARTITION BY order_id ORDER BY payment_id DESC) AS rn FROM payments) SELECT payment_status, COUNT(*) AS orders FROM p WHERE rn = 1 GROUP BY payment_status ORDER BY orders DESC, payment_status",
+    "expectedOutput": {
+      "columns": [
+        "payment_status",
+        "orders"
+      ],
+      "rows": [
+        [
+          "Success",
+          9268
+        ],
+        [
+          "Failed",
+          403
+        ],
+        [
+          "Refunded",
+          329
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Ordering by payment_id DESC inside the window makes the latest attempt row number 1, so the filter keeps each order's final outcome. Counting raw payment rows would count a failed first attempt as a failed order even when the customer paid on retry.",
+    "commonMistake": "Grouping the raw payments table by status. It reports about 800 'Failed' rows when only about 400 orders really ended as failed, which overstates the failure rate.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "dedup",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-dedup-004",
+    "module": "sql",
+    "topic": "dedup",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "The experimentation team needs a clean A/B result. In `ab_test_results`, first remove exact duplicate rows (SELECT DISTINCT), then remove every user who appears in both variants (contaminated assignment). Using the remaining rows, return one row per `variant` with `users` (distinct users), `converted_users` (distinct users with `converted = 1`) and `conv_rate_pct` (converted_users as a percentage of users, rounded to 2 decimals). The table holds a single test (`checkout_free_shipping_banner`). Order by `variant`.",
+    "dataset": "marketing",
+    "hint": "Find contaminated users with GROUP BY user_id HAVING COUNT(DISTINCT variant) > 1 and exclude them with NOT IN.",
+    "solutionSql": "WITH d AS (SELECT DISTINCT * FROM ab_test_results), bad AS (SELECT user_id FROM d GROUP BY user_id HAVING COUNT(DISTINCT variant) > 1), c AS (SELECT * FROM d WHERE user_id NOT IN (SELECT user_id FROM bad)) SELECT variant, COUNT(DISTINCT user_id) AS users, COUNT(DISTINCT CASE WHEN converted = 1 THEN user_id END) AS converted_users, ROUND(100.0 * COUNT(DISTINCT CASE WHEN converted = 1 THEN user_id END) / COUNT(DISTINCT user_id), 2) AS conv_rate_pct FROM c GROUP BY variant ORDER BY variant",
+    "expectedOutput": {
+      "columns": [
+        "variant",
+        "users",
+        "converted_users",
+        "conv_rate_pct"
+      ],
+      "rows": [
+        [
+          "control",
+          6016,
+          636,
+          10.57
+        ],
+        [
+          "treatment",
+          5974,
+          700,
+          11.72
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Two different data problems are removed in order: exact duplicate rows with DISTINCT, then contaminated users found with GROUP BY and HAVING COUNT(DISTINCT variant) > 1. Excluding users who saw both variants keeps the groups independent, which an A/B test needs. COUNT(DISTINCT CASE ...) counts each converting user once.",
+    "commonMistake": "Computing the conversion rate straight from the raw table. Duplicate rows inflate user counts and contaminated users appear in both groups, which biases the comparison between variants.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 12,
+    "tags": [
+      "dedup",
+      "sql"
+    ]
+  }
+]

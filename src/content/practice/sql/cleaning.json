@@ -1,0 +1,311 @@
+[
+  {
+    "id": "sql-cleaning-001",
+    "module": "sql",
+    "topic": "cleaning",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "Marketing wants a clean city table. In `customers`, standardise `city` by trimming spaces and showing it in proper case (first letter capital, rest lowercase) using `UPPER(SUBSTR(...)) || LOWER(SUBSTR(...))`. Count unique customers (`COUNT(DISTINCT customer_id)`) per cleaned city, ignoring NULL cities. Return `city` and `customers` for the top 10 cities, ordered by `customers` descending then `city`.",
+    "dataset": "ecommerce",
+    "hint": "TRIM first, then build the proper-case text. Group by the whole expression.",
+    "solutionSql": "SELECT UPPER(SUBSTR(TRIM(city), 1, 1)) || LOWER(SUBSTR(TRIM(city), 2)) AS city, COUNT(DISTINCT customer_id) AS customers FROM customers WHERE city IS NOT NULL GROUP BY 1 ORDER BY customers DESC, city LIMIT 10",
+    "expectedOutput": {
+      "columns": [
+        "city",
+        "customers"
+      ],
+      "rows": [
+        [
+          "Delhi",
+          585
+        ],
+        [
+          "Mumbai",
+          583
+        ],
+        [
+          "Bengaluru",
+          520
+        ],
+        [
+          "Hyderabad",
+          376
+        ],
+        [
+          "Chennai",
+          347
+        ],
+        [
+          "Pune",
+          249
+        ],
+        [
+          "Kolkata",
+          242
+        ],
+        [
+          "Ahmedabad",
+          215
+        ],
+        [
+          "Lucknow",
+          144
+        ],
+        [
+          "Indore",
+          140
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "TRIM removes the stray spaces, LOWER fixes the casing of the rest and UPPER(SUBSTR(...,1,1)) capitalises the first letter. Now 'mumbai', ' MUMBAI' and 'Mumbai ' fall into one group. COUNT(DISTINCT customer_id) avoids counting the 20 duplicated customer rows twice.",
+    "commonMistake": "Grouping by the raw city column. 'Mumbai', 'mumbai' and ' Mumbai ' become separate rows, so each city's count is understated and the same city appears several times.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "cleaning",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-cleaning-002",
+    "module": "sql",
+    "topic": "cleaning",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "In `employees`, `gender` mixes 'M', 'F', 'Male' and 'Female'. Map 'M' to 'Male' and 'F' to 'Female' with a CASE expression (leave other values as they are, and keep NULL out of the result). Count unique employees by cleaned gender. Return `gender` and `employees`, ordered by `gender`.",
+    "dataset": "hr",
+    "hint": "CASE WHEN gender = 'M' THEN 'Male' WHEN gender = 'F' THEN 'Female' ELSE gender END, then COUNT(DISTINCT employee_id).",
+    "solutionSql": "SELECT CASE WHEN gender = 'M' THEN 'Male' WHEN gender = 'F' THEN 'Female' ELSE gender END AS gender, COUNT(DISTINCT employee_id) AS employees FROM employees WHERE gender IS NOT NULL GROUP BY 1 ORDER BY gender",
+    "expectedOutput": {
+      "columns": [
+        "gender",
+        "employees"
+      ],
+      "rows": [
+        [
+          "Female",
+          910
+        ],
+        [
+          "Male",
+          1490
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The CASE rewrites the short codes into the full words, so the code and word versions land in the same group. COUNT(DISTINCT employee_id) protects the headcount from the 12 duplicated employee rows. The ELSE branch keeps any value that is already correct.",
+    "commonMistake": "Grouping by raw gender and getting four rows ('F', 'Female', 'M', 'Male'). Any chart of that table splits one category into two bars.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "cleaning",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-cleaning-003",
+    "module": "sql",
+    "topic": "cleaning",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Finance wants customer signups per year, but only the free-text column `signup_date_raw` is available. It holds dates like `2022-07-01`, `01/07/2022` (day first), `1 Jul 2022` and `Jul 1, 2022`. Extract the 4-digit year from each format (the ISO format starts with it, all the other formats end with it) and count unique customers per year. Ignore rows where the raw date is NULL. Return `signup_year` (text) and `customers`, ordered by `signup_year`.",
+    "dataset": "ecommerce",
+    "hint": "CASE WHEN raw GLOB '[0-9][0-9][0-9][0-9]-*' THEN SUBSTR(raw, 1, 4) ELSE SUBSTR(raw, -4) END",
+    "solutionSql": "SELECT CASE WHEN signup_date_raw GLOB '[0-9][0-9][0-9][0-9]-*' THEN SUBSTR(signup_date_raw, 1, 4) ELSE SUBSTR(signup_date_raw, -4) END AS signup_year, COUNT(DISTINCT customer_id) AS customers FROM customers WHERE signup_date_raw IS NOT NULL GROUP BY 1 ORDER BY signup_year",
+    "expectedOutput": {
+      "columns": [
+        "signup_year",
+        "customers"
+      ],
+      "rows": [
+        [
+          "2022",
+          1268
+        ],
+        [
+          "2023",
+          1281
+        ],
+        [
+          "2024",
+          1826
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "GLOB recognises the ISO pattern (four digits, a hyphen, anything), whose year is the first four characters. The other three formats all end with the year, so SUBSTR with a negative start (-4) takes the last four characters. One CASE therefore turns four formats into one clean year.",
+    "commonMistake": "Taking SUBSTR(signup_date_raw, 1, 4) for every row. For '01/07/2022' that returns '01/0' and for '1 Jul 2022' it returns '1 Ju', so you get dozens of garbage 'years'.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "cleaning",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-cleaning-004",
+    "module": "sql",
+    "topic": "cleaning",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "A few `order_items` rows have a `unit_price` hundreds of times the product's MRP (typing errors). For each product category (compare in UPPERCASE after `TRIM`, because `products.category` has casing and space issues), calculate the average `unit_price` of valid lines only (`unit_price <= mrp`). Return `category` (UPPER(TRIM)), `lines` and `avg_unit_price` (rounded to 2 decimals), ordered by `category`.",
+    "dataset": "ecommerce",
+    "hint": "Join order_items to products, filter unit_price <= mrp in WHERE, and group by UPPER(TRIM(category)).",
+    "solutionSql": "SELECT UPPER(TRIM(p.category)) AS category, COUNT(*) AS lines, ROUND(AVG(oi.unit_price), 2) AS avg_unit_price FROM order_items oi JOIN products p ON p.product_id = oi.product_id WHERE oi.unit_price <= p.mrp GROUP BY 1 ORDER BY category",
+    "expectedOutput": {
+      "columns": [
+        "category",
+        "lines",
+        "avg_unit_price"
+      ],
+      "rows": [
+        [
+          "BEAUTY",
+          1026,
+          588.11
+        ],
+        [
+          "BOOKS",
+          1130,
+          273.02
+        ],
+        [
+          "ELECTRONICS",
+          3785,
+          6769.35
+        ],
+        [
+          "FASHION",
+          6430,
+          1119.3
+        ],
+        [
+          "FOOTWEAR",
+          676,
+          1282.97
+        ],
+        [
+          "GROCERY",
+          3093,
+          345.42
+        ],
+        [
+          "HOME & KITCHEN",
+          4005,
+          2612.36
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The reference value (MRP) lets us spot errors without guessing a cut-off: a price above MRP is invalid. Filtering them in WHERE removes them before AVG is calculated. UPPER(TRIM(...)) merges spellings like 'fashion ', 'FASHION' and 'Fashion' into one category.",
+    "commonMistake": "Averaging all lines. The 12 lines that are 60 to 90 times the MRP pull the averages up, and the messy category text splits one category into several rows.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "cleaning",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-cleaning-005",
+    "module": "sql",
+    "topic": "cleaning",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Operations wants a clean city scorecard. Use unique `delivery_id` rows from `deliveries` (SELECT DISTINCT), ignore rows with NULL `city`, and drop the data-entry errors by keeping `order_value` below 10000. Clean `city` with TRIM and proper case. For each cleaned city return `city`, `orders`, `cancel_pct` (percentage of orders with `delivery_status = 'Cancelled'`, rounded to 2 decimals), `avg_order_value` (average of all kept orders, rounded to 2 decimals) and `avg_delay_min` (average `delay_minutes` of delivered orders only, rounded to 2 decimals; cancelled orders have NULL delay). Keep cities with at least 500 orders, ordered by `city`.",
+    "dataset": "food_delivery",
+    "hint": "Clean city and filter in a CTE. AVG ignores NULL delay values by itself, and SUM(delivery_status = 'Cancelled') gives cancelled counts in SQLite.",
+    "solutionSql": "WITH d AS (SELECT DISTINCT delivery_id, UPPER(SUBSTR(TRIM(city), 1, 1)) || LOWER(SUBSTR(TRIM(city), 2)) AS city, delivery_status, order_value, delay_minutes FROM deliveries WHERE city IS NOT NULL AND order_value < 10000) SELECT city, COUNT(*) AS orders, ROUND(100.0 * SUM(delivery_status = 'Cancelled') / COUNT(*), 2) AS cancel_pct, ROUND(AVG(order_value), 2) AS avg_order_value, ROUND(AVG(delay_minutes), 2) AS avg_delay_min FROM d GROUP BY city HAVING COUNT(*) >= 500 ORDER BY city",
+    "expectedOutput": {
+      "columns": [
+        "city",
+        "orders",
+        "cancel_pct",
+        "avg_order_value",
+        "avg_delay_min"
+      ],
+      "rows": [
+        [
+          "Ahmedabad",
+          864,
+          4.28,
+          473.44,
+          3.3
+        ],
+        [
+          "Bengaluru",
+          2204,
+          5.4,
+          457.01,
+          3.33
+        ],
+        [
+          "Chennai",
+          1411,
+          3.9,
+          460.68,
+          2.83
+        ],
+        [
+          "Delhi",
+          2504,
+          3.59,
+          434.49,
+          2.41
+        ],
+        [
+          "Hyderabad",
+          1692,
+          4.91,
+          471.1,
+          1.86
+        ],
+        [
+          "Jaipur",
+          702,
+          4.84,
+          487.59,
+          2.45
+        ],
+        [
+          "Kolkata",
+          1283,
+          5.38,
+          434.81,
+          3.26
+        ],
+        [
+          "Lucknow",
+          641,
+          5.77,
+          412.56,
+          2.2
+        ],
+        [
+          "Mumbai",
+          2570,
+          4.9,
+          463.45,
+          3.27
+        ],
+        [
+          "Pune",
+          1121,
+          5.26,
+          423.21,
+          2.81
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Five problems are solved in one query: duplicates (DISTINCT on delivery_id and the selected columns), messy city text (TRIM and proper case), 100x outliers (order_value filter), NULL delays (AVG skips them, so the delay reflects delivered orders only) and a minimum sample size (HAVING). Cleaning happens in a CTE so the final SELECT stays readable.",
+    "commonMistake": "Using COUNT(*) on the raw table and AVG(order_value) without the outlier filter. Duplicated rows inflate every city's order count and the eight 100x orders inflate average order value.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 12,
+    "tags": [
+      "cleaning",
+      "sql"
+    ]
+  }
+]

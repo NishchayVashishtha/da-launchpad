@@ -1,0 +1,523 @@
+[
+  {
+    "id": "sql-window-frames-001",
+    "module": "sql",
+    "topic": "window-frames",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "HR is plotting hiring growth. Using unique employees (remove duplicate rows with `SELECT DISTINCT employee_id, hire_date`), count hires per calendar year of `hire_date` and add a running total of hires over the years. Return `hire_year` (text from `strftime('%Y', hire_date)`), `hires` and `cumulative_hires`, ordered by `hire_year`.",
+    "dataset": "hr",
+    "hint": "GROUP BY the year in a CTE, then SUM(hires) OVER (ORDER BY hire_year).",
+    "solutionSql": "WITH e AS (SELECT DISTINCT employee_id, hire_date FROM employees), y AS (SELECT strftime('%Y', hire_date) AS hire_year, COUNT(*) AS hires FROM e GROUP BY 1) SELECT hire_year, hires, SUM(hires) OVER (ORDER BY hire_year ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS cumulative_hires FROM y ORDER BY hire_year",
+    "expectedOutput": {
+      "columns": [
+        "hire_year",
+        "hires",
+        "cumulative_hires"
+      ],
+      "rows": [
+        [
+          "2014",
+          127,
+          127
+        ],
+        [
+          "2015",
+          119,
+          246
+        ],
+        [
+          "2016",
+          139,
+          385
+        ],
+        [
+          "2017",
+          110,
+          495
+        ],
+        [
+          "2018",
+          112,
+          607
+        ],
+        [
+          "2019",
+          115,
+          722
+        ],
+        [
+          "2020",
+          117,
+          839
+        ],
+        [
+          "2021",
+          133,
+          972
+        ],
+        [
+          "2022",
+          494,
+          1466
+        ],
+        [
+          "2023",
+          476,
+          1942
+        ],
+        [
+          "2024",
+          458,
+          2400
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "First we reduce the data to one row per year, because a running total adds up rows in order. The frame UNBOUNDED PRECEDING to CURRENT ROW means 'from the first year up to this year'. The last row's cumulative figure equals the total number of unique employees.",
+    "commonMistake": "Running SUM() OVER (ORDER BY hire_date) straight on employee rows and then grouping by year. Employees hired on the same day tie and share the same total, and duplicate employee rows are counted twice.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "window-frames",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-window-frames-002",
+    "module": "sql",
+    "topic": "window-frames",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "The payments team wants a smoothed daily trend around Diwali 2024. Using unique transactions (`SELECT DISTINCT *`) with `status = 'SUCCESS'` and `txn_datetime` from 2024-10-01 up to (not including) 2024-11-15, count transactions per day (`date(txn_datetime)`). Return `day`, `txns` and `ma7` (average of the current and previous 6 rows, rounded to 2 decimals), ordered by `day`.",
+    "dataset": "fintech",
+    "hint": "Group by day first, then AVG(txns) OVER (ORDER BY day ROWS BETWEEN 6 PRECEDING AND CURRENT ROW).",
+    "solutionSql": "WITH t AS (SELECT DISTINCT * FROM transactions), d AS (SELECT date(txn_datetime) AS day, COUNT(*) AS txns FROM t WHERE status = 'SUCCESS' AND txn_datetime >= '2024-10-01' AND txn_datetime < '2024-11-15' GROUP BY 1) SELECT day, txns, ROUND(AVG(txns) OVER (ORDER BY day ROWS BETWEEN 6 PRECEDING AND CURRENT ROW), 2) AS ma7 FROM d ORDER BY day",
+    "expectedOutput": {
+      "columns": [
+        "day",
+        "txns",
+        "ma7"
+      ],
+      "rows": [
+        [
+          "2024-10-01",
+          40,
+          40
+        ],
+        [
+          "2024-10-02",
+          56,
+          48
+        ],
+        [
+          "2024-10-03",
+          40,
+          45.33
+        ],
+        [
+          "2024-10-04",
+          39,
+          43.75
+        ],
+        [
+          "2024-10-05",
+          45,
+          44
+        ],
+        [
+          "2024-10-06",
+          41,
+          43.5
+        ],
+        [
+          "2024-10-07",
+          27,
+          41.14
+        ],
+        [
+          "2024-10-08",
+          38,
+          40.86
+        ],
+        [
+          "2024-10-09",
+          23,
+          36.14
+        ],
+        [
+          "2024-10-10",
+          40,
+          36.14
+        ],
+        [
+          "2024-10-11",
+          37,
+          35.86
+        ],
+        [
+          "2024-10-12",
+          36,
+          34.57
+        ],
+        [
+          "2024-10-13",
+          36,
+          33.86
+        ],
+        [
+          "2024-10-14",
+          42,
+          36
+        ],
+        [
+          "2024-10-15",
+          38,
+          36
+        ],
+        [
+          "2024-10-16",
+          31,
+          37.14
+        ],
+        [
+          "2024-10-17",
+          27,
+          35.29
+        ],
+        [
+          "2024-10-18",
+          38,
+          35.43
+        ],
+        [
+          "2024-10-19",
+          47,
+          37
+        ],
+        [
+          "2024-10-20",
+          34,
+          36.71
+        ],
+        [
+          "2024-10-21",
+          36,
+          35.86
+        ],
+        [
+          "2024-10-22",
+          37,
+          35.71
+        ],
+        [
+          "2024-10-23",
+          36,
+          36.43
+        ],
+        [
+          "2024-10-24",
+          49,
+          39.57
+        ],
+        [
+          "2024-10-25",
+          32,
+          38.71
+        ],
+        [
+          "2024-10-26",
+          47,
+          38.71
+        ],
+        [
+          "2024-10-27",
+          52,
+          41.29
+        ],
+        [
+          "2024-10-28",
+          59,
+          44.57
+        ],
+        [
+          "2024-10-29",
+          60,
+          47.86
+        ],
+        [
+          "2024-10-30",
+          60,
+          51.29
+        ],
+        [
+          "2024-10-31",
+          49,
+          51.29
+        ],
+        [
+          "2024-11-01",
+          52,
+          54.14
+        ],
+        [
+          "2024-11-02",
+          69,
+          57.29
+        ],
+        [
+          "2024-11-03",
+          68,
+          59.57
+        ],
+        [
+          "2024-11-04",
+          31,
+          55.57
+        ],
+        [
+          "2024-11-05",
+          30,
+          51.29
+        ],
+        [
+          "2024-11-06",
+          32,
+          47.29
+        ],
+        [
+          "2024-11-07",
+          27,
+          44.14
+        ],
+        [
+          "2024-11-08",
+          22,
+          39.86
+        ],
+        [
+          "2024-11-09",
+          30,
+          34.29
+        ],
+        [
+          "2024-11-10",
+          33,
+          29.29
+        ],
+        [
+          "2024-11-11",
+          42,
+          30.86
+        ],
+        [
+          "2024-11-12",
+          32,
+          31.14
+        ],
+        [
+          "2024-11-13",
+          38,
+          32
+        ],
+        [
+          "2024-11-14",
+          30,
+          32.43
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The frame ROWS BETWEEN 6 PRECEDING AND CURRENT ROW covers up to seven daily rows, which equals seven calendar days here because every day has transactions. The first six days use fewer rows, so those averages are based on partial windows. The moving average smooths out day-to-day noise and shows the Diwali climb more clearly.",
+    "commonMistake": "Writing AVG(txns) OVER (ORDER BY day) with no frame. That becomes an average from the first day up to today (a cumulative average), which reacts very slowly instead of showing a 7-day trend.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "window-frames",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-window-frames-003",
+    "module": "sql",
+    "topic": "window-frames",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Management wants each store's share of 2024 sales. Using unique sales rows (SELECT DISTINCT) with `sale_datetime` in 2024 (on or after 2024-01-01) and `net_amount_inr` below 100000, total the sales per store. Return `store_name`, `sales_inr` (rounded to 0 decimals) and `pct_of_total` (share of all stores, rounded to 2 decimals), ordered by `sales_inr` descending then `store_name`.",
+    "dataset": "retail",
+    "hint": "SUM(SUM(net_amount_inr)) OVER () is the grand total of the group totals. Use 100.0 for decimals.",
+    "solutionSql": "WITH s AS (SELECT DISTINCT sale_id, store_id, net_amount_inr FROM sales WHERE sale_datetime >= '2024-01-01' AND net_amount_inr < 100000) SELECT st.store_name, ROUND(SUM(s.net_amount_inr)) AS sales_inr, ROUND(100.0 * SUM(s.net_amount_inr) / SUM(SUM(s.net_amount_inr)) OVER (), 2) AS pct_of_total FROM s JOIN stores st ON st.store_id = s.store_id GROUP BY st.store_id, st.store_name ORDER BY sales_inr DESC, st.store_name",
+    "expectedOutput": {
+      "columns": [
+        "store_name",
+        "sales_inr",
+        "pct_of_total"
+      ],
+      "rows": [
+        [
+          "Vasudha Hypermarket - Satellite",
+          1377219,
+          8.36
+        ],
+        [
+          "Vasudha Hypermarket - Dwarka",
+          1323552,
+          8.04
+        ],
+        [
+          "Vasudha Hypermarket - Andheri",
+          1302388,
+          7.91
+        ],
+        [
+          "Vasudha Hypermarket - Whitefield",
+          1261722,
+          7.66
+        ],
+        [
+          "Vasudha Supermarket - Six Mile",
+          740942,
+          4.5
+        ],
+        [
+          "Vasudha Supermarket - Malviya Nagar",
+          737103,
+          4.47
+        ],
+        [
+          "Vasudha Supermarket - MP Nagar",
+          728688,
+          4.42
+        ],
+        [
+          "Vasudha Supermarket - Salt Lake",
+          724228,
+          4.4
+        ],
+        [
+          "Vasudha Supermarket - RS Puram",
+          719722,
+          4.37
+        ],
+        [
+          "Vasudha Supermarket - Thane",
+          706537,
+          4.29
+        ],
+        [
+          "Vasudha Supermarket - Dharampeth",
+          700926,
+          4.26
+        ],
+        [
+          "Vasudha Supermarket - Vijay Nagar",
+          638585,
+          3.88
+        ],
+        [
+          "Vasudha Supermarket - Aundh",
+          636822,
+          3.87
+        ],
+        [
+          "Vasudha Supermarket - Jayanagar",
+          616196,
+          3.74
+        ],
+        [
+          "Vasudha Supermarket - Kukatpally",
+          611104,
+          3.71
+        ],
+        [
+          "Vasudha Supermarket - Velachery",
+          545724,
+          3.31
+        ],
+        [
+          "Vasudha Express - Kakkanad",
+          460378,
+          2.79
+        ],
+        [
+          "Vasudha Express - MVP Colony",
+          457179,
+          2.78
+        ],
+        [
+          "Vasudha Express - Boring Road",
+          434431,
+          2.64
+        ],
+        [
+          "Vasudha Supermarket - Gomti Nagar",
+          413367,
+          2.51
+        ],
+        [
+          "Vasudha Express - Sector 17",
+          378035,
+          2.3
+        ],
+        [
+          "Vasudha Express - Rohini",
+          370639,
+          2.25
+        ],
+        [
+          "Vasudha Express - Kharadi",
+          335291,
+          2.04
+        ],
+        [
+          "Vasudha Express - Adajan",
+          250970,
+          1.52
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "GROUP BY first reduces the data to one row per store. SUM(...) OVER () with empty brackets then adds those store totals into a grand total shown on every row, and dividing gives the share. The shares of all 24 stores add up to about 100 percent.",
+    "commonMistake": "Dividing by SUM(net_amount_inr) without OVER. Inside a GROUP BY query that is just the store's own total, so every store shows exactly 100 percent.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "window-frames",
+      "sql"
+    ]
+  },
+  {
+    "id": "sql-window-frames-004",
+    "module": "sql",
+    "topic": "window-frames",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Leadership believes 'a few customers bring most of the money'. Using unique orders (remove exact duplicates) with `order_status = 'Delivered'` and `total_amount < 100000`, total spend per customer. Sort customers from highest to lowest spend (ties by `customer_id`) and find how many top customers are needed to reach 80 percent of total revenue. Count a customer if the cumulative spend BEFORE adding them is below 80 percent of the total. Return one row with `customers_for_80pct`, `total_customers` and `pct_of_customers` (rounded to 1 decimal).",
+    "dataset": "ecommerce",
+    "hint": "Running total with ROWS UNBOUNDED PRECEDING AND CURRENT ROW, subtract the customer's own spend to get the cumulative total before them, and compare with 0.8 * SUM(spend) OVER ().",
+    "solutionSql": "WITH o AS (SELECT DISTINCT order_id, customer_id, total_amount FROM orders WHERE order_status = 'Delivered' AND total_amount < 100000), sp AS (SELECT customer_id, SUM(total_amount) AS spend FROM o GROUP BY customer_id), c AS (SELECT spend, SUM(spend) OVER (ORDER BY spend DESC, customer_id ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS cum_spend, SUM(spend) OVER () AS total_spend FROM sp) SELECT SUM(CASE WHEN cum_spend - spend < 0.8 * total_spend THEN 1 ELSE 0 END) AS customers_for_80pct, COUNT(*) AS total_customers, ROUND(100.0 * SUM(CASE WHEN cum_spend - spend < 0.8 * total_spend THEN 1 ELSE 0 END) / COUNT(*), 1) AS pct_of_customers FROM c",
+    "expectedOutput": {
+      "columns": [
+        "customers_for_80pct",
+        "total_customers",
+        "pct_of_customers"
+      ],
+      "rows": [
+        [
+          735,
+          2166,
+          33.9
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "We rank customers by spend, build a running total, and compare the total before each customer with 80 percent of all revenue. A customer is needed if the money collected before them is still under the 80 percent line. The explicit ROWS frame matters here: the default RANGE frame would treat customers with equal spend as one block.",
+    "commonMistake": "Counting customers with cum_spend < 0.8 * total. That stops one customer early because the customer who crosses the 80 percent line is not counted, so the number of customers is understated.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 12,
+    "tags": [
+      "window-frames",
+      "sql"
+    ]
+  }
+]

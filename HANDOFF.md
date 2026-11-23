@@ -27,7 +27,7 @@ Last session: 2026-11-24. Read this first, then CLAUDE.md. The product spec is m
 ### Possibly incomplete (4 Sonnet agents were still running when the session ended)
 Check each item with `ls`, audit and validate:
 - DONE: SQL 13–17 (joins, subqueries, CTEs, set ops): 5 lessons + 34 questions (8 easy / 16 medium / 10 hard), validated.
-- SQL 18–25 (window functions, cleaning, dedup, pivot, optimisation, DDL/DML). Practice: window-ranking, window-offset, window-frames, cleaning, dedup, pivot, optimization, ddl-dml.
+- DONE: SQL 18–25 (windows, cleaning, dedup, pivot, optimisation, DDL/DML): 8 lessons + 36 questions (8 easy / 16 medium / 12 hard), validated.
 - DONE: SQL 26–33 patterns: 8 lessons + 30 questions (3 easy / 12 medium / 15 hard), validated.
 - DONE: SQL 34–42 patterns: 9 lessons + 30 questions (3 easy / 12 medium / 15 hard), validated. TODO: lesson 41's cheat table lists the 26–33 patterns without links; add links to /sql/<slug>/.
 - Targets: SQL needs 200+ questions in total (about 70 easy / 80 medium / 50 hard). Re-run `npm run audit` for the count. If any lesson or practice file above is missing or broken, relaunch a Sonnet agent for just that slice, using the same prompt pattern (read `.briefs/content-common.md`; list owned files).
@@ -44,6 +44,10 @@ Check each item with `ls`, audit and validate:
    - Phase 6: Projects (8), job toolkit (resume builder, tracker), cheat sheets, glossary 300+ and flashcards 500+ (Haiku).
    - Phase 7: polish, Lighthouse, README, final counts report.
    - Tool pages go at /tools/<name>/ and get registered in `src/data/tools.json` with `enabled: true`.
+
+## Notes for authors
+- The validator reuses one DB per dataset for the whole run. DDL questions must `DROP ... IF EXISTS` and use unique `_q` table names.
+- `ecommerce.orders.order_id` and `hr.employees.employee_id` contain exact duplicate rows (deliberate), so use DISTINCT or dedupe first.
 
 ## Lesson learned
 - Parallel agents collided in a shared /tmp dir. Tell each agent to use its own scratch dir (e.g. /tmp/<task-slug>/).
