@@ -1,0 +1,13 @@
+---
+import Base from '../../layouts/Base.astro';
+import ApplicationTracker from '../../components/react/ApplicationTracker';
+---
+<Base title="Job Application Tracker" description="Track your data analytics job applications, screening statuses, technical tests, and recruiter follow-ups.">
+  <div style="max-width:64rem;margin:0 auto">
+    <h1 style="margin-top:0">Job Application Tracker</h1>
+    <p class="muted">
+      Organize, track, and manage your job applications across hiring stages, with status filters, follow-up alerts, and CSV export.
+    </p>
+    <ApplicationTracker client:load />
+  </div>
+</Base>

@@ -1,0 +1,2242 @@
+[
+  {
+    "id": "gl-sql-001",
+    "term": "SELECT",
+    "definition": "A foundational SQL clause specifying which columns or expressions should be returned by a query.",
+    "example": "SELECT user_id, email FROM users;",
+    "related": []
+  },
+  {
+    "id": "gl-sql-002",
+    "term": "FROM",
+    "definition": "The SQL clause declaring the source table, view, or subquery containing the requested data.",
+    "example": "FROM transactions;",
+    "related": []
+  },
+  {
+    "id": "gl-sql-003",
+    "term": "WHERE",
+    "definition": "A filtering clause that restricts rows before any grouping or aggregation takes place.",
+    "example": "WHERE status = 'active';",
+    "related": []
+  },
+  {
+    "id": "gl-sql-004",
+    "term": "GROUP BY",
+    "definition": "A clause grouping rows with identical values in specified columns into aggregate summary rows.",
+    "example": "GROUP BY department_id;",
+    "related": []
+  },
+  {
+    "id": "gl-sql-005",
+    "term": "HAVING",
+    "definition": "A filter clause operating strictly on aggregated summary rows after GROUP BY execution.",
+    "example": "HAVING COUNT(*) > 10;",
+    "related": []
+  },
+  {
+    "id": "gl-sql-006",
+    "term": "ORDER BY",
+    "definition": "A clause ordering result rows in ascending or descending order based on specified expressions.",
+    "example": "ORDER BY created_at DESC;",
+    "related": []
+  },
+  {
+    "id": "gl-sql-007",
+    "term": "LIMIT",
+    "definition": "A clause restricting the maximum number of rows returned in the final result set.",
+    "example": "LIMIT 50;",
+    "related": []
+  },
+  {
+    "id": "gl-sql-008",
+    "term": "OFFSET",
+    "definition": "A clause that skips a designated number of rows before beginning to return records.",
+    "example": "LIMIT 10 OFFSET 20;",
+    "related": []
+  },
+  {
+    "id": "gl-sql-009",
+    "term": "DISTINCT",
+    "definition": "A keyword eliminating duplicate rows from the query output, returning only unique value combinations.",
+    "example": "SELECT DISTINCT state FROM customers;",
+    "related": []
+  },
+  {
+    "id": "gl-sql-010",
+    "term": "INNER JOIN",
+    "definition": "A relational join returning only rows with matching join keys across both participating tables.",
+    "example": "orders INNER JOIN users ON orders.user_id = users.id;",
+    "related": []
+  },
+  {
+    "id": "gl-sql-011",
+    "term": "LEFT JOIN",
+    "definition": "A join returning all rows from the left table and matched rows from the right table.",
+    "example": "customers LEFT JOIN orders ON customers.id = orders.customer_id;",
+    "related": []
+  },
+  {
+    "id": "gl-sql-012",
+    "term": "RIGHT JOIN",
+    "definition": "A join returning all rows from the right table and matching records from the left table.",
+    "example": "sales RIGHT JOIN products ON sales.sku = products.sku;",
+    "related": []
+  },
+  {
+    "id": "gl-sql-013",
+    "term": "FULL OUTER JOIN",
+    "definition": "A join returning all rows whenever a match exists in either the left or right table.",
+    "example": "FULL OUTER JOIN suppliers ON products.supplier_id = suppliers.id;",
+    "related": []
+  },
+  {
+    "id": "gl-sql-014",
+    "term": "CROSS JOIN",
+    "definition": "A Cartesian product join pairing every row of the first table with all rows of the second table.",
+    "example": "SELECT * FROM colors CROSS JOIN sizes;",
+    "related": []
+  },
+  {
+    "id": "gl-sql-015",
+    "term": "SELF JOIN",
+    "definition": "A regular join where a table is joined against itself using distinct table aliases.",
+    "example": "employees e JOIN employees m ON e.manager_id = m.id;",
+    "related": []
+  },
+  {
+    "id": "gl-sql-016",
+    "term": "UNION",
+    "definition": "A set operator combining rows from two queries and automatically removing duplicate records.",
+    "example": "SELECT city FROM clients UNION SELECT city FROM leads;",
+    "related": []
+  },
+  {
+    "id": "gl-sql-017",
+    "term": "UNION ALL",
+    "definition": "A set operator combining rows from two queries while retaining all duplicate rows for maximum speed.",
+    "example": "SELECT id FROM jan_orders UNION ALL SELECT id FROM feb_orders;",
+    "related": []
+  },
+  {
+    "id": "gl-sql-018",
+    "term": "INTERSECT",
+    "definition": "A set operator returning only distinct rows appearing simultaneously in both query outputs.",
+    "example": "SELECT user_id FROM q1_buyers INTERSECT SELECT user_id FROM q2_buyers;",
+    "related": []
+  },
+  {
+    "id": "gl-sql-019",
+    "term": "EXCEPT",
+    "definition": "A set operator returning distinct rows from the first query that do not exist in the second query.",
+    "example": "SELECT id FROM signups EXCEPT SELECT id FROM churns;",
+    "related": []
+  },
+  {
+    "id": "gl-sql-020",
+    "term": "CTE (Common Table Expression)",
+    "definition": "A temporary named result set defined within a WITH statement to simplify complex multi-step queries.",
+    "example": "WITH monthly AS (SELECT ...) SELECT * FROM monthly;",
+    "related": []
+  },
+  {
+    "id": "gl-sql-021",
+    "term": "Subquery",
+    "definition": "A nested query embedded inside an outer SELECT, FROM, or WHERE clause to produce intermediate results.",
+    "example": "WHERE spend > (SELECT AVG(spend) FROM accounts);",
+    "related": []
+  },
+  {
+    "id": "gl-sql-022",
+    "term": "Correlated Subquery",
+    "definition": "A subquery referencing columns in the outer query, evaluating once per outer table candidate row.",
+    "example": "WHERE price > (SELECT AVG(p2.price) FROM p2 WHERE p2.cat = p1.cat);",
+    "related": []
+  },
+  {
+    "id": "gl-sql-023",
+    "term": "EXISTS",
+    "definition": "A boolean operator testing whether a subquery returns at least one row, stopping on first match.",
+    "example": "WHERE EXISTS (SELECT 1 FROM logs l WHERE l.uid = u.id);",
+    "related": []
+  },
+  {
+    "id": "gl-sql-024",
+    "term": "COALESCE",
+    "definition": "A scalar function evaluating its arguments from left to right and returning the first non-null value.",
+    "example": "COALESCE(work_phone, mobile, 'None');",
+    "related": []
+  },
+  {
+    "id": "gl-sql-025",
+    "term": "NULLIF",
+    "definition": "A function comparing two arguments and returning NULL if they are equal, commonly preventing zero-division errors.",
+    "example": "DIVIDE(profit, NULLIF(revenue, 0));",
+    "related": []
+  },
+  {
+    "id": "gl-sql-026",
+    "term": "CASE WHEN",
+    "definition": "A conditional logic statement returning specified values based on sequential condition evaluations.",
+    "example": "CASE WHEN score >= 90 THEN 'A' ELSE 'B' END;",
+    "related": []
+  },
+  {
+    "id": "gl-sql-027",
+    "term": "ROW_NUMBER()",
+    "definition": "A window function assigning a unique sequential integer to each row in a partition without gaps or ties.",
+    "example": "ROW_NUMBER() OVER (PARTITION BY store_id ORDER BY sales DESC);",
+    "related": []
+  },
+  {
+    "id": "gl-sql-028",
+    "term": "RANK()",
+    "definition": "A window function assigning ranks that leave gaps after ties in ordering values.",
+    "example": "RANK() OVER (ORDER BY score DESC);",
+    "related": []
+  },
+  {
+    "id": "gl-sql-029",
+    "term": "DENSE_RANK()",
+    "definition": "A window function assigning consecutive ranks without leaving gaps when ties occur.",
+    "example": "DENSE_RANK() OVER (ORDER BY score DESC);",
+    "related": []
+  },
+  {
+    "id": "gl-sql-030",
+    "term": "NTILE()",
+    "definition": "A window function distributing rows into a specified number of roughly equal ordered buckets.",
+    "example": "NTILE(4) OVER (ORDER BY salary DESC);",
+    "related": []
+  },
+  {
+    "id": "gl-sql-031",
+    "term": "LAG()",
+    "definition": "A window function accessing column values from a previous row within the partition without self-joining.",
+    "example": "LAG(revenue, 1) OVER (ORDER BY month);",
+    "related": []
+  },
+  {
+    "id": "gl-sql-032",
+    "term": "LEAD()",
+    "definition": "A window function accessing column values from a subsequent row within the partition without self-joining.",
+    "example": "LEAD(event, 1) OVER (PARTITION BY user_id ORDER BY ts);",
+    "related": []
+  },
+  {
+    "id": "gl-sql-033",
+    "term": "FIRST_VALUE()",
+    "definition": "A window function returning the evaluated value at the first row of an ordered window frame.",
+    "example": "FIRST_VALUE(price) OVER (PARTITION BY dept ORDER BY date);",
+    "related": []
+  },
+  {
+    "id": "gl-sql-034",
+    "term": "LAST_VALUE()",
+    "definition": "A window function returning the evaluated value at the last row of a defined window frame.",
+    "example": "LAST_VALUE(val) OVER (ORDER BY date ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING);",
+    "related": []
+  },
+  {
+    "id": "gl-sql-035",
+    "term": "Window Frame",
+    "definition": "A clause defining the exact sub-range of rows relative to the current row within a partition.",
+    "example": "ROWS BETWEEN 2 PRECEDING AND CURRENT ROW;",
+    "related": []
+  },
+  {
+    "id": "gl-sql-036",
+    "term": "Primary Key",
+    "definition": "A column or combination of columns enforcing entity uniqueness and not-null constraints for a table.",
+    "example": "PRIMARY KEY (order_id);",
+    "related": []
+  },
+  {
+    "id": "gl-sql-037",
+    "term": "Foreign Key",
+    "definition": "A referential constraint linking a column to the primary key of another table to maintain relational integrity.",
+    "example": "FOREIGN KEY (user_id) REFERENCES users(id);",
+    "related": []
+  },
+  {
+    "id": "gl-sql-038",
+    "term": "B-Tree Index",
+    "definition": "A balanced tree database structure accelerating equality and range lookups on indexed table columns.",
+    "example": "CREATE INDEX idx_orders_user ON orders(user_id);",
+    "related": []
+  },
+  {
+    "id": "gl-sql-039",
+    "term": "Composite Index",
+    "definition": "A database index built across multiple columns simultaneously, optimized for queries filtering on column prefixes.",
+    "example": "CREATE INDEX idx_user_date ON logins(user_id, login_time);",
+    "related": []
+  },
+  {
+    "id": "gl-sql-040",
+    "term": "Clustered Index",
+    "definition": "An index that defines the actual physical storage order of table data pages on the disk.",
+    "example": "PRIMARY KEY clustered ordering in SQL Server;",
+    "related": []
+  },
+  {
+    "id": "gl-sql-041",
+    "term": "ACID Properties",
+    "definition": "Four guarantees (Atomicity, Consistency, Isolation, Durability) ensuring reliable transaction processing in relational databases.",
+    "example": "Database transaction commit lifecycle;",
+    "related": []
+  },
+  {
+    "id": "gl-sql-042",
+    "term": "Transaction Isolation",
+    "definition": "The degree to which operations within a database transaction are shielded from concurrent modifications.",
+    "example": "READ COMMITTED vs REPEATABLE READ;",
+    "related": []
+  },
+  {
+    "id": "gl-sql-043",
+    "term": "Deadlock",
+    "definition": "A situation where two or more database transactions block each other indefinitely by holding exclusive locks.",
+    "example": "Resolving cyclic locks via timeout rollback;",
+    "related": []
+  },
+  {
+    "id": "gl-sql-044",
+    "term": "View",
+    "definition": "A virtual table defined by a stored SQL query, evaluated dynamically upon execution.",
+    "example": "CREATE VIEW active_users AS SELECT ...;",
+    "related": []
+  },
+  {
+    "id": "gl-sql-045",
+    "term": "Materialized View",
+    "definition": "A precomputed physical table storing the cached result of a query, refreshed periodically for fast querying.",
+    "example": "REFRESH MATERIALIZED VIEW sales_summary;",
+    "related": []
+  },
+  {
+    "id": "gl-sql-046",
+    "term": "Stored Procedure",
+    "definition": "A saved collection of procedural SQL statements that can be compiled and executed on demand.",
+    "example": "CALL generate_monthly_invoice(2024, 3);",
+    "related": []
+  },
+  {
+    "id": "gl-sql-047",
+    "term": "Trigger",
+    "definition": "A stored procedure automatically invoked by the database engine in response to INSERT, UPDATE, or DELETE events.",
+    "example": "CREATE TRIGGER audit_log AFTER UPDATE ON accounts;",
+    "related": []
+  },
+  {
+    "id": "gl-sql-048",
+    "term": "Query Execution Plan",
+    "definition": "The internal sequence of physical operations (scans, joins, sorts) chosen by the database cost-based optimizer.",
+    "example": "EXPLAIN ANALYZE SELECT * FROM orders;",
+    "related": []
+  },
+  {
+    "id": "gl-sql-049",
+    "term": "Sequential Scan",
+    "definition": "A database operation scanning every single data page of a table sequentially to find matching rows.",
+    "example": "Seq Scan on table without matching index;",
+    "related": []
+  },
+  {
+    "id": "gl-sql-050",
+    "term": "Index Seek",
+    "definition": "An efficient lookup navigating the index B-tree structure directly to matching row pointers.",
+    "example": "Index Seek using B-tree traversal;",
+    "related": []
+  },
+  {
+    "id": "gl-py-001",
+    "term": "DataFrame",
+    "definition": "A two-dimensional, size-mutable, and tabular data structure in pandas with labeled rows and columns.",
+    "example": "df = pd.DataFrame({'a': [1, 2], 'b': [3, 4]})",
+    "related": []
+  },
+  {
+    "id": "gl-py-002",
+    "term": "Series",
+    "definition": "A one-dimensional labeled array in pandas capable of holding data of any homogeneous type.",
+    "example": "s = pd.Series([10, 20, 30], name='revenue')",
+    "related": []
+  },
+  {
+    "id": "gl-py-003",
+    "term": "loc",
+    "definition": "A pandas indexer used for label-based selection of rows and columns, as well as boolean masking.",
+    "example": "df.loc[df['age'] > 25, ['name', 'salary']]",
+    "related": []
+  },
+  {
+    "id": "gl-py-004",
+    "term": "iloc",
+    "definition": "A pandas indexer strictly utilizing integer position coordinates to slice and select rows and columns.",
+    "example": "df.iloc[0:5, 1:3]",
+    "related": []
+  },
+  {
+    "id": "gl-py-005",
+    "term": "apply()",
+    "definition": "A pandas method applying a Python function across either DataFrame axes (rows or columns).",
+    "example": "df['total'].apply(lambda x: x * 1.18)",
+    "related": []
+  },
+  {
+    "id": "gl-py-006",
+    "term": "transform()",
+    "definition": "A groupby method applying a calculation and returning an aligned output of identical shape to the input.",
+    "example": "df['cat_avg'] = df.groupby('cat')['val'].transform('mean')",
+    "related": []
+  },
+  {
+    "id": "gl-py-007",
+    "term": "agg()",
+    "definition": "A method performing one or more aggregate reductions simultaneously across DataFrame or Series groupings.",
+    "example": "df.groupby('dept').agg({'salary': ['mean', 'max']})",
+    "related": []
+  },
+  {
+    "id": "gl-py-008",
+    "term": "merge()",
+    "definition": "A function joining two DataFrames horizontally based on shared key columns, matching SQL join operations.",
+    "example": "pd.merge(orders, users, on='user_id', how='left')",
+    "related": []
+  },
+  {
+    "id": "gl-py-009",
+    "term": "concat()",
+    "definition": "A pandas utility stacking multiple Series or DataFrames along an axis (vertically or horizontally).",
+    "example": "pd.concat([df_2023, df_2024], axis=0, ignore_index=True)",
+    "related": []
+  },
+  {
+    "id": "gl-py-010",
+    "term": "pivot_table()",
+    "definition": "A pandas method reshaping tabular data into an aggregated spreadsheet-style two-dimensional matrix.",
+    "example": "pd.pivot_table(df, values='sales', index='city', columns='quarter')",
+    "related": []
+  },
+  {
+    "id": "gl-py-011",
+    "term": "melt()",
+    "definition": "A function transforming wide-format DataFrames into long-format tidy representations with identifier and measurement variables.",
+    "example": "pd.melt(df, id_vars=['id'], value_vars=['q1', 'q2'])",
+    "related": []
+  },
+  {
+    "id": "gl-py-012",
+    "term": "groupby()",
+    "definition": "A split-apply-combine operation grouping tabular rows by designated keys for subsequent data transformation.",
+    "example": "df.groupby('region')['profit'].sum()",
+    "related": []
+  },
+  {
+    "id": "gl-py-013",
+    "term": "reset_index()",
+    "definition": "A pandas method converting existing row index labels back into standard columns with consecutive integer indices.",
+    "example": "df.reset_index(drop=True)",
+    "related": []
+  },
+  {
+    "id": "gl-py-014",
+    "term": "dropna()",
+    "definition": "A method removing rows or columns containing missing or NaN values according to specified threshold criteria.",
+    "example": "df.dropna(subset=['email', 'phone'])",
+    "related": []
+  },
+  {
+    "id": "gl-py-015",
+    "term": "fillna()",
+    "definition": "A method imputing missing or NaN values with specified scalars, interpolation, or statistical replacements.",
+    "example": "df['salary'].fillna(df['salary'].median(), inplace=True)",
+    "related": []
+  },
+  {
+    "id": "gl-py-016",
+    "term": "isna()",
+    "definition": "A boolean mask function identifying presence of null or NaN values across DataFrame elements.",
+    "example": "df.isna().sum()",
+    "related": []
+  },
+  {
+    "id": "gl-py-017",
+    "term": "to_datetime()",
+    "definition": "A pandas utility parsing strings or integers into robust datetime64 Timestamp objects.",
+    "example": "pd.to_datetime(df['date_str'], format='%Y-%m-%d')",
+    "related": []
+  },
+  {
+    "id": "gl-py-018",
+    "term": "dt accessor",
+    "definition": "A pandas Series property exposing vectorized date and calendar extraction properties on datetime columns.",
+    "example": "df['created_at'].dt.month_name()",
+    "related": []
+  },
+  {
+    "id": "gl-py-019",
+    "term": "str accessor",
+    "definition": "A pandas Series property providing vectorized string manipulation and regular expression methods.",
+    "example": "df['city'].str.strip().str.upper()",
+    "related": []
+  },
+  {
+    "id": "gl-py-020",
+    "term": "cut()",
+    "definition": "A pandas function binning numerical values into discrete intervals based on specified range cutpoints.",
+    "example": "pd.cut(df['age'], bins=[0, 18, 35, 65, 100])",
+    "related": []
+  },
+  {
+    "id": "gl-py-021",
+    "term": "qcut()",
+    "definition": "A quantile-based discretization function dividing numerical distributions into equal-frequency ranking buckets.",
+    "example": "pd.qcut(df['spend'], q=4, labels=['Q1', 'Q2', 'Q3', 'Q4'])",
+    "related": []
+  },
+  {
+    "id": "gl-py-022",
+    "term": "Vectorization",
+    "definition": "Executing data computations via compiled low-level routines on contiguous arrays rather than explicit interpreted Python loops.",
+    "example": "df['profit'] = df['revenue'] - df['cost']",
+    "related": []
+  },
+  {
+    "id": "gl-py-023",
+    "term": "Broadcasting",
+    "definition": "A NumPy mechanism enabling arithmetic operations between arrays of differing but compatible dimensional shapes.",
+    "example": "array_2d + scalar_val",
+    "related": []
+  },
+  {
+    "id": "gl-py-024",
+    "term": "inplace parameter",
+    "definition": "A boolean argument modifying DataFrames directly without allocating a new object copy in memory.",
+    "example": "df.drop(columns=['temp'], inplace=True)",
+    "related": []
+  },
+  {
+    "id": "gl-py-025",
+    "term": "copy(deep=True)",
+    "definition": "Creating an entirely independent memory copy of a DataFrame and its underlying NumPy data arrays.",
+    "example": "df_clean = df.copy()",
+    "related": []
+  },
+  {
+    "id": "gl-py-026",
+    "term": "Method Chaining",
+    "definition": "Writing sequential data processing steps where each method returns a new object consumed by the next.",
+    "example": "df.query('sales > 0').assign(margin=lambda x: x.p/x.s).sort_values('margin')",
+    "related": []
+  },
+  {
+    "id": "gl-py-027",
+    "term": "query()",
+    "definition": "Filtering DataFrame rows using intuitive string-based boolean expression syntax. Widely used across data analytics and engineering workflows.",
+    "example": "df.query('region == \"West\" and spend > 1000')",
+    "related": []
+  },
+  {
+    "id": "gl-py-028",
+    "term": "assign()",
+    "definition": "Creating new derived columns on a DataFrame in place within method chains.",
+    "example": "df.assign(discounted=lambda x: x.price * 0.9)",
+    "related": []
+  },
+  {
+    "id": "gl-py-029",
+    "term": "NumPy",
+    "definition": "The fundamental Python scientific package providing n-dimensional arrays and optimized linear algebra routines.",
+    "example": "import numpy as np; np.percentile(arr, 95)",
+    "related": []
+  },
+  {
+    "id": "gl-py-030",
+    "term": "ndarray",
+    "definition": "A homogenous n-dimensional multidimensional container holding elements of identical primitive data types in NumPy.",
+    "example": "np.array([1.5, 2.7, 3.8])",
+    "related": []
+  },
+  {
+    "id": "gl-py-031",
+    "term": "Matplotlib",
+    "definition": "The foundational plotting and graphical visualization library in Python creating static and publication figures.",
+    "example": "import matplotlib.pyplot as plt; plt.plot(x, y)",
+    "related": []
+  },
+  {
+    "id": "gl-py-032",
+    "term": "Seaborn",
+    "definition": "A high-level statistical visualization library built on top of Matplotlib providing beautiful default plot styles.",
+    "example": "import seaborn as sns; sns.boxplot(x='cat', y='val', data=df)",
+    "related": []
+  },
+  {
+    "id": "gl-py-033",
+    "term": "Pyodide",
+    "definition": "A WebAssembly port of CPython enabling execution of Python, NumPy, and pandas directly within web browsers.",
+    "example": "In-browser client-side data science execution;",
+    "related": []
+  },
+  {
+    "id": "gl-py-034",
+    "term": "List Comprehension",
+    "definition": "A concise syntactic construct for building new Python lists by evaluating expressions over existing iterables.",
+    "example": "[x**2 for x in numbers if x % 2 == 0]",
+    "related": []
+  },
+  {
+    "id": "gl-py-035",
+    "term": "Dictionary Comprehension",
+    "definition": "A syntactic construct mapping keys to values dynamically by iterating through items in a collection.",
+    "example": "{k: v.strip() for k, v in raw_dict.items()}",
+    "related": []
+  },
+  {
+    "id": "gl-py-036",
+    "term": "Generator Expression",
+    "definition": "A lazy memory-efficient iterator producing sequence values on demand without storing the full list in memory.",
+    "example": "(x for x in range(1_000_000))",
+    "related": []
+  },
+  {
+    "id": "gl-py-037",
+    "term": "Lambda Function",
+    "definition": "A compact anonymous single-line function defined without a formal name using the lambda keyword.",
+    "example": "lambda x, y: x * y + 10",
+    "related": []
+  },
+  {
+    "id": "gl-py-038",
+    "term": "args and kwargs",
+    "definition": "Special Python syntax allowing functions to accept variable numbers of positional and keyword arguments.",
+    "example": "def func(*args, **kwargs): pass",
+    "related": []
+  },
+  {
+    "id": "gl-py-039",
+    "term": "Type Hinting",
+    "definition": "Optional formal syntax specifying intended input parameter and return data types for Python functions.",
+    "example": "def calculate_ltv(spend: float, churn: float) -> float:",
+    "related": []
+  },
+  {
+    "id": "gl-py-040",
+    "term": "Virtual Environment",
+    "definition": "An isolated directory tree containing a specific Python installation alongside designated package versions.",
+    "example": "python -m venv .venv; source .venv/bin/activate",
+    "related": []
+  },
+  {
+    "id": "gl-py-041",
+    "term": "pip",
+    "definition": "The standard package management system used to install and manage software packages written in Python.",
+    "example": "pip install pandas numpy scikit-learn",
+    "related": []
+  },
+  {
+    "id": "gl-py-042",
+    "term": "Jupyter Notebook",
+    "definition": "An interactive web-based computational environment combining live Python code, equations, text, and data visualizations.",
+    "example": "Interactive exploratory data analysis notebooks;",
+    "related": []
+  },
+  {
+    "id": "gl-py-043",
+    "term": "Pandas Profiling / ydata-profiling",
+    "definition": "An automated exploratory data analysis tool generating comprehensive HTML statistical summaries from DataFrames.",
+    "example": "df.profile_report()",
+    "related": []
+  },
+  {
+    "id": "gl-py-044",
+    "term": "Scikit-Learn",
+    "definition": "A machine learning library in Python providing tools for data preprocessing, regression, and clustering.",
+    "example": "from sklearn.linear_model import LinearRegression",
+    "related": []
+  },
+  {
+    "id": "gl-py-045",
+    "term": "train_test_split",
+    "definition": "A function partitioning a dataset into separate randomized subsets for model training and out-of-sample evaluation.",
+    "example": "X_train, X_test, y_train, y_test = train_test_split(X, y)",
+    "related": []
+  },
+  {
+    "id": "gl-py-046",
+    "term": "StandardScaler",
+    "definition": "A preprocessing transformer standardizing numerical features by removing the mean and scaling to unit variance.",
+    "example": "scaler.fit_transform(df[['income', 'age']])",
+    "related": []
+  },
+  {
+    "id": "gl-py-047",
+    "term": "OneHotEncoder",
+    "definition": "A categorical feature encoder converting nominal categorical strings into binary indicator dummy columns.",
+    "example": "pd.get_dummies(df['city'], drop_first=True)",
+    "related": []
+  },
+  {
+    "id": "gl-py-048",
+    "term": "Correlation Matrix",
+    "definition": "A tabular matrix displaying pairwise Pearson or Spearman correlation coefficients across numerical DataFrame columns.",
+    "example": "df.corr(method='pearson')",
+    "related": []
+  },
+  {
+    "id": "gl-py-049",
+    "term": "Heatmap",
+    "definition": "A two-dimensional graphical representation where individual matrix values are visualized as graded color intensities.",
+    "example": "sns.heatmap(df.corr(), annot=True, cmap='coolwarm')",
+    "related": []
+  },
+  {
+    "id": "gl-py-050",
+    "term": "Outlier Detection (IQR)",
+    "definition": "An empirical filtering rule tagging values falling beyond 1.5 times the Interquartile Range from quartiles.",
+    "example": "Q1 - 1.5 * IQR or Q3 + 1.5 * IQR bounds;",
+    "related": []
+  },
+  {
+    "id": "gl-xl-001",
+    "term": "XLOOKUP",
+    "definition": "A versatile modern lookup function searching ranges or arrays in any direction with safe exact-match defaults.",
+    "example": "=XLOOKUP(A2, Products!A:A, Products!C:C, 0)",
+    "related": []
+  },
+  {
+    "id": "gl-xl-002",
+    "term": "VLOOKUP",
+    "definition": "A legacy lookup function searching the leftmost column of a table to retrieve values from designated column offsets.",
+    "example": "=VLOOKUP(A2, Table1, 3, FALSE)",
+    "related": []
+  },
+  {
+    "id": "gl-xl-003",
+    "term": "INDEX MATCH",
+    "definition": "A dynamic lookup combination pairing MATCH for row coordination with INDEX for arbitrary column retrieval.",
+    "example": "=INDEX(ReturnRange, MATCH(LookupVal, LookupRange, 0))",
+    "related": []
+  },
+  {
+    "id": "gl-xl-004",
+    "term": "SUMIFS",
+    "definition": "An aggregate formula summing cell values meeting multiple simultaneous criteria across designated ranges.",
+    "example": "=SUMIFS(Sales, Region, \"West\", Year, 2024)",
+    "related": []
+  },
+  {
+    "id": "gl-xl-005",
+    "term": "COUNTIFS",
+    "definition": "A counting formula calculating how many rows satisfy multiple logical criteria across parallel column ranges.",
+    "example": "=COUNTIFS(Status, \"Closed\", Priority, \"High\")",
+    "related": []
+  },
+  {
+    "id": "gl-xl-006",
+    "term": "AVERAGEIFS",
+    "definition": "A formula computing arithmetic means for cells meeting multiple designated logical testing criteria.",
+    "example": "=AVERAGEIFS(Margin, Category, \"Electronics\", Units, \">10\")",
+    "related": []
+  },
+  {
+    "id": "gl-xl-007",
+    "term": "IFERROR",
+    "definition": "An error handling wrapper function returning a specified fallback value whenever an internal formula yields an error.",
+    "example": "=IFERROR(A2 / B2, 0)",
+    "related": []
+  },
+  {
+    "id": "gl-xl-008",
+    "term": "Pivot Table",
+    "definition": "An interactive data summarization tool organizing, calculating, grouping, and filtering large tabular datasets rapidly.",
+    "example": "Drag fields to Rows, Columns, and Values;",
+    "related": []
+  },
+  {
+    "id": "gl-xl-009",
+    "term": "Slicer",
+    "definition": "A clickable visual filtering button connected to Pivot Tables and Excel charts for intuitive dashboard interaction.",
+    "example": "Clicking 'North' filters connected pivot cards;",
+    "related": []
+  },
+  {
+    "id": "gl-xl-010",
+    "term": "Absolute Reference ($A$1)",
+    "definition": "A cell reference anchoring both column and row coordinates so they do not shift when formulas are copied.",
+    "example": "=$B$2 * C4 locks the tax rate in B2;",
+    "related": []
+  },
+  {
+    "id": "gl-xl-011",
+    "term": "Relative Reference (A1)",
+    "definition": "A standard cell reference that shifts row and column offsets automatically as the formula is dragged across cells.",
+    "example": "=A1 + B1 shifts to =A2 + B2 down rows;",
+    "related": []
+  },
+  {
+    "id": "gl-xl-012",
+    "term": "Mixed Reference ($A1 / A$1)",
+    "definition": "A reference locking either the column or the row while allowing the other coordinate to adjust dynamically.",
+    "example": "=$A2 * B$1 locks column A and row 1 in matrix grids;",
+    "related": []
+  },
+  {
+    "id": "gl-xl-013",
+    "term": "Power Query",
+    "definition": "An integrated data transformation engine in Excel enabling automated extract, transform, and load workflows.",
+    "example": "Import CSV, unpivot columns, and load to sheet;",
+    "related": []
+  },
+  {
+    "id": "gl-xl-014",
+    "term": "M Code",
+    "definition": "The functional programming language powering transformations and data processing pipelines inside Power Query.",
+    "example": "= Table.TransformColumnTypes(Source, {{'ID', Int64.Type}});",
+    "related": []
+  },
+  {
+    "id": "gl-xl-015",
+    "term": "TEXTSPLIT",
+    "definition": "A dynamic array formula splitting text strings across columns or rows using specified delimiters.",
+    "example": "=TEXTSPLIT(A2, \",\")",
+    "related": []
+  },
+  {
+    "id": "gl-xl-016",
+    "term": "FILTER function",
+    "definition": "A dynamic array formula filtering a range based on a boolean criteria array, spilling matching rows.",
+    "example": "=FILTER(A2:D100, C2:C100 = \"Active\")",
+    "related": []
+  },
+  {
+    "id": "gl-xl-017",
+    "term": "UNIQUE function",
+    "definition": "A dynamic array formula returning unique distinct values from a specified column or list range.",
+    "example": "=UNIQUE(Customers!B2:B5000)",
+    "related": []
+  },
+  {
+    "id": "gl-xl-018",
+    "term": "SORT / SORTBY",
+    "definition": "Dynamic array formulas sorting ranges based on designated column indices or external sort key arrays.",
+    "example": "=SORT(A2:B20, 2, -1)",
+    "related": []
+  },
+  {
+    "id": "gl-xl-019",
+    "term": "SEQUENCE function",
+    "definition": "A dynamic array formula generating an ordered list of sequential integers across designated rows and columns.",
+    "example": "=SEQUENCE(12, 1, 1, 1)",
+    "related": []
+  },
+  {
+    "id": "gl-xl-020",
+    "term": "LET function",
+    "definition": "An optimization formula assigning calculation intermediate values to names, improving formula speed and clarity.",
+    "example": "=LET(x, A2*1.18, IF(x > 100, x, 100))",
+    "related": []
+  },
+  {
+    "id": "gl-xl-021",
+    "term": "LAMBDA function",
+    "definition": "A function construct enabling users to define reusable custom spreadsheet functions without writing VBA code.",
+    "example": "=LAMBDA(x, y, (x - y) / y)",
+    "related": []
+  },
+  {
+    "id": "gl-xl-022",
+    "term": "Flash Fill",
+    "definition": "An automated pattern recognition feature in Excel populating column values based on initial user examples.",
+    "example": "Press Ctrl + E to extract first names from full names;",
+    "related": []
+  },
+  {
+    "id": "gl-xl-023",
+    "term": "Data Validation",
+    "definition": "A rule restricting what data types or specific values users are allowed to enter into designated worksheet cells.",
+    "example": "Restricting entries to dropdown list items;",
+    "related": []
+  },
+  {
+    "id": "gl-xl-024",
+    "term": "Conditional Formatting",
+    "definition": "A visual formatting engine highlighting cells with custom colors, data bars, or icons based on cell rules.",
+    "example": "Highlighting rows where margin < 0 in red;",
+    "related": []
+  },
+  {
+    "id": "gl-xl-025",
+    "term": "Goal Seek",
+    "definition": "A what-if analysis tool determining the exact input value required to achieve a designated target formula outcome.",
+    "example": "Finding required price to achieve 25% margin;",
+    "related": []
+  },
+  {
+    "id": "gl-xl-026",
+    "term": "Data Table (What-If)",
+    "definition": "A sensitivity analysis tool calculating formula outcomes across single or dual parameter value ranges.",
+    "example": "Matrix of loan payments across rate and tenure ranges;",
+    "related": []
+  },
+  {
+    "id": "gl-xl-027",
+    "term": "NPV function",
+    "definition": "A financial formula calculating net present value of investments based on discount rates and periodic cash flows.",
+    "example": "=NPV(0.1, C2:C6) - Initial_Investment",
+    "related": []
+  },
+  {
+    "id": "gl-xl-028",
+    "term": "IRR function",
+    "definition": "A financial formula calculating internal rate of return for a series of periodic investment cash flows.",
+    "example": "=IRR(B2:B10)",
+    "related": []
+  },
+  {
+    "id": "gl-xl-029",
+    "term": "XNPV / XIRR",
+    "definition": "Financial formulas calculating net present value and internal rate of return for irregular calendar date cash flows.",
+    "example": "=XIRR(ValuesRange, DatesRange)",
+    "related": []
+  },
+  {
+    "id": "gl-xl-030",
+    "term": "CHOOSECOLS",
+    "definition": "A dynamic array function extracting specific designated column numbers from a broader table range.",
+    "example": "=CHOOSECOLS(A2:Z100, 1, 3, 5)",
+    "related": []
+  },
+  {
+    "id": "gl-xl-031",
+    "term": "VSTACK / HSTACK",
+    "definition": "Dynamic array functions stacking multiple ranges or arrays vertically or horizontally into a single array.",
+    "example": "=VSTACK(Sheet1!A2:D10, Sheet2!A2:D10)",
+    "related": []
+  },
+  {
+    "id": "gl-xl-032",
+    "term": "CONCAT / TEXTJOIN",
+    "definition": "Text formulas merging strings from multiple cells, with TEXTJOIN supporting designated delimiters and empty-cell ignores.",
+    "example": "=TEXTJOIN(\", \", TRUE, A2:A10)",
+    "related": []
+  },
+  {
+    "id": "gl-xl-033",
+    "term": "DATE / EOMONTH",
+    "definition": "Date calculation formulas, with EOMONTH computing the exact final calendar day of months in the past or future.",
+    "example": "=EOMONTH(TODAY(), 0) yields current month end;",
+    "related": []
+  },
+  {
+    "id": "gl-xl-034",
+    "term": "NETWORKDAYS",
+    "definition": "A calendar formula computing total working days between two dates, excluding weekends and specified holiday dates.",
+    "example": "=NETWORKDAYS(Start_Date, End_Date, Holidays)",
+    "related": []
+  },
+  {
+    "id": "gl-xl-035",
+    "term": "ROUND / ROUNDUP / ROUNDDOWN",
+    "definition": "Numerical formatting formulas rounding decimal numbers to specified precision digits.",
+    "example": "=ROUND(Revenue / 1000, 2)",
+    "related": []
+  },
+  {
+    "id": "gl-xl-036",
+    "term": "MOD function",
+    "definition": "A mathematical function returning the remainder after a number is divided by a specified divisor.",
+    "example": "=MOD(Row(), 2) for alternating row striping;",
+    "related": []
+  },
+  {
+    "id": "gl-xl-037",
+    "term": "ISBLANK / ISNUMBER / ISTEXT",
+    "definition": "Informational logical functions returning boolean TRUE or FALSE by checking the contents and type of cells.",
+    "example": "=IF(ISBLANK(A2), \"Missing\", A2)",
+    "related": []
+  },
+  {
+    "id": "gl-xl-038",
+    "term": "Circular Reference",
+    "definition": "A formula error occurring when a cell calculation depends directly or indirectly upon its own cell value.",
+    "example": "Cell A1 containing formula =A1 + 10;",
+    "related": []
+  },
+  {
+    "id": "gl-xl-039",
+    "term": "Spill Error (#SPILL!)",
+    "definition": "An error triggered when a dynamic array formula cannot spill its calculated results due to blocked cells.",
+    "example": "Clearing downstream cells resolves #SPILL!;",
+    "related": []
+  },
+  {
+    "id": "gl-xl-040",
+    "term": "VBA (Visual Basic for Applications)",
+    "definition": "The event-driven macro programming language used to automate repetitive worksheet tasks and complex reporting logic.",
+    "example": "Sub AutomateReport() ... End Sub",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-001",
+    "term": "DAX (Data Analysis Expressions)",
+    "definition": "The formula expression language used to create custom calculations in Power BI, Analysis Services, and Power Pivot.",
+    "example": "Total Sales = SUM(Orders[Revenue])",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-002",
+    "term": "Measures",
+    "definition": "Dynamic formula calculations evaluated on the fly based on user visual interactions and active report filter context.",
+    "example": "Profit Margin = DIVIDE([Total Profit], [Total Revenue])",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-003",
+    "term": "Calculated Columns",
+    "definition": "Columns computed row-by-row during data model refresh and physically stored in the in-memory tabular database.",
+    "example": "FullName = Customers[First] & \" \" & Customers[Last]",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-004",
+    "term": "Filter Context",
+    "definition": "The set of active filters applied to the data model by visuals, slicers, cross-filtering, and page filters.",
+    "example": "Visual showing sales filtered by Year=2024 and City='Pune';",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-005",
+    "term": "Row Context",
+    "definition": "The active environment during iteration where DAX focuses on a single current row within a table.",
+    "example": "Calculated column evaluating [Price] * [Qty] row-by-row;",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-006",
+    "term": "Context Transition",
+    "definition": "The transformation of existing row context into equivalent filter context, triggered automatically by CALCULATE().",
+    "example": "CALCULATE(SUM(Orders[Qty])) inside an iterator;",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-007",
+    "term": "CALCULATE()",
+    "definition": "The fundamental DAX function that evaluates an expression inside a modified, overridden, or newly created filter context.",
+    "example": "CALCULATE([Sales], Regions[Name] = \"South\")",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-008",
+    "term": "FILTER()",
+    "definition": "A table iterator function evaluating a boolean condition row-by-row and returning a filtered subset table.",
+    "example": "FILTER(Products, Products[Price] > 100)",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-009",
+    "term": "ALL()",
+    "definition": "A DAX function removing all active filter context from specified tables or columns, returning original values.",
+    "example": "CALCULATE([Sales], ALL(Products[Category]))",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-010",
+    "term": "ALLEXCEPT()",
+    "definition": "A function removing all active table filters except filters placed upon designated specified columns.",
+    "example": "CALCULATE([Sales], ALLEXCEPT(Orders, Orders[Region]))",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-011",
+    "term": "ALLSELECTED()",
+    "definition": "A DAX function restoring the filter context representing user slicer selections across the current visual display.",
+    "example": "Percent Share = DIVIDE([Sales], CALCULATE([Sales], ALLSELECTED()))",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-012",
+    "term": "VALUES()",
+    "definition": "A DAX function returning a one-column table containing distinct values currently visible within active filter context.",
+    "example": "COUNTROWS(VALUES(Customers[ID]))",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-013",
+    "term": "DISTINCT()",
+    "definition": "A DAX table function returning distinct values from a column or table expression, excluding blank row additions.",
+    "example": "DISTINCT(Sales[StoreKey])",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-014",
+    "term": "KEEPFILTERS()",
+    "definition": "A DAX modifier instructing CALCULATE to intersect incoming filter arguments with existing filters rather than overwriting them.",
+    "example": "CALCULATE([Sales], KEEPFILTERS(Dates[Year] = 2024))",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-015",
+    "term": "USERELATIONSHIP()",
+    "definition": "A DAX modifier activating an inactive data model relationship for the duration of a specific calculation.",
+    "example": "CALCULATE([Sales], USERELATIONSHIP(Orders[ShipDate], Dates[Date]))",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-016",
+    "term": "CROSSFILTER()",
+    "definition": "A DAX modifier changing cross-filtering direction or disabling relationship traversal during measure evaluation.",
+    "example": "CALCULATE([Sales], CROSSFILTER(Orders[CustID], Cust[ID], Both))",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-017",
+    "term": "SUMX()",
+    "definition": "An iterator function evaluating a row-level expression across a specified table and summing the computed results.",
+    "example": "SUMX(Orders, Orders[Units] * Orders[UnitPrice])",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-018",
+    "term": "AVERAGEX()",
+    "definition": "An iterator evaluating a scalar calculation row-by-row across a table and computing the arithmetic average.",
+    "example": "AVERAGEX(Customers, [Total Spend])",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-019",
+    "term": "COUNTX()",
+    "definition": "An iterator counting how many rows in an evaluated table yield non-blank calculation outcomes.",
+    "example": "COUNTX(Employees, [Bonus Amount])",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-020",
+    "term": "RELATED()",
+    "definition": "A DAX navigation function fetching a single scalar value from the 'one' side of an active relationship.",
+    "example": "CustomerCity = RELATED(Customers[City])",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-021",
+    "term": "RELATEDTABLE()",
+    "definition": "A DAX navigation function returning a full table of matching child records from the 'many' side of a relationship.",
+    "example": "OrderCount = COUNTROWS(RELATEDTABLE(Orders))",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-022",
+    "term": "DIVIDE()",
+    "definition": "A safe mathematical division function handling zero divisors gracefully by returning BLANK or an alternate result.",
+    "example": "DIVIDE([Net Income], [Total Equity], 0)",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-023",
+    "term": "DATESYTD()",
+    "definition": "A time intelligence function returning a set of calendar dates starting from year start up to the current context date.",
+    "example": "CALCULATE([Sales], DATESYTD(Dates[Date]))",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-024",
+    "term": "SAMEPERIODLASTYEAR()",
+    "definition": "A time intelligence function shifting current date intervals exactly one year backwards in calendar time.",
+    "example": "CALCULATE([Sales], SAMEPERIODLASTYEAR(Dates[Date]))",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-025",
+    "term": "DATEADD()",
+    "definition": "A flexible time intelligence function shifting date intervals by specified increments (days, months, quarters, or years).",
+    "example": "CALCULATE([Sales], DATEADD(Dates[Date], -1, MONTH))",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-026",
+    "term": "TOTALYTD()",
+    "definition": "A convenience DAX wrapper evaluating an expression across year-to-date calendar intervals.",
+    "example": "TOTALYTD([Sales], Dates[Date])",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-027",
+    "term": "PARALLELPERIOD()",
+    "definition": "A time intelligence function returning complete parallel calendar periods regardless of partial active dates.",
+    "example": "CALCULATE([Sales], PARALLELPERIOD(Dates[Date], -1, YEAR))",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-028",
+    "term": "Star Schema",
+    "definition": "A relational data modeling architecture connecting a centralized numeric fact table to surrounding denormalized dimension tables.",
+    "example": "Orders fact linked to Date, Customer, and Product dims;",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-029",
+    "term": "Snowflake Schema",
+    "definition": "A variation of star schema where dimension tables are broken down and normalized into secondary related dimension tables.",
+    "example": "Product dim normalized into Subcategory and Category tables;",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-030",
+    "term": "Fact Table",
+    "definition": "A central data modeling table holding quantitative numerical metrics, measurements, and foreign keys.",
+    "example": "FactOrders containing OrderID, Amount, Discount, and Keys;",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-031",
+    "term": "Dimension Table",
+    "definition": "A descriptive lookup table containing context attributes used to slice, filter, and group numerical facts.",
+    "example": "DimCustomer containing Name, City, Segment, and Tier;",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-032",
+    "term": "Granularity",
+    "definition": "The level of detail or atomic depth represented by an individual record within a database or fact table.",
+    "example": "Daily store-level SKU transactions vs monthly regional totals;",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-033",
+    "term": "Cardinality",
+    "definition": "The uniqueness ratio or count of distinct values present within a data model column or relationship.",
+    "example": "High cardinality customer keys vs low cardinality gender codes;",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-034",
+    "term": "Active vs Inactive Relationship",
+    "definition": "Active relationships propagate filter context by default; inactive relationships remain dormant until explicitly invoked via USERELATIONSHIP.",
+    "example": "Order Date (active) vs Ship Date (inactive) links;",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-035",
+    "term": "Bi-directional Cross Filtering",
+    "definition": "A data modeling setting allowing filter context to flow in both directions across a table relationship.",
+    "example": "Filter on Fact filtering Dimension; caution advised due to ambiguity;",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-036",
+    "term": "Row-Level Security (RLS)",
+    "definition": "A security framework filtering visible data for specific users based on role memberships and DAX criteria.",
+    "example": "[Region] = USERNAME() or role mapping rules;",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-037",
+    "term": "Power Query M Language",
+    "definition": "The formula language underpinning data extraction, cleansing, pivot manipulation, and transformation inside Power BI.",
+    "example": "Source = Csv.Document(File.Contents(...));",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-038",
+    "term": "Incremental Refresh",
+    "definition": "A performance optimization updating only newly modified historical data partitions rather than reloading entire datasets.",
+    "example": "Refreshing last 3 days while archiving 5 years;",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-039",
+    "term": "VertiPaq Engine",
+    "definition": "The in-memory columnar compression database engine powering calculations and storage in Power BI.",
+    "example": "Columnar dictionary encoding and run-length compression;",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-040",
+    "term": "Composite Model",
+    "definition": "A Power BI data model combining direct query tables and cached in-memory import tables in a single report.",
+    "example": "DirectQuery for real-time logs + Import for master dims;",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-041",
+    "term": "Drillthrough",
+    "definition": "A navigation feature allowing report viewers to click a data point and navigate to an in-depth detail page.",
+    "example": "Right-clicking 'Store 101' to open Store Detail View;",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-042",
+    "term": "Tooltip Page",
+    "definition": "A customized mini-report page displayed inside an interactive popup frame when hovering over visual elements.",
+    "example": "Hovering over monthly bar shows product breakdown card;",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-043",
+    "term": "Visual Interactions",
+    "definition": "Report settings dictating whether selecting elements in one chart filters, highlights, or ignores other visual charts.",
+    "example": "Toggle filter vs highlight icons on visual header;",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-044",
+    "term": "Performance Analyzer",
+    "definition": "A built-in diagnostic tool recording query durations, visual display times, and DAX query text.",
+    "example": "Analyzing milliseconds spent in DAX query execution;",
+    "related": []
+  },
+  {
+    "id": "gl-pbi-045",
+    "term": "Dataflow",
+    "definition": "A reusable cloud-based Power Query transformation pipeline managed within the Power BI Service.",
+    "example": "Shared enterprise customer dimension refreshed once daily;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-001",
+    "term": "Mean",
+    "definition": "The arithmetic average calculated by summing all observed values and dividing by the total observation count.",
+    "example": "Mean = Sum(x) / n;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-002",
+    "term": "Median",
+    "definition": "The middle value separating the higher half from the lower half of an ordered numerical dataset.",
+    "example": "50th percentile robust against extreme outliers;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-003",
+    "term": "Mode",
+    "definition": "The most frequently occurring value or categorical observation within a given dataset.",
+    "example": "Bimodal distribution with two distinct frequency peaks;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-004",
+    "term": "Variance",
+    "definition": "A statistical measure of data dispersion representing the average squared deviation of values from their mean.",
+    "example": "Sigma^2 = Sum((x - mu)^2) / N;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-005",
+    "term": "Standard Deviation",
+    "definition": "The square root of variance, measuring data dispersion around the arithmetic mean in original measurement units.",
+    "example": "Sigma = sqrt(Variance);",
+    "related": []
+  },
+  {
+    "id": "gl-stat-006",
+    "term": "Interquartile Range (IQR)",
+    "definition": "The spread between the 75th percentile (Q3) and 25th percentile (Q1), capturing the central 50% of data.",
+    "example": "IQR = Q3 - Q1;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-007",
+    "term": "Skewness",
+    "definition": "A measure of asymmetry in a probability distribution, indicating longer tails toward positive or negative extremes.",
+    "example": "Positive right-skewed salary distributions;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-008",
+    "term": "Kurtosis",
+    "definition": "A statistical measure of the heavy-tailedness or peakedness of a distribution relative to a normal distribution.",
+    "example": "Leptokurtic distributions with fat outlier tails;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-009",
+    "term": "Normal Distribution (Gaussian)",
+    "definition": "A symmetric bell-shaped distribution where 68%, 95%, and 99.7% of values lie within 1, 2, and 3 standard deviations.",
+    "example": "Heights, measurement errors, and sampling means;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-010",
+    "term": "Central Limit Theorem (CLT)",
+    "definition": "A theorem stating that the sampling distribution of sample means approaches normality as sample size increases.",
+    "example": "Holds for sample sizes n >= 30 regardless of shape;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-011",
+    "term": "Standard Error (SE)",
+    "definition": "The standard deviation of a sampling distribution, measuring precision of sample estimates relative to population parameters.",
+    "example": "SE = s / sqrt(n);",
+    "related": []
+  },
+  {
+    "id": "gl-stat-012",
+    "term": "Z-Score",
+    "definition": "The number of standard deviations an individual raw observation lies above or below the dataset mean.",
+    "example": "z = (x - mu) / sigma;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-013",
+    "term": "Confidence Interval (CI)",
+    "definition": "A plausible range of values computed from sample data expected to contain the true population parameter.",
+    "example": "95% CI: mean +- 1.96 * SE;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-014",
+    "term": "Null Hypothesis (H0)",
+    "definition": "The default statistical assumption stating that no real effect, difference, or relationship exists in the population.",
+    "example": "H0: Treatment conversion rate equals Control conversion rate;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-015",
+    "term": "Alternative Hypothesis (H1)",
+    "definition": "The hypothesis indicating the presence of a statistically meaningful difference, effect, or relationship.",
+    "example": "H1: Treatment conversion is strictly greater than Control;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-016",
+    "term": "P-Value",
+    "definition": "The probability of obtaining sample results at least as extreme as observed, assuming the null hypothesis is true.",
+    "example": "p < 0.05 indicates statistical significance;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-017",
+    "term": "Significance Level (Alpha)",
+    "definition": "The threshold probability chosen by experimenters for rejecting the null hypothesis, conventionally set to 0.05.",
+    "example": "Alpha = 0.05 risk tolerance;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-018",
+    "term": "Type I Error (False Positive)",
+    "definition": "The error occurring when an analyst mistakenly rejects a true null hypothesis, finding non-existent effects.",
+    "example": "Concluding a feature boosted conversion when it did not;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-019",
+    "term": "Type II Error (False Negative)",
+    "definition": "The error occurring when an analyst fails to reject a false null hypothesis, missing a real effect.",
+    "example": "Failing to detect a genuinely superior checkout design;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-020",
+    "term": "Statistical Power (1 - Beta)",
+    "definition": "The probability of correctly rejecting a false null hypothesis and detecting a genuine effect.",
+    "example": "Aiming for 80% or 90% power in experiment sizing;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-021",
+    "term": "Minimum Detectable Effect (MDE)",
+    "definition": "The smallest effect size an experiment is statistically powered to reliably detect at chosen alpha and power.",
+    "example": "Powering a test to detect a 2% lift in conversion;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-022",
+    "term": "Sample Ratio Mismatch (SRM)",
+    "definition": "A discrepancy between observed and expected traffic splits in an A/B test, indicating technical assignment bugs.",
+    "example": "Observed 52/48 split when 50/50 was configured;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-023",
+    "term": "Two-Sample t-Test",
+    "definition": "A hypothesis test evaluating whether the means of two independent groups differ significantly from each other.",
+    "example": "Comparing average order value between control and variant;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-024",
+    "term": "Paired t-Test",
+    "definition": "A hypothesis test comparing means of two related measurements taken from the same subjects across time.",
+    "example": "Pre-training vs post-training employee test scores;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-025",
+    "term": "ANOVA (Analysis of Variance)",
+    "definition": "A statistical method testing whether statistically significant differences exist across means of three or more groups.",
+    "example": "Comparing conversion across four landing page versions;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-026",
+    "term": "Chi-Square Test of Independence",
+    "definition": "A non-parametric test evaluating whether an association exists between two categorical variables in a contingency table.",
+    "example": "Testing relationship between device category and churn;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-027",
+    "term": "Mann-Whitney U Test",
+    "definition": "A non-parametric alternative to the two-sample t-test comparing rank distributions of two independent non-normal groups.",
+    "example": "Comparing skewed customer transaction amounts;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-028",
+    "term": "Bonferroni Correction",
+    "definition": "A conservative multiple testing adjustment dividing alpha by the number of hypothesis tests to control family-wise errors.",
+    "example": "Alpha_adjusted = 0.05 / k;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-029",
+    "term": "False Discovery Rate (FDR)",
+    "definition": "The expected proportion of false positive findings among all rejected null hypotheses in multi-hypothesis testing.",
+    "example": "Benjamini-Hochberg procedure controlling FDR;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-030",
+    "term": "A/A Test",
+    "definition": "Running an experiment where both variants receive identical experiences to validate split fairness and false-positive rates.",
+    "example": "Testing for split bias prior to actual treatment rollout;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-031",
+    "term": "Simpson's Paradox",
+    "definition": "A phenomenon where a trend appears in several groups of data but disappears or reverses when groups are aggregated.",
+    "example": "Aggregate conversion rising while declining in mobile and desktop;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-032",
+    "term": "Covariance",
+    "definition": "A measure of the joint variability and direction of relationship between two continuous numerical random variables.",
+    "example": "Cov(X, Y) = E[(X - E[X])(Y - E[Y])];",
+    "related": []
+  },
+  {
+    "id": "gl-stat-033",
+    "term": "Pearson Correlation (r)",
+    "definition": "A standardized measure evaluating the strength and direction of linear relationships between two continuous variables.",
+    "example": "r ranges strictly from -1.0 to +1.0;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-034",
+    "term": "Spearman Rank Correlation (rho)",
+    "definition": "A non-parametric correlation coefficient measuring monotonic relationships based on ranked observation values.",
+    "example": "Robust against outliers and non-linear monotonic trends;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-035",
+    "term": "Linear Regression",
+    "definition": "A modeling approach estimating linear relationships between a continuous target variable and one or more predictor features.",
+    "example": "y = beta_0 + beta_1 * x + epsilon;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-036",
+    "term": "Ordinary Least Squares (OLS)",
+    "definition": "An optimization method estimating linear regression coefficients by minimizing the sum of squared prediction residuals.",
+    "example": "Minimizing Sum((y_actual - y_predicted)^2);",
+    "related": []
+  },
+  {
+    "id": "gl-stat-037",
+    "term": "R-Squared (Coefficient of Determination)",
+    "definition": "The proportion of variance in the dependent variable explained by independent predictor variables in a regression.",
+    "example": "R^2 = 0.82 indicates 82% of variance explained;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-038",
+    "term": "Adjusted R-Squared",
+    "definition": "A modified R-squared metric penalizing the addition of extraneous non-informative predictor variables to a regression model.",
+    "example": "Prevents overfitting via feature count penalties;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-039",
+    "term": "Residuals",
+    "definition": "The vertical differences between observed actual target values and the values predicted by a statistical model.",
+    "example": "Residual = y_observed - y_fitted;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-040",
+    "term": "Homoscedasticity",
+    "definition": "The regression assumption requiring residuals to exhibit constant variance across all levels of independent predictor variables.",
+    "example": "Examining residual plots for fan-shaped heteroscedasticity;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-041",
+    "term": "Multicollinearity",
+    "definition": "High linear correlation among independent predictor variables in multiple regression, inflating coefficient standard errors.",
+    "example": "Detected via Variance Inflation Factor (VIF > 5);",
+    "related": []
+  },
+  {
+    "id": "gl-stat-042",
+    "term": "Logistic Regression",
+    "definition": "A classification algorithm modeling the log-odds probability of a binary categorical outcome using the sigmoid function.",
+    "example": "Predicting customer churn (1 = churned, 0 = retained);",
+    "related": []
+  },
+  {
+    "id": "gl-stat-043",
+    "term": "Odds Ratio",
+    "definition": "The ratio of the odds of an event occurring in one group compared to the odds of it occurring in another.",
+    "example": "Odds = p / (1 - p);",
+    "related": []
+  },
+  {
+    "id": "gl-stat-044",
+    "term": "Confusion Matrix",
+    "definition": "A tabular layout cross-classifying model predictions against ground truth labels into TP, FP, TN, and FN.",
+    "example": "Evaluating classification accuracy and error modes;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-045",
+    "term": "Precision",
+    "definition": "The fraction of relevant instances among retrieved instances, calculated as True Positives divided by total predicted positives.",
+    "example": "Precision = TP / (TP + FP);",
+    "related": []
+  },
+  {
+    "id": "gl-stat-046",
+    "term": "Recall (Sensitivity)",
+    "definition": "The fraction of relevant instances successfully identified, calculated as True Positives divided by actual positive cases.",
+    "example": "Recall = TP / (TP + FN);",
+    "related": []
+  },
+  {
+    "id": "gl-stat-047",
+    "term": "F1-Score",
+    "definition": "The harmonic mean of precision and recall, balancing both metrics into a single representative classification score.",
+    "example": "F1 = 2 * (Precision * Recall) / (Precision + Recall);",
+    "related": []
+  },
+  {
+    "id": "gl-stat-048",
+    "term": "ROC-AUC",
+    "definition": "The Area Under the Receiver Operating Characteristic curve, measuring classification capability across all decision thresholds.",
+    "example": "0.5 represents random guessing; 1.0 represents perfect separation;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-049",
+    "term": "Survivorship Bias",
+    "definition": "A logical error concentrating on people or products that passed a selection process while overlooking those that failed.",
+    "example": "Analyzing successful unicorns while ignoring defunct startups;",
+    "related": []
+  },
+  {
+    "id": "gl-stat-050",
+    "term": "Poisson Distribution",
+    "definition": "A discrete probability distribution expressing the probability of a given number of events occurring in fixed time intervals.",
+    "example": "Modeling customer call center arrivals per hour;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-001",
+    "term": "Customer Acquisition Cost (CAC)",
+    "definition": "The total sales and marketing expenditures required to acquire one single newly converted paying customer.",
+    "example": "CAC = Total Marketing Spend / New Customers Acquired;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-002",
+    "term": "Customer Lifetime Value (LTV)",
+    "definition": "The aggregate gross margin or net revenue a customer is projected to generate across their relationship lifespan.",
+    "example": "LTV = (ARPU * Gross Margin %) / Churn Rate;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-003",
+    "term": "LTV to CAC Ratio",
+    "definition": "A unit economics health indicator comparing customer lifetime value against the acquisition expense, ideally 3.0 or higher.",
+    "example": "LTV:CAC of 4.2 indicates strong commercial scalability;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-004",
+    "term": "Payback Period",
+    "definition": "The time required for cumulative customer revenue to fully offset the initial customer acquisition investment.",
+    "example": "CAC Payback = CAC / (ARPU * Gross Margin %);",
+    "related": []
+  },
+  {
+    "id": "gl-biz-005",
+    "term": "Annual Recurring Revenue (ARR)",
+    "definition": "The annualized value of contracted recurring subscription revenue generated by active customer accounts.",
+    "example": "ARR = MRR * 12;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-006",
+    "term": "Monthly Recurring Revenue (MRR)",
+    "definition": "The total predictable recurring revenue recognized from active subscriptions during a single calendar month.",
+    "example": "Tracking net new MRR additions minus churn;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-007",
+    "term": "Net Revenue Retention (NRR)",
+    "definition": "The percentage of recurring revenue retained from existing customers over a period, incorporating expansions and churn.",
+    "example": "NRR of 115% indicates strong expansion revenue;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-008",
+    "term": "Gross Revenue Retention (GRR)",
+    "definition": "The percentage of recurring revenue retained from existing customers, excluding expansion upsells (max 100%).",
+    "example": "Healthy SaaS GRR is typically 90% or above;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-009",
+    "term": "Logo Churn",
+    "definition": "The percentage of distinct paying customer accounts or logos that terminate their subscriptions within a given timeframe.",
+    "example": "Logo Churn = Lost Customers / Starting Customers;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-010",
+    "term": "Revenue Churn",
+    "definition": "The percentage of recurring subscription revenue lost due to contract downgrades or customer cancellations.",
+    "example": "Revenue Churn = Lost MRR / Starting MRR;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-011",
+    "term": "Average Revenue Per User (ARPU)",
+    "definition": "The average revenue generated by each active user or customer account within a designated reporting period.",
+    "example": "ARPU = Total Revenue / Total Active Users;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-012",
+    "term": "Average Order Value (AOV)",
+    "definition": "The average gross transaction currency value spent by customers when placing orders on an e-commerce platform.",
+    "example": "AOV = Total Gross Merchandise Value / Order Count;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-013",
+    "term": "Gross Merchandise Value (GMV)",
+    "definition": "The total retail monetary value of all goods and merchandise sold across an e-commerce marketplace.",
+    "example": "Measuring platform volume before commissions and discounts;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-014",
+    "term": "Net Revenue",
+    "definition": "Gross revenue minus direct transaction deductions such as customer discounts, returns, refunds, and allowances.",
+    "example": "Net Revenue = Gross Billings - Returns - Promo Codes;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-015",
+    "term": "Gross Margin",
+    "definition": "The percentage of total sales revenue remaining after deducting direct Cost of Goods Sold (COGS).",
+    "example": "Gross Margin % = (Revenue - COGS) / Revenue;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-016",
+    "term": "Operating Margin",
+    "definition": "The percentage of revenue remaining after subtracting both COGS and operating operating expenses (OPEX).",
+    "example": "Operating Margin = Operating Income / Revenue;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-017",
+    "term": "Contribution Margin",
+    "definition": "The revenue remaining after deducting all variable costs associated with delivering products, indicating incremental profitability.",
+    "example": "Contribution Margin = Price - Variable Costs;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-018",
+    "term": "EBITDA",
+    "definition": "Earnings Before Interest, Taxes, Depreciation, and Amortization, assessing operational operational profitability independent of financing structure.",
+    "example": "Evaluating cash operating profitability;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-019",
+    "term": "Return on Ad Spend (ROAS)",
+    "definition": "The gross revenue generated for every rupee or dollar spent on advertising marketing campaigns.",
+    "example": "ROAS = Campaign Revenue / Ad Spend;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-020",
+    "term": "North Star Metric",
+    "definition": "A single key performance indicator that best encapsulates the core value delivered by a product to customers.",
+    "example": "Spotify's Time Spent Listening or Airbnb's Nights Booked;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-021",
+    "term": "DAU / MAU Ratio",
+    "definition": "The ratio of Daily Active Users to Monthly Active Users, measuring product engagement stickiness and habituation.",
+    "example": "DAU/MAU of 40% indicates high daily user habituation;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-022",
+    "term": "Cohort Analysis",
+    "definition": "A behavioral analytics technique tracking groups of users sharing common characteristics (e.g. signup month) over time.",
+    "example": "Evaluating 30-day retention curves by acquisition cohort;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-023",
+    "term": "Retention Curve",
+    "definition": "A visual graph plotting the percentage of cohort users returning to engage with a product over progressive days.",
+    "example": "Flattening curves indicate product-market fit;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-024",
+    "term": "Funnel Conversion Rate",
+    "definition": "The percentage of users successfully progressing from the initial step of a defined user flow to completion.",
+    "example": "Cart-to-checkout conversion percentage;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-025",
+    "term": "Bounce Rate",
+    "definition": "The percentage of website visitors leaving after viewing only a single page without performing secondary interactions.",
+    "example": "High bounce on search landing pages indicates relevance mismatch;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-026",
+    "term": "Click-Through Rate (CTR)",
+    "definition": "The percentage of users who click on a specific advertising link or call-to-action out of total impressions.",
+    "example": "CTR = Total Clicks / Total Ad Impressions;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-027",
+    "term": "Cost Per Click (CPC)",
+    "definition": "The financial cost incurred by advertisers each time a prospective user clicks on a digital advertisement.",
+    "example": "CPC = Total Ad Cost / Clicks;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-028",
+    "term": "Cost Per Mille (CPM)",
+    "definition": "The standard advertising rate charged per one thousand individual advertisement impressions delivered to viewers.",
+    "example": "CPM = (Cost / Impressions) * 1000;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-029",
+    "term": "Burn Rate",
+    "definition": "The rate at which a company expends its venture capital reserves before generating positive operating cash flow.",
+    "example": "Net Burn = Monthly Cash Inflows - Cash Outflows;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-030",
+    "term": "Cash Runway",
+    "definition": "The number of operational months a startup can continue operating before fully depleting its existing cash reserves.",
+    "example": "Runway = Cash Balance / Monthly Net Burn;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-031",
+    "term": "Return to Origin (RTO)",
+    "definition": "An Indian e-commerce operational metric tracking shipments returned undelivered, prominent in Cash on Delivery transactions.",
+    "example": "High COD RTO inflates logistics reverse shipping costs;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-032",
+    "term": "Cash on Delivery (COD)",
+    "definition": "A payment method where customers pay in cash or via UPI at doorstep upon physical parcel receipt.",
+    "example": "COD represents 60%+ of e-commerce orders in Tier 2/3 India;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-033",
+    "term": "Unified Payments Interface (UPI)",
+    "definition": "An instant real-time payment system developed by NPCI facilitating inter-bank peer-to-peer and merchant smartphone transactions.",
+    "example": "Dominant payment rail processing over 10 billion monthly transactions;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-034",
+    "term": "Payment Gateway Success Rate",
+    "definition": "The percentage of payment transactions successfully settled without technical failures, user drops, or bank timeouts.",
+    "example": "Tracking Kaveri Bank UPI success rate dips;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-035",
+    "term": "Service Level Agreement (SLA)",
+    "definition": "A formal contract commitment defining expected operational uptime, delivery deadlines, or response turnaround benchmarks.",
+    "example": "Maintaining 99.9% API uptime or 30-minute delivery SLA;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-036",
+    "term": "Stock Keeping Unit (SKU)",
+    "definition": "A unique alphanumeric code assigned to inventory items to identify product variants, sizes, and colors.",
+    "example": "Managing SKU-level inventory counts in warehouse bays;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-037",
+    "term": "Days Sales of Inventory (DSI)",
+    "definition": "The average number of calendar days a business takes to convert inventory stock into completed sales.",
+    "example": "DSI = (Average Inventory / COGS) * 365;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-038",
+    "term": "Inventory Turnover",
+    "definition": "The number of times a business sells and replaces its inventory stock across a designated annual timeframe.",
+    "example": "Turnover = COGS / Average Inventory;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-039",
+    "term": "Sales Per Square Foot",
+    "definition": "A retail productivity metric calculating total store revenue generated per square foot of retail floor space.",
+    "example": "Measuring brick-and-mortar store floor profitability;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-040",
+    "term": "Net Promoter Score (NPS)",
+    "definition": "A customer loyalty index calculated by subtracting Detractors (0-6) from Promoters (9-10) in recommendation surveys.",
+    "example": "NPS ranges from -100 to +100;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-041",
+    "term": "Customer Satisfaction Score (CSAT)",
+    "definition": "A short-term customer sentiment metric measuring immediate satisfaction with specific support interactions or orders.",
+    "example": "CSAT % = Positive Responses / Total Responses;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-042",
+    "term": "First Contact Resolution (FCR)",
+    "definition": "The percentage of customer support tickets or service complaints resolved completely during the initial interaction.",
+    "example": "High FCR reduces support operating overheads;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-043",
+    "term": "Attribution Modeling",
+    "definition": "The analytics framework determining which marketing touchpoints receive credit for subsequent customer conversions.",
+    "example": "First-touch, Last-touch, and Linear multi-touch attribution;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-044",
+    "term": "Cannibalization",
+    "definition": "A situation where a new product or digital channel captures sales directly away from an established existing channel.",
+    "example": "Online flash sales cannibalizing physical retail outlet footfall;",
+    "related": []
+  },
+  {
+    "id": "gl-biz-045",
+    "term": "Omnichannel Analytics",
+    "definition": "Unified measurement tracking customer cross-channel journeys spanning online e-commerce, mobile applications, and brick-and-mortar stores.",
+    "example": "Ship-from-Store fulfilling web orders from local retail shelves;",
+    "related": []
+  },
+  {
+    "id": "gl-de-001",
+    "term": "ETL (Extract, Transform, Load)",
+    "definition": "A traditional data integration pipeline extracting raw data, transforming it on compute servers, and loading into targets.",
+    "example": "Nightly batch ETL pipelines loading enterprise warehouses;",
+    "related": []
+  },
+  {
+    "id": "gl-de-002",
+    "term": "ELT (Extract, Load, Transform)",
+    "definition": "A modern data engineering paradigm loading raw data directly into cloud data warehouses before applying transformations via SQL.",
+    "example": "Using Fivetran to load raw JSON and dbt to transform;",
+    "related": []
+  },
+  {
+    "id": "gl-de-003",
+    "term": "dbt (data build tool)",
+    "definition": "A popular transformation framework enabling data analysts to build, test, and document data models using modular SQL.",
+    "example": "dbt run --select models/marts/finance;",
+    "related": []
+  },
+  {
+    "id": "gl-de-004",
+    "term": "Data Warehouse",
+    "definition": "A centralized relational repository optimized for analytical queries, business intelligence reporting, and aggregated historical analysis.",
+    "example": "Snowflake, Google BigQuery, and Amazon Redshift;",
+    "related": []
+  },
+  {
+    "id": "gl-de-005",
+    "term": "Data Lake",
+    "definition": "A storage repository holding massive volumes of raw, unstructured, semi-structured, and structured data in native formats.",
+    "example": "Amazon S3 or Azure ADLS storing Parquet and JSON;",
+    "related": []
+  },
+  {
+    "id": "gl-de-006",
+    "term": "Data Lakehouse",
+    "definition": "An architectural pattern combining the cost-effective storage of data lakes with the ACID transaction reliability of data warehouses.",
+    "example": "Databricks Delta Lake and Apache Iceberg;",
+    "related": []
+  },
+  {
+    "id": "gl-de-007",
+    "term": "Columnar Storage",
+    "definition": "A physical data storage format organizing table records by columns rather than rows, drastically speeding analytical aggregations.",
+    "example": "Parquet and ORC formats minimizing I/O disk reads;",
+    "related": []
+  },
+  {
+    "id": "gl-de-008",
+    "term": "Row-Oriented Storage",
+    "definition": "A storage format storing complete table records contiguously, optimized for high-volume transactional write operations.",
+    "example": "PostgreSQL and MySQL storage engines for OLTP;",
+    "related": []
+  },
+  {
+    "id": "gl-de-009",
+    "term": "OLTP (Online Transaction Processing)",
+    "definition": "Database systems designed to process large volumes of fast, simple transactional queries like payments and order lookups.",
+    "example": "Bank account ledger databases processing atomic writes;",
+    "related": []
+  },
+  {
+    "id": "gl-de-010",
+    "term": "OLAP (Online Analytical Processing)",
+    "definition": "Database systems optimized for complex multi-table aggregations, analytical queries, and business intelligence reporting across historical data.",
+    "example": "Aggregating 500 million transaction rows across dimensions;",
+    "related": []
+  },
+  {
+    "id": "gl-de-011",
+    "term": "Slowly Changing Dimension (SCD)",
+    "definition": "A data modeling technique managing how historical changes to dimension entity attributes are tracked over time.",
+    "example": "SCD Type 1 (overwrite) vs SCD Type 2 (historical rows with validity dates);",
+    "related": []
+  },
+  {
+    "id": "gl-de-012",
+    "term": "SCD Type 1",
+    "definition": "An SCD approach overwriting old attribute values with new data, maintaining no historical record of previous states.",
+    "example": "Updating a customer's current phone number;",
+    "related": []
+  },
+  {
+    "id": "gl-de-013",
+    "term": "SCD Type 2",
+    "definition": "An SCD approach inserting a new record with effective start/end dates and flags whenever attribute modifications occur.",
+    "example": "Tracking historical customer city changes for regional sales attribution;",
+    "related": []
+  },
+  {
+    "id": "gl-de-014",
+    "term": "Surrogate Key",
+    "definition": "A synthetic artificial primary key (e.g. integer or UUID) assigned to dimension tables independent of business keys.",
+    "example": "DimCustomerSK distinct from natural CustomerID;",
+    "related": []
+  },
+  {
+    "id": "gl-de-015",
+    "term": "Natural Key",
+    "definition": "A business identifier assigned to an entity in operational source systems (e.g. employee number or PAN).",
+    "example": "Using natural PAN numbers or GSTIN codes;",
+    "related": []
+  },
+  {
+    "id": "gl-de-016",
+    "term": "Data Mart",
+    "definition": "A focused subset of an enterprise data warehouse designed to serve the analytical needs of a specific business department.",
+    "example": "Marketing data mart containing campaign and attribution tables;",
+    "related": []
+  },
+  {
+    "id": "gl-de-017",
+    "term": "Data Lineage",
+    "definition": "The lifecycle tracking map showing the complete historical path, origins, and transformations data undergoes across pipelines.",
+    "example": "Visualizing source CRM tables feeding final finance dashboards;",
+    "related": []
+  },
+  {
+    "id": "gl-de-018",
+    "term": "Data Catalog",
+    "definition": "An organized inventory of enterprise data assets providing metadata, data definitions, owners, and search capabilities.",
+    "example": "Alation, Collibra, or Amundsen metadata portals;",
+    "related": []
+  },
+  {
+    "id": "gl-de-019",
+    "term": "Metadata",
+    "definition": "Structured data providing descriptive, administrative, or structural information regarding underlying enterprise data assets.",
+    "example": "Schema definitions, column descriptions, and update timestamps;",
+    "related": []
+  },
+  {
+    "id": "gl-de-020",
+    "term": "Data Governance",
+    "definition": "The formal framework of policies, processes, and security controls ensuring data accuracy, privacy, and compliance.",
+    "example": "Enforcing role-based access control and DPDP compliance;",
+    "related": []
+  },
+  {
+    "id": "gl-de-021",
+    "term": "Parquet",
+    "definition": "An open-source, columnar storage file format providing efficient data compression and fast columnar encoding schemes.",
+    "example": "Saving compressed analytics datasets as .parquet;",
+    "related": []
+  },
+  {
+    "id": "gl-de-022",
+    "term": "CSV (Comma-Separated Values)",
+    "definition": "A simple plain-text delimited format where values are separated by commas, widely used for data exchange.",
+    "example": "Exporting spreadsheet rows to plain .csv files;",
+    "related": []
+  },
+  {
+    "id": "gl-de-023",
+    "term": "JSON (JavaScript Object Notation)",
+    "definition": "A lightweight semi-structured data interchange format storing data as key-value pairs and nested array objects.",
+    "example": "Parsing nested API payload response documents;",
+    "related": []
+  },
+  {
+    "id": "gl-de-024",
+    "term": "Apache Airflow",
+    "definition": "An open-source orchestration workflow platform used to author, schedule, and programmatically monitor complex data pipelines.",
+    "example": "DAGs defining dependencies between pipeline task operators;",
+    "related": []
+  },
+  {
+    "id": "gl-de-025",
+    "term": "DAG (Directed Acyclic Graph)",
+    "definition": "A mathematical graph of data pipeline tasks connected by directional execution dependencies with no circular loops.",
+    "example": "Airflow pipeline orchestrating extract -> transform -> validate;",
+    "related": []
+  },
+  {
+    "id": "gl-de-026",
+    "term": "Change Data Capture (CDC)",
+    "definition": "A design pattern identifying and capturing individual database row modifications (inserts, updates, deletes) in real time.",
+    "example": "Debezium streaming Postgres WAL logs into Kafka;",
+    "related": []
+  },
+  {
+    "id": "gl-de-027",
+    "term": "Kafka",
+    "definition": "A distributed event streaming platform handling real-time high-throughput messaging between distributed source and target applications.",
+    "example": "Streaming real-time order events into analytics engines;",
+    "related": []
+  },
+  {
+    "id": "gl-de-028",
+    "term": "Stream Processing",
+    "definition": "The continuous real-time computation and aggregation of data records immediately as individual events occur.",
+    "example": "Flink or Spark Streaming calculating real-time fraud alerts;",
+    "related": []
+  },
+  {
+    "id": "gl-de-029",
+    "term": "Batch Processing",
+    "definition": "The scheduled execution of data transformation jobs across accumulated blocks of data at periodic calendar intervals.",
+    "example": "Nightly batch jobs processing daily sales summaries;",
+    "related": []
+  },
+  {
+    "id": "gl-de-030",
+    "term": "Idempotency",
+    "definition": "A pipeline property guaranteeing that executing an operation multiple times produces the exact same state as running it once.",
+    "example": "INSERT OVERWRITE partitions preventing duplicate rows upon rerun;",
+    "related": []
+  },
+  {
+    "id": "gl-de-031",
+    "term": "Data Partitioning",
+    "definition": "Dividing large database tables into smaller physical chunks based on key columns (e.g. date) to accelerate query performance.",
+    "example": "Partitioning orders table by event_date;",
+    "related": []
+  },
+  {
+    "id": "gl-de-032",
+    "term": "Data Sharding",
+    "definition": "A horizontal scaling architecture distributing database rows across multiple independent physical server nodes.",
+    "example": "Sharding customer data across geographical database clusters;",
+    "related": []
+  },
+  {
+    "id": "gl-de-033",
+    "term": "Data Pipeline",
+    "definition": "An automated software process extracting data from source systems, transforming data structures, and loading into destinations.",
+    "example": "Automating raw clickstream ingestion into reporting marts;",
+    "related": []
+  },
+  {
+    "id": "gl-de-034",
+    "term": "Data Quality Testing",
+    "definition": "Automated validation checks verifying data freshness, schema adherence, null constraints, and unique integrity before consumption.",
+    "example": "Running dbt test for not_null and unique keys;",
+    "related": []
+  },
+  {
+    "id": "gl-de-035",
+    "term": "Data Observability",
+    "definition": "The monitoring capability to understand data health across freshness, volume, distribution, schema drift, and lineage anomalies.",
+    "example": "Monte Carlo monitoring unexpected table drop alerts;",
+    "related": []
+  },
+  {
+    "id": "gl-de-036",
+    "term": "Data SLA Breach",
+    "definition": "An operational incident occurring when a data pipeline fails to deliver validated data within agreed business deadline windows.",
+    "example": "Reporting table failing to refresh prior to 8 AM executive review;",
+    "related": []
+  },
+  {
+    "id": "gl-de-037",
+    "term": "Backfill",
+    "definition": "The process of re-running data pipelines across historical date ranges to apply updated transformation logic or new fields.",
+    "example": "Backfilling 12 months of newly engineered churn indicators;",
+    "related": []
+  },
+  {
+    "id": "gl-de-038",
+    "term": "Zero-Copy Cloning",
+    "definition": "A cloud data warehouse capability creating instant logical clones of databases or tables without duplicating underlying physical storage files.",
+    "example": "Snowflake zero-copy cloning for staging testing environments;",
+    "related": []
+  },
+  {
+    "id": "gl-de-039",
+    "term": "Data Virtualization",
+    "definition": "A software approach allowing applications to query multiple disparate data sources as a single unified logical data view without moving data.",
+    "example": "Querying data lakes and relational DBs seamlessly;",
+    "related": []
+  },
+  {
+    "id": "gl-de-040",
+    "term": "Analytics Engineer",
+    "definition": "A technical professional bridging data analysts and data engineers, writing production-grade dbt transformations and data models.",
+    "example": "Transforming raw source tables into clean reporting marts;",
+    "related": []
+  }
+]

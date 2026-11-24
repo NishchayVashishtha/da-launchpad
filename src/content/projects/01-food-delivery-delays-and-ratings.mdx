@@ -1,0 +1,311 @@
+---
+id: "01-food-delivery-delays-and-ratings"
+title: "Food Delivery Operations: Delivery Delay Root Causes and Customer Rating Drivers"
+businessProblem: "Diagnose why late delivery rates spiked during monsoon months and identify operational bottlenecks driving 1-star delivery ratings across 15,000 orders."
+datasetDescription: "Food delivery operational dataset containing 15,120 deliveries, 600 restaurants, 908 delivery partners, 8,630 ratings, and 5,474 promo usages."
+skillsUsed: ["SQL", "Python", "Power BI", "Data Cleaning", "Root Cause Analysis", "Statistical Modeling"]
+steps:
+  - "Frame the operational problem and define core metrics (On-Time Delivery %, Delay Minutes, Delivery Rating)"
+  - "Clean dirty data: resolve 120 duplicate delivery IDs, sanitize mixed city casing, and handle 100x price entry errors"
+  - "Write SQL queries to isolate delivery delays across weather conditions, peak hours, and delivery partner tenure"
+  - "Conduct Python EDA to measure correlation between delivery delays and rating erosion (regression slope -0.075 stars/min)"
+  - "Design a 3-page Power BI operational dashboard with DAX measures and dispatch alerts"
+  - "Synthesize root causes into an executive memo with quantified ROI recommendations"
+deliverables:
+  - "Production SQL diagnostic script (analysis.sql)"
+  - "Jupyter notebook with Python EDA and rating regression models (eda.ipynb)"
+  - "Interactive Power BI dashboard report (.pbix) and layout specification"
+  - "Executive summary memo and GitHub portfolio README.md"
+readmeTemplate: |
+  # Food Delivery Operations Analysis: Delay Drivers and Customer Ratings
+
+  ## Executive Summary
+  Analysis of 15,000 food delivery orders across 5 Indian metro cities to isolate the root causes of delivery delays and measure their impact on customer ratings.
+
+  ## Problem Statement
+  Late deliveries (>10 minutes past promised ETA) spiked during monsoon months, dragging overall customer ratings from 4.40 to 3.55 stars.
+
+  ## Key Insights
+  1. Weather Bottlenecks: Heavy Rain increases average delay from 2.0 minutes to 11.7 minutes, with late order share surging from 15.0% to 53.0%.
+  2. Rating Erosion: Delivery ratings drop by 0.075 stars per minute of delay. While food quality ratings remain steady (3.97 vs 3.93), delivery satisfaction drops from 4.70 to 3.27 for late orders.
+  3. Partner Experience Curve: Delivery partners in their first 60 days experience 5.2 minutes longer delays on average compared to tenured partners.
+
+  ## Strategic Recommendations
+  - Implement dynamic ETA buffering (+8 minutes) during verified rain triggers.
+  - Pair rookie delivery partners with shorter-radius orders (under 3 km) during their initial 30 days.
+  - Restructure promo incentives to deprecate negative-ROI discount codes (FLAT75).
+interviewTalkingPoints:
+  - "How I separated transit delays from kitchen preparation time using timestamp difference logic in SQL"
+  - "Demonstrating that customer dissatisfaction during late orders is driven by delivery logistics, not restaurant cooking quality"
+  - "Using statistical regression in Python to quantify the rating penalty per minute of delivery delay"
+extensions:
+  - "Develop a real-time dispatch queue simulation using Python SimPy to test rider batching"
+  - "Build a machine learning delivery delay prediction classifier using XGBoost"
+estimatedHours: 14
+order: 1
+draft: false
+---
+
+## Project overview & business context
+
+In quick-commerce and on-demand food delivery platforms, customer retention depends heavily on operational predictability. When delivery times exceed promised estimates, customer satisfaction erodes rapidly, leading to refund demands, negative app store reviews, and churn to competing platforms.
+
+This project analyzes an operational dataset of **15,120 deliveries** fulfilled across 600 restaurant partners and 908 delivery partners in major Indian metro markets (Bengaluru, Mumbai, Delhi NCR, Pune, Chennai). 
+
+The primary business objectives are:
+1. Identify the structural and external drivers of delivery delays.
+2. Quantify the direct mathematical relationship between delivery delays and customer ratings.
+3. Formulate actionable operational interventions to protect delivery service level agreements (SLAs) without inflating driver fleet overheads.
+
+## Dataset architecture & schema inspection
+
+The dataset is modeled as a relational star schema across five tables:
+- `deliveries` (15,120 rows): Primary transaction record containing order timestamps, delivery timestamps, promised delivery minutes, actual delivery minutes, distance in kilometers, delivery status, and weather conditions.
+- `restaurants` (600 rows): Restaurant metadata including cuisine, city, price band, average preparation time, and cloud kitchen classification.
+- `delivery_partners` (908 rows): Partner demographic data, joined date, vehicle type, and active status.
+- `ratings` (8,630 rows): Customer review records capturing granular sub-scores: food rating, delivery rating, and overall rating.
+- `promo_usage` (5,474 rows): Coupon redemptions, discount amounts in INR, and new user flags.
+
+## Data cleaning & hygiene checks
+
+Prior to running analytical queries, systematic hygiene checks identified three critical data quality issues:
+
+1. **Duplicate Records**: Exactly 120 duplicate delivery rows (representing 0.8% of delivery volume) exist in `deliveries` due to retry logging during network dropouts.
+2. **Data-Entry Outliers**: 8 delivery records contain order values with 100x decimal errors (e.g. `Rs 41,400` instead of `Rs 414`).
+3. **Inconsistent Categorical Casing**: Restaurant and delivery partner city fields contain trailing spaces and mixed casing (e.g., `'mumbai'`, `' Mumbai'`, `'DELHI '`).
+
+The following SQL script cleans and deduplicates the operational records:
+
+```sql
+-- Step 1: Create deduplicated and sanitized delivery base view
+CREATE VIEW clean_deliveries AS
+WITH deduplicated AS (
+  SELECT DISTINCT *
+  FROM deliveries
+)
+SELECT
+  delivery_id,
+  restaurant_id,
+  partner_id,
+  customer_id,
+  UPPER(TRIM(city)) AS city,
+  order_date,
+  order_time,
+  delivered_time,
+  distance_km,
+  promised_minutes,
+  actual_minutes,
+  delay_minutes,
+  CASE 
+    WHEN order_value > 10000 THEN order_value / 100.0
+    ELSE order_value 
+  END AS clean_order_value,
+  delivery_fee,
+  payment_mode,
+  weather,
+  delivery_status,
+  cancel_reason
+FROM deduplicated;
+```
+
+## SQL exploratory & diagnostic analysis
+
+### 1. Delivery delay impact by weather condition
+
+Evaluating on-time delivery rates across weather environments isolates how extreme precipitation impacts transit efficiency:
+
+```sql
+SELECT 
+  weather,
+  COUNT(*) AS total_orders,
+  ROUND(AVG(actual_minutes), 1) AS avg_duration_min,
+  ROUND(AVG(delay_minutes), 1) AS avg_delay_min,
+  ROUND(AVG(CASE WHEN delay_minutes > 10 THEN 100.0 ELSE 0 END), 1) AS severe_delay_pct,
+  ROUND(AVG(CASE WHEN delivery_status = 'Cancelled' THEN 100.0 ELSE 0 END), 1) AS cancellation_pct
+FROM clean_deliveries
+GROUP BY weather
+ORDER BY avg_delay_min DESC;
+```
+
+**Empirical Results:**
+- **Heavy Rain**: 627 deliveries, average delay of 11.7 minutes, severe delay rate (over 10 minutes late) of **53.0%**, and cancellation rate of 8.1%.
+- **Rain**: 1,252 deliveries, average delay of 6.9 minutes, severe delay rate of **31.8%**.
+- **Clear Weather**: 9,890 deliveries, average delay of 2.0 minutes, severe delay rate of **15.0%**, and cancellation rate of 3.8%.
+
+Severe weather nearly triples the rate of delayed deliveries, proving that static dispatch algorithms fail during monsoon rain events.
+
+### 2. Rating erosion analysis: Delivery rating vs. Food rating
+
+A critical hypothesis is whether delivery delays unfairly drag down restaurant food ratings, or whether customers separate the two experiences:
+
+```sql
+SELECT 
+  CASE 
+    WHEN d.delay_minutes <= 0 THEN '1. On-time / Early'
+    WHEN d.delay_minutes BETWEEN 1 AND 10 THEN '2. 1-10 min Late'
+    ELSE '3. >10 min Late'
+  END AS delay_tier,
+  COUNT(*) AS rated_orders,
+  ROUND(AVG(r.delivery_rating), 2) AS avg_delivery_rating,
+  ROUND(AVG(r.food_rating), 2) AS avg_food_rating,
+  ROUND(AVG(r.overall_rating), 2) AS avg_overall_rating
+FROM clean_deliveries d
+JOIN ratings r ON r.delivery_id = d.delivery_id
+WHERE d.delivery_status = 'Delivered'
+GROUP BY delay_tier
+ORDER BY delay_tier;
+```
+
+**Key Finding:**
+- **On-time / Early**: Delivery Rating = **4.70**, Food Rating = **3.97**, Overall Rating = **4.40**.
+- **1–10 min Late**: Delivery Rating = **4.18**, Food Rating = **3.92**, Overall Rating = **4.07**.
+- **Over 10 min Late**: Delivery Rating = **3.27**, Food Rating = **3.93**, Overall Rating = **3.55**.
+
+Customers clearly isolate delivery speed from kitchen cooking quality: `food_rating` remains rock-solid between 3.92 and 3.97 across all delay tiers, while `delivery_rating` collapses from 4.70 down to 3.27 (a 1.43-star drop).
+
+## Python exploratory data analysis (EDA)
+
+Using Python (pandas, NumPy, statsmodels), we compute the precise regression coefficient of delivery delay against customer ratings and analyze the partner learning curve.
+
+```python
+import pandas as pd
+import numpy as np
+
+# Load datasets
+deliveries = pd.read_csv('deliveries.csv').drop_duplicates(subset=['delivery_id'])
+ratings = pd.read_csv('ratings.csv').drop_duplicates(subset=['rating_id'])
+
+# Merge clean records
+df = deliveries.merge(ratings, on='delivery_id')
+df = df[df['delivery_status'] == 'Delivered']
+
+# Regression analysis: Delivery rating as a function of delay minutes
+clean_df = df.dropna(subset=['delay_minutes', 'delivery_rating'])
+slope, intercept = np.polyfit(clean_df['delay_minutes'], clean_df['delivery_rating'], 1)
+
+print(f'Rating decay per minute of delay: {slope:.3f} stars/min')
+# Output: Rating decay per minute of delay: -0.075 stars/min
+```
+
+The statistical regression reveals that for every 10 minutes of delivery delay, customer delivery satisfaction declines by **0.75 stars**.
+
+## Dashboard architecture & DAX metrics
+
+The Power BI dashboard is structured across three interactive views:
+1. **Executive Operational Cockpit**: High-level KPIs (Total Orders, On-Time Delivery %, Average Delay Minutes, Average Delivery Rating, Cancellation Rate).
+2. **Transit & Weather Deep Dive**: Delay distribution histogram, severe weather impact matrix, and hourly transit duration trends.
+3. **Partner Performance & Fulfillment Scorecard**: Delivery partner tenure vs. delay scatter plot, restaurant prep-time compliance, and city-level SLA performance.
+
+### Core DAX Measures
+
+```dax
+-- On-Time Delivery Rate
+OnTimeDeliveryPct = 
+DIVIDE (
+    CALCULATE ( COUNTROWS ( CleanDeliveries ), CleanDeliveries[delay_minutes] <= 0, CleanDeliveries[delivery_status] = "Delivered" ),
+    CALCULATE ( COUNTROWS ( CleanDeliveries ), CleanDeliveries[delivery_status] = "Delivered" ),
+    0
+) * 100
+
+-- Severe Delay Percentage (>10 minutes late)
+SevereDelayPct = 
+DIVIDE (
+    CALCULATE ( COUNTROWS ( CleanDeliveries ), CleanDeliveries[delay_minutes] > 10, CleanDeliveries[delivery_status] = "Delivered" ),
+    CALCULATE ( COUNTROWS ( CleanDeliveries ), CleanDeliveries[delivery_status] = "Delivered" ),
+    0
+) * 100
+
+-- Average Delivery Rating
+AvgDeliveryRating = 
+AVERAGE ( Ratings[delivery_rating] )
+```
+
+## Quantified business insights
+
+1. **Weather Fragility**: Rain events account for only 12.5% of total orders but contribute **39.4% of all severe delivery delays**.
+2. **Kitchen vs. Courier Bottlenecks**: Analysis of order timestamps demonstrates that kitchen prep time accounts for 42% of total order duration, but transit variance accounts for **78% of delay variance**.
+3. **The Rookie Penalty**: Partners with fewer than 60 days on the platform average 29.4 minutes per delivery, compared to 24.2 minutes for partners with over 180 days experience.
+4. **Promotion Cannibalization**: The `FLAT75` discount code was applied predominantly on low-ticket orders (under Rs 250), resulting in negative unit contribution margins of -Rs 14 per order after factoring in partner delivery payouts.
+
+## Strategic recommendations & action plan
+
+### 1. Dynamic Weather Buffer Algorithm
+Introduce an automated dispatch buffer of +8 minutes in customer-facing ETAs whenever local precipitation exceeds 5 mm/hr. Setting accurate expectations prevents customer disappointment and protects delivery ratings.
+
+### 2. Rookie Partner Dispatch Geofencing
+Geofence new delivery partners (first 30 days) to delivery routes under 3.5 km and low-congestion restaurant clusters, reducing average rookie transit duration by ~4 minutes.
+
+### 3. Kitchen Handshake Optimization
+Implement real-time restaurant prep signaling (QR code scan at packaging completion) before rider dispatch. Dispatching riders only when the order is within 4 minutes of packaging completion eliminates 6.2 minutes of idle curb waiting time.
+
+## Portfolio README template
+
+```markdown
+# Food Delivery Logistics: Delay Diagnostics and Customer Rating Modeling
+
+A portfolio data analytics project examining operational bottlenecks across 15,000 food delivery transactions in Indian metros.
+
+## Tech Stack
+- **SQL (PostgreSQL / SQLite)**: Data hygiene, CTEs, window functions, and multi-table joins.
+- **Python (pandas, NumPy, statsmodels)**: Exploratory data analysis, statistical regression, and correlation modeling.
+- **Power BI**: Interactive operational dashboard, custom DAX measures, and drill-through fulfillment diagnostics.
+
+## Business Problem
+Severe delivery delays (over 10 min) surged during monsoon weather, causing a 1.43-star drop in customer delivery ratings and elevating order cancellations to 8.1%.
+
+## Methodology
+1. Sanitized 15,120 raw order records, deduplicating transaction IDs and normalizing casing.
+2. Filtered out 8 extreme 100x order value entry anomalies.
+3. Quantified the rating degradation rate (-0.075 stars/min delay) via linear regression.
+4. Designed an executive Power BI dashboard with automated SLA breach alerts.
+```
+
+## Screenshots-to-capture checklist
+
+To showcase this project on GitHub and LinkedIn, capture the following 4 screenshots:
+1. **Executive KPI Cockpit**: Showing total orders (15,000), on-time percentage (58.4%), and average delivery rating (4.21).
+2. **Weather Impact Matrix**: Bar chart contrasting clear vs. rain vs. heavy rain average delay minutes and severe delay rates.
+3. **Rating Erosion Visual**: Scatter plot with regression line showing the sharp drop in delivery ratings as delay minutes increase beyond 0.
+4. **Partner Tenure Curve**: Line chart illustrating average delivery duration dropping as partner tenure increases from 0 to 180+ days.
+
+## 2-minute interview pitch script
+
+> "In this project, I investigated why delivery delays were eroding customer satisfaction on a major food delivery platform operating across 5 Indian metros. Analyzing 15,000 delivery records, I first tackled data hygiene by deduplicating 120 retry log entries and correcting 100x pricing anomalies.
+>
+> Using SQL and Python regression modeling, I proved that delivery ratings drop by exactly 0.075 stars for every minute of delay. Interestingly, food quality ratings remained completely unaffected at ~3.95 stars, confirming that customer dissatisfaction was purely driven by logistics rather than kitchen quality.
+>
+> Further diagnostic analysis revealed that heavy monsoon rain increased severe delays (over 10 min) from 15% to 53%. Additionally, rookie delivery partners in their first 60 days took 5.2 minutes longer per delivery.
+>
+> Based on these findings, I built a 3-page Power BI dashboard and recommended implementing dynamic +8 minute weather ETA buffers, geofencing rookie partners to short routes (under 3.5 km), and gating rider dispatch behind kitchen prep readiness. These interventions are projected to recover 22% of delayed orders and rescue 0.4 stars on average delivery ratings."
+
+## 10 likely interview questions & model answers
+
+### 1. Why did you choose to analyze food delivery operations for your portfolio?
+Food delivery is a hyper-competitive, low-margin business where logistics efficiency and customer retention make or break unit economics. Analyzing real-world operational trade-offs—such as balancing customer ETA expectations against delivery partner safety during monsoon rains—demonstrates business acumen and practical problem-solving.
+
+### 2. How did you identify and handle the 120 duplicate delivery records?
+I inspected `COUNT(*)` against `COUNT(DISTINCT delivery_id)` in the deliveries table. Upon finding 120 duplicate rows, I verified that all column values were identical due to logging retries during network handoffs. I used a CTE with `SELECT DISTINCT *` to ensure every subsequent aggregation evaluated exactly 15,000 distinct orders.
+
+### 3. How did you handle the 100x order value outliers?
+I ran descriptive statistics and identified 8 rows where `order_value` exceeded Rs 10,000 (reaching Rs 41,400 for standard two-person meals). Checking item prices confirmed this was a decimal data-entry error (multiplying values by 100). I handled them using a `CASE WHEN order_value > 10000 THEN order_value / 100.0 ELSE order_value END` transformation.
+
+### 4. How did you calculate the delay minutes regression slope in Python?
+After merging clean delivery records with ratings and filtering for completed orders, I utilized `np.polyfit()` on `delay_minutes` versus `delivery_rating`. The slope yielded `-0.075`, proving a statistically significant decline of 0.75 stars for every 10 minutes of delay.
+
+### 5. Why did you compare food ratings and delivery ratings across delay tiers?
+Stakeholders often assume that unhappy customers give low ratings indiscriminately. By breaking down sub-scores, I proved that food ratings remained steady at 3.93 stars even when orders were over 10 minutes late, while delivery ratings dropped from 4.70 to 3.27. This protected restaurant relationships and directed operational focus solely toward transit logistics.
+
+### 6. What DAX measures did you build in Power BI?
+I created DAX measures for `OnTimeDeliveryPct`, `SevereDelayPct` (over 10 min delay), `AvgDeliveryRating`, and `DelayedOrderVolume`. Each measure used `DIVIDE()` to safely handle zero denominators and filtered for completed orders (`delivery_status = 'Delivered'`).
+
+### 7. What would happen if you simply expanded customer ETAs by 15 minutes all the time?
+Arbitrarily padding ETAs all the time would increase customer drop-off at the checkout funnel, as consumers prefer platforms with shorter promised delivery times. That is why I recommended dynamic ETA buffering triggered specifically by weather APIs during verified rainfall, rather than a permanent blanket buffer.
+
+### 8. How did rookie partner performance differ from tenured partners?
+Partners with under 60 days on the platform averaged 29.4 minutes per delivery, compared to 24.2 minutes for partners with over 180 days. Rookie drivers spend more time navigating unfamiliar residential layouts and traffic choke points.
+
+### 9. What was the issue with the FLAT75 promo code?
+Analyzing promo redemptions revealed that `FLAT75` was applied heavily on orders under Rs 250. Providing a Rs 75 discount on a Rs 200 order resulted in a negative contribution margin of -Rs 14 after accounting for restaurant take-rates and partner payouts. I recommended setting a minimum basket threshold of Rs 399 for `FLAT75`.
+
+### 10. If you had more time or data, how would you extend this project?
+I would integrate geospatial GPS route telemetry to separate time spent at traffic signals from restaurant pickup waiting time. Additionally, I would build an automated rider dispatch simulation in Python using SimPy to model the throughput impact of order batching during peak dinner hours.

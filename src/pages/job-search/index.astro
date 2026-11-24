@@ -1,0 +1,213 @@
+---
+import Base from '../../layouts/Base.astro';
+import { url } from '../../lib/url';
+import ResumeBuilder from '../../components/react/ResumeBuilder';
+import ApplicationTracker from '../../components/react/ApplicationTracker';
+---
+
+<Base
+  title="Job Search Toolkit"
+  description="ATS-friendly resume builder, 30 impact bullet formulas, interactive application tracker, Indian tech market strategy, cold outreach templates, and analytics engineer career roadmap."
+  sidebar
+>
+  <div style="max-width: 58rem; margin: 0 auto; padding-bottom: 4rem;">
+    <nav aria-label="Breadcrumb" class="muted" style="font-size: .85rem; margin-bottom: 0.5rem;">
+      <a href={url('/')}>Home</a> / Job Search Toolkit
+    </nav>
+
+    <header style="margin-bottom: 1.5rem;">
+      <h1 style="margin: 0 0 0.4rem 0;">Job Search Toolkit</h1>
+      <p class="muted" style="font-size: 1.05rem; margin: 0;">
+        Everything you need to land your first Data Analyst job in India: an ATS-compliant resume builder, live application tracker, 30 quantified bullet formulas, outreach templates, and a 12-month career progression roadmap.
+      </p>
+    </header>
+
+    {/* Section 1: Interactive Resume Builder & 30 ATS Bullets */}
+    <section id="resume-builder" style="margin-bottom: 3rem;">
+      <h2>1. ATS-Friendly Resume Builder & Bullet Bank</h2>
+      <p>
+        Applicant Tracking Systems (ATS) scan resumes for plain text, standard headers, and concrete technical keywords. Use this interactive builder to craft a clean, single-page resume with proven formula bullets (<strong>Action Verb + Technical Tool + Quantified Business Impact</strong>).
+      </p>
+      <ResumeBuilder client:load />
+    </section>
+
+    {/* Section 2: Interactive Application Tracker */}
+    <section id="application-tracker" style="margin-bottom: 3rem;">
+      <h2>2. Interactive Job Application Tracker</h2>
+      <p>
+        Consistency beats motivation. Track your active applications, interview stages, follow-up reminders, and referral channels. Your data is automatically saved to local storage and can be exported as a CSV at any time.
+      </p>
+      <ApplicationTracker client:load />
+    </section>
+
+    {/* Section 3: Where to Apply in India & The 90-Minute Daily Routine */}
+    <section id="application-strategy" style="margin-bottom: 3rem;">
+      <h2>3. Where to Apply in India & The 90-Minute Daily Routine</h2>
+      <div class="card" style="padding: 1.25rem; margin-bottom: 1rem;">
+        <h3 style="margin-top: 0;">The 4 Primary Application Channels in India</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-top: 0.8rem;">
+          <div style="padding: 0.8rem; background: var(--bg-subtle, #f8fafc); borderRadius: 6px;">
+            <strong style="color: #4f46e5;">1. LinkedIn Jobs & Alumni Referrals (40% effort)</strong>
+            <p style="font-size: 0.88rem; margin: 0.4rem 0 0;">Filter for jobs posted within the last 24 hours. Connect with college alumni or 2nd-degree connections at the company before submitting.</p>
+          </div>
+          <div style="padding: 0.8rem; background: var(--bg-subtle, #f8fafc); borderRadius: 6px;">
+            <strong style="color: #4f46e5;">2. Wellfound / Y Combinator Startups (25% effort)</strong>
+            <p style="font-size: 0.88rem; margin: 0.4rem 0 0;">Early-stage Indian and global remote startups hire for speed and portfolio evidence rather than college pedigree.</p>
+          </div>
+          <div style="padding: 0.8rem; background: var(--bg-subtle, #f8fafc); borderRadius: 6px;">
+            <strong style="color: #4f46e5;">3. Naukri & Instahyre (20% effort)</strong>
+            <p style="font-size: 0.88rem; margin: 0.4rem 0 0;">Keep your Naukri profile updated daily (edit a skill to refresh last active timestamp) to stay at the top of recruiter search queries.</p>
+          </div>
+          <div style="padding: 0.8rem; background: var(--bg-subtle, #f8fafc); borderRadius: 6px;">
+            <strong style="color: #4f46e5;">4. Direct Careers Pages (15% effort)</strong>
+            <p style="font-size: 0.88rem; margin: 0.4rem 0 0;">Apply directly on enterprise portals (TCS, Infosys, Cognizant, Mu Sigma, Fractal, Tiger Analytics, LatentView, Swiggy, Zomato).</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="padding: 1.25rem;">
+        <h3 style="margin-top: 0;">The 90-Minute Daily Job Search Schedule</h3>
+        <ol style="margin: 0; padding-left: 1.2rem; font-size: 0.92rem; line-height: 1.6;">
+          <li><strong>Minutes 0–20 (Targeted Sourcing)</strong>: Check LinkedIn and Wellfound for analyst roles posted in the last 24 hours. Shortlist 3 high-fit positions.</li>
+          <li><strong>Minutes 20–50 (Tailored Applications)</strong>: Tailor your resume summary and project bullets to include the exact keywords mentioned in the job description. Submit 3 high-quality applications.</li>
+          <li><strong>Minutes 50–70 (Cold Outreach & Referrals)</strong>: Send 5 personalized connection requests or cold messages to analysts and engineering managers at those 3 companies.</li>
+          <li><strong>Minutes 70–90 (Skill Sharpening)</strong>: Solve 2 SQL interview queries and review 10 spaced-repetition flashcards to keep technical syntax sharp.</li>
+        </ol>
+      </div>
+    </section>
+
+    {/* Section 4: Cold Outreach & Referral Message Templates */}
+    <section id="outreach-templates" style="margin-bottom: 3rem;">
+      <h2>4. Referral & Cold-Outreach Message Templates</h2>
+      <p>Generic messages ("Sir please give me job") get ignored. Specific, respectful, project-backed messages get replies. Copy and adapt these 4 battle-tested templates:</p>
+
+      <div style="display: grid; gap: 1rem;">
+        <div class="card" style="padding: 1.25rem;">
+          <h4 style="margin: 0 0 0.5rem 0; color: #4f46e5;">Template A: Alumni Referral Ask on LinkedIn</h4>
+          <pre style="background: var(--bg-subtle, #f8fafc); padding: 0.8rem; border-radius: 4px; font-size: 0.85rem; white-space: pre-wrap; margin: 0;">
+Hi [First Name],
+
+I noticed you graduated from [College Name] and are currently working as a [Their Role] at [Company Name]. As a fellow alumni specializing in data analytics, I’ve been following [Company Name]’s recent work in [specific domain, e.g. quick commerce / payment rails].
+
+I noticed an opening for [Role Name, e.g. Junior Data Analyst] (Job ID: [12345]) that aligns closely with my hands-on portfolio in SQL, Python, and Power BI. I recently completed an end-to-end case study analyzing 15,000 delivery records to isolate delay root causes: [GitHub Link].
+
+Would you be open to reviewing my resume and considering a referral? I have attached my resume here and would be deeply grateful for your guidance.
+
+Warm regards,
+[Your Name] | [LinkedIn / Portfolio Link]
+          </pre>
+        </div>
+
+        <div class="card" style="padding: 1.25rem;">
+          <h4 style="margin: 0 0 0.5rem 0; color: #4f46e5;">Template B: Cold Outreach to a Hiring Manager / Team Lead</h4>
+          <pre style="background: var(--bg-subtle, #f8fafc); padding: 0.8rem; border-radius: 4px; font-size: 0.85rem; white-space: pre-wrap; margin: 0;">
+Hi [First Name],
+
+I saw your recent post regarding data challenges in [specific area, e.g. payment gateway timeouts / checkout drop-offs] at [Company Name]. 
+
+I recently completed an in-depth project analyzing 22,000 fintech transactions to diagnose bank switch timeout bottlenecks, isolating failure rates across commercial banks and designing automated failover recommendations: [GitHub / Dashboard Link].
+
+If your team is looking for a data analyst who writes clean PostgreSQL, builds star schemas in Power BI, and thinks in business unit economics from day one, I would love to share how I can contribute to [Company Name].
+
+Best regards,
+[Your Name]
+          </pre>
+        </div>
+
+        <div class="card" style="padding: 1.25rem;">
+          <h4 style="margin: 0 0 0.5rem 0; color: #4f46e5;">Template C: Polite Follow-Up After 5 Days</h4>
+          <pre style="background: var(--bg-subtle, #f8fafc); padding: 0.8rem; border-radius: 4px; font-size: 0.85rem; white-space: pre-wrap; margin: 0;">
+Hi [First Name],
+
+I hope you’re having a productive week! 
+
+I’m following up briefly on my note regarding the [Role Name] position at [Company Name]. I understand you have a demanding schedule, so no need for a lengthy reply—just wanted to reaffirm my strong enthusiasm for the role and confirm that my resume and portfolio link remain available for your review: [Portfolio Link].
+
+Thanks again for your time!
+[Your Name]
+          </pre>
+        </div>
+      </div>
+    </section>
+
+    {/* Section 5: LinkedIn & GitHub Profile Optimization */}
+    <section id="profile-optimization" style="margin-bottom: 3rem;">
+      <h2>5. LinkedIn & GitHub Portfolio Optimization</h2>
+      <div class="card" style="padding: 1.25rem;">
+        <h3 style="margin-top: 0;">LinkedIn Profile Checklist</h3>
+        <ul style="padding-left: 1.2rem; font-size: 0.9rem; line-height: 1.6;">
+          <li><strong>Headline</strong>: Avoid generic "Aspiring Data Analyst" or "Student at XYZ". Instead use: <em>"Data Analyst | SQL • Python • Power BI • A/B Testing | Ex-Intern @ ABC | Open to Roles in Bengaluru / Remote"</em>.</li>
+          <li><strong>Featured Section</strong>: Pin your top 2 portfolio projects with visual carousel slides or clickable GitHub links showing dashboard screenshots.</li>
+          <li><strong>About Section</strong>: Use a 3-paragraph structure: (1) Passion for business data storytelling, (2) Core technical competencies with concrete examples, (3) Link to your GitHub portfolio and email.</li>
+          <li><strong>Activity & Proof of Work</strong>: Post once a week sharing a 1-page visual breakdown of an analysis you conducted (e.g., "What 15,000 food delivery orders taught me about monsoon delivery delays").</li>
+        </ul>
+
+        <h3 style="margin-top: 1.25rem;">GitHub Portfolio Repository Structure</h3>
+        <pre style="background: var(--bg-subtle, #f8fafc); padding: 0.8rem; border-radius: 4px; font-size: 0.85rem; margin: 0;">
+your-project-name/
+├── README.md               # Executive summary, problem, key insights, screenshots
+├── data/
+│   ├── raw/                # Original data or download instructions
+│   └── processed/          # Clean CSV / SQLite database
+├── sql/
+│   ├── 01_cleaning.sql     # Data hygiene and deduplication
+│   └── 02_analysis.sql     # Diagnostic queries with comments
+├── notebooks/
+│   └── eda.ipynb           # Python statistical analysis and Seaborn visuals
+├── dashboard/
+│   ├── report.pbix         # Power BI report file
+│   └── dax_measures.txt    # Documented DAX calculations
+└── reports/
+    └── executive_memo.pdf  # 2-page C-suite slide / PDF summary
+        </pre>
+      </div>
+    </section>
+
+    {/* Section 6: First 90 Days & 12-Month Analytics Engineer Roadmap */}
+    <section id="career-roadmap" style="margin-bottom: 2rem;">
+      <h2>6. First 90 Days on the Job & 12-Month Progression Roadmap</h2>
+      <div class="card" style="padding: 1.25rem; margin-bottom: 1rem;">
+        <h3 style="margin-top: 0;">First 90 Days Survival Guide</h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1rem; margin-top: 0.8rem;">
+          <div style="padding: 0.8rem; background: var(--bg-subtle, #f8fafc); border-radius: 6px;">
+            <strong style="color: #16a34a;">Days 1–30: Listen & Audit</strong>
+            <p style="font-size: 0.86rem; margin: 0.3rem 0 0;">Map the data warehouse tables. Understand business metrics and their exact SQL formulas. Meet with 5 operational stakeholders to discover their daily reporting pain points.</p>
+          </div>
+          <div style="padding: 0.8rem; background: var(--bg-subtle, #f8fafc); border-radius: 6px;">
+            <strong style="color: #3b82f6;">Days 31–60: Quick Wins & Reliability</strong>
+            <p style="font-size: 0.86rem; margin: 0.3rem 0 0;">Automate one manual Excel report using SQL and Power BI. Document data definitions in a team dictionary. Never send a number to leadership without cross-verifying row counts.</p>
+          </div>
+          <div style="padding: 0.8rem; background: var(--bg-subtle, #f8fafc); border-radius: 6px;">
+            <strong style="color: #8b5cf6;">Days 61–90: Proactive Impact</strong>
+            <p style="font-size: 0.86rem; margin: 0.3rem 0 0;">Transition from answering ad-hoc data questions to proposing root cause investigations. Deliver an executive memo highlighting an operational inefficiency or churn risk.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="padding: 1.25rem;">
+        <h3 style="margin-top: 0;">12-Month Roadmap: From Data Analyst to Analytics Engineer</h3>
+        <p className="muted" style="font-size: 0.9rem;">
+          Analytics Engineering (dbt, data modeling, automated data pipelines) is the highest-paying career progression for data analysts.
+        </p>
+        <div style="display: grid; gap: 0.6rem; margin-top: 0.8rem;">
+          <div style="display: flex; gap: 0.8rem; align-items: baseline;">
+            <span class="chip" style="min-width: 90px; text-align: center;">Months 1–3</span>
+            <span style="font-size: 0.88rem;"><strong>Dimensional Data Modeling</strong>: Master Kimball dimensional design (Star vs Snowflake schema, slowly changing dimensions SCD Type 1 & 2, surrogate keys).</span>
+          </div>
+          <div style="display: flex; gap: 0.8rem; align-items: baseline;">
+            <span class="chip" style="min-width: 90px; text-align: center;">Months 4–6</span>
+            <span style="font-size: 0.88rem;"><strong>dbt (data build tool)</strong>: Version control SQL transformations, build incremental models, write automated schema tests, and generate data documentation.</span>
+          </div>
+          <div style="display: flex; gap: 0.8rem; align-items: baseline;">
+            <span class="chip" style="min-width: 90px; text-align: center;">Months 7–9</span>
+            <span style="font-size: 0.88rem;"><strong>Cloud Data Warehousing</strong>: Learn Snowflake or Google BigQuery (partitioning, clustering, caching, cost optimization, and window analytics at scale).</span>
+          </div>
+          <div style="display: flex; gap: 0.8rem; align-items: baseline;">
+            <span class="chip" style="min-width: 90px; text-align: center;">Months 10–12</span>
+            <span style="font-size: 0.88rem;"><strong>Pipeline Orchestration & Git</strong>: Build basic Apache Airflow DAGs, automate dbt runs with GitHub Actions, and integrate data quality alerts via Slack/email webhooks.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</Base>

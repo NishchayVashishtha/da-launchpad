@@ -1,0 +1,13 @@
+---
+import Base from '../../layouts/Base.astro';
+import ResumeBuilder from '../../components/react/ResumeBuilder';
+---
+<Base title="Data Analyst Resume Builder" description="ATS-friendly one-page resume generator with 30 battle-tested bullet points (Action + Task + Result + Number) and clean PDF export.">
+  <div style="max-width:64rem;margin:0 auto">
+    <h1 style="margin-top:0">Data Analyst Resume Builder</h1>
+    <p class="muted">
+      Generate an ATS-compliant, single-page data analyst resume draft with action-driven formula bullets and instant print-to-PDF export.
+    </p>
+    <ResumeBuilder client:load />
+  </div>
+</Base>

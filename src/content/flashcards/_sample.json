@@ -1,1 +1,0 @@
-[{"id":"sample-fc-1","topic":"sample","front":"SAMPLE (delete me). What does GROUP BY do?","back":"It collapses rows with the same value into one group so aggregates can run per group."}]

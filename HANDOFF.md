@@ -122,10 +122,20 @@ They are NOT yet checked in a browser.
    - Verified `/tools/mock-interview/`: Category checkboxes, question counts/timers, prep notes editor with script saving.
    - Verified `/python/pandas-series-dataframe/`: Interactive code runner in practice section, "Run" and "Compare with expected", and Pyodide initialization.
    - All pages loaded cleanly (HTTP 200, 0 console errors).
-7. **Phase 6:**
-   - Projects (8): Sonnet outlines, then Haiku writers.
-   - Job toolkit: resume builder + tracker UI (Sonnet).
-   - Cheat sheets, glossary 300+ and flashcards 500+: Haiku, derived from existing lessons; dedupe by script.
+7. **[DONE] Phase 6 (Projects, Job Toolkit, Cheat Sheets, Glossary & Flashcards):**
+   - **8 Portfolio Projects** in `src/content/projects/01..08-*.mdx` across Food Delivery, E-commerce, SaaS Churn, HR Attrition, Fintech UPI, Marketing A/B Testing, Retail Store Ops, and Omnichannel Capstone. Deleted placeholder `sample-project.mdx`.
+   - **Job Search Toolkit**: `src/pages/job-search/index.astro` integrating ATS resume guide, Indian job channels (LinkedIn, Naukri, Foundit, Portals), 90-min daily routine, 3 outreach templates, LinkedIn/GitHub profiles, first 90 days guide, and 12-month analytics engineer roadmap.
+   - **Interactive UI Tools**:
+     - `src/components/react/ResumeBuilder.tsx` + route `/tools/resume/`: ATS-compliant single-page resume generator with 30 categorized Action + Task + Result + Number bullets and PDF export.
+     - `src/components/react/ApplicationTracker.tsx` + route `/tools/tracker/`: Full application tracking tool with localStorage persistence, pipeline stages, status filters, search, and CSV export.
+     - `src/components/react/FlashcardPlayer.tsx` + route `/tools/flashcards/`: Spaced repetition flashcard app with 5 Leitner boxes, keyboard shortcuts (Space, 1/2), shuffle, and due queue filtering.
+     - `src/components/react/GlossaryBrowser.tsx` + route `/tools/glossary/`: Searchable glossary with module tags, real-time search, and A-Z letter filters.
+   - **Content Collections**:
+     - `src/content/glossary/glossary.json`: 320 comprehensive terms across SQL, Python, Excel, Power BI, Statistics, Business, and Data Engineering. Deleted `_sample.json`.
+     - `src/content/flashcards/flashcards.json`: 520 distinct flashcards across SQL, Python, Excel, Power BI, Statistics, Business, and Aptitude. Deleted `_sample.json`.
+   - **Printable Cheat Sheets**: `src/pages/cheat-sheets/index.astro` with 9 one-page guides (SQL, Excel, pandas/NumPy, Matplotlib/Seaborn, DAX, Statistics, A/B Testing checklist, EDA checklist, Business KPIs) with print-to-PDF styles.
+   - **Tools Registry**: Updated `src/data/tools.json` registering `flashcards`, `glossary`, `tracker`, and `resume`.
+   - **All 4 Quality Gates Green**: `npm run check:mdx` (186 files, 0 failed), `npm run validate` (491 runnable passed), `npm run audit` (0 errors across collections), `$env:ASTRO_TELEMETRY_DISABLED="1"; npm run build` (227 pages built, 192 indexed, 356 precached).
 8. **Phase 7:** polish, Lighthouse, README, final counts report.
 9. **Optional:** retail East-region targets (see the old note below).
 

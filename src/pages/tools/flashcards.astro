@@ -1,0 +1,16 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import FlashcardPlayer from '../../components/react/FlashcardPlayer';
+
+const cards = (await getCollection('flashcards')).map((c) => c.data);
+---
+<Base title="Spaced-Repetition Flashcards" description="520+ flashcards across SQL, Python, Excel, Power BI, Statistics, Business, and Aptitude with Leitner box spaced repetition.">
+  <div style="max-width:56rem;margin:0 auto">
+    <h1 style="margin-top:0">Spaced-Repetition Flashcards</h1>
+    <p class="muted">
+      Master 520+ technical concepts across SQL, Python, Excel, Power BI, Statistics, Business, and Aptitude using the Leitner box spaced-repetition system.
+    </p>
+    <FlashcardPlayer client:load cards={cards} />
+  </div>
+</Base>

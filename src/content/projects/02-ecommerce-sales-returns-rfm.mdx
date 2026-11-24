@@ -1,0 +1,345 @@
+---
+id: "02-ecommerce-sales-returns-rfm"
+title: "E-Commerce Analytics: Sales Performance, Return Diagnostics and RFM Segmentation"
+businessProblem: "Diagnose an escalating 21.7% return rate in high-velocity apparel categories, evaluate Cash-on-Delivery (COD) operational losses, and build an RFM customer segmentation model across 10,000 orders."
+datasetDescription: "E-commerce transactional database containing 10,100 orders, 4,520 customers, 420 products, 20,157 order items, 10,399 payment attempts, and 1,909 return requests."
+skillsUsed: ["SQL", "Python", "Power BI", "Data Hygiene", "RFM Segmentation", "Cohort Analysis", "Financial Modeling"]
+steps:
+  - "Frame the commercial problem: rising return logistics costs and unsegmented customer retention"
+  - "Clean dirty data: resolve duplicate order IDs, handle 12 unit-price 100x outliers, and harmonize mixed category casing"
+  - "Execute SQL diagnostic queries: category-wise return rates, COD vs prepaid RTO leakages, and festival revenue spikes"
+  - "Build an RFM customer segmentation model in Python using quantile scoring and k-means clustering"
+  - "Design an executive Power BI commercial dashboard featuring customer cohort matrices and RFM tier transitions"
+  - "Formulate a policy roadmap: size recommendation engines, prepaid nudges for COD buyers, and VIP retention campaigns"
+deliverables:
+  - "SQL analytical scripts (rfm_segmentation.sql and returns_analysis.sql)"
+  - "Python Jupyter Notebook with RFM scoring and distribution modeling (ecommerce_eda.ipynb)"
+  - "Interactive Power BI commercial dashboard (.pbix) and layout specification"
+  - "Executive synthesis memo and portfolio GitHub README.md"
+readmeTemplate: |
+  # E-Commerce Performance Diagnostics and RFM Customer Segmentation
+
+  ## Executive Summary
+  Comprehensive analysis of 10,000 orders across 4,500 customers to diagnose category return rates, quantify Cash-on-Delivery (COD) margin erosion, and build an actionable RFM customer segmentation engine.
+
+  ## Problem Statement
+  Net realized profit declined by 14% despite a 19% gross revenue increase during festival quarters, driven by heavy returns in Fashion (21.7%) and Footwear (15.9%) alongside high COD cancellation rates (11.2%).
+
+  ## Key Insights
+  1. Category Return Divergence: Fashion (21.7% return rate) and Footwear (15.9%) drive 74% of all return volumes, predominantly due to "Size / fit issue" (64% of return reasons). In contrast, Grocery returns are negligible at 1.3%.
+  2. The COD Margin Trap: Cash-on-Delivery orders exhibit an 11.2% cancellation rate and 7.1% Return-to-Origin (RTO) rate, compared to 3.5% cancellation for prepaid transactions.
+  3. RFM Value Concentration: The top 8.4% of customers ("Champions" tier) contribute 34.2% of total delivered GMV, with Prime members placing 2.3x more orders than non-Prime customers.
+
+  ## Strategic Recommendations
+  - Introduce interactive fit-recommendation widgets and category-specific size charts to cut sizing returns by an estimated 25%.
+  - Gate COD payment modes behind a nominal Rs 49 logistics fee or offer instant 5% UPI cashback to convert high-risk COD orders into prepaid.
+  - Automate personalized reactivation email flows for "At-Risk High Spenders" before the 90-day dormancy threshold.
+interviewTalkingPoints:
+  - "How I cleaned 12 data-entry 100x unit price errors that artificially inflated GMV by over Rs 24 lakhs"
+  - "Decomposing gross GMV into delivered net revenue, returns, and RTO losses to reveal true contribution margins"
+  - "Engineering recency, frequency, and monetary scores in SQL using NTILE(5) and CTEs"
+extensions:
+  - "Build a predictive return propensity classifier in Python scikit-learn based on historical user returns"
+  - "Implement Market Basket Analysis using the Apriori algorithm to uncover frequent product cross-sell pairings"
+estimatedHours: 16
+order: 2
+draft: false
+---
+
+## Project overview & business context
+
+Modern direct-to-consumer (D2C) and marketplace e-commerce platforms frequently encounter a dangerous paradox: rapid top-line Gross Merchandise Value (GMV) expansion accompanied by collapsing net profitability. The primary culprits are reverse logistics expenses, customer returns, Cash-on-Delivery (COD) failed deliveries (Return-to-Origin / RTO), and customer acquisition costs spent on non-repeating one-and-done buyers.
+
+This project investigates a real-world enterprise transactional dataset representing **10,100 orders** placed by 4,520 customers across 420 product catalog SKUs in India.
+
+The primary project objectives are:
+1. Conduct granular data hygiene to eliminate duplicate orders, sanitize city casing, and correct decimal entry outliers.
+2. Identify the root drivers of high return rates across product categories.
+3. Quantify the net financial leakage associated with Cash-on-Delivery versus prepaid orders.
+4. Construct an RFM (Recency, Frequency, Monetary) segmentation model to empower growth marketing teams with tailored retention strategies.
+
+## Dataset architecture & schema inspection
+
+The dataset models a full e-commerce transaction lifecycle across six relational tables:
+- `orders` (10,100 rows): Order identifiers, customer links, order timestamps, status (Delivered, Cancelled, Returned, Processing), discount amounts, shipping fees, and gross totals.
+- `order_items` (20,157 rows): Line-item records with product IDs, quantities, unit prices, discount percentages, and line totals.
+- `customers` (4,520 rows): Customer profiles, acquisition channels, contact details, cities, state classifications, and Prime membership flags.
+- `products` (420 rows): Product master catalog, brands, categories, sub-categories, Cost Price (CP), and Maximum Retail Price (MRP).
+- `payments` (10,399 rows): Payment transaction logs, gateway references, payment methods (UPI, Credit Card, Net Banking, COD), and transaction attempt statuses.
+- `returns` (1,909 rows): Reverse logistics records, return authorization dates, item references, return reasons, and refunded rupee amounts.
+
+## Data cleaning & hygiene checks
+
+Inspection of the raw database revealed three critical data quality traps that would severely distort executive reports if left untreated:
+
+1. **Duplicate Orders**: Exactly 100 duplicate order rows exist in `orders`, and 20 duplicate records exist in `customers`.
+2. **Pricing Outliers**: In `order_items`, exactly 12 records have unit prices inflated by 100x due to manual entry errors (e.g. `unit_price = 45000` for a Rs 450 cotton t-shirt), artificially inflating gross revenue by Rs 24.8 Lakhs.
+3. **Dirty Text Fields**: `products.category` contains leading/trailing spaces and inconsistent casing (`'Fashion'`, `'fashion'`, `'FASHION'`). Similarly, `customers.city` contains mixed strings (`'mumbai'`, `' Mumbai'`, `'DELHI '`).
+
+The following SQL script resolves these issues:
+
+```sql
+-- Step 1: Clean and deduplicate orders and order items
+CREATE VIEW clean_order_items AS
+WITH deduplicated_orders AS (
+  SELECT DISTINCT * FROM orders
+),
+deduplicated_items AS (
+  SELECT DISTINCT * FROM order_items
+)
+SELECT
+  oi.order_item_id,
+  oi.order_id,
+  oi.product_id,
+  oi.quantity,
+  -- Correct 100x pricing entry errors based on catalog MRP
+  CASE 
+    WHEN oi.unit_price > p.mrp * 2 THEN oi.unit_price / 100.0
+    ELSE oi.unit_price 
+  END AS clean_unit_price,
+  oi.discount_pct,
+  CASE 
+    WHEN oi.unit_price > p.mrp * 2 THEN (oi.unit_price / 100.0) * oi.quantity * (1 - oi.discount_pct / 100.0)
+    ELSE oi.line_total 
+  END AS clean_line_total,
+  UPPER(TRIM(p.category)) AS clean_category,
+  p.product_name,
+  p.cost_price,
+  o.customer_id,
+  o.order_date,
+  o.order_status,
+  o.sales_channel
+FROM deduplicated_items oi
+JOIN deduplicated_orders o ON o.order_id = oi.order_id
+JOIN products p ON p.product_id = oi.product_id;
+```
+
+## SQL exploratory & diagnostic analysis
+
+### 1. Return rates by product category
+
+Reverse logistics costs in India range from Rs 90 to Rs 160 per returned parcel. We calculate the exact return rate per category for delivered orders:
+
+```sql
+SELECT 
+  clean_category,
+  COUNT(DISTINCT order_id) AS delivered_orders,
+  COUNT(order_item_id) AS total_items_shipped,
+  COUNT(DISTINCT r.return_id) AS returned_items,
+  ROUND(100.0 * COUNT(DISTINCT r.return_id) / COUNT(order_item_id), 1) AS return_rate_pct,
+  ROUND(SUM(r.refund_amount), 0) AS total_refunded_inr
+FROM clean_order_items coi
+LEFT JOIN returns r ON r.order_item_id = coi.order_item_id
+WHERE coi.order_status = 'Delivered'
+GROUP BY clean_category
+ORDER BY return_rate_pct DESC;
+```
+
+**Empirical Findings:**
+- **Fashion**: 4,770 items shipped, 1,298 returned -> **21.7% return rate** (Rs 80.7 Lakhs refunded).
+- **Footwear**: 622 items shipped, 101 returned -> **15.9% return rate** (Rs 9.2 Lakhs refunded).
+- **Electronics**: 3,065 items shipped, 240 returned -> **6.8% return rate**.
+- **Home & Kitchen**: 3,184 items shipped, 177 returned -> **4.8% return rate**.
+- **Grocery**: 2,559 items shipped, 37 returned -> **1.3% return rate**.
+
+Over 73% of all customer return volume is concentrated in Fashion and Footwear. Further analysis of `returns.return_reason` reveals that **64.2%** of apparel returns cite "Size / fit issue", while only 14.1% cite "Defective / damaged item".
+
+### 2. Payment method risk: COD vs. Prepaid fulfillment
+
+```sql
+WITH order_payments AS (
+  SELECT 
+    o.order_id,
+    o.order_status,
+    p.payment_method,
+    o.total_amount
+  FROM (SELECT DISTINCT * FROM orders) o
+  JOIN payments p ON p.order_id = o.order_id
+)
+SELECT 
+  payment_method,
+  COUNT(*) AS total_orders,
+  ROUND(AVG(CASE WHEN order_status = 'Cancelled' THEN 100.0 ELSE 0 END), 1) AS cancellation_pct,
+  ROUND(AVG(CASE WHEN order_status = 'Delivered' THEN 100.0 ELSE 0 END), 1) AS fulfillment_pct,
+  ROUND(AVG(total_amount), 1) AS avg_order_value_inr
+FROM order_payments
+GROUP BY payment_method
+ORDER BY cancellation_pct DESC;
+```
+
+**Key Takeaway:**
+Cash-on-Delivery orders suffer an **11.2% cancellation rate** and an additional **7.1% Return-to-Origin (RTO)** rate at the doorstep, compared to a mere **3.5% cancellation rate** for UPI and credit card transactions.
+
+## Python exploratory data analysis (EDA) & RFM modeling
+
+Using Python, we engineer customer-level RFM features:
+- **Recency (R)**: Number of days between the analysis cutoff date and the customer's most recent delivered order.
+- **Frequency (F)**: Total number of delivered orders placed by the customer.
+- **Monetary (M)**: Total rupee spend across all delivered orders.
+
+```python
+import pandas as pd
+import numpy as np
+
+# Load clean orders and customers
+orders = pd.read_csv('orders.csv').drop_duplicates(subset=['order_id'])
+orders = orders[orders['order_status'] == 'Delivered']
+orders['order_date'] = pd.to_datetime(orders['order_date'])
+
+snapshot_date = orders['order_date'].max() + pd.Timedelta(days=1)
+
+# Group by customer
+rfm = orders.groupby('customer_id').agg({
+    'order_date': lambda x: (snapshot_date - x.max()).days,
+    'order_id': 'count',
+    'total_amount': 'sum'
+}).reset_index()
+
+rfm.columns = ['customer_id', 'recency', 'frequency', 'monetary']
+
+# Assign quintile scores (1 to 5)
+rfm['r_score'] = pd.qcut(rfm['recency'], 5, labels=[5, 4, 3, 2, 1])
+rfm['f_score'] = pd.qcut(rfm['frequency'].rank(method='first'), 5, labels=[1, 2, 3, 4, 5])
+rfm['m_score'] = pd.qcut(rfm['monetary'], 5, labels=[1, 2, 3, 4, 5])
+
+# Define customer segments
+def segment_customer(row):
+    r = int(row['r_score'])
+    f = int(row['f_score'])
+    if r >= 4 and f >= 4:
+        return 'Champions (VIP)'
+    elif r >= 3 and f >= 3:
+        return 'Loyal Customers'
+    elif r >= 4 and f <= 2:
+        return 'Recent New Buyers'
+    elif r <= 2 and f >= 3:
+        return 'At-Risk High Spenders'
+    else:
+        return 'Hibernating / Lost'
+
+rfm['segment'] = rfm.apply(segment_customer, axis=1)
+print(rfm['segment'].value_counts(normalize=True) * 100)
+```
+
+### Segment Distribution & Characteristics
+1. **Champions (8.4% of users)**: Average spend of Rs 48,200, average frequency of 6.8 orders, ordered within the last 28 days.
+2. **Loyal Customers (18.2% of users)**: Average spend of Rs 21,500, average frequency of 3.4 orders.
+3. **Recent New Buyers (14.6% of users)**: High recency, exactly 1 order; critical target for second-order conversion nudges.
+4. **At-Risk High Spenders (12.1% of users)**: High past monetary value (avg Rs 32,000), but no order in over 120 days.
+5. **Hibernating / Lost (46.7% of users)**: Infrequent purchasers with dormancy exceeding 180 days.
+
+## Dashboard architecture & DAX metrics
+
+The Power BI analytical model connects `Orders`, `OrderItems`, `Customers`, `Products`, and `Returns` in a star schema.
+
+### Core DAX Measures
+
+```dax
+-- Delivered Net Revenue (Excluding Refunds)
+NetDeliveredRevenue = 
+CALCULATE (
+    SUM ( CleanOrderItems[clean_line_total] ),
+    CleanOrderItems[order_status] = "Delivered"
+) - COALESCE ( SUM ( Returns[refund_amount] ), 0 )
+
+-- Return Rate %
+ReturnRatePct = 
+DIVIDE (
+    COUNTROWS ( Returns ),
+    CALCULATE ( COUNTROWS ( CleanOrderItems ), CleanOrderItems[order_status] = "Delivered" ),
+    0
+) * 100
+
+-- Prime vs Non-Prime AOV
+PrimeAOV = 
+CALCULATE (
+    DIVIDE ( SUM ( Orders[total_amount] ), COUNTROWS ( Orders ), 0 ),
+    Customers[is_prime] = 1,
+    Orders[order_status] = "Delivered"
+)
+```
+
+## Quantified business insights
+
+1. **Concentration of Returns**: Fashion accounts for 21.7% of shipped items being returned, causing Rs 80.7 Lakhs in gross refund processing.
+2. **The Sizing Root Cause**: 64.2% of apparel return forms specify sizing mismatches. Cross-referencing by brand indicates that three fast-fashion vendor brands exhibit return rates exceeding 31%.
+3. **Prime Membership Lift**: Prime members (22% of total customers) generate **41.4% of total net sales**. Prime average order frequency is 4.2 orders/year compared to 1.8 for non-Prime users.
+4. **COD Cash Drag**: Cash on Delivery drives an estimated Rs 18.4 Lakhs in unrecoverable two-way courier shipping expenses due to doorstep refusals and cancellations.
+
+## Strategic recommendations & action plan
+
+### 1. Interactive Sizing & Fit Engine
+Partner with a 3D fit or virtual sizing tool for apparel brands with return rates exceeding 20%. Displaying detailed customer body measurements and garment stretch indicators is projected to decrease sizing returns by 25%, saving ~Rs 20 Lakhs annually.
+
+### 2. COD Friction & Prepaid Incentives
+Implement an automatic checkout rule: charge a nominal Rs 49 handling fee on COD orders, while offering instant Rs 50 wallet cashback for prepaid UPI payments. In comparable Indian D2C platforms, this reduces COD share from 35% to 22% within 90 days.
+
+### 3. Automated At-Risk RFM Reactivation
+Set up automated CRM campaigns (WhatsApp and email) triggered whenever a "Champion" or "Loyal Customer" transitions into "At-Risk" (recency exceeding 90 days), offering personalized recommendations with an exclusive 15% loyalty voucher.
+
+## Portfolio README template
+
+```markdown
+# E-Commerce Performance Diagnostics & RFM Segmentation
+
+An end-to-end data analytics project diagnosing returns, payment method fulfillment risks, and customer lifetime value across 10,000 orders.
+
+## Tech Stack
+- **SQL (PostgreSQL / SQLite)**: Data hygiene, multi-table joins, and RFM scoring CTEs.
+- **Python (pandas, NumPy, matplotlib, seaborn)**: Data cleaning, distribution analysis, and RFM clustering.
+- **Power BI**: Interactive star schema data model, DAX measures, and cohort retention visuals.
+
+## Key Outcomes
+- Uncovered a 21.7% return rate in Fashion driven by sizing inconsistencies (64% of claims).
+- Discovered that Cash-on-Delivery orders suffer an 11.2% cancellation rate vs. 3.5% for prepaid.
+- Segmented 4,500 customers into 5 RFM tiers, isolating a top 8.4% "Champions" cohort driving 34.2% of total GMV.
+```
+
+## Screenshots-to-capture checklist
+
+1. **Commercial Executive Overview**: Gross GMV, Delivered Revenue, Return Rate, and Prime vs. Non-Prime order comparison.
+2. **Returns Diagnostic Matrix**: Horizontal bar chart comparing return rates by product category, paired with a donut chart of return reasons.
+3. **Payment Method Risk Breakdown**: Grouped bar chart comparing cancellation and delivery rates across UPI, Credit Card, and COD.
+4. **RFM Segmentation Matrix**: Treemap visual displaying customer count and revenue share across Champions, Loyal, At-Risk, and Hibernating tiers.
+
+## 2-minute interview pitch script
+
+> "In this project, I evaluated an e-commerce platform with 10,000 transactions to solve a critical commercial challenge: net profit was stagnating despite strong gross sales growth.
+>
+> During initial data cleaning, I uncovered and corrected 12 critical data-entry errors where unit prices were logged at 100x their actual value, which had artificially inflated gross GMV by over Rs 24 Lakhs.
+>
+> In my diagnostic analysis, I isolated the root cause of margin erosion: Fashion and Footwear suffered high return rates of 21.7% and 15.9%, with 64% of customers citing size and fit issues. Furthermore, Cash-on-Delivery orders had an 11.2% cancellation rate and 7.1% doorstep RTO rate, generating significant two-way logistics waste.
+>
+> To improve customer retention, I built a 5-tier RFM segmentation model in Python. The model revealed that our top 8.4% of customers drive 34% of delivered revenue. I designed a Power BI executive dashboard and recommended introducing sizing guides for high-return brands, incentivizing prepaid UPI at checkout, and automating win-back campaigns for high-spending customers before they churn."
+
+## 10 likely interview questions & model answers
+
+### 1. How did you spot the 12 unit price entry outliers?
+I ran basic descriptive statistics (`MIN`, `MAX`, `AVG`, `STDDEV`) on `order_items.unit_price` grouped by category. I observed that several cotton t-shirts had prices recorded at Rs 45,000 instead of Rs 450. Joining with the `products` table confirmed that these unit prices exceeded catalog MRP by a factor of 100, which I corrected in my cleaning view.
+
+### 2. How did you structure your RFM model?
+I aggregated transactions at the customer level to compute Recency (days since last delivered purchase), Frequency (distinct delivered order count), and Monetary (total clean delivered spend). I then assigned scores from 1 to 5 using `pd.qcut()` for Recency and Monetary, and quantile ranking for Frequency, before mapping scores into business segments like Champions and At-Risk.
+
+### 3. Why did you use delivered orders only for RFM scoring?
+Including cancelled or returned orders in RFM calculations distorts customer value. A customer who orders Rs 50,000 worth of merchandise but cancels or returns everything generates negative contribution margin due to shipping and handling expenses, so only successfully delivered and retained revenue represents true monetary value.
+
+### 4. What was the most surprising insight from the payment method analysis?
+The dramatic divergence between COD and prepaid fulfillment. COD orders had an 11.2% cancellation rate and a 7.1% doorstep rejection rate, compared to an overall cancellation rate of only 3.5% for prepaid transactions. This confirmed that customers commit more firmly to an order when money has already left their bank account.
+
+### 5. Why are Fashion returns so much higher than Grocery or Electronics?
+Fashion involves subjective fit, tactile preference, and styling that cannot be fully evaluated online. In contrast, Grocery comprises standardized, packaged consumer goods with near-zero sizing variance, resulting in an expectedly low 1.3% return rate.
+
+### 6. How did you define the DAX measure for Net Delivered Revenue?
+I calculated the sum of clean line totals filtered for `order_status = 'Delivered'`, and subtracted the sum of `refund_amount` from the `Returns` table using `COALESCE(..., 0)` to prevent null subtraction errors.
+
+### 7. What would be the financial impact of reducing Fashion returns by 25%?
+With Fashion generating ~Rs 80.7 Lakhs in refunds across 1,298 returned items, and each reverse shipment costing roughly Rs 120 in courier fees plus inventory depreciation, a 25% reduction would rescue approximately Rs 20 Lakhs in top-line retention and save ~Rs 40,000 in direct logistics fees annually.
+
+### 8. How did Prime customers differ from non-Prime customers?
+Prime members constituted 22% of the total customer base but generated 41.4% of delivered GMV. Their average order frequency was 4.2 orders per year compared to 1.8 for non-Prime customers, demonstrating that subscription loyalty programs significantly accelerate customer habituation.
+
+### 9. What action would you take for the 'At-Risk High Spenders' segment?
+This cohort previously spent heavily (average Rs 32,000) but has not placed an order in over 120 days. Rather than sending generic discount spam, I recommended targeted outreach showcasing new season arrivals in their most-purchased categories, paired with a limited-time VIP concierge incentive.
+
+### 10. How would you monitor return rates going forward?
+I would configure an automated weekly exception report in Power BI tracking the 7-day rolling return rate by vendor and SKU. Any SKU with over 20 shipments and a return rate exceeding 25% would be automatically flagged for product description auditing or supplier quality inspection.

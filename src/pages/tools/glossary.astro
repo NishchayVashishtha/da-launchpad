@@ -1,0 +1,16 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import GlossaryBrowser from '../../components/react/GlossaryBrowser';
+
+const terms = (await getCollection('glossary')).map((g) => g.data);
+---
+<Base title="Analytics & Data Glossary" description="Searchable glossary of 320+ terms across SQL, Python, Excel, Power BI, Statistics, Business Metrics, and Data Engineering.">
+  <div style="max-width:64rem;margin:0 auto">
+    <h1 style="margin-top:0">Analytics & Data Glossary</h1>
+    <p class="muted">
+      Search 320+ technical and business terms, formulas, code idioms, and architecture definitions across the data analytics stack.
+    </p>
+    <GlossaryBrowser client:load terms={terms} />
+  </div>
+</Base>

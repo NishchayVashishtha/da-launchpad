@@ -1,0 +1,328 @@
+---
+id: "03-subscription-funnel-churn"
+title: "SaaS & Subscription Analytics: Onboarding Funnel, Cohort Retention and Churn Diagnostics"
+businessProblem: "Diagnose a critical drop in free-to-paid trial conversion, evaluate recurring revenue lost to monthly subscriber churn, and isolate the root cause behind the severe March 2024 cohort retention collapse across 5,200 users."
+datasetDescription: "Subscription product event database tracking 5,208 users, 3,308 subscription lifecycles, and 36,383 behavioral app event telemetry logs."
+skillsUsed: ["SQL", "Python", "Power BI", "Funnel Analysis", "Cohort Retention", "Survival Analysis", "SaaS Metrics"]
+steps:
+  - "Frame the subscription business model and define key SaaS metrics (MRR, Trial Conversion %, Logo Churn, Net Retention)"
+  - "Sanitize behavioral telemetry logs: deduplicate event IDs, normalize casing across event names, and handle missing dates"
+  - "Build an end-to-end conversion funnel in SQL: Signup -> Trial Start -> Payment Success -> Renewal"
+  - "Perform cohort retention analysis in Python to evaluate 12-month decay curves and diagnose the March 2024 anomaly"
+  - "Design an executive Power BI SaaS scorecard tracking active MRR, involuntary vs voluntary churn, and plan migrations"
+  - "Formulate an optimization plan: dunning payment retry workflows, annual plan upgrade nudges, and Android onboarding fixes"
+deliverables:
+  - "SQL analytical scripts (funnel_conversion.sql and cohort_retention.sql)"
+  - "Python Jupyter Notebook with cohort heatmap generation and Kaplan-Meier curves (saas_retention.ipynb)"
+  - "Power BI SaaS dashboard file (.pbix) and metric tree specifications"
+  - "Executive post-mortem memo and portfolio GitHub README.md"
+readmeTemplate: |
+  # SaaS Subscription Analytics: Funnel Conversion and Cohort Churn Diagnostics
+
+  ## Executive Summary
+  In-depth diagnostic analysis of 5,200 users and 36,000 behavioral telemetry events from a subscription mobile application to isolate conversion drop-offs and cohort churn drivers.
+
+  ## Problem Statement
+  Monthly subscriber churn escalated to 62.2%, and the March 2024 user cohort experienced a catastrophic 2.7x higher churn hazard within their first 60 days of paid tenure.
+
+  ## Key Insights
+  1. The Trial-to-Paid Drop: While 63.6% of registered users initiate a free trial, only 36.1% transition into paid subscriptions. iOS users convert at 50.1%, whereas Android converts at only 34.2%.
+  2. Plan & Billing Discrepancies: Monthly billing plans suffer 62.2% cumulative churn compared to just 16.9% for Annual subscribers. Lower pricing tiers churn fastest (Basic: 67.2%, Standard: 61.7%, Premium: 55.3%).
+  3. The March 2024 Anomaly: A high-volume influencer campaign drove low-intent signups simultaneously with an unpatched Android release bug, depressing Month-1 retention from 68% down to 31%.
+
+  ## Strategic Recommendations
+  - Implement smart dunning workflows (automated 3-day webhook retries) to rescue ~45% of involuntary payment failures.
+  - Offer an in-app "Switch to Annual and Save 25%" nudge at Day 21 of monthly active usage.
+  - Redesign the initial 7-day user onboarding workflow on Android to focus on core content discovery.
+interviewTalkingPoints:
+  - "How I modeled user drop-offs across funnel stages using window functions and conditional aggregation in SQL"
+  - "Building a dynamic cohort retention matrix in Python using pandas pivot tables and Seaborn heatmaps"
+  - "Differentiating between voluntary customer cancellation and involuntary payment gateway failure"
+extensions:
+  - "Develop an early churn prediction model using Random Forest based on first 7 days of event telemetry"
+  - "Perform LTV forecasting across user acquisition sources using survival analysis (lifelines library)"
+estimatedHours: 15
+order: 3
+draft: false
+---
+
+## Project overview & business context
+
+In subscription business models (SaaS, media streaming, and mobile apps), company valuation depends on Net Revenue Retention (NRR) and Customer Lifetime Value (LTV). When customer acquisition costs (CAC) outpace customer retention, growth becomes unsustainable.
+
+This project analyzes a full product analytics telemetry dataset tracking **5,208 users**, **3,308 subscription records**, and **36,383 behavioral events** spanning a two-year operational window.
+
+The primary objectives are:
+1. Map and measure the conversion velocity through each step of the user journey: Registration -> Trial Activation -> Paid Subscription -> Renewal.
+2. Calculate Monthly Recurring Revenue (MRR) loss across subscription tiers (Basic, Standard, Premium).
+3. Conduct cohort retention analysis to diagnose why the March 2024 signup cohort suffered a severe retention collapse.
+4. Propose product and revenue engineering solutions to maximize retention and minimize churn.
+
+## Dataset architecture & schema inspection
+
+The dataset links user telemetry, account subscriptions, and event logs:
+- `users` (5,208 rows): User master records containing signup timestamps, acquisition channel (Organic, Search, Referral, Influencer), device platform (iOS, Android, Web), and city.
+- `subscriptions` (3,308 rows): Subscription lifecycles with plan tiers (Basic @ Rs 149, Standard @ Rs 299, Premium @ Rs 499), billing cycles (Monthly, Annual), trial start dates, paid start dates, cancellation dates, and renewal counts.
+- `events` (36,383 rows): Time-series behavioral logs recording user interactions (`app_open`, `content_view`, `trial_start`, `payment_success`, `payment_failed`, `cancel_click`).
+
+## Data cleaning & hygiene checks
+
+Systematic auditing uncovered two data quality discrepancies common in raw application event pipelines:
+
+1. **Duplicate Telemetry Records**: 100 duplicate event rows and 8 duplicate user records caused by client-side event retries during intermittent mobile network loss.
+2. **Event Name Inconsistencies**: Approximately 1.2% of event names in the raw logs were recorded in uppercase (`'APP_OPEN'` vs. `'app_open'`), and device platform strings contained mixed casing (`'android'` vs. `'Android'`).
+
+The following SQL script produces a clean, deduplicated analytical foundation:
+
+```sql
+-- Step 1: Clean and standardize event telemetry
+CREATE VIEW clean_events AS
+WITH deduplicated AS (
+  SELECT DISTINCT *
+  FROM events
+)
+SELECT
+  event_id,
+  user_id,
+  event_time,
+  LOWER(TRIM(event_name)) AS event_name,
+  plan,
+  UPPER(SUBSTR(TRIM(platform), 1, 1)) || LOWER(SUBSTR(TRIM(platform), 2)) AS platform
+FROM deduplicated;
+```
+
+## SQL exploratory & diagnostic analysis
+
+### 1. The Onboarding Conversion Funnel
+
+We track distinct users through the conversion steps to calculate stage-by-stage drop-off rates:
+
+```sql
+WITH user_funnel AS (
+  SELECT 
+    u.user_id,
+    u.platform,
+    MAX(CASE WHEN ce.event_name = 'signup' THEN 1 ELSE 0 END) AS has_signed_up,
+    MAX(CASE WHEN ce.event_name = 'trial_start' THEN 1 ELSE 0 END) AS has_started_trial,
+    MAX(CASE WHEN ce.event_name = 'payment_success' THEN 1 ELSE 0 END) AS has_paid
+  FROM (SELECT DISTINCT * FROM users) u
+  LEFT JOIN clean_events ce ON ce.user_id = u.user_id
+  GROUP BY u.user_id, u.platform
+)
+SELECT 
+  platform,
+  COUNT(*) AS total_signups,
+  SUM(has_started_trial) AS trial_starts,
+  SUM(has_paid) AS paid_conversions,
+  ROUND(100.0 * SUM(has_started_trial) / COUNT(*), 1) AS signup_to_trial_pct,
+  ROUND(100.0 * SUM(has_paid) / SUM(has_started_trial), 1) AS trial_to_paid_pct,
+  ROUND(100.0 * SUM(has_paid) / COUNT(*), 1) AS overall_conversion_pct
+FROM user_funnel
+GROUP BY platform
+ORDER BY overall_conversion_pct DESC;
+```
+
+**Key Funnel Findings:**
+- **Overall Numbers**: 5,200 distinct signups -> 3,308 trial activations (**63.6%** activation) -> 1,193 paying subscribers (**36.1%** trial conversion).
+- **Platform Divergence**:
+  - **iOS**: 50.1% of trial users convert to paid status.
+  - **Android**: Only 34.2% of trial users convert to paid status.
+  - **Web**: 38.6% of trial users convert to paid status.
+
+Android users exhibit a severe 15.9 percentage point deficit in trial-to-paid conversion compared to iOS.
+
+### 2. Churn rate and MRR loss by plan tier
+
+```sql
+WITH s AS (
+  SELECT DISTINCT * FROM subscriptions
+)
+SELECT
+  plan,
+  COUNT(*) AS paid_subscribers,
+  SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) AS cancellations,
+  ROUND(AVG(CASE WHEN status = 'cancelled' THEN 100.0 ELSE 0 END), 1) AS churn_pct,
+  SUM(CASE WHEN status = 'cancelled' THEN price_inr ELSE 0 END) AS lost_mrr_inr
+FROM s
+WHERE paid_start_date IS NOT NULL AND LOWER(billing_cycle) = 'monthly'
+GROUP BY plan
+ORDER BY churn_pct DESC;
+```
+
+**Empirical Results:**
+- **Basic (Rs 149/mo)**: 302 paid subscribers, 203 cancelled (**67.2% churn**), lost MRR = Rs 30,247/month.
+- **Standard (Rs 299/mo)**: 517 paid subscribers, 319 cancelled (**61.7% churn**), lost MRR = **Rs 95,381/month** (largest financial leak).
+- **Premium (Rs 499/mo)**: 179 paid subscribers, 99 cancelled (**55.3% churn**), lost MRR = Rs 49,401/month.
+
+Standard accounts for 54.5% of all recurring revenue lost to monthly cancellations.
+
+## Python exploratory data analysis: Cohort retention matrix
+
+Using Python, we group users into monthly signup cohorts and calculate month-over-month active retention.
+
+```python
+import pandas as pd
+import numpy as np
+
+# Load subscriptions and users
+users = pd.read_csv('users.csv').drop_duplicates(subset=['user_id'])
+subs = pd.read_csv('subscriptions.csv').drop_duplicates(subset=['subscription_id'])
+subs = subs[subs['paid_start_date'].notna()]
+
+# Format dates
+subs['paid_start_date'] = pd.to_datetime(subs['paid_start_date'])
+subs['cancel_date'] = pd.to_datetime(subs['cancel_date'])
+subs['cohort'] = subs['paid_start_date'].dt.to_period('M')
+
+# Calculate tenure in months before cancellation (or active till present)
+end_point = pd.to_datetime('2024-12-31')
+subs['effective_end'] = subs['cancel_date'].fillna(end_point)
+subs['tenure_months'] = ((subs['effective_end'] - subs['paid_start_date']) / np.timedelta64(1, 'M')).astype(int)
+
+# Build cohort retention matrix
+cohort_sizes = subs.groupby('cohort')['user_id'].nunique()
+retention_matrix = pd.DataFrame(index=cohort_sizes.index)
+
+for m in range(7):
+    retained = subs[subs['tenure_months'] >= m].groupby('cohort')['user_id'].nunique()
+    retention_matrix[f'Month {m}'] = (retained / cohort_sizes * 100).round(1)
+
+print(retention_matrix[['Month 0', 'Month 1', 'Month 2', 'Month 3']])
+```
+
+### The March 2024 Retention Spike Diagnostic
+Analyzing the retention matrix exposes a stark anomaly:
+- **Jan 2024 Cohort**: Month 1 = **67.4%**, Month 2 = **58.2%**, Month 3 = **52.1%**.
+- **Feb 2024 Cohort**: Month 1 = **69.1%**, Month 2 = **60.4%**, Month 3 = **54.0%**.
+- **March 2024 Cohort**: Month 1 = **31.2%**, Month 2 = **19.4%**, Month 3 = **14.1%** (Severe collapse!).
+- **April 2024 Cohort**: Month 1 = **66.8%**, Month 2 = **57.9%**, Month 3 = **51.8%**.
+
+Cross-referencing user acquisition sources reveals that in March 2024, marketing ran an aggressive influencer promotion on YouTube and Instagram that brought in 620 signups with an unsegmented audience. Simultaneously, app release version 2.4.1 on Android contained a critical video playback freeze, causing 68% of March cohort users to abandon the app within their first week.
+
+## Dashboard architecture & DAX metrics
+
+The Power BI dashboard features three dedicated workspaces:
+1. **SaaS Executive Scorecard**: Current Active MRR, Paid Subscribers, Monthly Logo Churn %, Net MRR Growth Rate.
+2. **Funnel & Acquisition Telemetry**: Funnel conversion waterfall, platform conversion breakdown, and acquisition channel LTV/CAC.
+3. **Cohort Retention Heatmap**: Interactive cohort matrix with conditional formatting and month-over-month hazard curves.
+
+### Core DAX Measures
+
+```dax
+-- Monthly Logo Churn Rate
+MonthlyLogoChurnPct = 
+VAR StartSubscribers = 
+    CALCULATE (
+        COUNTROWS ( Subscriptions ),
+        Subscriptions[paid_start_date] <= MIN ( 'Date'[Date] ),
+        Subscriptions[status] IN { "active", "cancelled" },
+        Subscriptions[billing_cycle] = "Monthly"
+    )
+VAR CancelledThisMonth = 
+    CALCULATE (
+        COUNTROWS ( Subscriptions ),
+        Subscriptions[cancel_date] >= MIN ( 'Date'[Date] ) && Subscriptions[cancel_date] <= MAX ( 'Date'[Date] ),
+        Subscriptions[status] = "cancelled",
+        Subscriptions[billing_cycle] = "Monthly"
+    )
+RETURN 
+DIVIDE ( CancelledThisMonth, StartSubscribers, 0 ) * 100
+
+-- Active MRR
+ActiveMRR = 
+CALCULATE (
+    SUM ( Subscriptions[price_inr] ),
+    Subscriptions[status] = "active",
+    Subscriptions[billing_cycle] = "Monthly"
+) + 
+CALCULATE (
+    SUM ( Subscriptions[price_inr] ) / 12,
+    Subscriptions[status] = "active",
+    Subscriptions[billing_cycle] = "Annual"
+)
+```
+
+## Quantified business insights
+
+1. **The Annual Retention Moat**: Annual subscribers have a churn rate of only **16.9%** (33 out of 195), compared to **62.2%** for Monthly subscribers. Annual subscribers lock in an effective 4x longer lifetime.
+2. **Channel Quality Disparity**: Referral-acquired users boast a **44.8%** trial-to-paid conversion and lowest churn, while Influencer-acquired users exhibit a dismal **18.2%** conversion and 2.4x higher churn rate.
+3. **Involuntary Churn Exposure**: 3.5% of renewal transactions fail (`payment_failed`), of which **45%** result in passive subscription cancellation because the app lacks automated retry and card update prompts.
+4. **First-14-Day Cliff**: Users who log fewer than 3 `content_view` events within their first 14 days of trial activation have an **88% probability** of churning before or at the first paid renewal.
+
+## Strategic recommendations & action plan
+
+### 1. Smart Dunning & Automated Webhook Retries
+Implement automated retry logic for failed subscription renewals: retry payment attempts at +24 hours, +72 hours, and +120 hours, coupled with an automated WhatsApp/SMS payment update link. This recovers an estimated 40% of involuntary cancellations, saving ~Rs 38,000 in monthly lost MRR.
+
+### 2. The Annual Plan Transition Engine
+Introduce an in-app prompt at Day 21 of monthly subscription usage: "Upgrade to Annual for Rs 2,390 (Get 4 Months Free)". Converting 15% of monthly Standard users into Annual plans will reduce blended churn by 6.4 percentage points.
+
+### 3. Redesign the Early Engagement Loop
+Gate the free trial onboarding behind a 3-step personalization quiz (selecting content preferences) to boost first-week content views above the 3-view retention threshold.
+
+## Portfolio README template
+
+```markdown
+# SaaS Subscription Analytics: Funnel Conversion & Cohort Retention
+
+A data analytics case study examining user onboarding funnels, subscriber churn, and cohort degradation across 5,200 users and 36,000 events.
+
+## Tech Stack
+- **SQL (PostgreSQL / SQLite)**: Conversion funnel modeling, window functions, and MRR calculations.
+- **Python (pandas, NumPy, seaborn, matplotlib)**: Cohort retention matrix construction and survival hazard curves.
+- **Power BI**: SaaS executive dashboard, dynamic DAX measures for MRR and Logo Churn, and interactive cohort heatmaps.
+
+## Core Results
+- Mapped 5,200 signups to 1,193 paid subscribers (36.1% trial-to-paid conversion).
+- Diagnosed the March 2024 cohort collapse (retention dropping from 68% to 31%) caused by low-intent influencer signups and an Android playback bug.
+- Formulated an automated dunning and annual plan upgrade strategy to rescue Rs 75,000+ in lost MRR.
+```
+
+## Screenshots-to-capture checklist
+
+1. **SaaS Executive Overview**: Total Active Subscribers, Active MRR (Rs 3.2 Lakhs), Blended Churn Rate, and Trial Conversion Rate.
+2. **Funnel Drop-off Waterfall**: Visualizing user loss at each stage (Signup -> Trial Start -> Payment Success -> First Renewal).
+3. **Cohort Retention Heatmap**: Triangular matrix with color gradients highlighting the March 2024 anomaly row.
+4. **Plan Churn Comparison**: Bar chart illustrating churn percentages across Basic (67.2%), Standard (61.7%), and Premium (55.3%).
+
+## 2-minute interview pitch script
+
+> "In this project, I investigated subscriber monetization and retention for a mobile subscription app with 5,200 users and 36,000 behavioral telemetry logs.
+>
+> My funnel analysis identified a major operational leak: while 63.6% of users activated a free trial, only 36.1% converted into paying customers. Android trailed iOS by nearly 16 percentage points in conversion, which I traced to device-specific onboarding friction.
+>
+> When analyzing cohort retention in Python, I spotted an alarming anomaly: the March 2024 cohort experienced a catastrophic 2.7x higher churn hazard, with month-1 retention plunging to 31% compared to the 68% baseline. By cross-referencing event logs and marketing campaign tags, I proved that this was driven by a combination of low-intent influencer ad traffic and an unpatched Android release crash.
+>
+> Furthermore, I found that monthly subscribers churned at 62.2% versus only 16.9% for annual subscribers. I built an executive Power BI dashboard and recommended deploying automated payment retry dunning systems and incentivizing annual plan migrations, projected to recover over Rs 75,000 in monthly recurring revenue."
+
+## 10 likely interview questions & model answers
+
+### 1. How did you define and calculate the trial-to-paid conversion rate?
+I counted the distinct users who had a `payment_success` event and divided that by the distinct users who initiated a `trial_start` event (`has_paid / has_started_trial`). This isolated payment friction from initial registration onboarding.
+
+### 2. How did you discover the March 2024 retention anomaly?
+When generating the cohort retention matrix in Python with a Seaborn heatmap, the March 2024 row was visually conspicuous: month-1 retention dropped to 31.2%, while neighboring January and February cohorts maintained ~68% retention.
+
+### 3. How did you isolate the dual root causes of the March 2024 collapse?
+I sliced the March cohort by acquisition channel and platform. First, 72% of the March cohort came from influencer marketing, which historically converts at only 18.2%. Second, 84% of churners were on Android, where crash event logs surged following the deployment of app build 2.4.1.
+
+### 4. What is the difference between Logo Churn and Revenue Churn?
+Logo churn measures the percentage of customer accounts lost over a time window, regardless of price tier. Revenue churn measures the percentage of Monthly Recurring Revenue (MRR) lost. If low-tier users cancel while high-tier users expand, logo churn can be high even while net revenue churn is negative.
+
+### 5. Why is Annual churn so much lower than Monthly churn?
+Annual plans require a 12-month upfront financial commitment, which selects for high-intent, highly committed users. Furthermore, annual subscribers evaluate their renewal decision once a year rather than facing 12 separate monthly payment reconsideration moments.
+
+### 6. What is involuntary churn, and how much did it contribute here?
+Involuntary churn occurs when a user does not intend to cancel, but their subscription lapses due to expired credit cards, insufficient balance, or bank gateway timeouts. In this dataset, 3.5% of renewals had a `payment_failed` status, and 45% of those failed attempts never retried, representing pure preventable revenue loss.
+
+### 7. How did you handle the event telemetry duplicates in SQL?
+I used a CTE with `SELECT DISTINCT * FROM events` before joining, ensuring that mobile client retry pings did not artificially inflate event counts or skew funnel stage conversion rates.
+
+### 8. What is the significance of the 3 content views threshold in the first 14 days?
+Users who consumed at least 3 content items reached the product's "Aha! moment," experiencing core value delivery. Their retention was 4.2x higher than users who opened the app but never explored the library, proving that early engagement directly drives monetization.
+
+### 9. How would you calculate Customer Lifetime Value (LTV) for this app?
+LTV is calculated as `Average Revenue Per User (ARPU) × Gross Margin % / Customer Churn Rate`. For monthly Standard subscribers (ARPU = Rs 299, Churn = 62.2%), customer lifetime is approximately 1.6 months, yielding an LTV of ~Rs 480. For Annual subscribers, LTV exceeds Rs 2,400.
+
+### 10. If management asked you to focus on only one initiative, which would you pick?
+Implementing automated dunning payment retries. It requires zero marketing spend, is purely an engineering webhook integration, and immediately rescues up to 40% of the Rs 38,000 monthly lost MRR caused by gateway payment dropouts.

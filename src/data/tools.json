@@ -3,5 +3,9 @@
   { "id": "aptitude", "title": "Aptitude practice", "href": "/tools/aptitude/", "description": "Timed quant, logic, data and verbal MCQs.", "enabled": true },
   { "id": "mcq", "title": "Statistics MCQs", "href": "/tools/mcq/", "description": "Timed statistics multiple-choice practice.", "enabled": true },
   { "id": "mock-interview", "title": "Mock interview", "href": "/tools/mock-interview/", "description": "Timed questions, self-rating and score history.", "enabled": true },
-  { "id": "interview-banks", "title": "Interview question banks", "href": "/interview/banks/", "description": "Browse questions with model answers.", "enabled": true }
+  { "id": "interview-banks", "title": "Interview question banks", "href": "/interview/banks/", "description": "Browse questions with model answers.", "enabled": true },
+  { "id": "flashcards", "title": "Flashcards", "href": "/tools/flashcards/", "description": "520+ spaced-repetition flashcards.", "enabled": true },
+  { "id": "glossary", "title": "Analytics Glossary", "href": "/tools/glossary/", "description": "Search 320+ analytics terms and formulas.", "enabled": true },
+  { "id": "tracker", "title": "Application Tracker", "href": "/tools/tracker/", "description": "Track job applications and recruiter follow-ups.", "enabled": true },
+  { "id": "resume", "title": "Resume Builder", "href": "/tools/resume/", "description": "ATS-friendly resume builder with PDF export.", "enabled": true }
 ]

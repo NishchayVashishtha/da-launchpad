@@ -1,0 +1,331 @@
+---
+id: "04-hr-attrition-workforce"
+title: "HR Workforce Analytics: Employee Attrition Diagnostics and Predictive Retention Modeling"
+businessProblem: "Diagnose an escalating 22.9% company-wide turnover rate, isolate burnout and compensation drivers in frontline departments (Customer Support at 33.6% and Sales at 31.2%), and model employee flight risk across 2,400 employees."
+datasetDescription: "Enterprise Human Resources database containing 2,400 employee master records across 8 departments, 544 attrition events, performance review telemetry, and historical salary hike logs."
+skillsUsed: ["SQL", "Python", "Power BI", "Workforce Analytics", "Logistic Regression", "Feature Importance", "Executive Reporting"]
+steps:
+  - "Scope the workforce challenge: replace expensive hiring cycles with proactive flight-risk retention"
+  - "Audit and clean HR records: deduplicate employee records, handle missing manager IDs, and sanitize job levels"
+  - "Execute SQL diagnostic queries: department turnover rates, overtime hours correlation, and regretted talent loss"
+  - "Build an employee flight risk classification model in Python using logistic regression and odds-ratio interpretations"
+  - "Design an executive Power BI HR scorecard featuring headcounts, tenure distributions, and turnover cost trackers"
+  - "Formulate an HR policy action plan: overtime capping, targeted salary adjustments, and manager coaching frameworks"
+deliverables:
+  - "SQL workforce diagnostic scripts (attrition_analysis.sql and compensation_parity.sql)"
+  - "Python Jupyter Notebook with EDA, logistic regression, and feature importance charts (hr_attrition_model.ipynb)"
+  - "Executive Power BI HR Analytics Dashboard (.pbix) and data model specification"
+  - "Chief People Officer (CPO) advisory memo and GitHub portfolio README.md"
+readmeTemplate: |
+  # HR Workforce Analytics: Attrition Diagnostics and Retention Modeling
+
+  ## Executive Summary
+  Comprehensive workforce analytics across 2,400 employees and 8 business divisions to identify the drivers of voluntary employee turnover and forecast flight risk.
+
+  ## Problem Statement
+  Annual turnover surged to 22.9%, costing an estimated Rs 4.8 Crore in replacement recruiting and onboarding overheads, with Customer Support (33.6%) and Sales (31.2%) experiencing alarming attrition.
+
+  ## Key Insights
+  1. Department Concentration: Customer Support (33.6%) and Sales (31.2%) account for 47.2% of all employee exits, driven by high frontline stress and uncompetitive variable pay structures.
+  2. The Overtime Tipping Point: Employees averaging over 25 hours of monthly overtime exhibit a 41.2% turnover rate, compared to 14.8% for employees with under 5 overtime hours.
+  3. Compensation Disparity: Staff receiving annual salary hikes under 8% are 3.1x more likely to resign, with 68.4% of Engineering departures classified as "Regretted Loss" high performers.
+
+  ## Strategic Recommendations
+  - Enforce an automated HR alert cap at 20 monthly overtime hours to combat operational burnout.
+  - Implement mid-year market compensation corrections for high-performing IC engineers and sales reps.
+  - Introduce structured 30-60-90 day manager touchpoints for new hires during their first year.
+interviewTalkingPoints:
+  - "How I quantified the business impact of turnover by calculating replacement costs per departed employee"
+  - "Using multivariable logistic regression in Python to identify that overtime hours and hike percentages are stronger predictors than base tenure"
+  - "Differentiating between regretted losses and routine operational turnover in SQL"
+extensions:
+  - "Develop an employee survival curve using Cox Proportional Hazards modeling in Python"
+  - "Build an interactive What-If Salary Budget Simulator in Power BI using What-If parameters"
+estimatedHours: 14
+order: 4
+draft: false
+---
+
+## Project overview & business context
+
+Unplanned employee turnover creates severe organizational friction: institutional knowledge disappears, ongoing project deadlines slip, remaining team members suffer burnout from absorbing extra workloads, and recruitment replacement expenses average 50% to 150% of an employee's annual salary.
+
+This project examines a comprehensive Human Resources Information System (HRIS) database tracking **2,400 employees** across 8 operational departments in an Indian enterprise over a 3-year observation window.
+
+The primary objectives are:
+1. Identify departments, roles, and demographic cohorts experiencing abnormal turnover.
+2. Quantify the impact of work intensity (overtime hours) and compensation growth (salary hikes) on resignation probability.
+3. Construct a statistical flight risk model to enable proactive HR talent interventions before resignation letters are submitted.
+4. Deliver an executive Power BI dashboard enabling the Chief People Officer (CPO) to track real-time workforce health.
+
+## Dataset architecture & schema inspection
+
+The HR database is organized across five interconnected tables:
+- `employees` (2,400 rows): Employee master records including demographic data, hire dates, job titles, job levels (L1 Associate to L5 Director), department assignments, and employment status (Active, Resigned, Terminated).
+- `departments` (8 rows): Department metadata, department heads, corporate cost centers, and annual operating budgets.
+- `salaries` (4,820 rows): Longitudinal salary history records capturing base annual CTC, salary revision effective dates, and percentage hikes.
+- `attrition` (544 rows): Exit interview records documenting exit dates, exit types (Voluntary vs Involuntary), exit reasons, notice period days, and regretted loss tags (`regretted_loss = 1`).
+- `performance_reviews` (4,750 rows): Semi-annual performance evaluations recording manager ratings, self ratings, goals achievement percentages, and average monthly overtime hours.
+
+## Data cleaning & hygiene checks
+
+Data validation checks identified three operational anomalies in the raw HR database:
+
+1. **Duplicate Employee Records**: 20 duplicate employee rows existed due to automated sync retries between the applicant tracking system and the HRIS.
+2. **Missing Manager References**: Approximately 3.5% of records contained null `manager_id` entries, which correctly represented top-level department directors and executives.
+3. **Inconsistent Department Naming**: Department names in cross-table join keys contained slight trailing whitespace variations that required trimming.
+
+The following SQL script creates a clean, unified analytical view:
+
+```sql
+-- Step 1: Clean and join employee master records with exit details
+CREATE VIEW clean_workforce AS
+WITH deduplicated_emp AS (
+  SELECT DISTINCT *
+  FROM employees
+),
+latest_salary AS (
+  SELECT 
+    employee_id, 
+    annual_ctc, 
+    hike_pct,
+    ROW_NUMBER() OVER (PARTITION BY employee_id ORDER BY effective_date DESC) AS rn
+  FROM salaries
+),
+latest_perf AS (
+  SELECT 
+    employee_id,
+    manager_rating,
+    avg_monthly_overtime_hours,
+    ROW_NUMBER() OVER (PARTITION BY employee_id ORDER BY review_date DESC) AS rn
+  FROM performance_reviews
+)
+SELECT
+  e.employee_id,
+  e.full_name,
+  e.gender,
+  e.job_title,
+  e.job_level,
+  d.department_name,
+  e.city,
+  e.work_mode,
+  e.employment_status,
+  s.annual_ctc,
+  s.hike_pct,
+  p.manager_rating,
+  p.avg_monthly_overtime_hours,
+  CASE WHEN a.employee_id IS NOT NULL THEN 1 ELSE 0 END AS is_attrited,
+  a.exit_type,
+  a.exit_reason,
+  a.regretted_loss
+FROM deduplicated_emp e
+JOIN departments d ON d.department_id = e.department_id
+LEFT JOIN latest_salary s ON s.employee_id = e.employee_id AND s.rn = 1
+LEFT JOIN latest_perf p ON p.employee_id = e.employee_id AND p.rn = 1
+LEFT JOIN attrition a ON a.employee_id = e.employee_id;
+```
+
+## SQL exploratory & diagnostic analysis
+
+### 1. Department attrition and regretted loss rates
+
+We examine total employee count, departures, and regretted high-performer loss across departments:
+
+```sql
+SELECT 
+  department_name,
+  COUNT(*) AS total_headcount,
+  SUM(is_attrited) AS total_exits,
+  ROUND(100.0 * SUM(is_attrited) / COUNT(*), 1) AS attrition_rate_pct,
+  SUM(CASE WHEN regretted_loss = 1 THEN 1 ELSE 0 END) AS regretted_exits,
+  ROUND(100.0 * SUM(CASE WHEN regretted_loss = 1 THEN 1 ELSE 0 END) / NULLIF(SUM(is_attrited), 0), 1) AS regretted_loss_pct
+FROM clean_workforce
+GROUP BY department_name
+ORDER BY attrition_rate_pct DESC;
+```
+
+**Empirical Findings:**
+- **Customer Support**: 440 employees, 148 exits -> **33.6% turnover** (lowest regretted loss at 18.2%, indicative of high-churn operational roles).
+- **Sales**: 349 employees, 109 exits -> **31.2% turnover** (regretted loss = 42.2%).
+- **Operations**: 275 employees, 67 exits -> **24.4% turnover**.
+- **Engineering**: 833 employees, 140 exits -> **16.8% turnover**; however, **68.4% of engineering exits were tagged as Regretted Losses** (critical senior developers and tech leads).
+- **Product & Finance**: 15.5% and 14.6% turnover respectively (safest retention baselines).
+
+While Customer Support exhibits the highest raw turnover percentage, Engineering represents the largest threat to company intellectual property and delivery velocity due to high regretted losses.
+
+### 2. Work intensity: Overtime hours vs. Attrition
+
+```sql
+SELECT 
+  CASE 
+    WHEN avg_monthly_overtime_hours < 10 THEN '1. Low (<10 hrs)'
+    WHEN avg_monthly_overtime_hours BETWEEN 10 AND 25 THEN '2. Moderate (10-25 hrs)'
+    ELSE '3. High (>25 hrs)'
+  END AS overtime_bracket,
+  COUNT(*) AS employees,
+  SUM(is_attrited) AS exits,
+  ROUND(100.0 * SUM(is_attrited) / COUNT(*), 1) AS attrition_pct,
+  ROUND(AVG(manager_rating), 2) AS avg_rating
+FROM clean_workforce
+WHERE avg_monthly_overtime_hours IS NOT NULL
+GROUP BY overtime_bracket
+ORDER BY overtime_bracket;
+```
+
+**Key Takeaway:**
+Employees logging over 25 hours of overtime per month experience a staggering **41.2% attrition rate**, nearly triple the **14.8% rate** observed among employees working standard hours.
+
+## Python exploratory data analysis: Flight risk modeling
+
+Using Python (pandas, statsmodels, scikit-learn), we train a logistic regression classifier to identify which factors most strongly predict voluntary employee turnover.
+
+```python
+import pandas as pd
+import numpy as np
+import statsmodels.api as sm
+
+# Load clean workforce data
+df = pd.read_csv('hr_data.csv').drop_duplicates(subset=['employee_id'])
+
+# Prepare modeling features
+features = ['annual_ctc', 'hike_pct', 'avg_monthly_overtime_hours', 'manager_rating']
+df_model = df.dropna(subset=features + ['is_attrited'])
+
+X = df_model[features]
+X = sm.add_constant(X)
+y = df_model['is_attrited']
+
+logit_model = sm.Logit(y, X)
+result = logit_model.fit()
+
+print(result.summary())
+print("\nOdds Ratios:")
+print(np.exp(result.params))
+```
+
+### Key Statistical Odds Ratios
+- **Overtime Hours (Odds Ratio: 1.054)**: Every 5 additional hours of monthly overtime increases the odds of an employee quitting by **30.1%** ($1.054^5 = 1.301$), controlling for salary and performance.
+- **Salary Hike Percentage (Odds Ratio: 0.862)**: Each additional 1% increase in annual salary hike reduces the odds of resignation by **13.8%**.
+- **Manager Rating (Odds Ratio: 0.910)**: High performers receiving strong manager evaluations are slightly less likely to leave unless burdened by severe overtime.
+
+## Dashboard architecture & DAX metrics
+
+The Power BI dashboard is designed for HR business partners and C-suite leadership:
+1. **Workforce Headcount & Attrition Cockpit**: Real-time headcount, rolling 12-month turnover rate, voluntary vs involuntary split, and net replacement costs.
+2. **Burnout & Compensation Diagnostics**: Overtime distribution by department, salary hike distribution, and flight risk risk matrix.
+3. **Talent Retention & Regretted Loss Tracker**: Drill-down view into regretted engineering and sales losses with exit interview sentiment word clouds.
+
+### Core DAX Measures
+
+```dax
+-- Turnover Rate %
+TurnoverRatePct = 
+VAR TotalExits = CALCULATE ( COUNTROWS ( CleanWorkforce ), CleanWorkforce[is_attrited] = 1 )
+VAR AvgHeadcount = 
+    CALCULATE (
+        COUNTROWS ( CleanWorkforce ),
+        CleanWorkforce[employment_status] IN { "Active", "Resigned" }
+    )
+RETURN 
+DIVIDE ( TotalExits, AvgHeadcount, 0 ) * 100
+
+-- Estimated Turnover Cost (Assuming 50% of annual CTC replacement cost)
+TurnoverReplacementCostINR = 
+CALCULATE (
+    SUMX ( CleanWorkforce, CleanWorkforce[annual_ctc] * 0.50 ),
+    CleanWorkforce[is_attrited] = 1
+)
+
+-- Regretted Loss Percentage
+RegrettedLossPct = 
+DIVIDE (
+    CALCULATE ( COUNTROWS ( CleanWorkforce ), CleanWorkforce[regretted_loss] = 1 ),
+    CALCULATE ( COUNTROWS ( CleanWorkforce ), CleanWorkforce[is_attrited] = 1 ),
+    0
+) * 100
+```
+
+## Quantified business insights
+
+1. **Financial Replacement Drain**: At an average replacement cost of 50% of annual salary, the 544 employee departures incurred an estimated **Rs 4.8 Crore** in recruiting fees, sign-on bonuses, and training ramp-up losses.
+2. **The Frontline Churn Trap**: Customer Support and Sales together represent only 32.9% of company headcount, yet they accounted for **47.2% of all resignations**.
+3. **Compensation Threshold**: Employees who received an annual salary hike of under 8% exhibited a 31.4% turnover rate, compared to 10.2% for employees receiving hikes over 14%.
+4. **Tenure Fragility**: Over 52% of all voluntary departures occurred within the **first 14 months of employment**, highlighting critical onboarding and team integration gaps.
+
+## Strategic recommendations & action plan
+
+### 1. Mandatory Overtime Capping & Shift Rebalancing
+Implement an automated HR flag when any employee logs over 20 overtime hours in a single month. For Customer Support and Operations, transition from overtime payouts to hiring temporary seasonal contractors, eliminating the chronic burnout that drives 33.6% turnover.
+
+### 2. High-Performer Retention Ring-Fencing
+Allocate a dedicated Rs 45 Lakhs retention budget specifically to correct compensation for top-rated (rating 4 or 5) Engineering and Sales professionals whose salary hikes were below 9%, protecting core revenue-generating talent.
+
+### 3. Early Career Mentorship & Structured Check-Ins
+Introduce structured 30, 60, and 90-day check-in protocols for all new hires, assigning a senior peer mentor outside their direct reporting chain to address onboarding friction early.
+
+## Portfolio README template
+
+```markdown
+# HR Workforce Analytics: Attrition Diagnostics & Retention Modeling
+
+A data analytics case study examining employee turnover, compensation equity, and burnout drivers across 2,400 enterprise employees.
+
+## Tech Stack
+- **SQL (PostgreSQL / SQLite)**: Workforce joins, window functions, and regretted loss aggregation.
+- **Python (pandas, NumPy, statsmodels, scikit-learn)**: Exploratory data analysis and multivariable logistic regression modeling.
+- **Power BI**: Executive HR dashboard, DAX turnover measures, and flight risk heatmaps.
+
+## Key Outcomes
+- Isolated turnover hotspots in Customer Support (33.6%) and Sales (31.2%).
+- Discovered that overtime exceeding 25 hours/month nearly triples turnover probability (41.2% vs 14.8%).
+- Modeled statistical odds ratios demonstrating that each 1% additional salary hike reduces resignation odds by 13.8%.
+```
+
+## Screenshots-to-capture checklist
+
+1. **Executive Workforce Cockpit**: Total Headcount (2,400), Annual Turnover (22.9%), Total Exits (544), and Estimated Replacement Cost.
+2. **Department Turnover Heatmap**: Grouped bar chart comparing raw turnover percentage versus regretted loss percentage by department.
+3. **Burnout Correlation Visual**: Scatter plot / clustered column chart showing turnover rates escalating as monthly overtime hours climb.
+4. **Compensation & Hike Impact**: Line chart displaying turnover rate dropping steeply as salary hike percentage increases from 4% to 18%.
+
+## 2-minute interview pitch script
+
+> "In this project, I investigated the operational and financial impact of employee turnover across an enterprise with 2,400 employees and 8 departments.
+>
+> Using SQL, I discovered that company-wide attrition stood at 22.9%, costing an estimated Rs 4.8 Crore in annual replacement overheads. While Customer Support and Sales had the highest raw turnover rates at 33.6% and 31.2%, Engineering presented the highest strategic vulnerability: 68.4% of engineering departures were classified as high-performing 'Regretted Losses'.
+>
+> Through multivariable logistic regression in Python, I proved that work intensity is a massive turnover driver: employees averaging over 25 hours of monthly overtime had a 41.2% turnover rate compared to 14.8% for standard hours. In fact, every 5 hours of monthly overtime increased resignation odds by 30%. On the compensation side, each 1% increase in annual salary hike reduced resignation odds by 13.8%.
+>
+> I synthesized these findings into an executive Power BI dashboard and recommended an automated 20-hour overtime cap, targeted retention adjustments for top-rated engineers, and structured first-year check-ins. These initiatives are projected to reduce regretted departures by 18% and save over Rs 85 Lakhs in recruiting costs."
+
+## 10 likely interview questions & model answers
+
+### 1. How did you compute the financial cost of employee turnover?
+Industry benchmarks in enterprise IT and services indicate that replacing an employee costs between 50% and 150% of their annual salary when accounting for agency recruitment fees, internal interviewer hours, sign-on incentives, and lost productivity during ramp-up. In my analysis, I applied a conservative 50% multiplier across the annual CTC of all departed employees, totaling Rs 4.8 Crore.
+
+### 2. What is the difference between raw turnover and regretted loss?
+Raw turnover includes all exits (low performers, mutual separations, contract expirations). A regretted loss specifically designates an exit where the employee was a high performer (manager rating 4 or 5) whose departure actively disrupted team capabilities. In Engineering, while overall turnover was a modest 16.8%, 68.4% of those departures were regretted losses.
+
+### 3. How did you handle employees with multiple performance reviews and salary records?
+I utilized the SQL window function `ROW_NUMBER() OVER (PARTITION BY employee_id ORDER BY review_date DESC) AS rn` and filtered for `rn = 1`. This ensured my analytical dataset captured each employee's most recent performance evaluation and current compensation without generating Cartesian duplicates.
+
+### 4. What were the key findings from your logistic regression model?
+The model established that monthly overtime hours and salary hike percentages were the two strongest predictors of turnover. Overtime had an odds ratio of 1.054 (increasing exit probability), while salary hike had an odds ratio of 0.862 (decreasing exit probability).
+
+### 5. Why is Customer Support turnover so high (33.6%)?
+Customer Support in high-growth consumer firms involves repetitive stress, high ticket volumes, strict SLA monitoring, and limited internal promotion paths. Exit interview records showed that 54% of support exits cited burnout and schedule inflexibility rather than compensation alone.
+
+### 6. What DAX measures did you implement in the Power BI HR report?
+I built DAX measures for `TurnoverRatePct`, `RegrettedLossPct`, `TurnoverReplacementCostINR`, and `ActiveHeadcount`. I ensured calculations dynamically respected slicer filters for department, job level, and city location.
+
+### 7. Why did you recommend capping overtime rather than just paying higher overtime bonuses?
+Paying higher bonuses treats the symptom rather than the disease. Beyond 20 hours of monthly overtime, cognitive fatigue increases, customer escalation rates rise, and physical burnout causes employees to resign regardless of extra pay. Rebalancing shift allocations protects long-term retention far better than cash bonuses.
+
+### 8. What trend did you observe across job levels?
+Turnover followed a clear inverse curve with seniority: L1 Associates experienced 34.1% turnover, L2 Specialists experienced 26.5%, while L4 Managers and L5 Directors experienced less than 9% turnover. Early-career employees have higher market mobility and are more sensitive to management friction.
+
+### 9. How did you evaluate remote vs. in-office work modes?
+Hybrid employees exhibited the lowest turnover at 17.4%, compared to 25.8% for fully in-office staff and 23.2% for fully remote staff. Hybrid models offer an optimal balance of workplace collaboration and personal autonomy.
+
+### 10. If you were presenting this to the CEO, what would be your primary takeaway?
+My primary takeaway would be: "Turnover is not a generic HR challenge; it is an operational bottleneck concentrated in Customer Support burnout and high-performing Engineering compensation lag. By capping monthly overtime at 20 hours and investing Rs 45 Lakhs in targeted engineering salary corrections, we can rescue Rs 85 Lakhs in recruitment leakage within 12 months."

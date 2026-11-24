@@ -1,0 +1,645 @@
+---
+import Base from '../../layouts/Base.astro';
+---
+
+<Base
+  title="Data Analyst Cheat Sheets & Quick Reference"
+  description="Printable one-page reference sheets: SQL, Excel, pandas, Matplotlib/Seaborn, DAX, Statistics formulas, A/B testing checklist, EDA checklist, and Business KPIs."
+>
+  <div style="max-width: 68rem; margin: 0 auto; padding-bottom: 4rem;">
+    {/* Page Header */}
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
+      <div>
+        <h1 style="margin: 0 0 0.5rem; font-size: 2.2rem;">Data Analyst Cheat Sheets</h1>
+        <p class="muted" style="margin: 0; font-size: 1.05rem;">
+          High-density, printable one-page reference guides for everyday data analytics and technical interview prep.
+        </p>
+      </div>
+
+      <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;" class="no-print">
+        <button
+          type="button"
+          class="btn btn-primary"
+          onclick="window.print()"
+          style="display: flex; align-items: center; gap: 0.4rem;"
+        >
+          🖨️ Print / Save as PDF
+        </button>
+        <a href="/tools/flashcards/" class="btn btn-secondary">
+          🗂️ Flashcards (520+)
+        </a>
+        <a href="/tools/glossary/" class="btn btn-secondary">
+          📖 Glossary (320+)
+        </a>
+      </div>
+    </div>
+
+    {/* Table of Contents Quick Nav */}
+    <nav class="card no-print" style="margin-bottom: 2.5rem; padding: 1.25rem 1.5rem;">
+      <h3 style="margin: 0 0 0.75rem; font-size: 1rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted, #666);">
+        Jump to Sheet
+      </h3>
+      <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+        <a href="#sql" class="badge-link">1. SQL Reference</a>
+        <a href="#excel" class="badge-link">2. Excel Formulas</a>
+        <a href="#pandas" class="badge-link">3. pandas & NumPy</a>
+        <a href="#visualization" class="badge-link">4. Matplotlib & Seaborn</a>
+        <a href="#dax" class="badge-link">5. DAX & Power BI</a>
+        <a href="#statistics" class="badge-link">6. Statistics & Tests</a>
+        <a href="#ab-testing" class="badge-link">7. A/B Testing Checklist</a>
+        <a href="#eda" class="badge-link">8. EDA Checklist</a>
+        <a href="#kpis" class="badge-link">9. Business KPIs</a>
+      </div>
+    </nav>
+
+    {/* =========================================================================
+        1. SQL CHEAT SHEET
+    ========================================================================== */}
+    <section id="sql" class="sheet-section card">
+      <div class="sheet-header">
+        <h2>1. SQL Querying & Performance Cheat Sheet</h2>
+        <span class="sheet-tag">SQL</span>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <h3>Logical Order of Execution</h3>
+          <ol class="code-list">
+            <li><strong>FROM & JOIN</strong> — Determine tables & Cartesian products</li>
+            <li><strong>WHERE</strong> — Row-level filtering before aggregation</li>
+            <li><strong>GROUP BY</strong> — Partition rows into summary buckets</li>
+            <li><strong>HAVING</strong> — Filter aggregated summary rows</li>
+            <li><strong>SELECT</strong> — Compute column expressions & aliases</li>
+            <li><strong>DISTINCT</strong> — Deduplicate resulting rows</li>
+            <li><strong>ORDER BY</strong> — Sort records (ASC / DESC)</li>
+            <li><strong>LIMIT / OFFSET</strong> — Paginate result rows</li>
+          </ol>
+
+          <h3>Window Functions Syntax</h3>
+          <pre><code>FUNCTION() OVER (
+  PARTITION BY dept_id
+  ORDER BY salary DESC
+  ROWS BETWEEN UNBOUNDED PRECEDING
+           AND CURRENT ROW
+)</code></pre>
+          <ul class="dense-list">
+            <li><code>ROW_NUMBER()</code>: Consecutive 1, 2, 3, 4 (no ties)</li>
+            <li><code>RANK()</code>: Gaps on ties: 1, 2, 2, 4</li>
+            <li><code>DENSE_RANK()</code>: No gaps on ties: 1, 2, 2, 3</li>
+            <li><code>LAG(col, 1)</code> / <code>LEAD(col, 1)</code>: Value offset</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3>Relational Join Summary</h3>
+          <ul class="dense-list">
+            <li><strong>INNER JOIN</strong>: Rows matching join keys in both tables.</li>
+            <li><strong>LEFT JOIN</strong>: All left rows + matched right (or NULLs).</li>
+            <li><strong>CROSS JOIN</strong>: Cartesian product (N × M rows).</li>
+            <li><strong>FULL JOIN</strong>: All rows from both sides, matching where keys align.</li>
+          </ul>
+
+          <h3>Essential SQL Idioms</h3>
+          <pre><code>-- Safe Division (prevent division by zero)
+revenue / NULLIF(spend, 0)
+
+-- First non-null fallback
+COALESCE(work_email, personal_email, 'N/A')
+
+-- Month-over-Month Growth
+WITH monthly AS (
+  SELECT strftime('%Y-%m', order_date) AS ym,
+         SUM(amount) AS rev
+  FROM orders GROUP BY 1
+)
+SELECT ym, rev,
+  ROUND(100.0 * (rev - LAG(rev) OVER (ORDER BY ym))
+        / NULLIF(LAG(rev) OVER (ORDER BY ym), 0), 2) AS mom_pct
+FROM monthly;</code></pre>
+        </div>
+      </div>
+    </section>
+
+    {/* =========================================================================
+        2. EXCEL FUNCTIONS CHEAT SHEET
+    ========================================================================== */}
+    <section id="excel" class="sheet-section card">
+      <div class="sheet-header">
+        <h2>2. Excel Functions & Analytics Formulas Cheat Sheet</h2>
+        <span class="sheet-tag">Excel</span>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <h3>Modern Lookup Functions</h3>
+          <pre><code>-- XLOOKUP (exact match default, searches any direction)
+=XLOOKUP(lookup_val, lookup_range, return_range, [if_not_found])
+
+-- Classic INDEX MATCH (fast, left-looking)
+=INDEX(return_col, MATCH(lookup_val, lookup_col, 0))
+
+-- Safe division wrapper
+=IFERROR(Revenue / Spend, 0)</code></pre>
+
+          <h3>Dynamic Array Formulas (Excel 365)</h3>
+          <ul class="dense-list">
+            <li><code>=FILTER(array, include_criteria, [if_empty])</code> — Spill filtered rows</li>
+            <li><code>=UNIQUE(range)</code> — Return distinct values</li>
+            <li><code>=SORT(range, sort_index, [order])</code> — Sort dynamic arrays</li>
+            <li><code>=TEXTSPLIT(text, col_delimiter)</code> — Split text across cells</li>
+            <li><code>=VSTACK(range1, range2)</code> — Stack ranges vertically</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3>Aggregation & Conditional Math</h3>
+          <pre><code>-- Multi-criteria summation (Sum range is FIRST)
+=SUMIFS(sum_range, crit_range1, "West", crit_range2, ">=2024-01-01")
+
+-- Multi-criteria row count
+=COUNTIFS(status_range, "Delivered", state_range, "MH")
+
+-- Date manipulation
+=EOMONTH(TODAY(), 0)         -- Current month end date
+=NETWORKDAYS(start, end, h)  -- Working business days</code></pre>
+
+          <h3>Reference Locks & Shortcuts</h3>
+          <ul class="dense-list">
+            <li><code>$A$1</code>: Absolute row and column locked</li>
+            <li><code>$A1</code>: Column locked; row shifts on drag</li>
+            <li><code>A$1</code>: Row locked; column shifts on drag</li>
+            <li><code>F4</code>: Cycle reference locks ($)</li>
+            <li><code>Ctrl + T</code>: Convert range to formatted Table</li>
+            <li><code>Ctrl + Shift + $ / %</code>: Format as Currency / Percent</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    {/* =========================================================================
+        3. PANDAS & NUMPY CHEAT SHEET
+    ========================================================================== */}
+    <section id="pandas" class="sheet-section card">
+      <div class="sheet-header">
+        <h2>3. Python (pandas & NumPy) Cheat Sheet</h2>
+        <span class="sheet-tag">Python</span>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <h3>Selection & Indexing</h3>
+          <pre><code># Label-based selection & boolean masking
+df.loc[df['spend'] > 1000, ['user_id', 'city']]
+
+# Integer position slicing (rows 0-4, cols 1-2)
+df.iloc[0:5, 1:3]
+
+# Multi-condition filtering (use bitwise & and |)
+mask = (df['age'] >= 25) & (df['status'] == 'active')
+df[mask].reset_index(drop=True)</code></pre>
+
+          <h3>Data Cleaning & Missing Data</h3>
+          <pre><code># Missing value handling
+df.isna().sum()                        # Count nulls per col
+df.dropna(subset=['email'])            # Drop rows with nulls
+df['salary'].fillna(df['salary'].median(), inplace=True)
+
+# Datetime parsing & properties
+df['date'] = pd.to_datetime(df['date_str'])
+df['month'] = df['date'].dt.month_name()
+df['is_weekend'] = df['date'].dt.dayofweek >= 5</code></pre>
+        </div>
+
+        <div>
+          <h3>Groupby & Transformations</h3>
+          <pre><code># Multiple aggregations per column
+df.groupby('category').agg(
+    total_sales=('amount', 'sum'),
+    avg_price=('price', 'mean'),
+    orders=('order_id', 'nunique')
+).reset_index()
+
+# Window-like transform (retains original shape)
+df['cat_avg'] = df.groupby('cat')['val'].transform('mean')
+
+# Reshaping: Wide to Long and Long to Wide
+pd.melt(df, id_vars=['id'], value_vars=['q1', 'q2'])
+pd.pivot_table(df, values='sales', index='city', columns='quarter')</code></pre>
+
+          <h3>Top Useful pandas Utilities</h3>
+          <ul class="dense-list">
+            <li><code>df.value_counts(normalize=True)</code> — Frequency distribution %</li>
+            <li><code>df.memory_usage(deep=True)</code> — Detailed memory footprint</li>
+            <li><code>pd.qcut(df['spend'], q=4)</code> — Equal-frequency quantile bins</li>
+            <li><code>df.query('sales > 500 and city == "Pune"')</code> — Clean string querying</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    {/* =========================================================================
+        4. MATPLOTLIB & SEABORN CHEAT SHEET
+    ========================================================================== */}
+    <section id="visualization" class="sheet-section card">
+      <div class="sheet-header">
+        <h2>4. Data Visualization (Matplotlib & Seaborn) Cheat Sheet</h2>
+        <span class="sheet-tag">Visualization</span>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <h3>Plot Types & Chart Selection</h3>
+          <ul class="dense-list">
+            <li><strong>Line Chart</strong>: Trend over continuous time (<code>sns.lineplot</code>)</li>
+            <li><strong>Bar Chart</strong>: Discrete category comparisons (<code>sns.barplot</code>)</li>
+            <li><strong>Histogram</strong>: Continuous distribution shape (<code>sns.histplot</code>)</li>
+            <li><strong>Box / Violin Plot</strong>: Quartiles & outliers (<code>sns.boxplot</code>)</li>
+            <li><strong>Scatter Plot</strong>: Bivariate correlation (<code>sns.scatterplot</code>)</li>
+            <li><strong>Heatmap</strong>: Correlation matrices / pivot tables (<code>sns.heatmap</code>)</li>
+          </ul>
+
+          <h3>Seaborn Correlation Heatmap</h3>
+          <pre><code>import seaborn as sns
+import matplotlib.pyplot as plt
+
+plt.figure(figsize=(8, 6))
+sns.heatmap(
+    df.corr(),
+    annot=True,
+    cmap='coolwarm',
+    fmt='.2f',
+    vmin=-1, vmax=1
+)
+plt.title('Feature Correlation Matrix')
+plt.tight_layout()</code></pre>
+        </div>
+
+        <div>
+          <h3>Publication-Quality Figure Setup</h3>
+          <pre><code>fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+
+# Subplot 1
+sns.histplot(df['delivery_min'], kde=True, ax=axes[0], color='#2563eb')
+axes[0].set_title('Delivery Time Distribution')
+axes[0].axvline(df['delivery_min'].median(), color='red', linestyle='--')
+
+# Subplot 2
+sns.scatterplot(x='dist_km', y='delivery_min', data=df, ax=axes[1], alpha=0.6)
+axes[1].set_title('Distance vs Transit Duration')
+
+plt.tight_layout()
+plt.savefig('eda_summary.png', dpi=300, bbox_inches='tight')</code></pre>
+        </div>
+      </div>
+    </section>
+
+    {/* =========================================================================
+        5. DAX & POWER BI CHEAT SHEET
+    ========================================================================== */}
+    <section id="dax" class="sheet-section card">
+      <div class="sheet-header">
+        <h2>5. Power BI & DAX Formulas Cheat Sheet</h2>
+        <span class="sheet-tag">Power BI</span>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <h3>Calculated Columns vs Measures</h3>
+          <ul class="dense-list">
+            <li><strong>Calculated Column</strong>: Evaluated row-by-row during model refresh; stored in RAM.</li>
+            <li><strong>Measure</strong>: Evaluated dynamically on the fly based on user visual filter context; zero storage.</li>
+          </ul>
+
+          <h3>The CALCULATE Function</h3>
+          <pre><code>-- Evaluates expression under modified filter context
+CALCULATE([Total Sales], Regions[Name] = "South")
+
+-- Remove filters for percentage of total
+Sales % of All =
+DIVIDE(
+  [Total Sales],
+  CALCULATE([Total Sales], ALL(Products[Category]))
+)</code></pre>
+        </div>
+
+        <div>
+          <h3>Time Intelligence Formulas</h3>
+          <pre><code>-- Year-to-Date
+Sales YTD = TOTALYTD([Total Sales], Dates[Date])
+
+-- Prior Year Comparison
+Sales Prior Year =
+CALCULATE([Total Sales], SAMEPERIODLASTYEAR(Dates[Date]))
+
+-- YoY Growth %
+YoY Growth % =
+DIVIDE([Total Sales] - [Sales Prior Year], [Sales Prior Year])</code></pre>
+
+          <h3>Iterators & Navigation</h3>
+          <ul class="dense-list">
+            <li><code>SUMX(table, expr)</code>: Iterates row-by-row and sums result</li>
+            <li><code>RELATED(col)</code>: Pulls scalar value from the '1' side of 1-to-many</li>
+            <li><code>RELATEDTABLE(table)</code>: Pulls matching table from 'many' side</li>
+            <li><code>USERELATIONSHIP(d1, d2)</code>: Activates inactive relationship</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    {/* =========================================================================
+        6. STATISTICS & TESTS CHEAT SHEET
+    ========================================================================== */}
+    <section id="statistics" class="sheet-section card">
+      <div class="sheet-header">
+        <h2>6. Statistics & Hypothesis Testing Cheat Sheet</h2>
+        <span class="sheet-tag">Statistics</span>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <h3>Descriptive Formulas</h3>
+          <ul class="dense-list">
+            <li><strong>Mean</strong>: μ = (Σ x) / n | <strong>Std Dev</strong>: σ = √[Σ(x - μ)² / (n - 1)]</li>
+            <li><strong>Z-Score</strong>: z = (x - μ) / σ</li>
+            <li><strong>Standard Error</strong>: SE = s / √n</li>
+            <li><strong>95% Confidence Interval</strong>: x̄ ± 1.96 · SE</li>
+            <li><strong>IQR Outlier Rule</strong>: x &lt; Q1 - 1.5 · IQR or x &gt; Q3 + 1.5 · IQR</li>
+          </ul>
+
+          <h3>Hypothesis Testing Framework</h3>
+          <ul class="dense-list">
+            <li>H₀: No effect or difference; H₁: Statistically significant difference</li>
+            <li><strong>p-value &lt; 0.05</strong>: Reject H₀; statistically significant</li>
+            <li><strong>Type I Error (α)</strong>: False positive (finding non-existent effect)</li>
+            <li><strong>Type II Error (β)</strong>: False negative (missing real effect)</li>
+            <li><strong>Statistical Power</strong>: 1 - β (standard target: 80% to 90%)</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3>Which Statistical Test to Choose?</h3>
+          <table class="dense-table">
+            <thead>
+              <tr><th>Scenario</th><th>Test</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Compare means of 2 independent groups</td><td>Two-sample t-test</td></tr>
+              <tr><td>Compare means of 2 paired measurements</td><td>Paired t-test</td></tr>
+              <tr><td>Compare means across 3+ groups</td><td>One-Way ANOVA</td></tr>
+              <tr><td>Compare 2 categorical variables</td><td>Chi-Square (χ²) test</td></tr>
+              <tr><td>Continuous outcome vs predictors</td><td>Linear Regression (OLS)</td></tr>
+              <tr><td>Binary outcome (0 or 1) vs predictors</td><td>Logistic Regression</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    {/* =========================================================================
+        7. A/B TESTING CHECKLIST
+    ========================================================================== */}
+    <section id="ab-testing" class="sheet-section card">
+      <div class="sheet-header">
+        <h2>7. A/B Testing & Experimentation Checklist</h2>
+        <span class="sheet-tag">Experimentation</span>
+      </div>
+
+      <div class="checklist-grid">
+        <div class="check-box">
+          <h4>Phase 1: Pre-Experiment Sizing</h4>
+          <ul>
+            <li>State clear primary metric (e.g. Checkout conversion rate) and guardrails (e.g. Page load time, Returns).</li>
+            <li>Formulate testable null (H₀) and alternative (H₁) hypotheses.</li>
+            <li>Compute required sample size based on baseline, MDE, α = 0.05, and power = 80%.</li>
+            <li>Commit to fixed test duration (e.g. 14 full days to account for day-of-week seasonality).</li>
+          </ul>
+        </div>
+
+        <div class="check-box">
+          <h4>Phase 2: Execution & Integrity</h4>
+          <ul>
+            <li>Run SRM (Sample Ratio Mismatch) Chi-square check immediately: observed vs expected traffic split.</li>
+            <li>Do NOT peek and stop early when p &lt; 0.05; early stopping inflates false positive rate up to 30%.</li>
+            <li>Verify SUTVA: ensure treatment users do not spill over or alter control group behavior.</li>
+            <li>Check for Novelty Effect: verify whether conversion lift holds across week 1 vs week 2.</li>
+          </ul>
+        </div>
+
+        <div class="check-box">
+          <h4>Phase 3: Analysis & Decision</h4>
+          <ul>
+            <li>Compute two-tailed p-value and 95% confidence interval of relative lift.</li>
+            <li>If testing multiple variants, apply Bonferroni or FDR corrections.</li>
+            <li>Check guardrail metrics for hidden harm (e.g. revenue up but customer complaints up).</li>
+            <li>Document business recommendation: Roll out, Iterate, or Scrap with learned insight.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    {/* =========================================================================
+        8. EDA CHECKLIST
+    ========================================================================== */}
+    <section id="eda" class="sheet-section card">
+      <div class="sheet-header">
+        <h2>8. Exploratory Data Analysis (EDA) Checklist</h2>
+        <span class="sheet-tag">EDA</span>
+      </div>
+
+      <div class="checklist-grid">
+        <div class="check-box">
+          <h4>1. Structure & Quality Audit</h4>
+          <ul>
+            <li>Verify table row counts and primary key uniqueness (check for duplicate records).</li>
+            <li>Audit column data types (convert string dates to Timestamp, strings to categories).</li>
+            <li>Map missingness distribution: MCAR (completely at random) vs MNAR (systematic).</li>
+          </ul>
+        </div>
+
+        <div class="check-box">
+          <h4>2. Univariate Distribution</h4>
+          <ul>
+            <li>Plot histograms and compute Mean vs Median to identify skewness.</li>
+            <li>Flag extreme values using 1.5 * IQR or z-scores (|z| &gt; 3).</li>
+            <li>Examine categorical frequency tables for rare classes and spelling variations.</li>
+          </ul>
+        </div>
+
+        <div class="check-box">
+          <h4>3. Bivariate & Multivariate</h4>
+          <ul>
+            <li>Compute Pearson / Spearman correlation matrix across numerical features.</li>
+            <li>Segment metrics across key categorical dimensions (e.g. City, Tier, Channel).</li>
+            <li>Check for Multicollinearity (VIF &gt; 5) before training linear models.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    {/* =========================================================================
+        9. BUSINESS KPIS CHEAT SHEET
+    ========================================================================== */}
+    <section id="kpis" class="sheet-section card">
+      <div class="sheet-header">
+        <h2>9. Business & Unit Economics KPIs Cheat Sheet</h2>
+        <span class="sheet-tag">Business</span>
+      </div>
+
+      <div class="grid-2">
+        <div>
+          <h3>Unit Economics & Growth</h3>
+          <ul class="dense-list">
+            <li><strong>CAC</strong> = (Total Sales &amp; Marketing Expenses) / (New Customers Acquired)</li>
+            <li><strong>LTV</strong> = (ARPU × Gross Margin %) / Churn Rate</li>
+            <li><strong>LTV:CAC Ratio</strong>: Target ≥ 3.0 (Healthy scalable growth)</li>
+            <li><strong>CAC Payback</strong> = CAC / (Monthly ARPU × Gross Margin %) (Target ≤ 12 mos)</li>
+            <li><strong>Net Revenue Retention (NRR)</strong>: ≥ 110% indicates strong upsell/expansion.</li>
+          </ul>
+        </div>
+
+        <div>
+          <h3>Operational & Indian E-Commerce Metrics</h3>
+          <ul class="dense-list">
+            <li><strong>COD RTO %</strong>: Undelivered Cash on Delivery parcels returned to warehouse; drives high reverse logistics costs.</li>
+            <li><strong>Payment Gateway Success Rate</strong>: Successful UPI/Card settlements divided by attempts (target ≥ 92%).</li>
+            <li><strong>AOV (Average Order Value)</strong> = Total GMV / Total Completed Orders</li>
+            <li><strong>DAU/MAU Ratio</strong>: Measures product habituation and daily engagement stickiness.</li>
+            <li><strong>Days Sales of Inventory (DSI)</strong> = (Average Inventory / COGS) × 365</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .badge-link {
+    display: inline-block;
+    padding: 0.35rem 0.75rem;
+    background: var(--bg-subtle, #f3f4f6);
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.15s ease;
+  }
+  .badge-link:hover {
+    border-color: var(--accent, #2563eb);
+    color: var(--accent, #2563eb);
+  }
+  .sheet-section {
+    margin-bottom: 2rem;
+    padding: 1.75rem 2rem;
+    border-radius: 10px;
+    border: 1px solid var(--border, #e5e7eb);
+    page-break-inside: avoid;
+  }
+  .sheet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--border, #e5e7eb);
+    padding-bottom: 0.75rem;
+    margin-bottom: 1.25rem;
+  }
+  .sheet-header h2 {
+    margin: 0;
+    font-size: 1.35rem;
+  }
+  .sheet-tag {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    background: var(--accent-subtle, #dbeafe);
+    color: var(--accent, #2563eb);
+  }
+  .grid-2 {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(22rem, 1fr));
+    gap: 1.75rem;
+  }
+  .code-list {
+    margin: 0.5rem 0 1rem 1.25rem;
+    padding: 0;
+    font-size: 0.88rem;
+    line-height: 1.5;
+  }
+  .dense-list {
+    margin: 0.5rem 0 1rem 1.25rem;
+    padding: 0;
+    font-size: 0.88rem;
+    line-height: 1.6;
+  }
+  .checklist-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(18rem, 1fr));
+    gap: 1.25rem;
+  }
+  .check-box {
+    background: var(--card-subtle, #f9fafb);
+    border: 1px solid var(--border, #e5e7eb);
+    padding: 1.25rem;
+    border-radius: 8px;
+  }
+  .check-box h4 {
+    margin: 0 0 0.75rem;
+    font-size: 1rem;
+    color: var(--accent, #2563eb);
+  }
+  .check-box ul {
+    margin: 0 0 0 1.2rem;
+    padding: 0;
+    font-size: 0.85rem;
+    line-height: 1.55;
+  }
+  .dense-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+  }
+  .dense-table th, .dense-table td {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid var(--border, #e5e7eb);
+    text-align: left;
+  }
+  .dense-table th {
+    background: var(--table-header, #f3f4f6);
+    font-weight: 600;
+  }
+  pre {
+    background: var(--code-bg, #f3f4f6);
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    overflow-x: auto;
+    margin: 0.5rem 0 1rem;
+    line-height: 1.45;
+  }
+  h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.05rem;
+  }
+
+  @media print {
+    .no-print {
+      display: none !important;
+    }
+    .sheet-section {
+      border: 1px solid #ccc !important;
+      page-break-after: always;
+      margin-bottom: 2cm !important;
+      box-shadow: none !important;
+    }
+    body {
+      font-size: 10pt;
+      color: #000;
+      background: #fff;
+    }
+  }
+</style>

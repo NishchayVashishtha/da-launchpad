@@ -1,0 +1,305 @@
+---
+id: "06-marketing-ab-campaign-roi"
+title: "Marketing Analytics: Controlled A/B Testing, Attribution Modeling and Multi-Channel Campaign ROI"
+businessProblem: "Evaluate statistical significance and revenue impact of a sitewide checkout free shipping banner A/B test across 12,000 visitors, and audit acquisition channel CAC and ROAS to optimize an annual marketing budget of Rs 1.2 Crore."
+datasetDescription: "Marketing analytics database containing 12,030 A/B test visitor records, 45 campaigns, ad spend tracking, clickstream telemetry, and multi-touch conversion events."
+skillsUsed: ["SQL", "Python", "Power BI", "A/B Testing", "Hypothesis Testing", "ROAS Modeling", "Attribution Analysis"]
+steps:
+  - "Frame experimental hypotheses and define primary evaluation metrics (Conversion %, ARPU, ROAS, Customer Acquisition Cost)"
+  - "Perform A/B experiment data hygiene: Sample Ratio Mismatch (SRM) checks and outlier spend filtering"
+  - "Run two-sample z-tests and Welch's t-tests in Python to determine conversion rate and revenue significance"
+  - "Execute SQL multi-channel attribution queries: compare first-touch vs last-touch acquisition efficiency"
+  - "Design an executive Power BI Marketing Performance Dashboard with spend pacing and channel ROI matrices"
+  - "Formulate an optimal budget reallocation strategy: scale high-intent channels and restructure low-performing brand campaigns"
+deliverables:
+  - "SQL analytical scripts (ab_test_evaluation.sql and channel_attribution.sql)"
+  - "Python Jupyter Notebook with statistical significance testing and SRM verification (ab_test_analysis.ipynb)"
+  - "Executive Power BI Marketing ROI Dashboard (.pbix) and layout specification"
+  - "Chief Marketing Officer (CMO) decision memo and GitHub portfolio README.md"
+readmeTemplate: |
+  # Marketing Analytics: A/B Experimentation and Multi-Channel ROI Optimization
+
+  ## Executive Summary
+  Rigorous statistical analysis of a 12,000-user checkout A/B test alongside multi-channel campaign attribution modeling across Rs 1.2 Crore in digital ad spend.
+
+  ## Problem Statement
+  Marketing leadership debated whether to make a free-shipping banner permanent sitewide while struggling to justify heavy ad spend across paid social and influencer channels.
+
+  ## Key Insights
+  1. The A/B Test Winner: The Treatment variant (free shipping banner) increased conversion from 10.57% to 11.72% (+1.15 percentage points, p = 0.046) and lifted Average Revenue Per User (ARPU) from Rs 113.23 to Rs 123.84 (+9.4%).
+  2. Sample Ratio Integrity: Chi-square goodness-of-fit testing confirmed no Sample Ratio Mismatch (SRM) (6,034 Control vs 5,996 Treatment, p = 0.73).
+  3. Channel Efficiency Chasm: Email (4.8x ROAS, Rs 142 CAC) and Google Search (3.6x ROAS, Rs 285 CAC) massively outperformed YouTube (0.9x ROAS, Rs 740 CAC) and Influencer campaigns (1.2x ROAS).
+
+  ## Strategic Recommendations
+  - Roll out the free-shipping banner to 100% of website traffic, capturing an estimated Rs 18.2 Lakhs in incremental annualized gross margin.
+  - Reallocate Rs 30 Lakhs from negative-ROI YouTube discovery campaigns toward high-intent Google Search and automated email retargeting flows.
+  - Implement a minimum return-on-ad-spend (ROAS) hurdle rate of 2.2x for all future top-of-funnel influencer partnerships.
+interviewTalkingPoints:
+  - "How I conducted a chi-square Sample Ratio Mismatch (SRM) test before evaluating A/B test metrics"
+  - "Calculating two-proportion z-tests and interpreting p-values (p = 0.046) to defend business rollout decisions"
+  - "Contrasting first-touch and last-touch attribution models to identify undervalued acquisition channels"
+extensions:
+  - "Build a Markov Chain multi-touch attribution model in Python to calculate channel removal effects"
+  - "Implement an automated sample size and minimum detectable effect (MDE) calculator using Streamlit"
+estimatedHours: 15
+order: 6
+draft: false
+---
+
+## Project overview & business context
+
+Growth marketing teams face two primary decision challenges: First, how to evaluate feature changes rigorously through randomized controlled trials (A/B testing) without falling victim to false-positive p-hacking. Second, how to allocate capital across fragmented advertising channels (Google Search, Meta Ads, Email, YouTube, Influencer) to maximize blended Return on Ad Spend (ROAS).
+
+This project analyzes an end-to-end marketing analytics database containing **12,030 A/B test visitor records**, 45 multi-channel advertising campaigns, and millions in ad spend telemetry.
+
+The core objectives are:
+1. Conduct experimental validation on the `checkout_free_shipping_banner` test, verifying traffic integrity and statistical significance.
+2. Quantify conversion rate lift and revenue per visitor impact.
+3. Compute Customer Acquisition Cost (CAC) and ROAS across all acquisition channels.
+4. Deliver a data-driven budget reallocation memo to the Chief Marketing Officer (CMO).
+
+## Dataset architecture & schema inspection
+
+The database links experimental user assignments with advertising spend and conversion events:
+- `ab_test_results` (12,030 rows): Randomized experiment records containing `user_id`, `test_name`, `variant` (control vs treatment), assignment timestamp, device type, city tier, conversion indicator (`converted = 1`), and revenue generated in INR.
+- `campaigns` (45 rows): Marketing campaign metadata, channels, objectives, start/end dates, total allocated budgets, and status.
+- `ad_spend` (1,840 rows): Daily ad spend tracking by campaign and device, recording impressions, clicks, and spend in INR.
+- `clicks` (18,450 rows): Clickstream telemetry logs capturing visitor IDs, campaign IDs, cost per click, landing pages, and city tiers.
+- `conversions` (3,420 rows): Verified commercial conversion records with order revenue in INR.
+
+## Data cleaning & hygiene checks
+
+Before calculating conversion metrics, we conduct essential quality checks:
+
+1. **Traffic Split Verification (SRM)**: A Sample Ratio Mismatch occurs when technical routing bugs disrupt the intended 50/50 randomization. We verify traffic balance using a chi-square test.
+2. **Duplicate Clicks**: Identifying and filtering out automated bot clicks and rapid duplicate clicks logged within 500 ms of initial landing.
+3. **Currency Sanitization**: Ensuring all ad spend figures and order revenues are formatted as floating-point decimals.
+
+## Experimental analysis: The A/B Test
+
+### 1. Sample Ratio Mismatch (SRM) Diagnostic
+
+A valid experiment requires that the observed traffic split matches the expected split. In Python:
+
+```python
+from scipy import stats
+
+control_n = 6034
+treatment_n = 5996
+total_n = control_n + treatment_n
+expected_n = total_n / 2.0
+
+chi2_stat = ((control_n - expected_n)**2 / expected_n) + ((treatment_n - expected_n)**2 / expected_n)
+srm_p_value = 1 - stats.chi2.cdf(chi2_stat, df=1)
+
+print(f"Chi-square statistic: {chi2_stat:.4f}, p-value: {srm_p_value:.4f}")
+# Output: Chi-square statistic: 0.1200, p-value: 0.7290
+```
+
+Because $p = 0.729 \gg 0.01$, there is **zero evidence of Sample Ratio Mismatch**. The experimental randomization infrastructure functioned flawlessly.
+
+### 2. SQL Conversion & Revenue Evaluation
+
+```sql
+SELECT 
+  variant,
+  COUNT(*) AS total_visitors,
+  SUM(converted) AS total_conversions,
+  ROUND(100.0 * AVG(converted), 2) AS conversion_rate_pct,
+  ROUND(SUM(revenue_inr), 0) AS total_revenue_inr,
+  ROUND(AVG(revenue_inr), 2) AS arpu_inr
+FROM ab_test_results
+WHERE test_name = 'checkout_free_shipping_banner'
+GROUP BY variant;
+```
+
+**Empirical Results:**
+- **Control (No Banner)**: 6,034 visitors, 638 conversions (**10.57% conversion**), Rs 6,83,230 total revenue, **ARPU = Rs 113.23**.
+- **Treatment (Free Shipping Banner)**: 5,996 visitors, 703 conversions (**11.72% conversion**), Rs 7,42,540 total revenue, **ARPU = Rs 123.84**.
+
+The Treatment variant generated an absolute conversion lift of **+1.15 percentage points** (a **+10.9% relative increase**) and an ARPU lift of **+Rs 10.61 per visitor** (a **+9.4% revenue increase**).
+
+## Python exploratory data analysis: Statistical significance testing
+
+We run a two-proportion z-test to determine if the conversion lift is statistically significant at $\alpha = 0.05$:
+
+```python
+import numpy as np
+import scipy.stats as stats
+
+# Two-sample proportion z-test
+p_c = 638 / 6034
+p_t = 703 / 5996
+
+p_pooled = (638 + 703) / (6034 + 5996)
+se_pooled = np.sqrt(p_pooled * (1 - p_pooled) * (1/6034 + 1/5996))
+z_stat = (p_t - p_c) / se_pooled
+p_value = 2 * (1 - stats.norm.cdf(abs(z_stat)))
+
+print(f"Z-statistic: {z_stat:.4f}")
+print(f"P-value: {p_value:.4f}")
+# Output: Z-statistic: 1.9961, P-value: 0.0459
+```
+
+With $z = 1.996$ and $p = 0.0459 < 0.05$, the free-shipping banner achieves **statistically significant lift** at the standard 95% confidence threshold.
+
+## Multi-Channel Campaign ROI & Attribution Analysis
+
+Next, we evaluate overall marketing efficiency across advertising channels:
+
+```sql
+WITH channel_summary AS (
+  SELECT 
+    c.channel,
+    SUM(ads.spend_inr) AS total_spend,
+    COUNT(DISTINCT conv.conversion_id) AS total_orders,
+    SUM(conv.revenue_inr) AS attributed_revenue
+  FROM campaigns c
+  JOIN ad_spend ads ON ads.campaign_id = c.campaign_id
+  LEFT JOIN conversions conv ON conv.campaign_id = c.campaign_id
+  GROUP BY c.channel
+)
+SELECT 
+  channel,
+  ROUND(total_spend, 0) AS spend_inr,
+  total_orders,
+  ROUND(total_spend / NULLIF(total_orders, 0), 1) AS cac_inr,
+  ROUND(attributed_revenue, 0) AS revenue_inr,
+  ROUND(attributed_revenue / NULLIF(total_spend, 0), 2) AS roas
+FROM channel_summary
+ORDER BY roas DESC;
+```
+
+**Key Findings Across Marketing Channels:**
+- **Email Marketing**: Spend = Rs 4.2 Lakhs, Attributed Orders = 2,958, **CAC = Rs 142**, **ROAS = 4.82x** (Highest ROI channel).
+- **Google Search**: Spend = Rs 28.5 Lakhs, Attributed Orders = 10,000, **CAC = Rs 285**, **ROAS = 3.64x** (High intent, stable).
+- **Meta Ads**: Spend = Rs 34.0 Lakhs, Attributed Orders = 10,000, **CAC = Rs 340**, **ROAS = 2.41x** (Solid middle-of-funnel scale).
+- **Influencer Partnerships**: Spend = Rs 18.0 Lakhs, Attributed Orders = 2,903, **CAC = Rs 620**, **ROAS = 1.22x** (Break-even).
+- **YouTube Ads**: Spend = Rs 22.0 Lakhs, Attributed Orders = 2,973, **CAC = Rs 740**, **ROAS = 0.91x** (Unprofitable direct return).
+
+## Dashboard architecture & DAX metrics
+
+The Power BI Marketing Command Center includes three views:
+1. **Executive A/B Test Cockpit**: Conversion comparison, confidence interval error bars, cumulative sample size tracker, and statistical decision engine (Rollout vs Deprecate).
+2. **Channel Acquisition & ROAS Matrix**: Spend vs Revenue scatter plots, CAC efficiency rankings, and daily budget pacing.
+3. **Attribution Funnel & Conversion Journey**: Click-to-conversion lag distributions, device conversion shares, and city-tier performance.
+
+### Core DAX Measures
+
+```dax
+-- Return on Ad Spend (ROAS)
+ROAS = 
+DIVIDE (
+    SUM ( Conversions[revenue_inr] ),
+    SUM ( AdSpend[spend_inr] ),
+    0
+)
+
+-- Customer Acquisition Cost (CAC)
+CAC_INR = 
+DIVIDE (
+    SUM ( AdSpend[spend_inr] ),
+    DISTINCTCOUNT ( Conversions[conversion_id] ),
+    0
+)
+
+-- Relative Conversion Lift %
+ConversionLiftPct = 
+VAR ControlCR = 
+    CALCULATE (
+        DIVIDE ( SUM ( ABTest[converted] ), COUNTROWS ( ABTest ), 0 ),
+        ABTest[variant] = "control"
+    )
+VAR TreatmentCR = 
+    CALCULATE (
+        DIVIDE ( SUM ( ABTest[converted] ), COUNTROWS ( ABTest ), 0 ),
+        ABTest[variant] = "treatment"
+    )
+RETURN 
+DIVIDE ( TreatmentCR - ControlCR, ControlCR, 0 ) * 100
+```
+
+## Quantified business insights
+
+1. **The Free Shipping Psychology**: Explicitly highlighting free shipping threshold eligibility lifted checkout completion by 10.9%, proving that shipping fee opacity is a primary cart abandonment trigger.
+2. **The Brand Ad Value Trap**: Top-of-funnel video advertising on YouTube generated over 2.4 million impressions but delivered an unprofitable 0.91x ROAS, consuming 20.6% of the ad budget while contributing only 8.4% of net conversions.
+3. **Device Conversion Gap**: Desktop users achieved a **14.2% conversion rate** compared to **9.8% on mobile**, indicating checkout form friction on smaller mobile viewports.
+4. **First-Party Data Value**: Email automated retention flows delivered a staggering **4.82x ROAS**, demonstrating the superior economics of cultivating existing customer lists compared to cold paid acquisition.
+
+## Strategic recommendations & action plan
+
+### 1. 100% Rollout of Free-Shipping Banner
+Immediately deploy the Treatment free-shipping banner across 100% of web and app traffic. On annual web traffic of ~180,000 checkout visitors, this +1.15 percentage point conversion lift translates to over 2,070 incremental orders and **Rs 25.6 Lakhs in incremental gross revenue**.
+
+### 2. Marketing Capital Reallocation
+Divert Rs 18 Lakhs from YouTube top-of-funnel video ads directly into high-intent Google Search and automated Email lifecycle sequences, projected to increase overall blended marketing ROAS from 2.31x to 2.94x.
+
+### 3. Implement Minimum ROAS Hurdle Rates
+Institute strict partner governance: any influencer campaign or sponsored creator that fails to achieve a 1.8x ROAS within 14 days of publication must be paused or renegotiated to a pure affiliate revenue-share model.
+
+## Portfolio README template
+
+```markdown
+# Marketing Analytics: Controlled A/B Testing & Channel ROI Optimization
+
+An end-to-end data analytics project evaluating experiment significance, Sample Ratio Mismatch (SRM), and multi-channel marketing attribution across Rs 1.2 Crore in ad spend.
+
+## Tech Stack
+- **SQL (PostgreSQL / SQLite)**: Conversion aggregations, attribution modeling, and window functions.
+- **Python (pandas, NumPy, scipy.stats)**: Chi-square SRM testing, two-proportion z-tests, and ROAS distribution modeling.
+- **Power BI**: Executive marketing dashboard, dynamic DAX measures for ROAS and CAC, and A/B test decision cards.
+
+## Key Outcomes
+- Proved that the checkout free-shipping banner achieved statistically significant lift (+1.15% conversion lift, p = 0.046).
+- Validated zero Sample Ratio Mismatch (p = 0.73) across 12,030 test participants.
+- Discovered massive channel ROAS divergence (Email at 4.82x vs YouTube at 0.91x), driving a Rs 30 Lakhs capital reallocation.
+```
+
+## Screenshots-to-capture checklist
+
+1. **A/B Experiment Scorecard**: Variant comparison showing Control (10.57%) vs Treatment (11.72%), p-value (0.0459), and "Statistically Significant" green pill.
+2. **Channel Efficiency Matrix**: Bubble chart plotting Spend (x-axis), ROAS (y-axis), and Order Volume (bubble size) across the 5 marketing channels.
+3. **Conversion Funnel by Device**: Bar chart comparing Desktop vs Mobile checkout completion rates.
+4. **Budget Reallocation Model**: Waterfall chart showing current ROAS vs projected ROAS following the Rs 18 Lakhs YouTube capital shift.
+
+## 2-minute interview pitch script
+
+> "In this project, I evaluated experimental feature performance and advertising capital efficiency across 12,000 test participants and Rs 1.2 Crore in digital marketing spend.
+>
+> First, I analyzed the checkout free-shipping banner A/B test. Before running conversion calculations, I verified traffic integrity using a chi-square test, confirming zero Sample Ratio Mismatch (p = 0.73). Through a two-proportion z-test in Python, I proved that the banner delivered a statistically significant conversion lift from 10.57% to 11.72% (p = 0.046) and expanded average revenue per visitor by 9.4%.
+>
+> Second, I conducted multi-channel attribution analysis across our paid ad campaigns. I discovered a massive efficiency chasm: while Email (4.82x ROAS) and Google Search (3.64x ROAS) generated exceptional margins, top-of-funnel YouTube campaigns were deeply unprofitable at a 0.91x ROAS with an unsustainable customer acquisition cost of Rs 740.
+>
+> I built an executive Power BI marketing dashboard and recommended rolling out the free-shipping banner to 100% of traffic while reallocating Rs 18 Lakhs from YouTube into search and automated email flows. This optimization is projected to capture Rs 25.6 Lakhs in incremental sales and expand blended company ROAS to 2.94x."
+
+## 10 likely interview questions & model answers
+
+### 1. Why is checking for Sample Ratio Mismatch (SRM) essential before analyzing A/B test results?
+If a technical defect causes traffic to be routed asymmetrically (e.g. 54/46 instead of 50/50), the experimental groups are no longer random. Confounding variables such as caching anomalies, device-specific redirect drops, or cookie deletion will invalidate the test. Verifying SRM via a chi-square goodness-of-fit test ensures that the experimental sample is uncompromised.
+
+### 2. What does a p-value of 0.0459 mean in business terms?
+A p-value of 0.0459 means there is only a 4.59% probability that the observed +1.15 percentage point conversion lift was caused by random sampling noise rather than the free-shipping banner itself. Because this is below the standard $\alpha = 0.05$ significance threshold, we can confidently reject the null hypothesis and recommend a full production rollout.
+
+### 3. What is the difference between statistical significance and practical business significance?
+Statistical significance answers whether an observed effect is real rather than noise. Practical business significance answers whether the effect size justifies the engineering and commercial costs of implementation. In this test, a +1.15% conversion lift generates Rs 25.6 Lakhs in incremental gross sales for a banner that costs zero marginal rupees to keep in production, representing clear practical significance.
+
+### 4. Why did you use a two-proportion z-test instead of a t-test?
+Conversion is a binary Bernoulli outcome (either a user converts or does not). For large sample sizes (over 6,000 visitors per arm), the binomial distribution converges to the normal distribution by the Central Limit Theorem, making the two-proportion z-test the exact mathematical standard. For continuous metrics like revenue per user, Welch's t-test or bootstrap tests are used.
+
+### 5. Why was YouTube advertising delivering a negative direct ROAS (0.91x)?
+YouTube is predominantly a top-of-funnel brand awareness medium. Users watching videos are not in an immediate shopping mindset; clicking an ad disrupts their viewing experience. Without robust multi-touch attribution or immediate remarketing, pure last-click attribution will show poor direct conversion efficiency.
+
+### 6. What is Customer Acquisition Cost (CAC) and how did you compute it?
+CAC is the total marketing ad spend divided by the number of new acquired customers (`Total Spend / Total Attributed Orders`). Email had a CAC of Rs 142, Google Search Rs 285, and YouTube Rs 740.
+
+### 7. How did you structure your DAX measures in Power BI?
+I wrote measures for `ROAS`, `CAC_INR`, and `ConversionLiftPct`. In `ConversionLiftPct`, I used variables (`VAR`) to calculate Control CR and Treatment CR separately using `CALCULATE()` and `DIVIDE()`, returning the relative percentage difference.
+
+### 8. What is the difference between first-touch and last-touch attribution?
+First-touch attribution assigns 100% of revenue credit to the initial channel that introduced the user to the brand. Last-touch attribution gives 100% credit to the final channel clicked immediately before purchase. High-intent channels like Brand Search and Email look dominant in last-touch, while discovery channels look better in first-touch.
+
+### 9. What would you do if management insisted on continuing YouTube video campaigns?
+I would propose restructuring the campaign format: transition away from broad awareness video campaigns toward YouTube Shorts Direct-Response ads featuring clear promo codes, with strict creative refresh schedules and a 2.0x target ROAS hurdle.
+
+### 10. If the p-value had been 0.08, what would you have recommended?
+At $p = 0.08$, the result is not statistically significant at the 95% confidence level. I would check if the experiment was underpowered and whether running it for an additional week to collect more sample would reach significance. If the effect size remained modest, I would recommend deprecating the banner rather than rolling out an unproven change.

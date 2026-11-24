@@ -1,0 +1,3122 @@
+[
+  {
+    "id": "fc-sql-001",
+    "topic": "sql",
+    "front": "What is the logical query execution order in SQL?",
+    "back": "SQL clauses evaluate in this order: FROM/JOIN, WHERE, GROUP BY, HAVING, SELECT, DISTINCT, ORDER BY, and LIMIT/OFFSET."
+  },
+  {
+    "id": "fc-sql-002",
+    "topic": "sql",
+    "front": "Why can't you use column aliases defined in SELECT inside the WHERE clause?",
+    "back": "WHERE executes before the SELECT clause calculates column expressions and assigns aliases, so aliases do not yet exist."
+  },
+  {
+    "id": "fc-sql-003",
+    "topic": "sql",
+    "front": "What is the fundamental difference between WHERE and HAVING?",
+    "back": "WHERE filters rows before aggregation occurs; HAVING filters summary groups after GROUP BY aggregation has been computed."
+  },
+  {
+    "id": "fc-sql-004",
+    "topic": "sql",
+    "front": "What happens when you use COUNT(*) vs COUNT(column)?",
+    "back": "COUNT(*) counts all rows including those with NULLs; COUNT(column) counts only rows where that specific column is non-NULL."
+  },
+  {
+    "id": "fc-sql-005",
+    "topic": "sql",
+    "front": "Why does SELECT * FROM orders WHERE ROW_NUMBER() <= 3 throw an error?",
+    "back": "Window functions evaluate in the SELECT phase, which occurs after WHERE; you must wrap them inside a subquery or CTE."
+  },
+  {
+    "id": "fc-sql-006",
+    "topic": "sql",
+    "front": "What is the difference between UNION and UNION ALL?",
+    "back": "UNION performs an expensive distinct sort to eliminate duplicate rows, while UNION ALL retains all rows and runs faster."
+  },
+  {
+    "id": "fc-sql-007",
+    "topic": "sql",
+    "front": "What is the difference between RANK() and DENSE_RANK()?",
+    "back": "RANK leaves gaps in sequence numbering when ties occur (1, 2, 2, 4); DENSE_RANK assigns consecutive numbers without gaps (1, 2, 2, 3)."
+  },
+  {
+    "id": "fc-sql-008",
+    "topic": "sql",
+    "front": "What does ROW_NUMBER() return when two rows tie on the ORDER BY column?",
+    "back": "It assigns unique, non-deterministic consecutive integers unless additional tie-breaker columns are added to the ORDER BY clause."
+  },
+  {
+    "id": "fc-sql-009",
+    "topic": "sql",
+    "front": "How do you find the second highest salary without using LIMIT or OFFSET?",
+    "back": "Use DENSE_RANK() OVER (ORDER BY salary DESC) inside a CTE and filter where rank equals 2."
+  },
+  {
+    "id": "fc-sql-010",
+    "topic": "sql",
+    "front": "What is the default window frame when ORDER BY is present in an OVER clause?",
+    "back": "The default frame is RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW, which can cause duplicate row values to group together."
+  },
+  {
+    "id": "fc-sql-011",
+    "topic": "sql",
+    "front": "Why should you specify ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW for running totals?",
+    "back": "Specifying ROWS prevents identical values from being grouped together into ties, ensuring true physical row-by-row cumulative accumulation."
+  },
+  {
+    "id": "fc-sql-012",
+    "topic": "sql",
+    "front": "How does LAST_VALUE() behave if you omit an explicit window frame?",
+    "back": "It evaluates only up to the CURRENT ROW by default; you must specify ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING."
+  },
+  {
+    "id": "fc-sql-013",
+    "topic": "sql",
+    "front": "What does COALESCE() do when given multiple arguments?",
+    "back": "It evaluates expressions from left to right and returns the first non-null value, or NULL if all arguments are null."
+  },
+  {
+    "id": "fc-sql-014",
+    "topic": "sql",
+    "front": "How does NULLIF(expression1, expression2) help prevent division-by-zero errors?",
+    "back": "It returns NULL if expression1 equals expression2; placing NULLIF(denominator, 0) causes division by zero to safely yield NULL."
+  },
+  {
+    "id": "fc-sql-015",
+    "topic": "sql",
+    "front": "What is the result of TRUE AND NULL, FALSE AND NULL, and NULL = NULL in SQL three-valued logic?",
+    "back": "TRUE AND NULL yields NULL; FALSE AND NULL yields FALSE; NULL = NULL evaluates to UNKNOWN (neither TRUE nor FALSE)."
+  },
+  {
+    "id": "fc-sql-016",
+    "topic": "sql",
+    "front": "Why does WHERE column NOT IN (1, 2, NULL) return zero rows?",
+    "back": "In SQL, comparing against NULL yields UNKNOWN; any row tested against NOT IN with a NULL in the list evaluates to UNKNOWN."
+  },
+  {
+    "id": "fc-sql-017",
+    "topic": "sql",
+    "front": "What is a Correlated Subquery and why can it be slow?",
+    "back": "A subquery that references columns from the outer query, forcing the database engine to execute it once for every outer row."
+  },
+  {
+    "id": "fc-sql-018",
+    "topic": "sql",
+    "front": "How does the EXISTS operator improve performance over IN for subqueries?",
+    "back": "EXISTS stops scanning the inner table as soon as the first matching row is found (short-circuit evaluation)."
+  },
+  {
+    "id": "fc-sql-019",
+    "topic": "sql",
+    "front": "What is a Common Table Expression (CTE) and when should you prefer it over subqueries?",
+    "back": "A CTE is a temporary named result set defined with WITH that improves query readability and allows recursive operations."
+  },
+  {
+    "id": "fc-sql-020",
+    "topic": "sql",
+    "front": "What is a Recursive CTE and what are its two required parts?",
+    "back": "A CTE referencing itself, consisting of an Anchor member (base query) and a Recursive member joined by UNION ALL."
+  },
+  {
+    "id": "fc-sql-021",
+    "topic": "sql",
+    "front": "What is the difference between an INNER JOIN and a LEFT JOIN?",
+    "back": "INNER JOIN returns only rows with matches in both tables; LEFT JOIN returns all left rows plus matching right rows or NULLs."
+  },
+  {
+    "id": "fc-sql-022",
+    "topic": "sql",
+    "front": "What occurs when a table join condition matches multiple rows in the joined table?",
+    "back": "Row fan-out occurs: the original row is duplicated for each matching joined row, which can inflate sum aggregations."
+  },
+  {
+    "id": "fc-sql-023",
+    "topic": "sql",
+    "front": "How do you prevent row fan-out from distorting aggregate sums after a 1-to-many join?",
+    "back": "Aggregate the child table to the parent key level in a CTE before joining, or use distinct key-level calculations."
+  },
+  {
+    "id": "fc-sql-024",
+    "topic": "sql",
+    "front": "What is a CROSS JOIN and what is its output row count?",
+    "back": "A Cartesian product joining every row of table A to every row of table B, producing rows(A) multiplied by rows(B)."
+  },
+  {
+    "id": "fc-sql-025",
+    "topic": "sql",
+    "front": "What is a SELF JOIN and when is it typically used?",
+    "back": "A table joined to itself using different aliases, commonly used for hierarchical data like employee-manager relationships."
+  },
+  {
+    "id": "fc-sql-026",
+    "topic": "sql",
+    "front": "What is the difference between FULL OUTER JOIN and CROSS JOIN?",
+    "back": "FULL OUTER JOIN matches on keys and fills non-matches with NULLs; CROSS JOIN unconditionally combines every row with every row."
+  },
+  {
+    "id": "fc-sql-027",
+    "topic": "sql",
+    "front": "How do GROUP BY 1 and ORDER BY 1 work in SQL?",
+    "back": "The number refers to the 1st column in the SELECT list; while convenient, using explicit column names is preferred in production."
+  },
+  {
+    "id": "fc-sql-028",
+    "topic": "sql",
+    "front": "What is the difference between NTILE(4) and quartile calculation?",
+    "back": "NTILE(4) divides rows into four roughly equal bucket sizes by row count, which may split identical tie values across buckets."
+  },
+  {
+    "id": "fc-sql-029",
+    "topic": "sql",
+    "front": "How do LAG() and LEAD() functions work?",
+    "back": "LAG accesses a column value from N rows before the current row; LEAD accesses a column value from N rows after."
+  },
+  {
+    "id": "fc-sql-030",
+    "topic": "sql",
+    "front": "How do you calculate Month-over-Month (MoM) percentage growth in SQL?",
+    "back": "Use LAG(revenue) OVER (ORDER BY month) to fetch previous month's revenue, then compute (revenue - prev) / NULLIF(prev, 0) * 100."
+  },
+  {
+    "id": "fc-sql-031",
+    "topic": "sql",
+    "front": "What is the difference between primary keys and unique constraints?",
+    "back": "A table can have only one primary key and it cannot contain NULLs; unique constraints allow NULLs and multiple per table."
+  },
+  {
+    "id": "fc-sql-032",
+    "topic": "sql",
+    "front": "What is referential integrity in relational databases?",
+    "back": "A rule enforced by foreign keys ensuring that a record referencing another table always points to an existing valid parent record."
+  },
+  {
+    "id": "fc-sql-033",
+    "topic": "sql",
+    "front": "What does ON DELETE CASCADE do on a foreign key?",
+    "back": "When a parent row is deleted, the database automatically deletes all corresponding child rows referencing that parent."
+  },
+  {
+    "id": "fc-sql-034",
+    "topic": "sql",
+    "front": "What is a B-Tree index and how does it speed up queries?",
+    "back": "A balanced tree structure maintaining sorted keys that allows logarithmic time lookups, range scans, and equality checks."
+  },
+  {
+    "id": "fc-sql-035",
+    "topic": "sql",
+    "front": "Why might a database optimizer perform a Sequential Scan even when an index exists?",
+    "back": "If the query selects a large percentage of table rows (e.g. >20%), scanning the table directly is faster than index seeks."
+  },
+  {
+    "id": "fc-sql-036",
+    "topic": "sql",
+    "front": "What is a Composite Index and what is the leftmost prefix rule?",
+    "back": "An index on multiple columns (A, B); it accelerates queries filtering on A, or A and B, but not B alone."
+  },
+  {
+    "id": "fc-sql-037",
+    "topic": "sql",
+    "front": "How does wrapping a column in a function like WHERE YEAR(order_date) = 2024 affect index usage?",
+    "back": "It makes the predicate non-sargable, preventing the optimizer from using an index on order_date; use range bounds instead."
+  },
+  {
+    "id": "fc-sql-038",
+    "topic": "sql",
+    "front": "What is a sargable query predicate?",
+    "back": "A search condition that can take advantage of an index (e.g. order_date >= '2024-01-01' AND order_date < '2025-01-01')."
+  },
+  {
+    "id": "fc-sql-039",
+    "topic": "sql",
+    "front": "What is the difference between Clustered and Non-Clustered indexes?",
+    "back": "A clustered index defines physical row storage order on disk (one per table); non-clustered indexes store pointers to table rows."
+  },
+  {
+    "id": "fc-sql-040",
+    "topic": "sql",
+    "front": "What does EXPLAIN or EXPLAIN ANALYZE do?",
+    "back": "EXPLAIN shows the optimizer's planned execution steps and estimated costs; ANALYZE actually executes the query and shows real times."
+  },
+  {
+    "id": "fc-sql-041",
+    "topic": "sql",
+    "front": "What is a database transaction and what does COMMIT vs ROLLBACK do?",
+    "back": "A transaction is a unit of work; COMMIT saves changes permanently, while ROLLBACK undoes changes back to the start."
+  },
+  {
+    "id": "fc-sql-042",
+    "topic": "sql",
+    "front": "What are ACID properties in database systems?",
+    "back": "Atomicity (all or nothing), Consistency (rules maintained), Isolation (independent transactions), and Durability (survives crashes)."
+  },
+  {
+    "id": "fc-sql-043",
+    "topic": "sql",
+    "front": "What are the four standard SQL transaction isolation levels?",
+    "back": "Read Uncommitted, Read Committed (default in many DBs), Repeatable Read, and Serializable (highest isolation)."
+  },
+  {
+    "id": "fc-sql-044",
+    "topic": "sql",
+    "front": "What is a Dirty Read in database transactions?",
+    "back": "When a transaction reads uncommitted data written by another concurrent transaction that might later be rolled back."
+  },
+  {
+    "id": "fc-sql-045",
+    "topic": "sql",
+    "front": "What is a Non-Repeatable Read vs a Phantom Read?",
+    "back": "Non-repeatable read: re-reading a row gets modified data; Phantom read: re-running a range query finds newly inserted rows."
+  },
+  {
+    "id": "fc-sql-046",
+    "topic": "sql",
+    "front": "What is a database Deadlock and how does the engine resolve it?",
+    "back": "Two transactions waiting for locks held by each other; the engine detects the cycle and aborts/rolls back one transaction."
+  },
+  {
+    "id": "fc-sql-047",
+    "topic": "sql",
+    "front": "What is the difference between a View and a Materialized View?",
+    "back": "A view executes its underlying query dynamically on every access; a materialized view stores physical precomputed results on disk."
+  },
+  {
+    "id": "fc-sql-048",
+    "topic": "sql",
+    "front": "How do you refresh a Materialized View?",
+    "back": "By issuing a REFRESH MATERIALIZED VIEW command manually or via scheduled background cron jobs."
+  },
+  {
+    "id": "fc-sql-049",
+    "topic": "sql",
+    "front": "What is a Stored Procedure and how does it differ from a User-Defined Function (UDF)?",
+    "back": "Procedures execute business logic and can commit transactions; functions must return a value and cannot modify transaction state."
+  },
+  {
+    "id": "fc-sql-050",
+    "topic": "sql",
+    "front": "What is a database Trigger and what are common pitfalls?",
+    "back": "Code executed automatically on INSERT/UPDATE/DELETE; pitfalls include hidden side effects, debugging difficulty, and performance overhead."
+  },
+  {
+    "id": "fc-sql-051",
+    "topic": "sql",
+    "front": "What is the difference between CHAR, VARCHAR, and TEXT data types?",
+    "back": "CHAR has fixed storage width with padding; VARCHAR has variable length up to a limit; TEXT holds arbitrarily large strings."
+  },
+  {
+    "id": "fc-sql-052",
+    "topic": "sql",
+    "front": "How does SQLite handle date and time values compared to PostgreSQL?",
+    "back": "SQLite has no dedicated datetime type; it stores dates as text, reals, or integers and uses strftime() for date math."
+  },
+  {
+    "id": "fc-sql-053",
+    "topic": "sql",
+    "front": "How do you format timestamps in SQLite using strftime?",
+    "back": "Use strftime('%Y-%m', date_col) for year-month extraction or strftime('%s', date_col) for Unix epoch seconds."
+  },
+  {
+    "id": "fc-sql-054",
+    "topic": "sql",
+    "front": "What does CASE WHEN syntax look like in SQL?",
+    "back": "CASE WHEN condition1 THEN val1 WHEN condition2 THEN val2 ELSE fallback END; evaluation stops at the first true condition."
+  },
+  {
+    "id": "fc-sql-055",
+    "topic": "sql",
+    "front": "How do you perform Conditional Aggregation in SQL?",
+    "back": "Use SUM(CASE WHEN status = 'Completed' THEN amount ELSE 0 END) to calculate filtered sums within a single query pass."
+  },
+  {
+    "id": "fc-sql-056",
+    "topic": "sql",
+    "front": "What is the difference between COUNT(DISTINCT customer_id) and APPROX_COUNT_DISTINCT?",
+    "back": "COUNT DISTINCT gives exact unique counts; approximate functions use HyperLogLog algorithms to provide 1-2% accuracy at huge speed."
+  },
+  {
+    "id": "fc-sql-057",
+    "topic": "sql",
+    "front": "What is the difference between string concatenation using || vs CONCAT()?",
+    "back": "The || operator in standard SQL returns NULL if any operand is NULL; CONCAT() in MySQL/Postgres ignores NULL arguments."
+  },
+  {
+    "id": "fc-sql-058",
+    "topic": "sql",
+    "front": "How do you find duplicate rows in a table using SQL?",
+    "back": "GROUP BY all defining columns and filter with HAVING COUNT(*) > 1."
+  },
+  {
+    "id": "fc-sql-059",
+    "topic": "sql",
+    "front": "How do you delete duplicate records while keeping the row with the lowest ID?",
+    "back": "Use a CTE with ROW_NUMBER() OVER (PARTITION BY unique_keys ORDER BY id) and DELETE WHERE row_num > 1."
+  },
+  {
+    "id": "fc-sql-060",
+    "topic": "sql",
+    "front": "What is the purpose of the COALESCE function in revenue calculations?",
+    "back": "It replaces NULL discounts or costs with 0 so arithmetic operations like revenue - COALESCE(discount, 0) do not return NULL."
+  },
+  {
+    "id": "fc-sql-061",
+    "topic": "sql",
+    "front": "What is a Cartesian Product and when is it dangerous?",
+    "back": "An unconstrained cross join combining all rows; dangerous on large tables because output rows explode to N * M."
+  },
+  {
+    "id": "fc-sql-062",
+    "topic": "sql",
+    "front": "How does the INTERSECT operator differ from an INNER JOIN?",
+    "back": "INTERSECT compares entire result sets and returns distinct matching rows; INNER JOIN combines specific columns on explicit join keys."
+  },
+  {
+    "id": "fc-sql-063",
+    "topic": "sql",
+    "front": "What does the EXCEPT (or MINUS) operator do?",
+    "back": "It returns distinct rows found in the first query that do not exist in the second query's result set."
+  },
+  {
+    "id": "fc-sql-064",
+    "topic": "sql",
+    "front": "What is the difference between IN and EXISTS when checking for subquery results?",
+    "back": "IN compares values against an enumerated list; EXISTS tests whether the subquery produces at least one row."
+  },
+  {
+    "id": "fc-sql-065",
+    "topic": "sql",
+    "front": "Why should you avoid SELECT * in production analytics queries?",
+    "back": "It wastes network bandwidth, breaks caching, degrades column-store performance, and causes errors if schemas change."
+  },
+  {
+    "id": "fc-sql-066",
+    "topic": "sql",
+    "front": "How do window frames with UNBOUNDED PRECEDING differ from CURRENT ROW?",
+    "back": "UNBOUNDED PRECEDING starts from the first row of the partition; CURRENT ROW stops at the active row being calculated."
+  },
+  {
+    "id": "fc-sql-067",
+    "topic": "sql",
+    "front": "What does PERCENT_RANK() calculate in SQL?",
+    "back": "It calculates relative rank as (rank - 1) / (total_rows - 1), returning values from 0.0 to 1.0."
+  },
+  {
+    "id": "fc-sql-068",
+    "topic": "sql",
+    "front": "What does CUME_DIST() calculate in SQL?",
+    "back": "It calculates cumulative distribution: the number of rows with values <= current row divided by total partition rows."
+  },
+  {
+    "id": "fc-sql-069",
+    "topic": "sql",
+    "front": "How do you calculate a 7-day rolling average in SQL?",
+    "back": "AVG(revenue) OVER (ORDER BY date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW)."
+  },
+  {
+    "id": "fc-sql-070",
+    "topic": "sql",
+    "front": "What is the difference between ROWS and RANGE in a window frame specification?",
+    "back": "ROWS counts physical rows before/after; RANGE evaluates logical value offsets, treating duplicate values as ties."
+  },
+  {
+    "id": "fc-sql-071",
+    "topic": "sql",
+    "front": "What does the QUALIFY clause do in modern SQL dialects (e.g. Snowflake, BigQuery)?",
+    "back": "It filters results of window functions directly without requiring an outer wrapper subquery or CTE."
+  },
+  {
+    "id": "fc-sql-072",
+    "topic": "sql",
+    "front": "How do you pivot rows into columns in standard SQL without PIVOT syntax?",
+    "back": "Use conditional aggregation: MAX(CASE WHEN category = 'A' THEN sales END) GROUP BY id."
+  },
+  {
+    "id": "fc-sql-073",
+    "topic": "sql",
+    "front": "How do you unpivot columns into rows in SQL?",
+    "back": "Use UNION ALL to select each column alongside a literal label name, or use native UNPIVOT clauses where supported."
+  },
+  {
+    "id": "fc-sql-074",
+    "topic": "sql",
+    "front": "What is Database Normalization and what is Third Normal Form (3NF)?",
+    "back": "Organizing schemas to reduce redundancy; 3NF requires no transitive dependencies (non-key columns depend only on primary key)."
+  },
+  {
+    "id": "fc-sql-075",
+    "topic": "sql",
+    "front": "Why do data warehouses often prefer Denormalized schemas over 3NF?",
+    "back": "Denormalization reduces expensive multi-table joins, accelerating analytical query read speeds on large datasets."
+  },
+  {
+    "id": "fc-sql-076",
+    "topic": "sql",
+    "front": "What is a surrogate key vs a natural key in a data warehouse?",
+    "back": "A surrogate key is an internal auto-increment integer or hash; a natural key is the original business identifier from source systems."
+  },
+  {
+    "id": "fc-sql-077",
+    "topic": "sql",
+    "front": "What is the purpose of an audit table or history log in SQL?",
+    "back": "To record timestamps, user IDs, and before/after values for data changes to provide accountability and rollbacks."
+  },
+  {
+    "id": "fc-sql-078",
+    "topic": "sql",
+    "front": "How does TRUNCATE TABLE differ from DELETE FROM table?",
+    "back": "TRUNCATE drops and recreates table pages without logging row deletions, running much faster and resetting auto-increment counters."
+  },
+  {
+    "id": "fc-sql-079",
+    "topic": "sql",
+    "front": "What is the difference between DROP TABLE and TRUNCATE TABLE?",
+    "back": "DROP removes the table definition, schema, and data completely; TRUNCATE removes only data rows while keeping the structure."
+  },
+  {
+    "id": "fc-sql-080",
+    "topic": "sql",
+    "front": "What is the difference between a clustered database and a partitioned table?",
+    "back": "Clustering groups similar rows close together; partitioning splits table data into separate physical files by partition key."
+  },
+  {
+    "id": "fc-sql-081",
+    "topic": "sql",
+    "front": "What is a temporary table and when is it dropped?",
+    "back": "A table visible only within the active session or transaction that is automatically dropped when the session disconnects."
+  },
+  {
+    "id": "fc-sql-082",
+    "topic": "sql",
+    "front": "How do you generate a series of sequential numbers or dates in SQL?",
+    "back": "Use recursive CTEs, or dialect-specific generators like generate_series() in PostgreSQL or range() in BigQuery."
+  },
+  {
+    "id": "fc-sql-083",
+    "topic": "sql",
+    "front": "What is the difference between CAST and CONVERT?",
+    "back": "CAST is ANSI SQL standard syntax; CONVERT is dialect-specific (e.g. T-SQL) allowing custom formatting parameters for dates."
+  },
+  {
+    "id": "fc-sql-084",
+    "topic": "sql",
+    "front": "What does GROUPING SETS do in SQL?",
+    "back": "It allows specifying multiple GROUP BY combinations in a single query, unioning their aggregate outputs efficiently."
+  },
+  {
+    "id": "fc-sql-085",
+    "topic": "sql",
+    "front": "What does the ROLLUP operator do in a GROUP BY clause?",
+    "back": "It generates hierarchical subtotals and a grand total for specified columns from right to left."
+  },
+  {
+    "id": "fc-sql-086",
+    "topic": "sql",
+    "front": "What does the CUBE operator do in a GROUP BY clause?",
+    "back": "It generates subtotals for all possible mathematical combinations of dimensions listed in the grouping clause."
+  },
+  {
+    "id": "fc-sql-087",
+    "topic": "sql",
+    "front": "How do you handle case-insensitive string searches in SQL?",
+    "back": "Use LOWER(column) = 'value', or the ILIKE operator in PostgreSQL, or configure case-insensitive collations."
+  },
+  {
+    "id": "fc-sql-088",
+    "topic": "sql",
+    "front": "What is a collation in SQL?",
+    "back": "A set of rules determining how character string data is sorted and compared for equality across languages."
+  },
+  {
+    "id": "fc-sql-089",
+    "topic": "sql",
+    "front": "What is an upsert operation in SQL?",
+    "back": "An INSERT statement that updates existing records if a unique key conflict occurs (e.g. ON CONFLICT DO UPDATE)."
+  },
+  {
+    "id": "fc-sql-090",
+    "topic": "sql",
+    "front": "What does the MERGE statement do in SQL?",
+    "back": "It synchronizes a target table with a source table by performing INSERTs, UPDATEs, and DELETEs in a single statement."
+  },
+  {
+    "id": "fc-sql-091",
+    "topic": "sql",
+    "front": "How do you find the median value in SQL without a built-in MEDIAN() function?",
+    "back": "Use PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY col) or calculate the 50th percentile using window functions."
+  },
+  {
+    "id": "fc-sql-092",
+    "topic": "sql",
+    "front": "What is the difference between PERCENTILE_CONT and PERCENTILE_DISC?",
+    "back": "PERCENTILE_CONT interpolates continuous values; PERCENTILE_DISC returns an actual discrete value existing in the dataset."
+  },
+  {
+    "id": "fc-sql-093",
+    "topic": "sql",
+    "front": "Why should you avoid using NOT IN with nullable subquery columns?",
+    "back": "If any returned row in the subquery is NULL, the entire NOT IN condition evaluates to UNKNOWN, returning zero results."
+  },
+  {
+    "id": "fc-sql-094",
+    "topic": "sql",
+    "front": "How do you safely rewrite NOT IN to handle NULL values?",
+    "back": "Use NOT EXISTS (SELECT 1 ...) or explicitly filter out NULLs with WHERE sub_col IS NOT NULL."
+  },
+  {
+    "id": "fc-sql-095",
+    "topic": "sql",
+    "front": "What is the difference between string LENGTH() and OCTET_LENGTH()?",
+    "back": "LENGTH counts the number of characters; OCTET_LENGTH counts the raw number of bytes (relevant for multi-byte UTF-8)."
+  },
+  {
+    "id": "fc-sql-096",
+    "topic": "sql",
+    "front": "How do you extract query performance bottlenecks using EXPLAIN output?",
+    "back": "Look for high-cost nodes, Sequential Scans on large tables, Sort operations spilling to disk, and nested loop joins on large sets."
+  },
+  {
+    "id": "fc-sql-097",
+    "topic": "sql",
+    "front": "What does spilling to disk mean during a SQL query execution?",
+    "back": "When available working memory (work_mem) is exceeded during sorting or hash joins, forcing temporary data writes to slow disk storage."
+  },
+  {
+    "id": "fc-sql-098",
+    "topic": "sql",
+    "front": "What is the impact of using wildcards at the beginning of a LIKE pattern (%abc)?",
+    "back": "It prevents the database from using B-Tree indexes, forcing a full sequential scan across all table rows."
+  },
+  {
+    "id": "fc-sql-099",
+    "topic": "sql",
+    "front": "How do you enforce data integrity at the database schema level?",
+    "back": "Using NOT NULL constraints, UNIQUE constraints, PRIMARY KEYs, FOREIGN KEYs, and CHECK constraints (e.g. CHECK (price > 0))."
+  },
+  {
+    "id": "fc-sql-100",
+    "topic": "sql",
+    "front": "What is an isolation anomaly known as write skew?",
+    "back": "When concurrent transactions read overlapping data and update distinct data violating a global constraint (prevented by Serializable isolation)."
+  },
+  {
+    "id": "fc-py-001",
+    "topic": "python",
+    "front": "What is the difference between loc and iloc in pandas?",
+    "back": "loc accesses rows and columns by label names or boolean conditions; iloc accesses purely by integer position coordinates."
+  },
+  {
+    "id": "fc-py-002",
+    "topic": "python",
+    "front": "How do you filter a DataFrame by multiple conditions in pandas?",
+    "back": "Combine boolean masks with bitwise operators & (AND) or | (OR), enclosing each condition in parentheses: (df['a'] > 1) & (df['b'] < 5)."
+  },
+  {
+    "id": "fc-py-003",
+    "topic": "python",
+    "front": "Why does df[df['col'] > 0 and df['col'] < 10] fail in Python?",
+    "back": "Python's logical and evaluates the entire truth value of an array, whereas pandas requires bitwise & for element-wise operations."
+  },
+  {
+    "id": "fc-py-004",
+    "topic": "python",
+    "front": "What does reset_index(drop=True) do?",
+    "back": "It resets index labels to default 0-indexed integers and discards the old index instead of inserting it as a new column."
+  },
+  {
+    "id": "fc-py-005",
+    "topic": "python",
+    "front": "What is the difference between apply() and transform() after a groupby?",
+    "back": "apply can return aggregated scalars, Series, or DataFrames; transform always returns a Series of identical length to the original DataFrame."
+  },
+  {
+    "id": "fc-py-006",
+    "topic": "python",
+    "front": "How do you safely modify a subset DataFrame without triggering SettingWithCopyWarning?",
+    "back": "Create an explicit deep copy using df.copy(), or perform the assignment directly on the parent DataFrame using .loc[mask, col] = val."
+  },
+  {
+    "id": "fc-py-007",
+    "topic": "python",
+    "front": "What is SettingWithCopyWarning in pandas?",
+    "back": "A warning indicating pandas cannot determine whether a slice modification updates the original DataFrame or a temporary view."
+  },
+  {
+    "id": "fc-py-008",
+    "topic": "python",
+    "front": "How do you handle missing values in pandas?",
+    "back": "Identify them using isna(), then either remove them using dropna() or impute them using fillna(value) or interpolate()."
+  },
+  {
+    "id": "fc-py-009",
+    "topic": "python",
+    "front": "What is the difference between merge() and concat()?",
+    "back": "merge joins DataFrames horizontally based on shared key columns; concat stacks DataFrames vertically along rows or horizontally along columns."
+  },
+  {
+    "id": "fc-py-010",
+    "topic": "python",
+    "front": "What does pd.to_datetime(df['date'], errors='coerce') do?",
+    "back": "It converts text strings to Timestamp objects, converting unparseable invalid dates into NaT (Not-a-Time) missing values."
+  },
+  {
+    "id": "fc-py-011",
+    "topic": "python",
+    "front": "How do you extract year, month, or day from a datetime column in pandas?",
+    "back": "Use the .dt accessor: df['date'].dt.year, df['date'].dt.month, or df['date'].dt.day_name()."
+  },
+  {
+    "id": "fc-py-012",
+    "topic": "python",
+    "front": "What is the difference between cut() and qcut() in pandas?",
+    "back": "cut creates equal-width numerical interval ranges; qcut creates equal-frequency quantile buckets based on sample distributions."
+  },
+  {
+    "id": "fc-py-013",
+    "topic": "python",
+    "front": "Why is vectorization faster than iterating over DataFrame rows with a for-loop?",
+    "back": "Vectorized operations run in optimized C and Fortran code in contiguous memory, avoiding Python interpreter overhead."
+  },
+  {
+    "id": "fc-py-014",
+    "topic": "python",
+    "front": "Why should you avoid using iterrows() in production pandas code?",
+    "back": "iterrows() converts each row into a pandas Series, creating significant object overhead that makes it extremely slow."
+  },
+  {
+    "id": "fc-py-015",
+    "topic": "python",
+    "front": "What does itertuples() offer over iterrows()?",
+    "back": "itertuples() iterates through rows as lightweight namedtuples, running roughly 10 to 50 times faster than iterrows()."
+  },
+  {
+    "id": "fc-py-016",
+    "topic": "python",
+    "front": "What is method chaining in pandas and what method facilitates column creation?",
+    "back": "Chaining calls sequentially; the .assign() method allows creating or modifying columns inline without breaking the chain."
+  },
+  {
+    "id": "fc-py-017",
+    "topic": "python",
+    "front": "What is the difference between pivot() and pivot_table()?",
+    "back": "pivot only reshapes data without aggregating; pivot_table aggregates duplicate index/column pairs using an aggregation function like mean."
+  },
+  {
+    "id": "fc-py-018",
+    "topic": "python",
+    "front": "How does melt() work in pandas?",
+    "back": "It unpivots a wide DataFrame into a long format, consolidating multiple measurement columns into variable-value pairs."
+  },
+  {
+    "id": "fc-py-019",
+    "topic": "python",
+    "front": "What is an inplace operation in pandas and why is its use often discouraged?",
+    "back": "inplace=True modifies objects directly; it is discouraged because it rarely saves memory, prevents method chaining, and will be deprecated."
+  },
+  {
+    "id": "fc-py-020",
+    "topic": "python",
+    "front": "What is the difference between a shallow copy and a deep copy in pandas?",
+    "back": "A shallow copy shares underlying data arrays; a deep copy (df.copy(deep=True)) duplicates data entirely into separate memory."
+  },
+  {
+    "id": "fc-py-021",
+    "topic": "python",
+    "front": "How do you calculate a rolling 7-day average of a metric in pandas?",
+    "back": "df['metric'].rolling(window=7, min_periods=1).mean(). This is a foundational concept essential for technical analytics interviews."
+  },
+  {
+    "id": "fc-py-022",
+    "topic": "python",
+    "front": "How do you calculate percentage change from the previous row in pandas?",
+    "back": "Use df['col'].pct_change() * 100. This is a foundational concept essential for technical analytics interviews."
+  },
+  {
+    "id": "fc-py-023",
+    "topic": "python",
+    "front": "What is the difference between rank(method='min') and rank(method='dense')?",
+    "back": "method='min' leaves gaps after ties (like SQL RANK); method='dense' assigns consecutive integers without gaps (like SQL DENSE_RANK)."
+  },
+  {
+    "id": "fc-py-024",
+    "topic": "python",
+    "front": "How do you identify duplicate rows based on specific columns?",
+    "back": "df.duplicated(subset=['col1', 'col2'], keep=False) returns a boolean mask indicating all duplicated instances."
+  },
+  {
+    "id": "fc-py-025",
+    "topic": "python",
+    "front": "How do you drop duplicate rows while keeping the last occurrence?",
+    "back": "df.drop_duplicates(subset=['col1', 'col2'], keep='last'). This is a foundational concept essential for technical analytics interviews."
+  },
+  {
+    "id": "fc-py-026",
+    "topic": "python",
+    "front": "What does df.memory_usage(deep=True) tell you?",
+    "back": "It returns the exact memory consumed by each column in bytes, including memory used by dynamic Python strings."
+  },
+  {
+    "id": "fc-py-027",
+    "topic": "python",
+    "front": "How can you dramatically reduce pandas memory usage for low-cardinality string columns?",
+    "back": "Convert the object column to the 'category' data type: df['cat_col'] = df['cat_col'].astype('category')."
+  },
+  {
+    "id": "fc-py-028",
+    "topic": "python",
+    "front": "What is the difference between np.nan and None in pandas?",
+    "back": "None is Python's singleton object; np.nan is a floating-point IEEE NaN value. Pandas treats both as missing values."
+  },
+  {
+    "id": "fc-py-029",
+    "topic": "python",
+    "front": "Why does np.nan == np.nan evaluate to False in Python?",
+    "back": "By IEEE 754 floating point standards, NaN is never equal to anything, including itself; use pd.isna() instead."
+  },
+  {
+    "id": "fc-py-030",
+    "topic": "python",
+    "front": "How do you compute summary statistics for numerical columns in pandas?",
+    "back": "Call df.describe(), which returns count, mean, std, min, 25%, 50%, 75%, and max values."
+  },
+  {
+    "id": "fc-py-031",
+    "topic": "python",
+    "front": "What does df.info() output?",
+    "back": "It outputs column data types, non-null counts, and estimated total memory usage."
+  },
+  {
+    "id": "fc-py-032",
+    "topic": "python",
+    "front": "How do you filter rows using a string query in pandas?",
+    "back": "Use df.query('spend > 1000 and status == \"active\"')."
+  },
+  {
+    "id": "fc-py-033",
+    "topic": "python",
+    "front": "How do you perform string operations like lowercasing or trimming in pandas?",
+    "back": "Use the .str accessor: df['name'].str.strip().str.lower(). This is a foundational concept essential for technical analytics interviews."
+  },
+  {
+    "id": "fc-py-034",
+    "topic": "python",
+    "front": "How do you replace substring patterns using regex in pandas?",
+    "back": "df['phone'].str.replace(r'\\D', '', regex=True). This is a foundational concept essential for technical analytics interviews."
+  },
+  {
+    "id": "fc-py-035",
+    "topic": "python",
+    "front": "What is an exploded DataFrame in pandas?",
+    "back": "df.explode('col') transforms each element of a list-like column into a separate individual row, duplicating index values."
+  },
+  {
+    "id": "fc-py-036",
+    "topic": "python",
+    "front": "How do you group by month using pandas resample()?",
+    "back": "Set the datetime column as index and call df.resample('ME')['revenue'].sum()."
+  },
+  {
+    "id": "fc-py-037",
+    "topic": "python",
+    "front": "What is the difference between resample() and groupby() on datetime?",
+    "back": "resample is specialized for time-series frequencies and can fill missing time buckets; groupby groups strictly existing date keys."
+  },
+  {
+    "id": "fc-py-038",
+    "topic": "python",
+    "front": "How do you calculate cumulative sum and cumulative max in pandas?",
+    "back": "Use df['col'].cumsum() for cumulative sum and df['col'].cummax() for cumulative maximum."
+  },
+  {
+    "id": "fc-py-039",
+    "topic": "python",
+    "front": "What does df.corr(method='spearman') calculate?",
+    "back": "It calculates monotonic correlation between numerical columns based on ranked values, robust against extreme outliers."
+  },
+  {
+    "id": "fc-py-040",
+    "topic": "python",
+    "front": "How do you plot a correlation heatmap using Seaborn?",
+    "back": "sns.heatmap(df.corr(), annot=True, cmap='coolwarm', fmt='.2f'). This is a foundational concept essential for technical analytics interviews."
+  },
+  {
+    "id": "fc-py-041",
+    "topic": "python",
+    "front": "What is the difference between Matplotlib's plt.plot() and plt.scatter()?",
+    "back": "plt.plot connects points with lines or shows markers; plt.scatter creates scatter plots where individual point sizes and colors can vary."
+  },
+  {
+    "id": "fc-py-042",
+    "topic": "python",
+    "front": "How do you set figure size in Matplotlib?",
+    "back": "plt.figure(figsize=(10, 6)) or fig, ax = plt.subplots(figsize=(10, 6))."
+  },
+  {
+    "id": "fc-py-043",
+    "topic": "python",
+    "front": "What is the difference between a histogram and a bar plot?",
+    "back": "Histograms visualize continuous numerical distributions binned into ranges; bar plots display categorical counts or discrete summaries."
+  },
+  {
+    "id": "fc-py-044",
+    "topic": "python",
+    "front": "What does a boxplot show in Seaborn or Matplotlib?",
+    "back": "The median, interquartile range (Q1 to Q3 box), 1.5 * IQR whiskers, and individual outlier points beyond whiskers."
+  },
+  {
+    "id": "fc-py-045",
+    "topic": "python",
+    "front": "How do you save a Matplotlib plot to a file?",
+    "back": "plt.savefig('chart.png', dpi=300, bbox_inches='tight'). This is a foundational concept essential for technical analytics interviews."
+  },
+  {
+    "id": "fc-py-046",
+    "topic": "python",
+    "front": "What is the purpose of plt.tight_layout()?",
+    "back": "It automatically adjusts subplot margins and spacing so labels and titles do not overlap or clip."
+  },
+  {
+    "id": "fc-py-047",
+    "topic": "python",
+    "front": "What is a lambda function in Python?",
+    "back": "A small anonymous function defined on one line using the lambda keyword: lambda x: x * 2."
+  },
+  {
+    "id": "fc-py-048",
+    "topic": "python",
+    "front": "How do list comprehensions differ from generator expressions in Python?",
+    "back": "List comprehensions create the entire list in memory immediately; generator expressions produce items lazily one-by-one."
+  },
+  {
+    "id": "fc-py-049",
+    "topic": "python",
+    "front": "What is the difference between mutable and immutable types in Python?",
+    "back": "Mutable types (lists, dicts, sets) can be modified in place; immutable types (strings, ints, tuples) cannot be altered after creation."
+  },
+  {
+    "id": "fc-py-050",
+    "topic": "python",
+    "front": "What does the *args and **kwargs syntax mean in Python functions?",
+    "back": "*args collects variable positional arguments as a tuple; **kwargs collects variable keyword arguments as a dictionary."
+  },
+  {
+    "id": "fc-py-051",
+    "topic": "python",
+    "front": "What is a Python virtual environment and why should you use one?",
+    "back": "An isolated directory of packages avoiding dependency version conflicts across different data science projects."
+  },
+  {
+    "id": "fc-py-052",
+    "topic": "python",
+    "front": "What is the difference between is and == in Python?",
+    "back": "== compares equality of values; is checks whether two variables point to the exact same object in computer memory."
+  },
+  {
+    "id": "fc-py-053",
+    "topic": "python",
+    "front": "How do you profile code execution time in Python?",
+    "back": "Use the time module, or Jupyter's %timeit magic command, or the cProfile module for detailed call trees."
+  },
+  {
+    "id": "fc-py-054",
+    "topic": "python",
+    "front": "What is Pyodide and how does it execute Python in browsers?",
+    "back": "It compiles CPython to WebAssembly, allowing Python and scientific packages like pandas and NumPy to run in client browsers."
+  },
+  {
+    "id": "fc-py-055",
+    "topic": "python",
+    "front": "How do you read a SQLite database into a pandas DataFrame?",
+    "back": "import sqlite3; conn = sqlite3.connect('db.sqlite'); df = pd.read_sql_query('SELECT * FROM table', conn)."
+  },
+  {
+    "id": "fc-py-056",
+    "topic": "python",
+    "front": "How do you write a pandas DataFrame back to a SQLite database?",
+    "back": "df.to_sql('table_name', conn, if_exists='replace', index=False). This is a foundational concept essential for technical analytics interviews."
+  },
+  {
+    "id": "fc-py-057",
+    "topic": "python",
+    "front": "What does chunksize do in pd.read_csv() or pd.read_sql()?",
+    "back": "It reads data in iterable batches of specified row counts, enabling processing of files that exceed available RAM."
+  },
+  {
+    "id": "fc-py-058",
+    "topic": "python",
+    "front": "How do you calculate weighted average in pandas?",
+    "back": "np.average(df['value'], weights=df['weight']). This is a foundational concept essential for technical analytics interviews."
+  },
+  {
+    "id": "fc-py-059",
+    "topic": "python",
+    "front": "What is the difference between idxmax() and max() in pandas?",
+    "back": "max() returns the highest numerical value; idxmax() returns the index label where that maximum value occurs."
+  },
+  {
+    "id": "fc-py-060",
+    "topic": "python",
+    "front": "How do you clip extreme outlier values in pandas?",
+    "back": "df['col'].clip(lower=10, upper=100) caps values below 10 at 10 and values above 100 at 100."
+  },
+  {
+    "id": "fc-py-061",
+    "topic": "python",
+    "front": "What does df.select_dtypes(include='number') do?",
+    "back": "It filters DataFrame columns to retain only numerical datatypes (ints, floats), excluding strings and datetimes."
+  },
+  {
+    "id": "fc-py-062",
+    "topic": "python",
+    "front": "How do you rename columns in a pandas DataFrame?",
+    "back": "df.rename(columns={'old_name': 'new_name'}, inplace=True) or df.columns = ['a', 'b', 'c']."
+  },
+  {
+    "id": "fc-py-063",
+    "topic": "python",
+    "front": "What does df.isin(['val1', 'val2']) do?",
+    "back": "It returns a boolean mask indicating whether each cell value exists within the specified comparison collection."
+  },
+  {
+    "id": "fc-py-064",
+    "topic": "python",
+    "front": "How do you concatenate strings across two columns in pandas?",
+    "back": "df['full_name'] = df['first'] + ' ' + df['last'], or df[['first', 'last']].agg(' '.join, axis=1)."
+  },
+  {
+    "id": "fc-py-065",
+    "topic": "python",
+    "front": "What is the difference between np.where() and np.select()?",
+    "back": "np.where handles single if-else conditions; np.select evaluates multiple ordered conditions and corresponding outcome choices."
+  },
+  {
+    "id": "fc-py-066",
+    "topic": "python",
+    "front": "How do you transpose a DataFrame in pandas?",
+    "back": "Use df.T or df.transpose() to flip rows into columns and columns into rows."
+  },
+  {
+    "id": "fc-py-067",
+    "topic": "python",
+    "front": "What does df.sample(n=100, random_state=42) do?",
+    "back": "It extracts 100 randomly chosen rows from the DataFrame, using a seed to ensure reproducible sample extraction."
+  },
+  {
+    "id": "fc-py-068",
+    "topic": "python",
+    "front": "How do you export a DataFrame to CSV without including row numbers?",
+    "back": "df.to_csv('output.csv', index=False). This is a foundational concept essential for technical analytics interviews."
+  },
+  {
+    "id": "fc-py-069",
+    "topic": "python",
+    "front": "What is the difference between between() and manual boolean comparison in pandas?",
+    "back": "df['col'].between(10, 20) is a clean shorthand equivalent to (df['col'] >= 10) & (df['col'] <= 20)."
+  },
+  {
+    "id": "fc-py-070",
+    "topic": "python",
+    "front": "How do you check for null values across all columns at once in pandas?",
+    "back": "df.isna().sum() shows the count of missing values per column; df.isna().any() shows which columns have nulls."
+  },
+  {
+    "id": "fc-py-071",
+    "topic": "python",
+    "front": "What does df.nlargest(5, 'sales') do?",
+    "back": "It returns the 5 rows with the highest values in the 'sales' column, faster than sorting the entire DataFrame."
+  },
+  {
+    "id": "fc-py-072",
+    "topic": "python",
+    "front": "What is the difference between Series.map() and Series.apply()?",
+    "back": "map() maps values using a dictionary or function; apply() is more general and handles complex functions across values."
+  },
+  {
+    "id": "fc-py-073",
+    "topic": "python",
+    "front": "How do you convert categorical columns to dummy variables in pandas?",
+    "back": "pd.get_dummies(df, columns=['category'], drop_first=True). This is a foundational concept essential for technical analytics interviews."
+  },
+  {
+    "id": "fc-py-074",
+    "topic": "python",
+    "front": "Why should you use drop_first=True when creating dummy variables for linear regression?",
+    "back": "Dropping one dummy variable prevents the dummy variable trap (perfect multicollinearity with the intercept)."
+  },
+  {
+    "id": "fc-py-075",
+    "topic": "python",
+    "front": "How do you calculate the z-score of a column in pandas?",
+    "back": "from scipy.stats import zscore; df['z'] = zscore(df['col']) or (df['col'] - df['col'].mean()) / df['col'].std()."
+  },
+  {
+    "id": "fc-py-076",
+    "topic": "python",
+    "front": "What is the difference between drop() with axis=0 vs axis=1?",
+    "back": "axis=0 drops rows by index label; axis=1 (or columns=['col']) drops designated columns."
+  },
+  {
+    "id": "fc-py-077",
+    "topic": "python",
+    "front": "How do you sort a DataFrame by multiple columns with mixed ascending/descending order?",
+    "back": "df.sort_values(by=['dept', 'salary'], ascending=[True, False]). This is a foundational concept essential for technical analytics interviews."
+  },
+  {
+    "id": "fc-py-078",
+    "topic": "python",
+    "front": "What does df.squeeze() do in pandas?",
+    "back": "It compresses 1-dimensional DataFrames into Series, or single-element Series into Python scalar values."
+  },
+  {
+    "id": "fc-py-079",
+    "topic": "python",
+    "front": "How do you compute quantile ranks (percentiles) for a column in pandas?",
+    "back": "df['percentile'] = df['col'].rank(pct=True) * 100. This is a foundational concept essential for technical analytics interviews."
+  },
+  {
+    "id": "fc-py-080",
+    "topic": "python",
+    "front": "How do you handle JSON data embedded inside a DataFrame column in pandas?",
+    "back": "Use pd.json_normalize(df['json_col']) to flatten nested dictionary keys into tabular columns."
+  },
+  {
+    "id": "fc-xl-001",
+    "topic": "excel",
+    "front": "What makes XLOOKUP superior to VLOOKUP in Excel?",
+    "back": "XLOOKUP searches in any direction, defaults to exact match, handles missing values natively, and doesn't break when columns are added."
+  },
+  {
+    "id": "fc-xl-002",
+    "topic": "excel",
+    "front": "How does INDEX MATCH work and why is it preferred over VLOOKUP?",
+    "back": "MATCH finds relative row positions; INDEX retrieves values from any column. It looks left, handles dynamic columns, and runs faster."
+  },
+  {
+    "id": "fc-xl-003",
+    "topic": "excel",
+    "front": "What is the difference between SUMIF and SUMIFS in Excel?",
+    "back": "SUMIF evaluates a single condition; SUMIFS handles multiple conditions and places the sum range as the first argument."
+  },
+  {
+    "id": "fc-xl-004",
+    "topic": "excel",
+    "front": "What does the $ symbol do in an Excel cell reference like $A$1?",
+    "back": "It locks the cell reference; $A$1 locks both column and row, $A1$ locks column, and A$1 locks row during autofill."
+  },
+  {
+    "id": "fc-xl-005",
+    "topic": "excel",
+    "front": "How do you prevent #DIV/0! errors in Excel formulas?",
+    "back": "Wrap the division formula in IFERROR: =IFERROR(A2 / B2, 0)."
+  },
+  {
+    "id": "fc-xl-006",
+    "topic": "excel",
+    "front": "What does a Pivot Table slicer do?",
+    "back": "It provides clickable graphical filter buttons to interactively filter Pivot Tables and linked dashboard charts."
+  },
+  {
+    "id": "fc-xl-007",
+    "topic": "excel",
+    "front": "What is the difference between COUNT, COUNTA, and COUNTBLANK?",
+    "back": "COUNT counts numbers only; COUNTA counts all non-empty cells (text and numbers); COUNTBLANK counts empty cells."
+  },
+  {
+    "id": "fc-xl-008",
+    "topic": "excel",
+    "front": "What is the FILTER function in modern Excel?",
+    "back": "A dynamic array formula filtering a range based on boolean criteria: =FILTER(A2:D100, C2:C100 = 'Active')."
+  },
+  {
+    "id": "fc-xl-009",
+    "topic": "excel",
+    "front": "What does the UNIQUE function do in Excel?",
+    "back": "It returns a deduplicated list of unique values from a specified range: =UNIQUE(A2:A100)."
+  },
+  {
+    "id": "fc-xl-010",
+    "topic": "excel",
+    "front": "What is a #SPILL! error in modern Excel dynamic arrays?",
+    "back": "It occurs when a formula returns multiple values but existing content in neighboring cells blocks the formula from spilling."
+  },
+  {
+    "id": "fc-xl-011",
+    "topic": "excel",
+    "front": "What does the LET function do in Excel formulas?",
+    "back": "It assigns names to calculation results inside a formula, eliminating redundant recalculations and improving readability."
+  },
+  {
+    "id": "fc-xl-012",
+    "topic": "excel",
+    "front": "What is Power Query used for in Excel?",
+    "back": "Extracting, transforming, and loading (ETL) data from files, databases, or web pages with automated, refreshable steps."
+  },
+  {
+    "id": "fc-xl-013",
+    "topic": "excel",
+    "front": "What is M code in Excel Power Query?",
+    "back": "The functional formula language behind Power Query steps, recording transformations like filtering, unpivoting, and renaming."
+  },
+  {
+    "id": "fc-xl-014",
+    "topic": "excel",
+    "front": "How do you unpivot columns in Excel Power Query?",
+    "back": "Select identifier columns, right-click, and select 'Unpivot Other Columns' to transform wide data into clean tabular rows."
+  },
+  {
+    "id": "fc-xl-015",
+    "topic": "excel",
+    "front": "What is the difference between absolute, relative, and mixed references?",
+    "back": "Relative shifts on drag; absolute ($A$1) stays locked; mixed ($A1 or A$1) locks either column or row exclusively."
+  },
+  {
+    "id": "fc-xl-016",
+    "topic": "excel",
+    "front": "What does TEXTJOIN do that CONCATENATE cannot?",
+    "back": "TEXTJOIN accepts a delimiter and an argument to ignore empty cells: =TEXTJOIN(', ', TRUE, A2:A10)."
+  },
+  {
+    "id": "fc-xl-017",
+    "topic": "excel",
+    "front": "How do you split text into separate columns using formulas in modern Excel?",
+    "back": "Use =TEXTSPLIT(A2, ' ') to split text across columns or rows using specified delimiters."
+  },
+  {
+    "id": "fc-xl-018",
+    "topic": "excel",
+    "front": "What does EOMONTH(TODAY(), 0) return in Excel?",
+    "back": "It returns the serial date number representing the final calendar day of the current month."
+  },
+  {
+    "id": "fc-xl-019",
+    "topic": "excel",
+    "front": "What does NETWORKDAYS(start_date, end_date, holidays) calculate?",
+    "back": "It calculates total working business days between two dates, automatically excluding weekends and optional specified holiday dates."
+  },
+  {
+    "id": "fc-xl-020",
+    "topic": "excel",
+    "front": "What does the DATEDIF function calculate in Excel?",
+    "back": "It computes the difference between two dates in years ('Y'), months ('M'), or days ('D'): =DATEDIF(start, end, 'M')."
+  },
+  {
+    "id": "fc-xl-021",
+    "topic": "excel",
+    "front": "What is Conditional Formatting used for in spreadsheets?",
+    "back": "Automatically applying formatting (colors, data bars, icons) to cells based on specified conditions or rules."
+  },
+  {
+    "id": "fc-xl-022",
+    "topic": "excel",
+    "front": "How do you highlight alternating rows (zebra striping) using conditional formatting?",
+    "back": "Use the formula =MOD(ROW(), 2) = 0 and apply the desired fill color."
+  },
+  {
+    "id": "fc-xl-023",
+    "topic": "excel",
+    "front": "What does Goal Seek do in Excel?",
+    "back": "It finds the required input value in a single cell to achieve a desired target output in a formula cell."
+  },
+  {
+    "id": "fc-xl-024",
+    "topic": "excel",
+    "front": "What is a Data Table (What-If analysis) in Excel?",
+    "back": "A tool showing formula results across a range of 1 or 2 changing input variables in a matrix grid."
+  },
+  {
+    "id": "fc-xl-025",
+    "topic": "excel",
+    "front": "What is the difference between NPV and XNPV in Excel?",
+    "back": "NPV assumes regular, equal periodic cash flows; XNPV discounts cash flows based on exact, irregular calendar dates."
+  },
+  {
+    "id": "fc-xl-026",
+    "topic": "excel",
+    "front": "What does XIRR calculate in financial analytics?",
+    "back": "The internal rate of return for a series of cash flows occurring at specific, irregular calendar dates."
+  },
+  {
+    "id": "fc-xl-027",
+    "topic": "excel",
+    "front": "What does the CHOOSECOLS function do in Excel 365?",
+    "back": "It extracts specific column numbers from an array or table: =CHOOSECOLS(A2:Z100, 1, 3, 5)."
+  },
+  {
+    "id": "fc-xl-028",
+    "topic": "excel",
+    "front": "What do VSTACK and HSTACK do in modern Excel?",
+    "back": "VSTACK stacks ranges vertically on top of each other; HSTACK stacks ranges horizontally side-by-side."
+  },
+  {
+    "id": "fc-xl-029",
+    "topic": "excel",
+    "front": "What does the LAMBDA function allow you to do in Excel?",
+    "back": "Create custom, reusable spreadsheet functions using standard formula syntax without writing VBA code."
+  },
+  {
+    "id": "fc-xl-030",
+    "topic": "excel",
+    "front": "What is Flash Fill and what is its keyboard shortcut?",
+    "back": "An AI-powered pattern recognition tool that auto-populates data based on examples; shortcut is Ctrl + E."
+  },
+  {
+    "id": "fc-xl-031",
+    "topic": "excel",
+    "front": "What is Data Validation in Excel?",
+    "back": "A feature restricting the type or range of data users can enter into a cell, such as creating dropdown lists."
+  },
+  {
+    "id": "fc-xl-032",
+    "topic": "excel",
+    "front": "What is the difference between ROUND, ROUNDUP, and ROUNDDOWN?",
+    "back": "ROUND rounds to the nearest digit based on 5; ROUNDUP always rounds away from zero; ROUNDDOWN truncates toward zero."
+  },
+  {
+    "id": "fc-xl-033",
+    "topic": "excel",
+    "front": "What does the MOD function return in Excel?",
+    "back": "The mathematical remainder after dividing a number by a divisor: =MOD(10, 3) returns 1."
+  },
+  {
+    "id": "fc-xl-034",
+    "topic": "excel",
+    "front": "How do you freeze panes in Excel so headers stay visible when scrolling?",
+    "back": "Navigate to View -> Freeze Panes -> Freeze Top Row (or select cell and Freeze Panes)."
+  },
+  {
+    "id": "fc-xl-035",
+    "topic": "excel",
+    "front": "What is the shortcut to paste values only in Excel?",
+    "back": "Alt + E + S + V + Enter, or Ctrl + Alt + V then press V and Enter."
+  },
+  {
+    "id": "fc-xl-036",
+    "topic": "excel",
+    "front": "What is the shortcut to format a cell as currency in Excel?",
+    "back": "Ctrl + Shift + $ (applies currency format with two decimals)."
+  },
+  {
+    "id": "fc-xl-037",
+    "topic": "excel",
+    "front": "What is the shortcut to format a cell as a percentage in Excel?",
+    "back": "Ctrl + Shift + % (applies percentage format with zero decimals)."
+  },
+  {
+    "id": "fc-xl-038",
+    "topic": "excel",
+    "front": "What is the shortcut to toggle absolute references ($) while editing a formula?",
+    "back": "Press the F4 key repeatedly to cycle through $A$1, A$1, $A1, and A1."
+  },
+  {
+    "id": "fc-xl-039",
+    "topic": "excel",
+    "front": "What is the keyboard shortcut to create an Excel table from a range?",
+    "back": "Ctrl + T (or Ctrl + L), which adds sorting, filtering, and structured references."
+  },
+  {
+    "id": "fc-xl-040",
+    "topic": "excel",
+    "front": "What are structured references in Excel tables?",
+    "back": "Table column references like Table1[Revenue] instead of cell ranges like C2:C100, updating dynamically as rows are added."
+  },
+  {
+    "id": "fc-xl-041",
+    "topic": "excel",
+    "front": "What does the SUBTOTAL function do that SUM does not?",
+    "back": "SUBTOTAL can ignore rows hidden by filters, preventing double-counting when calculating filtered summaries."
+  },
+  {
+    "id": "fc-xl-042",
+    "topic": "excel",
+    "front": "What function number in SUBTOTAL(function_num, ref) calculates SUM ignoring hidden rows?",
+    "back": "Function number 109 calculates SUM while ignoring both filtered and manually hidden rows."
+  },
+  {
+    "id": "fc-xl-043",
+    "topic": "excel",
+    "front": "What is a circular reference in Excel and how do you resolve it?",
+    "back": "A formula that depends on its own cell value; resolve by finding the loop via Formulas -> Error Checking -> Circular References."
+  },
+  {
+    "id": "fc-xl-044",
+    "topic": "excel",
+    "front": "What does the #N/A error indicate in lookup formulas?",
+    "back": "It means the requested lookup value does not exist within the searched range."
+  },
+  {
+    "id": "fc-xl-045",
+    "topic": "excel",
+    "front": "What does the #VALUE! error signify in Excel?",
+    "back": "A formula has the wrong data type argument, like attempting arithmetic on a text string: = 'apple' + 5."
+  },
+  {
+    "id": "fc-xl-046",
+    "topic": "excel",
+    "front": "What does the #REF! error indicate in Excel?",
+    "back": "A cell reference is invalid, typically caused by deleting a row, column, or sheet referenced by the formula."
+  },
+  {
+    "id": "fc-xl-047",
+    "topic": "excel",
+    "front": "What does the #NAME? error mean in Excel?",
+    "back": "Excel does not recognize text in a formula, usually caused by misspelling a function name or omitting quotes around text."
+  },
+  {
+    "id": "fc-xl-048",
+    "topic": "excel",
+    "front": "How do you convert numbers stored as text to actual numbers in Excel?",
+    "back": "Multiply by 1, use VALUE(A2), or select the range, open Text to Columns, and click Finish."
+  },
+  {
+    "id": "fc-xl-049",
+    "topic": "excel",
+    "front": "What does the SEQUENCE function generate in Excel?",
+    "back": "A dynamic array of sequential numbers: =SEQUENCE(rows, columns, start, step)."
+  },
+  {
+    "id": "fc-xl-050",
+    "topic": "excel",
+    "front": "How do you calculate weighted average in Excel?",
+    "back": "=SUMPRODUCT(Values, Weights) / SUM(Weights). This is a foundational concept essential for technical analytics interviews."
+  },
+  {
+    "id": "fc-xl-051",
+    "topic": "excel",
+    "front": "What does the TRANSPOSE function do in Excel?",
+    "back": "It flips the orientation of a range from vertical to horizontal or vice versa."
+  },
+  {
+    "id": "fc-xl-052",
+    "topic": "excel",
+    "front": "What is the difference between AND and OR functions in Excel?",
+    "back": "AND returns TRUE only if all conditions are TRUE; OR returns TRUE if at least one condition is TRUE."
+  },
+  {
+    "id": "fc-xl-053",
+    "topic": "excel",
+    "front": "How do you nest an IF formula with multiple conditions in modern Excel?",
+    "back": "Use the IFS function: =IFS(A2 >= 90, 'A', A2 >= 80, 'B', TRUE, 'C')."
+  },
+  {
+    "id": "fc-xl-054",
+    "topic": "excel",
+    "front": "What does the EXACT function do in Excel?",
+    "back": "It compares two text strings and returns TRUE only if they are identical, including case sensitivity."
+  },
+  {
+    "id": "fc-xl-055",
+    "topic": "excel",
+    "front": "How do you count cells containing specific text in Excel?",
+    "back": "=COUNTIF(Range, '*text*') using asterisks as wildcards for partial matching."
+  },
+  {
+    "id": "fc-xl-056",
+    "topic": "excel",
+    "front": "What do question marks (?) and asterisks (*) represent in Excel criteria?",
+    "back": "A question mark matches any single character; an asterisk matches any sequence of characters."
+  },
+  {
+    "id": "fc-xl-057",
+    "topic": "excel",
+    "front": "What is an Excel Macro?",
+    "back": "A recorded sequence of user actions or VBA code executed on demand to automate repetitive tasks."
+  },
+  {
+    "id": "fc-xl-058",
+    "topic": "excel",
+    "front": "What is the standard file extension for an Excel workbook containing macros?",
+    "back": ".xlsm (Excel Macro-Enabled Workbook); standard .xlsx files cannot store executable VBA code."
+  },
+  {
+    "id": "fc-xl-059",
+    "topic": "excel",
+    "front": "How do you create a dynamic named range in Excel?",
+    "back": "Use Formulas -> Name Manager and define the reference using dynamic array functions or OFFSET/COUNTA."
+  },
+  {
+    "id": "fc-xl-060",
+    "topic": "excel",
+    "front": "What does the FORMULATEXT function do in Excel?",
+    "back": "It returns the formula of a referenced cell as a text string, useful for documentation and audit reviews."
+  },
+  {
+    "id": "fc-xl-061",
+    "topic": "excel",
+    "front": "How do you find the second largest value in a range in Excel?",
+    "back": "=LARGE(Range, 2). To find the smallest, use =SMALL(Range, 2)."
+  },
+  {
+    "id": "fc-xl-062",
+    "topic": "excel",
+    "front": "What does the AGGREGATE function offer over SUBTOTAL?",
+    "back": "It can ignore errors (#N/A, #DIV/0!) and hidden rows, and supports functions like MEDIAN, LARGE, and SMALL."
+  },
+  {
+    "id": "fc-xl-063",
+    "topic": "excel",
+    "front": "What is the difference between a workbook and a worksheet in Excel?",
+    "back": "A workbook is the entire Excel file (.xlsx); a worksheet is an individual tab or sheet within that workbook."
+  },
+  {
+    "id": "fc-xl-064",
+    "topic": "excel",
+    "front": "How do you calculate compound annual growth rate (CAGR) in Excel?",
+    "back": "=(Ending_Value / Beginning_Value) ^ (1 / Years) - 1."
+  },
+  {
+    "id": "fc-xl-065",
+    "topic": "excel",
+    "front": "What does the TRIM function do in Excel?",
+    "back": "It strips leading, trailing, and duplicate spaces from text strings, leaving only single spaces between words."
+  },
+  {
+    "id": "fc-pbi-001",
+    "topic": "power-bi",
+    "front": "What is the difference between a Measure and a Calculated Column in Power BI?",
+    "back": "Calculated columns compute during refresh and consume RAM; measures calculate dynamically at query time based on visual filter context."
+  },
+  {
+    "id": "fc-pbi-002",
+    "topic": "power-bi",
+    "front": "What does CALCULATE() do in DAX?",
+    "back": "It evaluates an expression within an altered or newly created filter context, overriding or adding to existing visual filters."
+  },
+  {
+    "id": "fc-pbi-003",
+    "topic": "power-bi",
+    "front": "What is Filter Context in Power BI?",
+    "back": "The combination of all active filters from slicers, visuals, page filters, and row selections acting on the data model."
+  },
+  {
+    "id": "fc-pbi-004",
+    "topic": "power-bi",
+    "front": "What is Row Context in Power BI?",
+    "back": "The current row being evaluated during iteration or calculated column creation; it has no concept of other rows without context transition."
+  },
+  {
+    "id": "fc-pbi-005",
+    "topic": "power-bi",
+    "front": "What is Context Transition in DAX?",
+    "back": "The automatic transformation of row context into equivalent filter context, triggered whenever CALCULATE() is invoked."
+  },
+  {
+    "id": "fc-pbi-006",
+    "topic": "power-bi",
+    "front": "What is the difference between SUM and SUMX in DAX?",
+    "back": "SUM aggregates a single column across filter context; SUMX is an iterator evaluating a row-level expression row-by-row and summing results."
+  },
+  {
+    "id": "fc-pbi-007",
+    "topic": "power-bi",
+    "front": "What is the difference between RELATED and RELATEDTABLE?",
+    "back": "RELATED fetches a single scalar value from the 'one' side; RELATEDTABLE returns a table of matching rows from the 'many' side."
+  },
+  {
+    "id": "fc-pbi-008",
+    "topic": "power-bi",
+    "front": "What does the ALL() function do in DAX?",
+    "back": "It removes all active filters from specified tables or columns, returning all original rows to compute grand totals or percentages."
+  },
+  {
+    "id": "fc-pbi-009",
+    "topic": "power-bi",
+    "front": "What does ALLEXCEPT() do in DAX?",
+    "back": "It removes all filters from a table except filters on designated specified columns."
+  },
+  {
+    "id": "fc-pbi-010",
+    "topic": "power-bi",
+    "front": "What does ALLSELECTED() do in DAX?",
+    "back": "It restores the filter context representing user slicer selections across the visual, ignoring internal visual grouping axes."
+  },
+  {
+    "id": "fc-pbi-011",
+    "topic": "power-bi",
+    "front": "Why should you use DIVIDE() instead of the / operator in DAX?",
+    "back": "DIVIDE safely handles division by zero by returning BLANK or an alternate result instead of throwing an error."
+  },
+  {
+    "id": "fc-pbi-012",
+    "topic": "power-bi",
+    "front": "What is the difference between Star Schema and Snowflake Schema?",
+    "back": "Star schemas connect a fact table to denormalized dimension tables; Snowflake schemas further normalize dimensions into sub-tables."
+  },
+  {
+    "id": "fc-pbi-013",
+    "topic": "power-bi",
+    "front": "Why is a Star Schema strongly recommended for Power BI data modeling?",
+    "back": "It reduces relationship traversals, simplifies DAX calculations, and allows the VertiPaq engine to optimize columnar compression."
+  },
+  {
+    "id": "fc-pbi-014",
+    "topic": "power-bi",
+    "front": "What is the difference between a Fact table and a Dimension table?",
+    "back": "Fact tables contain quantitative numerical metrics and foreign keys; dimension tables contain descriptive context attributes used for slicing."
+  },
+  {
+    "id": "fc-pbi-015",
+    "topic": "power-bi",
+    "front": "What is Cardinality in Power BI data modeling?",
+    "back": "The direction and uniqueness ratio of a relationship: One-to-Many (1:*), Many-to-One (*:1), One-to-One (1:1), or Many-to-Many (*:*)."
+  },
+  {
+    "id": "fc-pbi-016",
+    "topic": "power-bi",
+    "front": "Why should you avoid Many-to-Many relationships in Power BI?",
+    "back": "They introduce ambiguity in filter propagation, degrade query performance, and can produce unexpected calculation outcomes."
+  },
+  {
+    "id": "fc-pbi-017",
+    "topic": "power-bi",
+    "front": "What does Bi-directional Cross Filtering do and what are its risks?",
+    "back": "It allows filters to flow in both directions across tables; risks include circular relationship paths and performance degradation."
+  },
+  {
+    "id": "fc-pbi-018",
+    "topic": "power-bi",
+    "front": "What is an Inactive Relationship and how do you activate it in DAX?",
+    "back": "A relationship not used by default; activated inside a measure using the USERELATIONSHIP(Dates[Date], Orders[ShipDate]) function."
+  },
+  {
+    "id": "fc-pbi-019",
+    "topic": "power-bi",
+    "front": "What does CROSSFILTER() do in DAX?",
+    "back": "It modifies cross-filtering behavior (Both, Single, None) for a specific measure calculation during execution."
+  },
+  {
+    "id": "fc-pbi-020",
+    "topic": "power-bi",
+    "front": "What does KEEPFILTERS() do in DAX?",
+    "back": "It instructs CALCULATE to intersect filter arguments with existing visual filters rather than overwriting them."
+  },
+  {
+    "id": "fc-pbi-021",
+    "topic": "power-bi",
+    "front": "What is a Date Table and why is it mandatory for Time Intelligence in Power BI?",
+    "back": "A contiguous calendar table with no missing dates, marked as a Date table to enable functions like DATESYTD and SAMEPERIODLASTYEAR."
+  },
+  {
+    "id": "fc-pbi-022",
+    "topic": "power-bi",
+    "front": "What does DATESYTD() calculate in DAX?",
+    "back": "It returns a set of calendar dates starting from the beginning of the year up to the latest date in the current filter context."
+  },
+  {
+    "id": "fc-pbi-023",
+    "topic": "power-bi",
+    "front": "What does SAMEPERIODLASTYEAR() do in DAX?",
+    "back": "It shifts the current date interval exactly one year backwards in time to compare year-over-year performance."
+  },
+  {
+    "id": "fc-pbi-024",
+    "topic": "power-bi",
+    "front": "What is the difference between DATEADD and PARALLELPERIOD in DAX?",
+    "back": "DATEADD shifts dates by specified intervals; PARALLELPERIOD returns full parallel calendar periods (e.g. entire prior year) regardless of partial dates."
+  },
+  {
+    "id": "fc-pbi-025",
+    "topic": "power-bi",
+    "front": "How do you calculate Year-over-Year (YoY) percentage sales growth in DAX?",
+    "back": "[YoY Growth %] = DIVIDE([Total Sales] - [Sales LY], [Sales LY])."
+  },
+  {
+    "id": "fc-pbi-026",
+    "topic": "power-bi",
+    "front": "What does the VALUES() function return in DAX?",
+    "back": "A one-column table of distinct values visible within the current filter context, including blank rows if referential integrity is broken."
+  },
+  {
+    "id": "fc-pbi-027",
+    "topic": "power-bi",
+    "front": "What is the difference between VALUES() and DISTINCT() in DAX?",
+    "back": "VALUES includes the blank row added when a foreign key has no matching primary key; DISTINCT excludes this blank row."
+  },
+  {
+    "id": "fc-pbi-028",
+    "topic": "power-bi",
+    "front": "What does COUNTROWS(table) do in DAX?",
+    "back": "It counts the number of rows currently visible in the specified table under active filter context."
+  },
+  {
+    "id": "fc-pbi-029",
+    "topic": "power-bi",
+    "front": "What does DISTINCTCOUNT() do in DAX?",
+    "back": "It counts the number of unique distinct values in a column within the current filter context."
+  },
+  {
+    "id": "fc-pbi-030",
+    "topic": "power-bi",
+    "front": "What is Row-Level Security (RLS) in Power BI?",
+    "back": "A security feature restricting data access for specific users based on role memberships and DAX filter expressions."
+  },
+  {
+    "id": "fc-pbi-031",
+    "topic": "power-bi",
+    "front": "What DAX functions are used to implement Dynamic Row-Level Security?",
+    "back": "USERNAME() or USERPRINCIPALNAME() to capture the viewer's email and filter employee tables accordingly."
+  },
+  {
+    "id": "fc-pbi-032",
+    "topic": "power-bi",
+    "front": "What is the VertiPaq engine?",
+    "back": "The columnar, in-memory database engine powering Power BI datasets, using dictionary encoding, run-length encoding, and bit packing."
+  },
+  {
+    "id": "fc-pbi-033",
+    "topic": "power-bi",
+    "front": "What is DirectQuery mode in Power BI?",
+    "back": "A connection mode where Power BI does not import data into memory, but converts visuals into SQL queries sent to the source DB."
+  },
+  {
+    "id": "fc-pbi-034",
+    "topic": "power-bi",
+    "front": "What are the tradeoffs between Import Mode and DirectQuery Mode?",
+    "back": "Import is fast and supports full DAX but has size limits; DirectQuery handles real-time data but has slower visual rendering and DAX limits."
+  },
+  {
+    "id": "fc-pbi-035",
+    "topic": "power-bi",
+    "front": "What is a Composite Model in Power BI?",
+    "back": "A model combining Import mode tables and DirectQuery tables in a single dataset."
+  },
+  {
+    "id": "fc-pbi-036",
+    "topic": "power-bi",
+    "front": "What is Incremental Refresh in Power BI?",
+    "back": "A feature refreshing only newly added or modified data partitions while archiving historical data, saving refresh time."
+  },
+  {
+    "id": "fc-pbi-037",
+    "topic": "power-bi",
+    "front": "What does the Performance Analyzer in Power BI do?",
+    "back": "It measures duration for visual display, DAX query execution, and external processing to identify report bottlenecks."
+  },
+  {
+    "id": "fc-pbi-038",
+    "topic": "power-bi",
+    "front": "What is a Drillthrough page in Power BI?",
+    "back": "A dedicated report page filtered automatically by the specific entity selected by a user on another page."
+  },
+  {
+    "id": "fc-pbi-039",
+    "topic": "power-bi",
+    "front": "What is a Tooltip page in Power BI?",
+    "back": "A hidden report page displayed as a mini-dashboard popup when a user hovers over a data point in a visual."
+  },
+  {
+    "id": "fc-pbi-040",
+    "topic": "power-bi",
+    "front": "What is the difference between Visual-level, Page-level, and Report-level filters?",
+    "back": "Visual filters affect one visual; Page filters affect all visuals on a tab; Report filters affect every page in the workbook."
+  },
+  {
+    "id": "fc-pbi-041",
+    "topic": "power-bi",
+    "front": "What does Edit Interactions allow you to configure in Power BI?",
+    "back": "Whether selecting a data point in visual A filters, highlights, or has no effect on visual B."
+  },
+  {
+    "id": "fc-pbi-042",
+    "topic": "power-bi",
+    "front": "What is Power BI Service?",
+    "back": "The cloud-based SaaS platform (app.powerbi.com) used for publishing, sharing, scheduling refreshes, and collaborating on reports."
+  },
+  {
+    "id": "fc-pbi-043",
+    "topic": "power-bi",
+    "front": "What is a Power BI Gateway and when is it required?",
+    "back": "Bridge software installed on-premises enabling Power BI Service to securely query and refresh data from local on-prem databases."
+  },
+  {
+    "id": "fc-pbi-044",
+    "topic": "power-bi",
+    "front": "What is a Dataflow in Power BI Service?",
+    "back": "A reusable ETL pipeline built with Power Query running in the cloud, storing outputs in Azure Data Lake for shared dataset modeling."
+  },
+  {
+    "id": "fc-pbi-045",
+    "topic": "power-bi",
+    "front": "What is the difference between a Dashboard and a Report in Power BI Service?",
+    "back": "Reports have multiple pages, interactive slicing, and deep DAX; Dashboards are single-page executive summaries pinning tiles from multiple reports."
+  },
+  {
+    "id": "fc-pbi-046",
+    "topic": "power-bi",
+    "front": "What does the HASONEVALUE() function check in DAX?",
+    "back": "It returns TRUE if the specified column has been filtered down to exactly one distinct value in the active context."
+  },
+  {
+    "id": "fc-pbi-047",
+    "topic": "power-bi",
+    "front": "What does SELECTEDVALUE(column, alternateResult) do in DAX?",
+    "back": "It returns the single active value of a column if filtered to one value; otherwise returns BLANK or the alternate result."
+  },
+  {
+    "id": "fc-pbi-048",
+    "topic": "power-bi",
+    "front": "What is a Bookmark in Power BI?",
+    "back": "A feature capturing the current page configuration (filters, slicers, visual visibility) to create interactive guided navigation."
+  },
+  {
+    "id": "fc-pbi-049",
+    "topic": "power-bi",
+    "front": "What does the SWITCH() function do in DAX?",
+    "back": "It evaluates an expression against a list of values and returns the matching result, or evaluates multiple TRUE conditions."
+  },
+  {
+    "id": "fc-pbi-050",
+    "topic": "power-bi",
+    "front": "How do you write a SWITCH(TRUE(), ...) statement in DAX?",
+    "back": "SWITCH(TRUE(), [Score] >= 90, 'A', [Score] >= 80, 'B', 'C') evaluates conditions sequentially like SQL CASE WHEN."
+  },
+  {
+    "id": "fc-pbi-051",
+    "topic": "power-bi",
+    "front": "What is an Iterator function in DAX?",
+    "back": "A function ending in X (SUMX, AVERAGEX, MINX, MAXX) evaluating an expression row-by-row across a table and aggregating outcomes."
+  },
+  {
+    "id": "fc-pbi-052",
+    "topic": "power-bi",
+    "front": "What does COALESCE() do in DAX?",
+    "back": "It evaluates expressions in order and returns the first non-blank value."
+  },
+  {
+    "id": "fc-pbi-053",
+    "topic": "power-bi",
+    "front": "What is the BLANK() value in DAX and how does it behave in arithmetic?",
+    "back": "BLANK represents missing data; in arithmetic, BLANK + 5 evaluates to 5, and BLANK * 5 evaluates to BLANK."
+  },
+  {
+    "id": "fc-pbi-054",
+    "topic": "power-bi",
+    "front": "How do you check for BLANK in DAX?",
+    "back": "Use the ISBLANK(expression) function, which returns TRUE if the expression evaluates to BLANK."
+  },
+  {
+    "id": "fc-pbi-055",
+    "topic": "power-bi",
+    "front": "What does the TREATAS() function do in DAX?",
+    "back": "It applies the result of a table expression as filters to columns of an unrelated table, enabling virtual relationships."
+  },
+  {
+    "id": "fc-pbi-056",
+    "topic": "power-bi",
+    "front": "What does the SUMMARIZE() function do in DAX?",
+    "back": "It groups a table by specified columns and computes extension aggregations, similar to SQL GROUP BY."
+  },
+  {
+    "id": "fc-pbi-057",
+    "topic": "power-bi",
+    "front": "Why is SUMMARIZECOLUMNS preferred over SUMMARIZE for querying?",
+    "back": "SUMMARIZECOLUMNS is optimized for querying and filter context handling, but cannot be used inside measure context transitions."
+  },
+  {
+    "id": "fc-pbi-058",
+    "topic": "power-bi",
+    "front": "What is the difference between ADDCOLUMNS and SELECTCOLUMNS in DAX?",
+    "back": "ADDCOLUMNS keeps all original table columns and adds new ones; SELECTCOLUMNS returns only newly specified columns."
+  },
+  {
+    "id": "fc-pbi-059",
+    "topic": "power-bi",
+    "front": "What does GENERATE() or CROSSJOIN() do in DAX?",
+    "back": "It produces the Cartesian product of two tables, pairing every row of the first table with all rows of the second table."
+  },
+  {
+    "id": "fc-pbi-060",
+    "topic": "power-bi",
+    "front": "What does the TOPN() function return in DAX?",
+    "back": "A table containing the top N rows of a specified table based on an ordering expression."
+  },
+  {
+    "id": "fc-pbi-061",
+    "topic": "power-bi",
+    "front": "How do you create a dynamic Top N visual with an 'Others' bucket in DAX?",
+    "back": "Use a disconnected parameter table and a measure evaluating whether an entity ranks within Top N or falls into 'Others'."
+  },
+  {
+    "id": "fc-pbi-062",
+    "topic": "power-bi",
+    "front": "What does the LOOKUPVALUE() function do in DAX?",
+    "back": "It retrieves a scalar value from a table column matching one or more search conditions without requiring a physical relationship."
+  },
+  {
+    "id": "fc-pbi-063",
+    "topic": "power-bi",
+    "front": "Why should you avoid creating calculated columns in Fact tables?",
+    "back": "Calculated columns in large fact tables consume significant memory and reduce VertiPaq compression efficiency; use measures instead."
+  },
+  {
+    "id": "fc-pbi-064",
+    "topic": "power-bi",
+    "front": "What is Column Encoding in the VertiPaq engine?",
+    "back": "Techniques like Value Encoding (numeric offsets), Dictionary Encoding (mapping strings to integer IDs), and Run-Length Encoding."
+  },
+  {
+    "id": "fc-pbi-065",
+    "topic": "power-bi",
+    "front": "What is High Cardinality and why does it hurt Power BI performance?",
+    "back": "Columns with millions of unique values (like GUIDs or timestamps) cannot compress well, inflating dataset memory size."
+  },
+  {
+    "id": "fc-pbi-066",
+    "topic": "power-bi",
+    "front": "How should you optimize high-cardinality datetime columns in Power BI?",
+    "back": "Split the datetime column into separate Date and Time columns, or remove the time component if not needed for reporting."
+  },
+  {
+    "id": "fc-pbi-067",
+    "topic": "power-bi",
+    "front": "What is the difference between Direct Lake mode and Import mode in Microsoft Fabric?",
+    "back": "Direct Lake reads Delta Parquet files directly from OneLake storage at in-memory speeds without importing or duplicating data."
+  },
+  {
+    "id": "fc-pbi-068",
+    "topic": "power-bi",
+    "front": "What is a Quick Measure in Power BI?",
+    "back": "A wizard generating standard DAX calculations (YTD, running totals, percentage change) through a graphical interface."
+  },
+  {
+    "id": "fc-pbi-069",
+    "topic": "power-bi",
+    "front": "What does the ISINSCOPE() function do in DAX?",
+    "back": "It returns TRUE when the specified column is the active level in a matrix visual hierarchy, used to format subtotal rows."
+  },
+  {
+    "id": "fc-pbi-070",
+    "topic": "power-bi",
+    "front": "How do you format a measure conditionally based on another metric?",
+    "back": "In visual formatting, click fx on Background or Font color, select 'Format style: Field value', and pick the hex color measure."
+  },
+  {
+    "id": "fc-pbi-071",
+    "topic": "power-bi",
+    "front": "What does EARLIER() do in DAX and what modern syntax replaces it?",
+    "back": "It refers to the row context of an outer iteration loop; modern DAX uses variables (VAR) to store values cleanly instead."
+  },
+  {
+    "id": "fc-pbi-072",
+    "topic": "power-bi",
+    "front": "What are variables (VAR / RETURN) in DAX and why should you use them?",
+    "back": "They store intermediate calculation values, improve performance by avoiding redundant calculations, and make DAX easier to read."
+  },
+  {
+    "id": "fc-pbi-073",
+    "topic": "power-bi",
+    "front": "What is the evaluation scope of a DAX variable defined with VAR?",
+    "back": "Variables are evaluated once at the point of definition and hold that fixed constant value throughout the rest of the measure execution."
+  },
+  {
+    "id": "fc-pbi-074",
+    "topic": "power-bi",
+    "front": "What does the REMOVEFILTERS() function do in DAX?",
+    "back": "An alias for ALL() used exclusively as a filter argument inside CALCULATE to clear filters on specified tables or columns."
+  },
+  {
+    "id": "fc-pbi-075",
+    "topic": "power-bi",
+    "front": "What does the COMBINEVALUES() function do in DAX?",
+    "back": "It joins multiple text strings using a delimiter, optimized to create multi-column keys recognized by DirectQuery engines."
+  },
+  {
+    "id": "fc-stat-001",
+    "topic": "statistics",
+    "front": "What is the difference between Mean and Median, and when should you prefer Median?",
+    "back": "Mean is the arithmetic average; Median is the 50th percentile. Prefer Median for skewed distributions (like salary or spend) with outliers."
+  },
+  {
+    "id": "fc-stat-002",
+    "topic": "statistics",
+    "front": "What is Variance and Standard Deviation?",
+    "back": "Variance is the average squared deviation from the mean; Standard Deviation is the square root of variance, in original measurement units."
+  },
+  {
+    "id": "fc-stat-003",
+    "topic": "statistics",
+    "front": "What is the Interquartile Range (IQR)?",
+    "back": "The difference between the 75th percentile (Q3) and 25th percentile (Q1), representing the spread of the central 50% of observations."
+  },
+  {
+    "id": "fc-stat-004",
+    "topic": "statistics",
+    "front": "How do you identify outliers using the 1.5 * IQR rule?",
+    "back": "Any value less than Q1 - 1.5 * IQR or greater than Q3 + 1.5 * IQR is flagged as an outlier."
+  },
+  {
+    "id": "fc-stat-005",
+    "topic": "statistics",
+    "front": "What does positive (right) skewness mean?",
+    "back": "The distribution has a long tail extending toward higher positive values, causing the Mean to be greater than the Median."
+  },
+  {
+    "id": "fc-stat-006",
+    "topic": "statistics",
+    "front": "What does negative (left) skewness mean?",
+    "back": "The distribution has a long tail extending toward lower negative values, causing the Mean to be less than the Median."
+  },
+  {
+    "id": "fc-stat-007",
+    "topic": "statistics",
+    "front": "What is Kurtosis in statistics?",
+    "back": "A measure of the thickness of tails and peakedness of a distribution relative to a standard normal distribution."
+  },
+  {
+    "id": "fc-stat-008",
+    "topic": "statistics",
+    "front": "What is the Empirical Rule (68-95-99.7 rule) for normal distributions?",
+    "back": "68% of observations fall within +-1 standard deviation of the mean, 95% within +-2, and 99.7% within +-3."
+  },
+  {
+    "id": "fc-stat-009",
+    "topic": "statistics",
+    "front": "What does the Central Limit Theorem (CLT) state?",
+    "back": "The sampling distribution of the sample mean approaches a normal distribution as sample size increases (n >= 30), regardless of population shape."
+  },
+  {
+    "id": "fc-stat-010",
+    "topic": "statistics",
+    "front": "What is Standard Error (SE) and how does it differ from Standard Deviation?",
+    "back": "Standard Deviation measures individual data variability; Standard Error measures the variability of sample statistic estimates: SE = s / sqrt(n)."
+  },
+  {
+    "id": "fc-stat-011",
+    "topic": "statistics",
+    "front": "What is a Z-score and how is it calculated?",
+    "back": "The number of standard deviations a value lies from the mean: z = (x - mean) / standard_deviation."
+  },
+  {
+    "id": "fc-stat-012",
+    "topic": "statistics",
+    "front": "What is a Confidence Interval (CI)?",
+    "back": "A range computed from sample data expected to contain the true population parameter with a specified confidence level (e.g. 95%)."
+  },
+  {
+    "id": "fc-stat-013",
+    "topic": "statistics",
+    "front": "What is the formula for a 95% Confidence Interval for the mean?",
+    "back": "Sample Mean +- 1.96 * (Standard Deviation / sqrt(n))."
+  },
+  {
+    "id": "fc-stat-014",
+    "topic": "statistics",
+    "front": "What is the Null Hypothesis (H0) vs Alternative Hypothesis (H1)?",
+    "back": "H0 assumes no effect or difference exists; H1 assumes a statistically meaningful effect or difference exists."
+  },
+  {
+    "id": "fc-stat-015",
+    "topic": "statistics",
+    "front": "What is a p-value in hypothesis testing?",
+    "back": "The probability of obtaining sample results at least as extreme as observed, assuming the null hypothesis is true."
+  },
+  {
+    "id": "fc-stat-016",
+    "topic": "statistics",
+    "front": "What does it mean when p < 0.05?",
+    "back": "The observed data is unlikely under the null hypothesis, so we reject H0 and conclude the effect is statistically significant."
+  },
+  {
+    "id": "fc-stat-017",
+    "topic": "statistics",
+    "front": "What is a Type I Error (False Positive)?",
+    "back": "Rejecting a true null hypothesis: concluding an effect exists when it actually does not (probability = alpha)."
+  },
+  {
+    "id": "fc-stat-018",
+    "topic": "statistics",
+    "front": "What is a Type II Error (False Negative)?",
+    "back": "Failing to reject a false null hypothesis: missing a real effect that genuinely exists (probability = beta)."
+  },
+  {
+    "id": "fc-stat-019",
+    "topic": "statistics",
+    "front": "What is Statistical Power (1 - Beta)?",
+    "back": "The probability of correctly rejecting a false null hypothesis and detecting a genuine effect, typically targeted at 80% or 90%."
+  },
+  {
+    "id": "fc-stat-020",
+    "topic": "statistics",
+    "front": "What four factors determine the sample size required for an A/B test?",
+    "back": "Significance level (alpha), Statistical power (1 - beta), Baseline conversion rate, and Minimum Detectable Effect (MDE)."
+  },
+  {
+    "id": "fc-stat-021",
+    "topic": "statistics",
+    "front": "What is Minimum Detectable Effect (MDE)?",
+    "back": "The smallest relative or absolute lift in a metric an experiment is statistically powered to detect reliably."
+  },
+  {
+    "id": "fc-stat-022",
+    "topic": "statistics",
+    "front": "What happens to required sample size if you want to detect a smaller MDE?",
+    "back": "Sample size increases quadratically: detecting half the effect size requires approximately four times as many users."
+  },
+  {
+    "id": "fc-stat-023",
+    "topic": "statistics",
+    "front": "What is a Sample Ratio Mismatch (SRM) in an A/B test?",
+    "back": "A discrepancy between planned and observed traffic splits (e.g. 52/48 instead of 50/50), indicating technical assignment or tracking bugs."
+  },
+  {
+    "id": "fc-stat-024",
+    "topic": "statistics",
+    "front": "How do you test for a Sample Ratio Mismatch (SRM)?",
+    "back": "Use a Chi-Square Goodness-of-Fit test comparing observed user counts in each variant against expected split ratios."
+  },
+  {
+    "id": "fc-stat-025",
+    "topic": "statistics",
+    "front": "Why does an SRM invalidate an A/B test even if conversion lift is significant?",
+    "back": "An SRM indicates selection bias; variant users differ systematically from control users, invalidating causal conclusions."
+  },
+  {
+    "id": "fc-stat-026",
+    "topic": "statistics",
+    "front": "What is the difference between a One-Tailed and Two-Tailed hypothesis test?",
+    "back": "A two-tailed test checks for effects in either direction (increase or decrease); a one-tailed test checks in only one predetermined direction."
+  },
+  {
+    "id": "fc-stat-027",
+    "topic": "statistics",
+    "front": "Why do industry A/B tests almost always use Two-Tailed tests?",
+    "back": "A new feature can accidentally harm business metrics; two-tailed tests ensure negative regressions are detected."
+  },
+  {
+    "id": "fc-stat-028",
+    "topic": "statistics",
+    "front": "What is a Two-Sample t-Test and when is it used?",
+    "back": "A test comparing the means of two independent groups (e.g. average order value between Control and Treatment)."
+  },
+  {
+    "id": "fc-stat-029",
+    "topic": "statistics",
+    "front": "What is a Paired t-Test and when is it used?",
+    "back": "A test comparing means of two related measurements from the exact same subjects (e.g. pre-test vs post-test scores)."
+  },
+  {
+    "id": "fc-stat-030",
+    "topic": "statistics",
+    "front": "What is ANOVA (Analysis of Variance) and when should you use it?",
+    "back": "A test comparing means across three or more groups simultaneously to determine if at least one group differs significantly."
+  },
+  {
+    "id": "fc-stat-031",
+    "topic": "statistics",
+    "front": "Why should you use ANOVA instead of running multiple pairwise t-tests?",
+    "back": "Running multiple t-tests compounds the family-wise error rate, dramatically inflating the chance of a false positive (Type I error)."
+  },
+  {
+    "id": "fc-stat-032",
+    "topic": "statistics",
+    "front": "What is the Chi-Square Test of Independence used for?",
+    "back": "Testing whether an association exists between two categorical variables (e.g. user device type vs subscription plan)."
+  },
+  {
+    "id": "fc-stat-033",
+    "topic": "statistics",
+    "front": "What is the Mann-Whitney U Test?",
+    "back": "A non-parametric alternative to the two-sample t-test comparing rank distributions when data is heavily skewed or non-normal."
+  },
+  {
+    "id": "fc-stat-034",
+    "topic": "statistics",
+    "front": "What is the Bonferroni Correction for multiple testing?",
+    "back": "A method controlling family-wise error rate by dividing alpha by the number of tests: alpha_adj = alpha / k."
+  },
+  {
+    "id": "fc-stat-035",
+    "topic": "statistics",
+    "front": "What is False Discovery Rate (FDR) and how does Benjamini-Hochberg control it?",
+    "back": "FDR is the expected proportion of false positives among all rejected nulls; Benjamini-Hochberg provides higher power than Bonferroni."
+  },
+  {
+    "id": "fc-stat-036",
+    "topic": "statistics",
+    "front": "What is an A/A Test and why should you run one?",
+    "back": "Running an experiment where both variants receive identical experiences to verify split fairness and test that false positive rate equals alpha."
+  },
+  {
+    "id": "fc-stat-037",
+    "topic": "statistics",
+    "front": "What is Simpson's Paradox and how can it mislead analytics?",
+    "back": "When a trend visible in individual subgroups disappears or reverses when groups are aggregated, caused by confounding lurking variables."
+  },
+  {
+    "id": "fc-stat-038",
+    "topic": "statistics",
+    "front": "What is Pearson Correlation (r) and what are its limits?",
+    "back": "A measure of linear relationship between continuous variables from -1.0 to +1.0; it cannot detect non-linear curves and doesn't imply causation."
+  },
+  {
+    "id": "fc-stat-039",
+    "topic": "statistics",
+    "front": "What is Spearman Rank Correlation (rho)?",
+    "back": "A non-parametric correlation measuring monotonic relationships between ranked values, robust against non-linear curves and outliers."
+  },
+  {
+    "id": "fc-stat-040",
+    "topic": "statistics",
+    "front": "What is the difference between Correlation and Causation?",
+    "back": "Correlation means two variables move together; Causation means changing one directly causes a change in the other (proven via randomized experiments)."
+  },
+  {
+    "id": "fc-stat-041",
+    "topic": "statistics",
+    "front": "What is Linear Regression and what is its equation?",
+    "back": "A method modeling a continuous target y as a linear combination of predictors: y = beta_0 + beta_1 * x + epsilon."
+  },
+  {
+    "id": "fc-stat-042",
+    "topic": "statistics",
+    "front": "What is Ordinary Least Squares (OLS)?",
+    "back": "An estimation method finding regression coefficients that minimize the sum of squared differences between actual and predicted values."
+  },
+  {
+    "id": "fc-stat-043",
+    "topic": "statistics",
+    "front": "What is R-Squared in linear regression?",
+    "back": "The percentage of variance in the dependent variable explained by independent predictor variables in the model."
+  },
+  {
+    "id": "fc-stat-044",
+    "topic": "statistics",
+    "front": "Why is Adjusted R-Squared preferred over standard R-Squared in multiple regression?",
+    "back": "Standard R-squared always increases when adding variables; Adjusted R-squared penalizes adding non-informative variables."
+  },
+  {
+    "id": "fc-stat-045",
+    "topic": "statistics",
+    "front": "What are Residuals in regression?",
+    "back": "The differences between actual observed values and values predicted by the regression line: e = y_actual - y_predicted."
+  },
+  {
+    "id": "fc-stat-046",
+    "topic": "statistics",
+    "front": "What is Homoscedasticity vs Heteroscedasticity?",
+    "back": "Homoscedasticity means residual variance is constant across predictor values; Heteroscedasticity means variance changes (e.g. fan-shaped funnel)."
+  },
+  {
+    "id": "fc-stat-047",
+    "topic": "statistics",
+    "front": "What is Multicollinearity and how do you detect it?",
+    "back": "High correlation between predictor variables, inflating standard errors; detected using Variance Inflation Factor (VIF > 5 indicates concern)."
+  },
+  {
+    "id": "fc-stat-048",
+    "topic": "statistics",
+    "front": "What is Logistic Regression and what does it predict?",
+    "back": "A classification model predicting the log-odds probability of a binary categorical outcome (0 or 1) using a sigmoid curve."
+  },
+  {
+    "id": "fc-stat-049",
+    "topic": "statistics",
+    "front": "What is the Sigmoid Function in logistic regression?",
+    "back": "A mathematical function mapping any real-valued number into a probability value between 0.0 and 1.0: 1 / (1 + e^(-z))."
+  },
+  {
+    "id": "fc-stat-050",
+    "topic": "statistics",
+    "front": "What is an Odds Ratio?",
+    "back": "The ratio of the odds of an event occurring in one group relative to another: Odds = p / (1 - p)."
+  },
+  {
+    "id": "fc-stat-051",
+    "topic": "statistics",
+    "front": "What are True Positives, False Positives, True Negatives, and False Negatives?",
+    "back": "TP: correctly identified positives; FP: incorrectly flagged negatives; TN: correctly identified negatives; FN: missed positives."
+  },
+  {
+    "id": "fc-stat-052",
+    "topic": "statistics",
+    "front": "What is Precision in classification?",
+    "back": "True Positives / (True Positives + False Positives); measures accuracy among items predicted as positive."
+  },
+  {
+    "id": "fc-stat-053",
+    "topic": "statistics",
+    "front": "What is Recall (Sensitivity) in classification?",
+    "back": "True Positives / (True Positives + False Negatives); measures how many actual positive cases were successfully identified."
+  },
+  {
+    "id": "fc-stat-054",
+    "topic": "statistics",
+    "front": "What is the F1-Score?",
+    "back": "The harmonic mean of Precision and Recall: 2 * (Precision * Recall) / (Precision + Recall), balancing both metrics."
+  },
+  {
+    "id": "fc-stat-055",
+    "topic": "statistics",
+    "front": "When should you prioritize Recall over Precision?",
+    "back": "When missing a positive has severe costs (e.g. cancer diagnosis, fraud detection, catastrophic equipment failure)."
+  },
+  {
+    "id": "fc-stat-056",
+    "topic": "statistics",
+    "front": "When should you prioritize Precision over Recall?",
+    "back": "When false alarms cause severe customer disruption or high costs (e.g. spam filters, aggressive account bans)."
+  },
+  {
+    "id": "fc-stat-057",
+    "topic": "statistics",
+    "front": "What is an ROC Curve and what does AUC represent?",
+    "back": "ROC plots True Positive Rate vs False Positive Rate across thresholds; AUC measures overall ranking ability (0.5 = random, 1.0 = perfect)."
+  },
+  {
+    "id": "fc-stat-058",
+    "topic": "statistics",
+    "front": "What is Survivorship Bias in analytics?",
+    "back": "A logical error focusing only on entities that survived a selection process while ignoring those that failed (e.g. analyzing successful companies only)."
+  },
+  {
+    "id": "fc-stat-059",
+    "topic": "statistics",
+    "front": "What is Selection Bias in experiments?",
+    "back": "When participants assigned to experiment groups differ systematically prior to treatment, biasing outcome comparisons."
+  },
+  {
+    "id": "fc-stat-060",
+    "topic": "statistics",
+    "front": "What is Attrition Bias in long-running experiments?",
+    "back": "When users drop out of an experiment at different rates between variants, skewing final observed metric comparisons."
+  },
+  {
+    "id": "fc-stat-061",
+    "topic": "statistics",
+    "front": "What is the Novelty Effect in A/B testing?",
+    "back": "A temporary burst of user engagement caused solely by the freshness of a new feature that fades over time."
+  },
+  {
+    "id": "fc-stat-062",
+    "topic": "statistics",
+    "front": "What is the Primacy Effect (Change Aversion) in A/B testing?",
+    "back": "Initial negative user reaction caused by disruption of established habits that resolves once users adapt to the change."
+  },
+  {
+    "id": "fc-stat-063",
+    "topic": "statistics",
+    "front": "What is Peeking Problem in A/B testing and why does it inflate false positives?",
+    "back": "Checking p-values repeatedly and stopping as soon as p < 0.05 inflates Type I errors from 5% to 20-30%; fix using sequential testing."
+  },
+  {
+    "id": "fc-stat-064",
+    "topic": "statistics",
+    "front": "What is Network Effect interference in social/marketplace A/B tests?",
+    "back": "When treatment users interact with control users (e.g. Uber drivers or Airbnb listings), causing treatment spillovers violating SUTVA."
+  },
+  {
+    "id": "fc-stat-065",
+    "topic": "statistics",
+    "front": "What is SUTVA (Stable Unit Treatment Value Assumption)?",
+    "back": "The fundamental assumption that one subject's treatment does not affect the potential outcomes of other subjects."
+  },
+  {
+    "id": "fc-stat-066",
+    "topic": "statistics",
+    "front": "How do you design experiments when network effects violate SUTVA?",
+    "back": "Use Cluster Randomization (randomizing cities, regions, or isolated social networks) or Switchback experiments."
+  },
+  {
+    "id": "fc-stat-067",
+    "topic": "statistics",
+    "front": "What is a Switchback Experiment?",
+    "back": "An experiment design alternating treatment and control conditions across time windows within geographic units (e.g. hourly toggles)."
+  },
+  {
+    "id": "fc-stat-068",
+    "topic": "statistics",
+    "front": "What is Difference-in-Differences (DiD) estimation?",
+    "back": "A quasi-experimental method calculating (Treatment_Post - Treatment_Pre) - (Control_Post - Control_Pre) to control for external trends."
+  },
+  {
+    "id": "fc-stat-069",
+    "topic": "statistics",
+    "front": "What is the Parallel Trends Assumption in Difference-in-Differences?",
+    "back": "The assumption that in the absence of treatment, both groups would have followed parallel trajectory paths over time."
+  },
+  {
+    "id": "fc-stat-070",
+    "topic": "statistics",
+    "front": "What is Synthetic Control Method in causal inference?",
+    "back": "Creating a weighted combination of untreated units to simulate what would have happened to a treated unit without intervention."
+  },
+  {
+    "id": "fc-stat-071",
+    "topic": "statistics",
+    "front": "What is Propensity Score Matching (PSM)?",
+    "back": "A statistical technique balancing observational treatment and control groups by matching subjects with similar predicted treatment probabilities."
+  },
+  {
+    "id": "fc-stat-072",
+    "topic": "statistics",
+    "front": "What is Poisson Distribution used for in analytics?",
+    "back": "Modeling the count of rare events occurring within a fixed time interval or area (e.g. website crashes, call center arrivals per hour)."
+  },
+  {
+    "id": "fc-stat-073",
+    "topic": "statistics",
+    "front": "What is Binomial Distribution used for in analytics?",
+    "back": "Modeling the number of successes in n independent Bernoulli trials with constant probability p (e.g. coin flips, click conversions)."
+  },
+  {
+    "id": "fc-stat-074",
+    "topic": "statistics",
+    "front": "What is Exponential Distribution used for in analytics?",
+    "back": "Modeling the continuous time elapsed between events in a Poisson process (e.g. time until next customer purchase)."
+  },
+  {
+    "id": "fc-stat-075",
+    "topic": "statistics",
+    "front": "What is the Law of Large Numbers (LLN)?",
+    "back": "As sample size grows, the sample mean converges toward the true expected population mean."
+  },
+  {
+    "id": "fc-stat-076",
+    "topic": "statistics",
+    "front": "What is Overfitting in statistical modeling?",
+    "back": "When a model learns noise and idiosyncrasies of training data, performing poorly on unseen out-of-sample test data."
+  },
+  {
+    "id": "fc-stat-077",
+    "topic": "statistics",
+    "front": "What is Underfitting in statistical modeling?",
+    "back": "When a model is too simplistic to capture the underlying relationship between features and target outcomes."
+  },
+  {
+    "id": "fc-stat-078",
+    "topic": "statistics",
+    "front": "What is the Bias-Variance Tradeoff?",
+    "back": "High bias causes underfitting; high variance causes overfitting; the goal is finding the optimal complexity minimizing total error."
+  },
+  {
+    "id": "fc-stat-079",
+    "topic": "statistics",
+    "front": "What is K-Fold Cross Validation?",
+    "back": "Splitting data into K subsets, training on K-1 folds and validating on the remaining fold, rotating K times to evaluate generalization."
+  },
+  {
+    "id": "fc-stat-080",
+    "topic": "statistics",
+    "front": "What is Bootstrapping in statistics?",
+    "back": "A non-parametric resampling technique drawing samples with replacement to estimate standard errors and confidence intervals."
+  },
+  {
+    "id": "fc-biz-001",
+    "topic": "business",
+    "front": "What is Customer Acquisition Cost (CAC) and how is it calculated?",
+    "back": "Total sales and marketing expenditures divided by the number of new paying customers acquired in that period."
+  },
+  {
+    "id": "fc-biz-002",
+    "topic": "business",
+    "front": "What is Customer Lifetime Value (LTV) and how is it calculated?",
+    "back": "The total net gross profit a customer generates across their lifetime: (ARPU * Gross Margin %) / Churn Rate."
+  },
+  {
+    "id": "fc-biz-003",
+    "topic": "business",
+    "front": "What is a healthy LTV:CAC ratio and what do different ratios indicate?",
+    "back": "Healthy is 3.0 or higher. Below 1.0 loses money on every user; 1.0-2.0 is sluggish; above 5.0 indicates under-investing in marketing growth."
+  },
+  {
+    "id": "fc-biz-004",
+    "topic": "business",
+    "front": "What is CAC Payback Period and what is a healthy benchmark?",
+    "back": "Months needed for gross profit to repay acquisition cost: CAC / (Monthly ARPU * Gross Margin %). Healthy for B2B SaaS is 12 months or less."
+  },
+  {
+    "id": "fc-biz-005",
+    "topic": "business",
+    "front": "What is the difference between Gross Margin and Net Margin?",
+    "back": "Gross margin is revenue minus direct cost of goods sold (COGS); Net margin deducts all operating expenses, taxes, and overheads."
+  },
+  {
+    "id": "fc-biz-006",
+    "topic": "business",
+    "front": "What is Contribution Margin?",
+    "back": "Revenue remaining after deducting variable costs directly tied to producing and delivering incremental product units."
+  },
+  {
+    "id": "fc-biz-007",
+    "topic": "business",
+    "front": "What is Monthly Recurring Revenue (MRR) and how is Net New MRR calculated?",
+    "back": "Net New MRR = New MRR + Expansion MRR - Contraction MRR - Churn MRR."
+  },
+  {
+    "id": "fc-biz-008",
+    "topic": "business",
+    "front": "What is the difference between Logo Churn and Revenue Churn?",
+    "back": "Logo churn measures the percentage of customer accounts lost; revenue churn measures the percentage of recurring revenue lost."
+  },
+  {
+    "id": "fc-biz-009",
+    "topic": "business",
+    "front": "What is Net Revenue Retention (NRR) and why can it exceed 100%?",
+    "back": "NRR measures recurring revenue retained from existing customers including expansions and churn; strong expansion makes NRR exceed 100%."
+  },
+  {
+    "id": "fc-biz-010",
+    "topic": "business",
+    "front": "What is Gross Revenue Retention (GRR) and what is its maximum value?",
+    "back": "Revenue retained from existing customers excluding expansions (max 100%); measures pure product retention without upsells."
+  },
+  {
+    "id": "fc-biz-011",
+    "topic": "business",
+    "front": "What is Average Revenue Per User (ARPU)?",
+    "back": "Total revenue divided by the total number of active users within a designated reporting period."
+  },
+  {
+    "id": "fc-biz-012",
+    "topic": "business",
+    "front": "What is Average Order Value (AOV) in e-commerce?",
+    "back": "Total gross merchandise value divided by the total number of completed orders."
+  },
+  {
+    "id": "fc-biz-013",
+    "topic": "business",
+    "front": "What is Gross Merchandise Value (GMV) vs Net Revenue?",
+    "back": "GMV is total retail value of merchandise sold on a platform; Net Revenue is actual revenue earned after marketplace fees, discounts, and returns."
+  },
+  {
+    "id": "fc-biz-014",
+    "topic": "business",
+    "front": "What is a North Star Metric?",
+    "back": "A single key metric that best captures the core value delivered to customers and long-term sustainable business growth."
+  },
+  {
+    "id": "fc-biz-015",
+    "topic": "business",
+    "front": "What is the DAU/MAU ratio and what does it measure?",
+    "back": "Daily Active Users divided by Monthly Active Users, measuring product engagement stickiness and user habituation."
+  },
+  {
+    "id": "fc-biz-016",
+    "topic": "business",
+    "front": "What is Cohort Analysis in product analytics?",
+    "back": "Tracking behavioral retention curves of user groups who joined during the same time window over successive weeks or months."
+  },
+  {
+    "id": "fc-biz-017",
+    "topic": "business",
+    "front": "What does a flattening cohort retention curve indicate?",
+    "back": "It indicates that a predictable percentage of users remain active indefinitely, signaling product-market fit."
+  },
+  {
+    "id": "fc-biz-018",
+    "topic": "business",
+    "front": "What is Funnel Drop-off and how do you analyze it?",
+    "back": "The percentage of users abandoning between consecutive steps in a workflow (e.g. Signup -> Search -> Add to Cart -> Purchase)."
+  },
+  {
+    "id": "fc-biz-019",
+    "topic": "business",
+    "front": "What is Return on Ad Spend (ROAS)?",
+    "back": "Gross revenue generated from an advertising campaign divided by total campaign advertising spend."
+  },
+  {
+    "id": "fc-biz-020",
+    "topic": "business",
+    "front": "What is Cost Per Click (CPC) vs Cost Per Mille (CPM)?",
+    "back": "CPC is the price paid per user click; CPM is the advertising cost charged per one thousand ad impressions delivered."
+  },
+  {
+    "id": "fc-biz-021",
+    "topic": "business",
+    "front": "What is Click-Through Rate (CTR)?",
+    "back": "Total clicks on an ad or link divided by total ad impressions delivered, expressed as a percentage."
+  },
+  {
+    "id": "fc-biz-022",
+    "topic": "business",
+    "front": "What is Burn Rate and Runway for startups?",
+    "back": "Net Burn is monthly cash loss; Runway is cash balance divided by monthly burn, showing months before running out of funds."
+  },
+  {
+    "id": "fc-biz-023",
+    "topic": "business",
+    "front": "What is Return to Origin (RTO) in Indian e-commerce?",
+    "back": "When a parcel cannot be delivered or is refused by the customer at doorstep, forcing return to warehouse and incurring reverse shipping fees."
+  },
+  {
+    "id": "fc-biz-024",
+    "topic": "business",
+    "front": "Why is Cash on Delivery (COD) associated with higher RTO rates in India?",
+    "back": "Buyers have zero financial commitment before delivery, leading to doorstep cancellations, impulse regret, and fake order addresses."
+  },
+  {
+    "id": "fc-biz-025",
+    "topic": "business",
+    "front": "What strategies reduce COD RTO in Indian e-commerce?",
+    "back": "Offering UPI/card prepay discounts, phone OTP verification for COD orders, address validation algorithms, and courier NDR follow-ups."
+  },
+  {
+    "id": "fc-biz-026",
+    "topic": "business",
+    "front": "What is Unified Payments Interface (UPI)?",
+    "back": "A real-time payment system developed by NPCI in India allowing instant mobile bank-to-bank transfers via virtual payment addresses."
+  },
+  {
+    "id": "fc-biz-027",
+    "topic": "business",
+    "front": "What is Payment Gateway Drop-off Rate?",
+    "back": "The percentage of users initiating checkout who fail to complete payment due to technical timeouts, bank OTP delays, or abandonment."
+  },
+  {
+    "id": "fc-biz-028",
+    "topic": "business",
+    "front": "What is a Service Level Agreement (SLA)?",
+    "back": "A formal contract commitment defining expected operational delivery times, system uptime, or support turnaround benchmarks."
+  },
+  {
+    "id": "fc-biz-029",
+    "topic": "business",
+    "front": "What is Days Sales of Inventory (DSI)?",
+    "back": "Average days taken to sell inventory stock: (Average Inventory / COGS) * 365. Lower DSI indicates faster inventory turnover."
+  },
+  {
+    "id": "fc-biz-030",
+    "topic": "business",
+    "front": "What is Inventory Turnover Ratio?",
+    "back": "The number of times inventory is sold and replaced over a year: COGS / Average Inventory."
+  },
+  {
+    "id": "fc-biz-031",
+    "topic": "business",
+    "front": "What is Sales Per Square Foot in retail analytics?",
+    "back": "Total store retail revenue divided by total retail floor space, measuring physical store productivity."
+  },
+  {
+    "id": "fc-biz-032",
+    "topic": "business",
+    "front": "What is Net Promoter Score (NPS) and how is it scored?",
+    "back": "Promoters (9-10) minus Detractors (0-6) from 'how likely are you to recommend us?' surveys, ranging from -100 to +100."
+  },
+  {
+    "id": "fc-biz-033",
+    "topic": "business",
+    "front": "What is Customer Satisfaction Score (CSAT)?",
+    "back": "The percentage of respondents rating their satisfaction positively (4 or 5 out of 5) on customer feedback surveys."
+  },
+  {
+    "id": "fc-biz-034",
+    "topic": "business",
+    "front": "What is First Contact Resolution (FCR) in customer support?",
+    "back": "The percentage of customer issues resolved completely during the initial contact without requiring follow-up escalations."
+  },
+  {
+    "id": "fc-biz-035",
+    "topic": "business",
+    "front": "What is Marketing Attribution?",
+    "back": "The analytical process determining which marketing touchpoints (ads, search, emails) get credit for driving customer conversions."
+  },
+  {
+    "id": "fc-biz-036",
+    "topic": "business",
+    "front": "What is First-Touch vs Last-Touch Attribution?",
+    "back": "First-touch credits the initial brand discovery channel; Last-touch credits the final channel clicked immediately before purchase."
+  },
+  {
+    "id": "fc-biz-037",
+    "topic": "business",
+    "front": "What is Multi-Touch Attribution (MTA)?",
+    "back": "Attribution distributing credit across all touchpoints in a customer's journey (e.g. Linear, Time-Decay, or Position-Based)."
+  },
+  {
+    "id": "fc-biz-038",
+    "topic": "business",
+    "front": "What is Channel Cannibalization?",
+    "back": "When sales generated by a new channel or product line capture demand directly away from existing established channels."
+  },
+  {
+    "id": "fc-biz-039",
+    "topic": "business",
+    "front": "What is Omnichannel Retailing?",
+    "back": "A unified customer shopping experience seamlessly integrating physical retail stores, web e-commerce, and mobile applications."
+  },
+  {
+    "id": "fc-biz-040",
+    "topic": "business",
+    "front": "What is Ship-from-Store in retail operations?",
+    "back": "Fulfilling online e-commerce orders using inventory stocked on local physical store shelves rather than central distribution hubs."
+  },
+  {
+    "id": "fc-biz-041",
+    "topic": "business",
+    "front": "What is Unit Economics?",
+    "back": "The direct revenues and variable costs associated with a single unit of production or individual customer acquisition."
+  },
+  {
+    "id": "fc-biz-042",
+    "topic": "business",
+    "front": "What is the difference between Fixed Costs and Variable Costs?",
+    "back": "Fixed costs remain constant regardless of production volume (rent, salaries); Variable costs scale directly with output (packaging, shipping)."
+  },
+  {
+    "id": "fc-biz-043",
+    "topic": "business",
+    "front": "What is Break-Even Analysis?",
+    "back": "Calculating the unit sales volume required for total revenue to equal total costs: Fixed Costs / (Price - Variable Cost)."
+  },
+  {
+    "id": "fc-biz-044",
+    "topic": "business",
+    "front": "What is the difference between Top-Down and Bottom-Up market sizing?",
+    "back": "Top-down estimates market size from broad industry reports; Bottom-up calculates from unit sales, target customer counts, and pricing."
+  },
+  {
+    "id": "fc-biz-045",
+    "topic": "business",
+    "front": "What are TAM, SAM, and SOM in market sizing?",
+    "back": "TAM is Total Addressable Market; SAM is Serviceable Addressable Market; SOM is Serviceable Obtainable Market (realistic target share)."
+  },
+  {
+    "id": "fc-biz-046",
+    "topic": "business",
+    "front": "What is Price Elasticity of Demand?",
+    "back": "Percentage change in quantity demanded divided by percentage change in price; values > 1 indicate elastic price-sensitive demand."
+  },
+  {
+    "id": "fc-biz-047",
+    "topic": "business",
+    "front": "What is Freemium vs Free Trial product strategy?",
+    "back": "Freemium offers basic features free indefinitely; Free Trial gives temporary access to full premium features for a limited period."
+  },
+  {
+    "id": "fc-biz-048",
+    "topic": "business",
+    "front": "What is Product-Led Growth (PLG)?",
+    "back": "A business methodology where product usage, virality, and self-serve onboarding drive customer acquisition and expansion."
+  },
+  {
+    "id": "fc-biz-049",
+    "topic": "business",
+    "front": "What is Churn Mitigation Dunning?",
+    "back": "Automated workflows recovering failed subscription payments via retry schedules, SMS alerts, and updated card request prompts."
+  },
+  {
+    "id": "fc-biz-050",
+    "topic": "business",
+    "front": "What is Involuntary Churn vs Voluntary Churn?",
+    "back": "Involuntary churn is caused by technical payment failures and expired cards; Voluntary churn is deliberate cancellation by customers."
+  },
+  {
+    "id": "fc-biz-051",
+    "topic": "business",
+    "front": "What is Market Basket Analysis (Association Rules)?",
+    "back": "Analyzing transaction data to discover products frequently purchased together using Support, Confidence, and Lift metrics."
+  },
+  {
+    "id": "fc-biz-052",
+    "topic": "business",
+    "front": "What is Lift in Market Basket Analysis?",
+    "back": "The ratio of observed co-occurrence frequency to expected frequency if items were independent; Lift > 1 indicates true association."
+  },
+  {
+    "id": "fc-biz-053",
+    "topic": "business",
+    "front": "What is RFM Segmentation in customer analytics?",
+    "back": "Segmenting customers based on Recency (last order), Frequency (order count), and Monetary value (total spend)."
+  },
+  {
+    "id": "fc-biz-054",
+    "topic": "business",
+    "front": "What is a Golden Customer Cohort?",
+    "back": "A highly engaged early customer segment that exhibits exceptional retention, word-of-mouth advocacy, and high lifetime value."
+  },
+  {
+    "id": "fc-biz-055",
+    "topic": "business",
+    "front": "What is Burnout Attrition in HR analytics?",
+    "back": "Employee turnover driven by excessive overtime, unmanageable workloads, and lack of role advancement opportunities."
+  },
+  {
+    "id": "fc-biz-056",
+    "topic": "business",
+    "front": "What is Flight Risk Modeling in workforce analytics?",
+    "back": "Using predictive models (like logistic regression) to calculate an employee's probability of leaving within 6 months."
+  },
+  {
+    "id": "fc-biz-057",
+    "topic": "business",
+    "front": "What is EBITDA and why do investors track it?",
+    "back": "Earnings Before Interest, Taxes, Depreciation, and Amortization, assessing operational cash performance without debt distortions."
+  },
+  {
+    "id": "fc-biz-058",
+    "topic": "business",
+    "front": "What is Cash Burn Rate vs Gross Burn Rate?",
+    "back": "Gross burn is total monthly cash expenses; Net burn is expenses minus monthly cash revenues."
+  },
+  {
+    "id": "fc-biz-059",
+    "topic": "business",
+    "front": "What is Operational Efficiency Ratio?",
+    "back": "Operating expenses divided by net operating revenue, measuring how efficiently management runs day-to-day operations."
+  },
+  {
+    "id": "fc-biz-060",
+    "topic": "business",
+    "front": "What is Time-to-Value (TTV) for newly onboarded customers?",
+    "back": "The duration from customer signup or purchase until they achieve their first meaningful business outcome with the product."
+  },
+  {
+    "id": "fc-apt-001",
+    "topic": "aptitude",
+    "front": "How do you quickly calculate percentage increase or decrease?",
+    "back": "Subtract original from new, divide by original value, and multiply by 100: ((New - Old) / Old) * 100."
+  },
+  {
+    "id": "fc-apt-002",
+    "topic": "aptitude",
+    "front": "What is the shortcut formula for successive percentage changes of +a% and +b%?",
+    "back": "Net percentage change is a + b + (a * b) / 100."
+  },
+  {
+    "id": "fc-apt-003",
+    "topic": "aptitude",
+    "front": "If price increases by 25%, by what percentage must consumption decrease to keep expenditure constant?",
+    "back": "Decrease by 20%: formula is (r / (100 + r)) * 100 = (25 / 125) * 100 = 20%."
+  },
+  {
+    "id": "fc-apt-004",
+    "topic": "aptitude",
+    "front": "If price decreases by 20%, by what percentage does purchasing power increase?",
+    "back": "Increase by 25%: formula is (r / (100 - r)) * 100 = (20 / 80) * 100 = 25%."
+  },
+  {
+    "id": "fc-apt-005",
+    "topic": "aptitude",
+    "front": "What is the Rule of 72 for compound interest?",
+    "back": "Divide 72 by the annual interest rate percentage to approximate the number of years needed for an investment to double."
+  },
+  {
+    "id": "fc-apt-006",
+    "topic": "aptitude",
+    "front": "What is the formula for Simple Interest vs Compound Interest?",
+    "back": "Simple Interest = (P * R * T) / 100; Compound Interest Amount = P * (1 + R / 100)^T."
+  },
+  {
+    "id": "fc-apt-007",
+    "topic": "aptitude",
+    "front": "What is the difference between Compound Interest and Simple Interest for 2 years?",
+    "back": "Difference = P * (R / 100)^2. This is a foundational concept essential for technical analytics interviews."
+  },
+  {
+    "id": "fc-apt-008",
+    "topic": "aptitude",
+    "front": "How do you calculate Weighted Average?",
+    "back": "Multiply each value by its corresponding weight, sum the products, and divide by the sum of all weights."
+  },
+  {
+    "id": "fc-apt-009",
+    "topic": "aptitude",
+    "front": "What is the formula connecting Speed, Distance, and Time?",
+    "back": "Distance = Speed * Time; Speed = Distance / Time; Time = Distance / Speed."
+  },
+  {
+    "id": "fc-apt-010",
+    "topic": "aptitude",
+    "front": "How do you convert km/h to m/s and vice versa?",
+    "back": "Multiply km/h by 5/18 to get m/s; multiply m/s by 18/5 to get km/h."
+  },
+  {
+    "id": "fc-apt-011",
+    "topic": "aptitude",
+    "front": "What is the formula for Average Speed when traveling equal distances at speeds u and v?",
+    "back": "Average Speed = (2 * u * v) / (u + v)."
+  },
+  {
+    "id": "fc-apt-012",
+    "topic": "aptitude",
+    "front": "How do Relative Speeds work for objects moving in opposite vs same directions?",
+    "back": "Opposite directions: add speeds (u + v); Same direction: subtract speeds (u - v)."
+  },
+  {
+    "id": "fc-apt-013",
+    "topic": "aptitude",
+    "front": "When a train passes a pole or stationary person, what distance does it cover?",
+    "back": "It covers exactly its own length: Distance = Length of the train."
+  },
+  {
+    "id": "fc-apt-014",
+    "topic": "aptitude",
+    "front": "When a train passes a platform or bridge of length L, what distance does it cover?",
+    "back": "Distance = Length of the train + Length of the platform."
+  },
+  {
+    "id": "fc-apt-015",
+    "topic": "aptitude",
+    "front": "What is the Work Done formula when A takes x days and B takes y days?",
+    "back": "Together they complete the job in (x * y) / (x + y) days."
+  },
+  {
+    "id": "fc-apt-016",
+    "topic": "aptitude",
+    "front": "If 10 workers complete a job in 12 days, how many days will 15 workers take?",
+    "back": "Inverse proportion: (M1 * D1) = (M2 * D2). 10 * 12 = 15 * D2, so D2 = 8 days."
+  },
+  {
+    "id": "fc-apt-017",
+    "topic": "aptitude",
+    "front": "What is the formula for Pipes and Cisterns when inlet fills in X hours and outlet empties in Y hours?",
+    "back": "Net filling rate per hour is (1/X - 1/Y); tank fills in (X * Y) / (Y - X) hours."
+  },
+  {
+    "id": "fc-apt-018",
+    "topic": "aptitude",
+    "front": "What is the ratio rule if A:B = 2:3 and B:C = 4:5?",
+    "back": "Multiply to equalize B: A:B = 8:12 and B:C = 12:15, so A:B:C = 8:12:15."
+  },
+  {
+    "id": "fc-apt-019",
+    "topic": "aptitude",
+    "front": "How do you divide an amount M among three partners in the ratio a:b:c?",
+    "back": "A's share is (a / (a + b + c)) * M."
+  },
+  {
+    "id": "fc-apt-020",
+    "topic": "aptitude",
+    "front": "What is the Alligation Rule for mixing two ingredients of prices C1 and C2?",
+    "back": "Ratio of quantities = (Cheaper diff) / (Dearer diff) = (C2 - Mean) / (Mean - C1)."
+  },
+  {
+    "id": "fc-apt-021",
+    "topic": "aptitude",
+    "front": "What is the formula for Profit Percentage?",
+    "back": "Profit % = ((Selling Price - Cost Price) / Cost Price) * 100."
+  },
+  {
+    "id": "fc-apt-022",
+    "topic": "aptitude",
+    "front": "What is the formula for Loss Percentage?",
+    "back": "Loss % = ((Cost Price - Selling Price) / Cost Price) * 100."
+  },
+  {
+    "id": "fc-apt-023",
+    "topic": "aptitude",
+    "front": "What is Marked Price and Discount Percentage?",
+    "back": "Discount % = ((Marked Price - Selling Price) / Marked Price) * 100."
+  },
+  {
+    "id": "fc-apt-024",
+    "topic": "aptitude",
+    "front": "If an item is sold at cost price using a false weight of 900g instead of 1kg, what is the gain %?",
+    "back": "Gain % = (Error / (True Value - Error)) * 100 = (100 / 900) * 100 = 11.11%."
+  },
+  {
+    "id": "fc-apt-025",
+    "topic": "aptitude",
+    "front": "What is the probability of selecting an ace from a standard deck of 52 cards?",
+    "back": "4 / 52 = 1 / 13 (approx 7.69%)."
+  },
+  {
+    "id": "fc-apt-026",
+    "topic": "aptitude",
+    "front": "What is the probability of getting a sum of 7 when rolling two standard dice?",
+    "back": "There are 6 combinations summing to 7 out of 36 outcomes: 6 / 36 = 1 / 6."
+  },
+  {
+    "id": "fc-apt-027",
+    "topic": "aptitude",
+    "front": "What is the formula for combinations (nCr)?",
+    "back": "nCr = n! / (r! * (n - r)!), calculating unordered selections from n items."
+  },
+  {
+    "id": "fc-apt-028",
+    "topic": "aptitude",
+    "front": "What is the formula for permutations (nPr)?",
+    "back": "nPr = n! / (n - r)!, calculating ordered arrangements of r items from n items."
+  },
+  {
+    "id": "fc-apt-029",
+    "topic": "aptitude",
+    "front": "What does the Addition Rule of Probability state for non-mutually exclusive events?",
+    "back": "P(A or B) = P(A) + P(B) - P(A and B)."
+  },
+  {
+    "id": "fc-apt-030",
+    "topic": "aptitude",
+    "front": "What does the Multiplication Rule state for independent events?",
+    "back": "P(A and B) = P(A) * P(B). This is a foundational concept essential for technical analytics interviews."
+  },
+  {
+    "id": "fc-apt-031",
+    "topic": "aptitude",
+    "front": "What is Conditional Probability P(A|B)?",
+    "back": "P(A|B) = P(A and B) / P(B), the probability of A occurring given that B has occurred."
+  },
+  {
+    "id": "fc-apt-032",
+    "topic": "aptitude",
+    "front": "In syllogisms, what does 'All A are B' formally imply?",
+    "back": "Every member of group A is contained within group B; it also implies 'Some A are B' and 'Some B are A'."
+  },
+  {
+    "id": "fc-apt-033",
+    "topic": "aptitude",
+    "front": "In syllogisms, what does 'No A are B' formally imply?",
+    "back": "The intersection between group A and group B is completely empty; mutually exclusive sets."
+  },
+  {
+    "id": "fc-apt-034",
+    "topic": "aptitude",
+    "front": "In syllogisms, what does 'Some A are B' formally imply?",
+    "back": "At least one element exists in the intersection of group A and group B."
+  },
+  {
+    "id": "fc-apt-035",
+    "topic": "aptitude",
+    "front": "In syllogisms, what does 'Some A are not B' formally imply?",
+    "back": "At least one member of group A exists outside group B."
+  },
+  {
+    "id": "fc-apt-036",
+    "topic": "aptitude",
+    "front": "Can a valid conclusion be drawn from two negative premises (No A is B; No B is C)?",
+    "back": "No definite conclusion can be drawn between end terms from two negative premises."
+  },
+  {
+    "id": "fc-apt-037",
+    "topic": "aptitude",
+    "front": "Can a valid conclusion be drawn from two particular premises (Some A is B; Some B is C)?",
+    "back": "No definite universal or particular conclusion follows between end terms from two particular premises."
+  },
+  {
+    "id": "fc-apt-038",
+    "topic": "aptitude",
+    "front": "What is a Complementary Pair in syllogisms ('Either I or II follows')?",
+    "back": "Two conclusions with identical subject/predicate where one is affirmative and one negative (e.g. 'Some A are B' and 'No A is B')."
+  },
+  {
+    "id": "fc-apt-039",
+    "topic": "aptitude",
+    "front": "How do you find the angle between clock hour and minute hands at H hours and M minutes?",
+    "back": "Angle = |30 * H - (11/2) * M| degrees (take 360 - angle if reflex angle)."
+  },
+  {
+    "id": "fc-apt-040",
+    "topic": "aptitude",
+    "front": "At what times do clock hands coincide, form a straight line, and form right angles in 12 hours?",
+    "back": "Coincide 11 times; opposite straight line 11 times; right angles (90 deg) 22 times in 12 hours."
+  },
+  {
+    "id": "fc-apt-041",
+    "topic": "aptitude",
+    "front": "How do you determine if a given year is a Leap Year?",
+    "back": "Divisible by 4, except century years which must be divisible by 400 (e.g. 2000 is leap; 1900 is not)."
+  },
+  {
+    "id": "fc-apt-042",
+    "topic": "aptitude",
+    "front": "How many odd days are there in a normal year vs a leap year?",
+    "back": "Normal year (365 days) has 1 odd day (52 weeks + 1 day); Leap year (366 days) has 2 odd days."
+  },
+  {
+    "id": "fc-apt-043",
+    "topic": "aptitude",
+    "front": "If Jan 1 is a Monday in a normal non-leap year, what day will Dec 31 be?",
+    "back": "Dec 31 will also be a Monday; normal years start and end on the exact same day of the week."
+  },
+  {
+    "id": "fc-apt-044",
+    "topic": "aptitude",
+    "front": "What is the formula for the sum of the first n natural numbers?",
+    "back": "Sum = (n * (n + 1)) / 2."
+  },
+  {
+    "id": "fc-apt-045",
+    "topic": "aptitude",
+    "front": "What is the formula for the sum of squares of the first n natural numbers?",
+    "back": "Sum = (n * (n + 1) * (2n + 1)) / 6."
+  },
+  {
+    "id": "fc-apt-046",
+    "topic": "aptitude",
+    "front": "What is the formula for the sum of cubes of the first n natural numbers?",
+    "back": "Sum = [(n * (n + 1)) / 2]^2 (the square of the sum of natural numbers)."
+  },
+  {
+    "id": "fc-apt-047",
+    "topic": "aptitude",
+    "front": "How do you find the units digit of large power expressions like 7^105?",
+    "back": "Find the cyclicity of the base (7 has cyclicity of 4: 7, 9, 3, 1); 105 mod 4 = 1, so the units digit is 7^1 = 7."
+  },
+  {
+    "id": "fc-apt-048",
+    "topic": "aptitude",
+    "front": "What is the divisibility rule for 3 and 9?",
+    "back": "A number is divisible by 3 (or 9) if the sum of all its digits is divisible by 3 (or 9)."
+  },
+  {
+    "id": "fc-apt-049",
+    "topic": "aptitude",
+    "front": "What is the divisibility rule for 4 and 8?",
+    "back": "Divisible by 4 if the last 2 digits form a multiple of 4; divisible by 8 if the last 3 digits form a multiple of 8."
+  },
+  {
+    "id": "fc-apt-050",
+    "topic": "aptitude",
+    "front": "What is the divisibility rule for 11?",
+    "back": "A number is divisible by 11 if the difference between the sum of odd-positioned and even-positioned digits is 0 or a multiple of 11."
+  },
+  {
+    "id": "fc-apt-051",
+    "topic": "aptitude",
+    "front": "What is the relationship between LCM and HCF of two numbers A and B?",
+    "back": "LCM(A, B) * HCF(A, B) = A * B."
+  },
+  {
+    "id": "fc-apt-052",
+    "topic": "aptitude",
+    "front": "What is the shortcut to calculate percentage of a number like 15% of 240?",
+    "back": "10% is 24; 5% is half of 24 (12); sum them: 24 + 12 = 36."
+  },
+  {
+    "id": "fc-apt-053",
+    "topic": "aptitude",
+    "front": "What is the shortcut for finding 25% and 75% of a number?",
+    "back": "25% is dividing by 4; 75% is dividing by 4 and multiplying by 3."
+  },
+  {
+    "id": "fc-apt-054",
+    "topic": "aptitude",
+    "front": "How do you quickly compare two fractions like 5/7 and 7/9?",
+    "back": "Cross-multiply: 5 * 9 = 45 and 7 * 7 = 49; since 49 > 45, 7/9 is greater than 5/7."
+  },
+  {
+    "id": "fc-apt-055",
+    "topic": "aptitude",
+    "front": "What is the formula for the area and perimeter of a circle?",
+    "back": "Area = pi * r^2; Circumference = 2 * pi * r."
+  },
+  {
+    "id": "fc-apt-056",
+    "topic": "aptitude",
+    "front": "What is the Pythagorean theorem for right-angled triangles?",
+    "back": "a^2 + b^2 = c^2, where c is the hypotenuse. Common triplets: 3-4-5, 5-12-13, 8-15-17."
+  },
+  {
+    "id": "fc-apt-057",
+    "topic": "aptitude",
+    "front": "What is the formula for the volume of a cylinder vs cone?",
+    "back": "Cylinder Volume = pi * r^2 * h; Cone Volume = (1/3) * pi * r^2 * h."
+  },
+  {
+    "id": "fc-apt-058",
+    "topic": "aptitude",
+    "front": "In a circular seating arrangement with 6 people facing center, who sits opposite to person at position 1?",
+    "back": "The person at position 4 (1 + 6/2 = 4)."
+  },
+  {
+    "id": "fc-apt-059",
+    "topic": "aptitude",
+    "front": "In blood relations, who is 'my father's mother's only son's daughter'?",
+    "back": "Father's mother is grandmother; her only son is father; father's daughter is your sister (or yourself if female)."
+  },
+  {
+    "id": "fc-apt-060",
+    "topic": "aptitude",
+    "front": "How do you identify coding-decoding patterns in letter sequences?",
+    "back": "Check letter position numbers in the alphabet (A=1, Z=26) and look for forward/backward shifts, reverse letter pairs (A-Z, B-Y), or reversals."
+  }
+]
