@@ -32,8 +32,38 @@ Check each item with `ls`, audit and validate:
 - DONE: SQL 34–42 patterns: 9 lessons + 30 questions (3 easy / 12 medium / 15 hard), validated. TODO: lesson 41's cheat table lists the 26–33 patterns without links; add links to /sql/<slug>/.
 - Targets: SQL needs 200+ questions in total (about 70 easy / 80 medium / 50 hard). Re-run `npm run audit` for the count. If any lesson or practice file above is missing or broken, relaunch a Sonnet agent for just that slice, using the same prompt pattern (read `.briefs/content-common.md`; list owned files).
 
+
+### Session 2 (2026-11-24): done
+- **Build green.** Use the `npm run check:mdx [-- files]` gate (per-file MDX compile).
+- **Enrichment:** 210 thin practice fields enriched (SQL, Excel, Power BI). New gate `node scripts/check-protected.mjs [--allow f]` checks that only text fields changed against HEAD.
+- **Fintech data:** fraud flags are 1.35%; there are 4 NammaPay outage windows (38.7% failed vs 2.2%). 25 SQL expectedOutputs were refilled, and SQL and Power BI lesson numbers were refreshed.
+- **Statistics:** 17 lessons, 170 practice, 136 MCQs (`mcq/statistics-t1..t9.json`), 25 interview Qs.
+  - Blind MCQ check (`scripts/mcq-blind.mjs`) found 5 wrong keys; all are fixed.
+  - Text `{value}` answers: 52/52 matched an independent recomputation.
+- **Python:** 20 lessons, 130 practice (42/49/39), `public/downloads/eda-checklist.md`, 8 notebooks. Rebuild them with `.venv/bin/python scripts/notebooks/build.py`; specs are in `scripts/notebooks/specs/`.
+- **Pipeline that worked:**
+  - Sonnet outliner → `.work/outlines/<module>/` (FORMAT.md).
+  - Haiku writers with `.work/writer-brief.md` plus per-dataset `.work/schema/<id>.md`.
+  - Gates, then blind verification, then a Haiku reviewer.
+  - `.work/` is gitignored; copy anything durable out of it.
+
+### Usage log (subagent tokens, approximate)
+- Sonnet outliner: about 100k each.
+- Haiku writer (2 lessons + 20 questions): 95–150k.
+- Haiku enricher (about 40–70 questions): 85–105k.
+- Haiku blind verifier: about 50k.
+- Resuming a finished agent with SendMessage for a follow-up: about 7k (vs about 65k for a fresh agent). Prefer this for fixes.
+- 2 of 9 Haiku writers stopped partway. Resuming them with SendMessage finished the job.
+
+### Gotchas learned
+- The Python harness `load()` reads CSVs: money columns are often text ("₹1,234"), dates are mixed, and there are exact duplicate rows. Dedupe by the id column, and clean before deduping.
+- DataFrame results need `reset_index(drop=True)`.
+- `.venv` has pandas 3 (text dtype is `str`). Pyodide may differ; check in the browser in Phase 7.
+- No scipy, sklearn or matplotlib in the harness.
+- Outline numbers are often wrong. Writers must recompute.
+
 ## Known issues / next actions, in order
-1. **Build is broken by an MDX error:** `src/content/lessons/excel/06-sumifs-countifs-averageifs.mdx:61` has a bare formula containing `"<="` outside a code block. Wrap Excel formulas in backticks or fenced code. Grep all excel and power-bi lessons for bare `<` in prose, then run `npx astro build` until it passes.
+1. ~~Build broken~~ FIXED. Old note: `src/content/lessons/excel/06-sumifs-countifs-averageifs.mdx:61` has a bare formula containing `"<="` outside a code block. Wrap Excel formulas in backticks or fenced code. Grep all excel and power-bi lessons for bare `<` in prose, then run `npx astro build` until it passes.
 2. Finish or verify the SQL wave (above), then run the Haiku reviewer (`.briefs/reviewer.md`, FIX mode) on the SQL module. Make sure it enriches the thin explanations, commonMistakes and hints flagged by `lint:quality`, especially in the SQL 01–12 practice files.
 3. **Fintech data signal is weak:** only 19 fraud-flagged transactions, and the outage windows hold only 25 transactions. Strengthen it in `scripts/generate_data/gen_fintech.py` (Haiku), regenerate, re-run `npm run validate`, and fix or re-fill any changed fintech expectedOutputs. Do this before Project 5.
 4. **Retail data:** East-region stores have NO targets (the brief meant "misses its targets"). Optionally change that.
