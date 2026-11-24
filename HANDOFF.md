@@ -113,7 +113,15 @@ They are NOT yet checked in a browser.
    - Enriched `interview-pr-final-004` common mistake text.
    - Re-ran quality lint: 0 warnings across all business and interview modules (total warnings reduced from 184 to 110, all remaining warnings are in start-here).
    - Generated review report in `reports/review-phase5.md`. All 4 gates green (check:mdx 179 files, validate 491 runnable passed, audit passed, build 215 pages + 184 indexed).
-6. **Browser smoke test** of the tool pages and the Python runner in Pyodide (pandas version may differ from the local pandas 3). Use a Sonnet agent.
+6. **[DONE] Browser smoke test** of the tool pages and the Python runner in Pyodide:
+   - Previewed build at `http://localhost:4321/` using the browser subagent (`7647c29f-538b-4ac9-a2ad-fa67d86c0ac4`).
+   - Verified `/interview/banks/`: Category filters (8 categories, 475 questions), search, filtering, and model answer toggle with follow-ups and common mistakes.
+   - Verified `/tools/aptitude/`: Categories (Quant, Logic, DI, Verbal), timed session with countdown timer, question pagination, radio selection, and answer feedback + shortcuts on submit.
+   - Verified `/tools/mcq/`: 136 statistics MCQs across topic groups, timed test execution, score report, and detailed statistical explanation.
+   - Verified `/tools/sql-tests/`: All 10 SQL screening tests listed, 45-min timer, problem prompt, SQL code editor, and "Run" button.
+   - Verified `/tools/mock-interview/`: Category checkboxes, question counts/timers, prep notes editor with script saving.
+   - Verified `/python/pandas-series-dataframe/`: Interactive code runner in practice section, "Run" and "Compare with expected", and Pyodide initialization.
+   - All pages loaded cleanly (HTTP 200, 0 console errors).
 7. **Phase 6:**
    - Projects (8): Sonnet outlines, then Haiku writers.
    - Job toolkit: resume builder + tracker UI (Sonnet).
