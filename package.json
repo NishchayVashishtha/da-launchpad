@@ -12,7 +12,8 @@
     "validate": "node scripts/validate.mjs",
     "audit": "node scripts/audit.mjs",
     "lint:quality": "node scripts/lint-quality.mjs",
-    "check": "astro check"
+    "check": "astro check",
+    "check:mdx": "node scripts/check-mdx.mjs"
   },
   "dependencies": {
     "@astrojs/mdx": "^8.1.0",

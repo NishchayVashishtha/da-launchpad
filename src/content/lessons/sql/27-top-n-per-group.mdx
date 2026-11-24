@@ -29,7 +29,7 @@ tags: ["sql", "interview", "window-functions", "partition-by"]
 
 ### The recognition cue
 
-When you see **"top N ... in each / per / for every ..."**, or **"latest / first / most recent ... per ..."**, think: *rank inside each group with a window function, then keep rank <= N.*
+When you see **"top N ... in each / per / for every ..."**, or **"latest / first / most recent ... per ..."**, think: *rank inside each group with a window function, then keep rank `<= N`.*
 
 Analogy: a school with many classes. A global `ORDER BY marks LIMIT 3` picks the top 3 students of the whole school. "Topper of each class" means ranking separately inside every class. `PARTITION BY class` is exactly that.
 
@@ -262,7 +262,7 @@ Top N per group is the second most common window-function question after the "se
 </InterviewAlert>
 
 <InterviewQ q="Show the top 3 earners in every department. Walk me through your approach.">
-"I need a rank inside each department, so I will use a window function. I will write a CTE that ranks employees with `DENSE_RANK() OVER (PARTITION BY department_id ORDER BY salary DESC)`. I choose DENSE_RANK because if two people tie for third I assume the business wants both. Then the outer query keeps rank <= 3. I filter in the outer query because window functions are evaluated after WHERE. If you want strictly 3 rows per department I would switch to ROW_NUMBER with a tie-breaker like employee_id."
+"I need a rank inside each department, so I will use a window function. I will write a CTE that ranks employees with `DENSE_RANK() OVER (PARTITION BY department_id ORDER BY salary DESC)`. I choose DENSE_RANK because if two people tie for third I assume the business wants both. Then the outer query keeps rank `<= 3`. I filter in the outer query because window functions are evaluated after WHERE. If you want strictly 3 rows per department I would switch to ROW_NUMBER with a tie-breaker like employee_id."
 </InterviewQ>
 <InterviewQ q="How do you pick one row per user, the most recent?">
 `ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY event_time DESC)` in a CTE and keep `rn = 1`. If two events have the same timestamp I add a tie-breaker such as `event_id DESC`. The alternative is a join to a `MAX(event_time)` subquery, but that can return two rows when timestamps tie.

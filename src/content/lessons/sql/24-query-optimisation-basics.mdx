@@ -191,7 +191,7 @@ WHERE order_date >= '2024-01-01'
 
 | id | parent | notused | detail |
 |---|---|---|---|
-| 3 | 0 | 150 | SEARCH orders USING COVERING INDEX idx_orders_order_date (order_date>? AND order_date<?) |
+| 3 | 0 | 150 | `SEARCH orders USING COVERING INDEX idx_orders_order_date (order_date>? AND order_date<?)` |
 
 The first plan says `SCAN ... USING COVERING INDEX`: the whole index is read, one entry at a time, and the function is evaluated for each. The second says `SEARCH ... (order_date>? AND order_date<?)`: the database jumps to the start of 2024 and stops at the end of it. The half-open range (`>=` start, `<` next start) also avoids the classic bug of missing the last day when timestamps carry a time part.
 
