@@ -110,12 +110,12 @@
     "question": "A test needs 14,000 users in total and gets 500 users a day. Which duration is the best plan?",
     "options": [
       "1 day, since 500 users a day is enough",
-      "28 days, which is exactly 4 weeks",
-      "About 4 weeks, rounded to 3 weeks",
-      "5 full weeks (35 days), since 28 days is only 4 weeks"
+      "28 days, which is exactly 4 full weeks",
+      "21 days, which is exactly 3 weeks",
+      "5 full weeks (35 days), to be safe in case traffic drops"
     ],
-    "answerIndex": 3,
-    "explanation": "14,000 divided by 500 gives 28 days. Plans should use full weeks to cover weekday and weekend behaviour, so the plan is 35 days, which is 5 full weeks, to be safe with the sample.",
+    "answerIndex": 1,
+    "explanation": "14,000 divided by 500 gives 28 days. That is exactly 4 full weeks, so it already covers every weekday and weekend. A fifth week adds time with no gain in sample size.",
     "shortcut": "Days needed, then round up to full weeks."
   },
   {

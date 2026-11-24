@@ -31,13 +31,13 @@
     "difficulty": "medium",
     "question": "Why does the sample standard deviation divide by n minus 1?",
     "options": [
-      "A sample misses some extreme values, so dividing by n minus 1 gives a slightly larger and fairer spread estimate",
       "To make the standard deviation smaller",
-      "Because the mean uses up one value",
-      "Because n minus 1 is the default in every statistics formula"
+      "Because n minus 1 is the default in every statistics formula",
+      "The sample mean comes from the same data, so the deviations are a bit too small. Dividing by n minus 1 corrects this.",
+      "Because the data always has one extra value that must be removed"
     ],
-    "answerIndex": 0,
-    "explanation": "A sample usually looks a little tighter than the full population. Dividing by n minus 1 corrects for that and gives a slightly bigger, more honest spread.",
+    "answerIndex": 2,
+    "explanation": "The sample mean is computed from the same data we measure, so the points sit a little closer to it than to the true mean. That makes the squared deviations a bit too small. Dividing by n minus 1 instead of n corrects this and gives a slightly bigger, more honest spread.",
     "shortcut": "Sample means n minus 1, and the answer goes up a bit."
   },
   {

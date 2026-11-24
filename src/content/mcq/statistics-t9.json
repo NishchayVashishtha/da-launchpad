@@ -46,7 +46,7 @@
       "The square of the correlation",
       "Predicted value minus actual value"
     ],
-    "answerIndex": 3,
+    "answerIndex": 0,
     "explanation": "Residual means actual minus predicted. A positive residual means the real value was above the line.",
     "shortcut": "Actual minus predicted, always."
   },

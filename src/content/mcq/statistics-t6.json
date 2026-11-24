@@ -12,8 +12,8 @@
       "The creative was made by the design team",
       "The p-value is below 0.05"
     ],
-    "answerIndex": 0,
-    "explanation": "H0 is the no-effect claim. The team hopes to show the opposite, which is H1.",
+    "answerIndex": 1,
+    "explanation": "H0 is the no-effect claim: the click rate stays the same. The team hopes to show the opposite, the alternative H1 (the new creative raises the click rate).",
     "shortcut": "H0 is the boring claim to beat."
   },
   {

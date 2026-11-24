@@ -131,8 +131,8 @@
       "The share of genuine payments that are not flagged",
       "The share of all payments that are fraud"
     ],
-    "answerIndex": 3,
-    "explanation": "Precision is the share of alerts that are real, which is the same as the posterior. The share of real fraud that gets flagged is recall, which is a different number.",
+    "answerIndex": 1,
+    "explanation": "Precision is the share of flagged cases that are truly fraud. Recall is different: it is the share of real fraud that gets flagged.",
     "shortcut": "Precision asks: of my flags, how many are right?"
   },
   {
