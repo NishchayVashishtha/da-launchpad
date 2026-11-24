@@ -1,0 +1,302 @@
+---
+title: "A/B testing, part 1: design and sample size"
+description: "Plan an experiment before you run it: hypothesis, metrics, randomisation and sample size."
+module: statistics
+order: 15
+estimatedMinutes: 55
+objectives:
+  - "Write an A/B hypothesis and pick a primary metric and guardrail metrics"
+  - "Explain randomisation and the unit of analysis"
+  - "Estimate the sample size per arm for a conversion test"
+  - "Plan the test duration in full weeks"
+  - "Spot design problems such as sample ratio mismatch and contamination"
+tags: ["statistics", "ab-testing", "experiment-design", "sample-size"]
+---
+
+## Learning objectives
+
+- Write a clear A/B hypothesis that says what you expect to change and by how much.
+- Pick one primary metric and a short list of guardrail metrics.
+- Explain why you randomise by user and what the unit of analysis means.
+- Estimate the sample size per arm with the rule of thumb for two proportions.
+- Plan the test length in full weeks.
+- Name the design traps: sample ratio mismatch, contamination, novelty and peeking.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Product and growth teams at fintech, e-commerce and subscription apps ask for A/B tests almost every week. "Should we show the cashback banner to everyone?" is an A/B question. Analysts are often asked to plan the test, not only to read the result. A test with the wrong size, the wrong metric or a split that is not random gives a confident answer that is simply wrong. Most of the value of an A/B test is decided before the first user sees it.
+</RealWorld>
+
+## Concept
+
+### Why an experiment, and not just a comparison
+
+Imagine a shopping app wants more people to finish checkout. The team adds a "free shipping above Rs 499" banner. Next month conversion goes up. Was it the banner, or the festival sale, or a new payment option? A simple before-and-after comparison cannot tell the difference.
+
+An **A/B test** (also called a controlled experiment) fixes this. Users are split at random into two groups:
+
+- **Control (A):** the usual checkout, no banner.
+- **Treatment (B):** the same checkout, with the banner.
+
+Because the split is random, the two groups are alike in every other way on average. So any gap in results is most likely caused by the banner. Random assignment is the only tool that gives you cause, not just a link.
+
+### The planning checklist
+
+Work through these steps in order, and write them down before the test starts:
+
+1. **Problem.** What business question are we answering? Example: "Will free shipping banners raise checkout completion?"
+2. **Hypothesis.** A clear statement that can be proved wrong. Example: "Showing a free shipping banner at checkout raises the share of users who buy."
+3. **Primary metric.** The one number the decision depends on. Example: conversion rate (share of users who buy in the test).
+4. **Guardrail metrics.** Numbers that must not get worse. Example: average order value (AOV) and refund rate.
+5. **Unit of randomisation.** Usually the user, not the session. A user who visits three times must always see the same variant.
+6. **Minimum detectable effect (MDE).** The smallest lift worth finding. Example: +1.5 percentage points.
+7. **Alpha and power.** Alpha 0.05 (a 5 percent risk of a false alarm) and power 80 percent (an 80 percent chance to find a real lift of the MDE size).
+8. **Sample size.** How many users each arm needs.
+9. **Duration.** How many full weeks the test runs.
+10. **Decision rule.** What result means ship, and what means do not ship. Write it before the data arrives.
+
+### Hypothesis, metrics and the unit
+
+A good hypothesis is specific and measurable. "The banner will help" is vague. "The banner raises conversion from about 10.6 percent to about 12 percent" can be checked.
+
+The **primary metric** is the one that decides the test. Keep it to one. If you test ten primary metrics, one of them will look good by chance, and you may pick it.
+
+**Guardrail metrics** protect the business from a hidden cost. A free shipping banner might raise conversion but cut AOV, because people add less to qualify. Revenue per user or AOV is a common guardrail.
+
+The **unit of randomisation** is the thing you split: a user, a device or a session. Splitting by session is a common mistake. The same user then sees both versions across visits, and the two groups share people. This is called **contamination**. For most product tests, randomise by user ID.
+
+### Sample size in plain words
+
+The sample size depends on three things:
+
+- The **baseline rate** (for example, 10.6 percent of users convert today).
+- The **MDE**, the smallest lift you care about.
+- How sure you want to be (alpha and power).
+
+Smaller lifts are harder to see in noise. To find a small change you need many users. A useful rule of thumb for two proportions, with alpha 0.05 and power 80 percent, is:
+
+<FormulaCard title="Sample size per arm (rule of thumb)">
+`n per arm = 15.7 x pbar x (1 - pbar) / delta^2`
+
+- `pbar` is the average of the two rates you expect to see. Use `pbar = p1 + delta / 2`.
+- `delta` is the MDE as a proportion (1.5 percentage points is `0.015`).
+- `15.7` comes from `2 x (1.96 + 0.84) squared`, the usual values for alpha 0.05 (two-sided) and power 80 percent.
+</FormulaCard>
+
+Two effects follow from the formula:
+
+- **Halving the MDE makes the sample four times bigger.** Delta is squared in the denominator. Looking for a 1 point lift needs four times the users of a 2 point lift.
+- **A low baseline needs more users.** Rates near 50 percent have the largest `pbar x (1 - pbar)`. Rates near 1 or 99 percent have a small value, so they need fewer users for the same MDE. Be careful: for a rate near 10 percent, the value is still large, so these tests are costly.
+
+### Duration
+
+Count the users you need in total, then divide by the number of users you get each day. Round up to **full weeks**, because weekdays and weekends behave differently. A test that runs Wednesday to Thursday misses the weekend buyers.
+
+Avoid festival periods, sales and big launches, because they move the baseline and make the result hard to read. If a Diwali sale starts in the middle of the test, both arms are affected, but not always equally.
+
+### Design traps
+
+These problems appear before the test starts or while it runs:
+
+- **Sample ratio mismatch (SRM).** The split should be close to 50/50. A large gap, such as 6,000 against 5,000, points to a bug in assignment, logging or filters. Check the counts with a chi-square test before you read any result.
+- **Contamination.** A user in both arms makes the comparison unfair. Remove these users or fix the assignment.
+- **Novelty effect.** Users click something new because it is new. The lift may fade in week two. Run long enough to see the trend.
+- **Peeking.** Checking the result every day and stopping when it looks good raises the chance of a false win. Decide the sample size in advance and wait for it.
+- **Too many metrics.** Each extra metric is another chance for a false win.
+- **Seasonal clash.** Running the test across a festive peak mixes the effect with the season.
+
+## Worked examples
+
+We use the fictional checkout banner test in the `marketing` dataset (table `ab_test_results`, test `checkout_free_shipping_banner`, 2 to 29 September 2024). All numbers below come from running the code shown.
+
+### Example 1: baseline and sample size for a +1.5 point lift
+
+First, clean the table. Drop exact duplicate rows, then drop users who appear in both arms. Then read the control conversion rate and plan the next test.
+
+```python
+import math
+df = load("marketing", "ab_test_results")
+print("raw rows", len(df))
+df = df.drop_duplicates()
+both = df.groupby("user_id")["variant"].nunique()
+df = df[~df.user_id.isin(both[both > 1].index)]
+p1 = df.loc[df["variant"] == "control", "converted"].mean()
+delta = 0.015
+pbar = p1 + delta / 2
+n = 15.7 * pbar * (1 - pbar) / delta ** 2
+print("control rate %", round(p1 * 100, 2))
+print("users per arm needed", math.ceil(n))
+```
+
+**Output:**
+
+```
+raw rows 12030
+control rate % 10.57
+users per arm needed 7006
+```
+
+To find a 1.5 point lift from a 10.57 percent baseline, you need about 7,006 users in each arm. The real test had 6,016 control and 5,974 treatment users after cleaning. That is fewer than 7,006, so the real test was a little underpowered for a 1.5 point lift. It could still find a bigger lift. Writing this down before the test is the honest version of planning.
+
+### Example 2: baseline for a subscription trial
+
+A subscription app wants to plan a test on the trial-to-paid step. Use only subscriptions that started a trial.
+
+```python
+import math
+s = load("subscription", "subscriptions")
+s = s[s["trial_start_date"].notna()]
+rate = s["paid_start_date"].notna().mean()
+p = rate
+delta = 0.03
+pbar = p + delta / 2
+n = 15.7 * pbar * (1 - pbar) / delta ** 2
+print("trials", len(s))
+print("trial to paid %", round(rate * 100, 2))
+print("users per arm for +3 points", math.ceil(n))
+```
+
+**Output:**
+
+```
+trials 3308
+trial to paid % 36.06
+users per arm for +3 points 4092
+```
+
+A +3 point lift from 36 percent needs about 4,092 trials in each arm. The baseline is much higher than in the checkout test, but the lift is also bigger, so the sample is smaller.
+
+### Example 3: how long will it take?
+
+The checkout test got about 428 users a day in total, both arms together. The plan needs 7,006 users in each arm, which is 14,012 in total.
+
+```python
+import math
+per_day = len(df) / df["assigned_at"].str[:10].nunique()
+total_needed = 2 * 7006
+days = math.ceil(total_needed / per_day)
+print("users per day", round(per_day, 2))
+print("days needed", days)
+print("full weeks", math.ceil(days / 7))
+```
+
+**Output:**
+
+```
+users per day 428.21
+days needed 33
+full weeks 5
+```
+
+The plan needs 33 days, so you round up to **5 full weeks** (35 days). The real test ran 28 days, which is four weeks. That is why the sample was short. A good plan writes the duration and the sample size together, and the team sticks to both.
+
+### Example 4: checking the split (SRM)
+
+Before reading any result, check that the split is close to 50/50. The expected count is the total divided by 2.
+
+```python
+import math
+counts = df["variant"].value_counts()
+observed = [counts["control"], counts["treatment"]]
+expected = sum(observed) / 2
+chi2 = sum((o - expected) ** 2 / expected for o in observed)
+p_value = math.erfc(math.sqrt(chi2 / 2))
+print("observed", [int(x) for x in observed])
+print("expected each", expected)
+print("chi-square", round(chi2, 3))
+print("p-value", round(p_value, 2))
+```
+
+**Output:**
+
+```
+observed [6016, 5974]
+expected each 5995.0
+chi-square 0.147
+p-value 0.70
+```
+
+A p-value of 0.70 is far above 0.05, so there is no sign of an SRM. The split is fine, and the results can be read. A p-value below 0.01 would be a red flag. Stop and find the cause before you look at conversion.
+
+<Tip>
+The SRM check takes one minute and can save a whole test. Run it first, every time. If the counts are off, the randomisation or the logging is broken, and no amount of statistics can fix the result.
+</Tip>
+
+## Common mistakes
+
+<CommonMistake>
+**Stopping the test early when it looks good.** Checking every day and stopping at the first win makes false wins far more likely. Fix the sample size and the duration before you start, then wait.
+</CommonMistake>
+
+<CommonMistake>
+**Randomising by session, not by user.** The same person sees both banners across visits. The arms overlap and the comparison is no longer clean.
+</CommonMistake>
+
+<CommonMistake>
+**Choosing many primary metrics.** Ten metrics give you a high chance that one of them looks like a win by luck. Keep one primary metric and watch the others as guardrails.
+</CommonMistake>
+
+<CommonMistake>
+**Running the test over a festival.** A Diwali or end-of-season sale changes behaviour for every user. The result then measures the festival as much as the banner.
+</CommonMistake>
+
+<CommonMistake>
+**Halving the MDE and expecting the same sample.** Planning for a smaller lift needs four times the users, not twice. Teams that forget this run tests that never finish.
+</CommonMistake>
+
+<CommonMistake>
+**Forgetting duplicate and contaminated users.** Duplicate logging rows and users in both arms must be removed before analysis. If you skip this at design time, you will skip it at analysis time too.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="abdesign" module="statistics" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "A product team wants to detect a 1 point lift instead of a 2 point lift, using the same baseline and alpha. Roughly how many users per arm do they need compared with the 2 point plan?", options: ["Twice as many", "Four times as many", "The same number", "Half as many"], answer: 1, explanation: "The MDE is squared in the sample size formula. Halving the lift means delta squared is one quarter, so the sample is four times bigger." },
+  { q: "What does the minimum detectable effect (MDE) mean?", options: ["The average lift you observed in the test", "The smallest lift the test is designed to detect", "The largest lift the business can afford", "The p-value you need to ship"], answer: 1, explanation: "The MDE is the smallest true lift you plan to find with the chosen alpha and power. You set it before the test, based on what matters to the business." },
+  { q: "Which metric is a guardrail in a free shipping banner test?", options: ["Share of users who buy", "Average order value (AOV) and refund rate", "Number of banners shown", "The p-value of the test"], answer: 1, explanation: "A guardrail is a metric that must not get worse. AOV and refund rate can drop even when conversion rises, so they protect the business." },
+  { q: "An arm has 6,000 users and the other has 5,000, with a planned 50/50 split. What should you do first?", options: ["Read the conversion rates", "Stop the test and skip the analysis", "Run a sample ratio mismatch check before reading any result", "Double the duration"], answer: 2, explanation: "A large gap in counts points to a problem with assignment or logging. An SRM check should come first, because a broken split makes every other number unreliable." },
+  { q: "What is the right unit to randomise in a product checkout test?", options: ["Each session", "Each user", "Each page view", "Each city"], answer: 1, explanation: "Randomising by user keeps the same person in the same arm across visits. Splitting by session lets one user see both versions, which is contamination." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers want to see a plan, not a calculation. Show that you start with the business question, pick one primary metric, name guardrails, choose the unit, size the test and check the split before reading results.
+</InterviewAlert>
+
+<InterviewQ q="How would you design an A/B test for a new checkout page?">
+Start with the question and one primary metric, such as conversion. Add guardrails like AOV and error rate. Randomise by user and write the hypothesis, MDE, alpha and power. Work out the sample size per arm, plan full weeks of duration, and write the decision rule before launch. Finish with an SRM check and a plan to remove contaminated users.
+</InterviewQ>
+
+<InterviewQ q="How do you choose the sample size for a test?">
+Use the baseline rate, the smallest lift you care about (the MDE), alpha 0.05 and power 80 percent. For two proportions, a rule of thumb is about 15.7 times pbar times (1 minus pbar) divided by delta squared, per arm. Then divide the total users needed by daily traffic to get the days, and round up to full weeks.
+</InterviewQ>
+
+<InterviewQ q="What is sample ratio mismatch (SRM)?">
+SRM is a gap between the planned split and the real split of users, such as 60/40 when you planned 50/50. It usually means a bug in assignment, logging or filters. You test it with a chi-square check on the counts. An SRM means the result cannot be trusted until the cause is fixed.
+</InterviewQ>
+
+<InterviewQ q="What metrics would you pick as primary and guardrail?">
+Pick one primary metric that the decision depends on, such as conversion or revenue per user. Guardrails are metrics that must not get worse, such as refund rate, error rate, crash rate or AOV. Cost metrics are useful for the business case but do not usually decide the test alone.
+</InterviewQ>
+
+<InterviewQ q="When is an A/B test not possible?">
+Sometimes you cannot randomise. A new law applies to everyone, a pricing change must go to all customers, or a rollout is too small to split. In those cases, use a quasi-experiment such as a before-and-after comparison with a control group, or a difference-in-differences design, and say clearly that the causal claim is weaker.
+</InterviewQ>
+
+## Key takeaways
+
+- An A/B test uses random assignment, so a gap in results is most likely caused by the change.
+- Write the hypothesis, primary metric, guardrails, MDE, alpha, power and decision rule before the test starts.
+- Randomise by user to avoid contamination.
+- Sample size per arm grows with the inverse square of the MDE: halve the lift, four times the users.
+- Check the split with an SRM test before you read the result, and round the duration up to full weeks.
+
+## Further reading
+
+<FurtherReading ids={["khan-stats"]} />

@@ -1,0 +1,262 @@
+---
+title: "Regression intuition: lines that explain data"
+description: "Simple linear regression with numpy: slope, intercept, R-squared and the limits."
+module: statistics
+order: 17
+estimatedMinutes: 50
+objectives:
+  - "Explain the best-fit line in plain words"
+  - "Compute the slope and intercept with numpy"
+  - "Interpret the slope and R-squared for a business audience"
+  - "Make a prediction and know the risk of extrapolation"
+tags: ["statistics", "regression", "linear-regression"]
+---
+
+## Learning objectives
+
+- Explain what the best-fit line means and what it minimises.
+- Compute the slope and intercept with `np.polyfit`.
+- Interpret the slope and R-squared in business words.
+- Make a prediction, and know when a prediction is not safe.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+A Bengaluru food delivery team asked, "How much does distance add to delivery time?" The analyst answered, "About 4.4 minutes for every extra km, with a base of about 27 minutes." That one sentence set the delivery promise for the whole city. Regression is how you turn a scatter of points into that kind of sentence.
+</RealWorld>
+
+## Concept
+
+### The scatter plot and the best road
+
+Think of a set of villages spread on a map. You want to build one straight road that passes near all of them. There are many possible roads. The best one keeps the total distance from each village to the road as small as possible.
+
+That road is the **best-fit line**. In statistics the usual rule is to make the sum of the squared gaps as small as possible. Each gap is the vertical distance between a real point and the line. Squaring stops positive and negative gaps from cancelling out, and it punishes big misses more than small ones.
+
+### The equation
+
+A straight line is written as:
+
+`y = a + b x`
+
+- `y` is the thing you want to predict. Here it is delivery minutes.
+- `x` is the input you know. Here it is distance in km.
+- `b` is the **slope**. It is the change in `y` for each one-unit rise in `x`.
+- `a` is the **intercept**. It is the predicted `y` when `x` is 0.
+
+The formulas are simple once you know the correlation and the spreads:
+
+<FormulaCard title="Slope and intercept">
+slope b = r * (standard deviation of y) / (standard deviation of x)
+
+intercept a = mean of y minus b * mean of x
+</FormulaCard>
+
+You will almost never do this by hand. `np.polyfit(x, y, 1)` returns the slope first and the intercept second. The `1` means "fit a line", which is a degree-1 polynomial.
+
+### The residual
+
+A **residual** is the gap between what happened and what the line predicted:
+
+`residual = actual minus predicted`
+
+A positive residual means the real value was higher than the line said. A negative residual means it was lower. The line is the best average story. The residuals are the stories that the line does not tell.
+
+### R-squared: how much the line explains
+
+**R-squared** is the share of the spread in `y` that the line explains. It runs from 0 to 1.
+
+<FormulaCard title="R-squared">
+R-squared = 1 minus (sum of squared residuals) divided by (sum of squared gaps from the mean)
+
+For a simple line with one x, R-squared is also the correlation r squared.
+</FormulaCard>
+
+An R-squared of 0.49 means distance explains about 49 percent of the difference in delivery minutes. The other 51 percent comes from things the model does not see, such as traffic, restaurant prep time and the rider's skill.
+
+<Tip>
+Say R-squared as "the share of variation explained", not "the accuracy". A model can have a high R-squared and still predict badly for a new city.
+</Tip>
+
+### Reading the slope for a manager
+
+The slope is the number a manager remembers. Say it as a rate: "Each extra km adds about 4.4 minutes." Always add the unit, and always say "linked with", not "causes", unless you ran an experiment. Distance might be linked with minutes through traffic, and you cannot be sure the km itself is the cause.
+
+### Assumptions in plain words
+
+A simple line works well when:
+
+- The relationship is roughly straight. A curve needs a different model.
+- No single point drives the whole line. Check for outliers.
+- The spread of the residuals is about the same across the x range. If the spread grows with x, the predictions get less reliable for large x.
+
+A **residual plot** (residuals on the y axis, x on the x axis) is the quickest check. If you see a clear curve or a fan shape, the simple line is not the right tool.
+
+### Extrapolation: the danger zone
+
+**Extrapolation** means predicting for an x that is outside the range you fitted. The line may look right there, but nobody checked. Our delivery data goes from 0.6 to 14 km. A prediction for 40 km is an extrapolation, and it says about 202 minutes. That number is not a real estimate.
+
+<Warning>
+Never trust a prediction far outside the range of x in your data. Say "the model was built on 0.6 to 14 km" next to every forecast.
+</Warning>
+
+### More variables
+
+Real projects often use many inputs at once, such as distance, weather and time of day. That is called **multiple regression**. The idea is the same: one line-like equation with several slopes. You do not need a special library for this lesson. The key habit is the same: check the residuals, watch for extrapolation, and do not confuse a slope with a cause.
+
+## Worked examples
+
+### Example 1: distance and delivery minutes
+
+We fit `actual_minutes` on `distance_km`. Duplicate rows and cancelled orders (no minutes) are removed first.
+
+```python
+d = load("food_delivery", "deliveries").drop_duplicates()
+d = d.dropna(subset=["actual_minutes", "distance_km"])
+slope, intercept = np.polyfit(d["distance_km"], d["actual_minutes"], 1)
+r = d["distance_km"].corr(d["actual_minutes"])
+print(f"slope={slope:.2f} intercept={intercept:.2f} r={r:.2f} r2={r**2:.2f} n={len(d)}")
+```
+
+**Output:**
+
+```
+slope=4.39 intercept=26.80 r=0.70 r2=0.49 n=14355
+```
+
+Read it like a manager: a base of about 27 minutes, plus about 4.4 minutes for each km. The correlation is 0.70, a strong positive link. Squared, it gives the R-squared of 0.49.
+
+### Example 2: predict and check the range
+
+```python
+print(f"pred8={intercept + slope*8:.1f} pred40={intercept + slope*40:.1f}")
+```
+
+**Output:**
+
+```
+pred8=61.9 pred40=202.3
+```
+
+For 8 km, the prediction is about 62 minutes. That is inside the data range, so it is a fair estimate. The 40 km prediction of 202 minutes is an extrapolation. The longest delivery in the data is 14 km, so we would not quote that number to anyone.
+
+### Example 3: a rain shifts the line up
+
+Fit the same line inside each weather group.
+
+```python
+for w, g in d.groupby("weather"):
+    b, a = np.polyfit(g["distance_km"], g["actual_minutes"], 1)
+    print(f"{w}: slope={b:.2f} intercept={a:.2f} mean={g['actual_minutes'].mean():.1f}")
+```
+
+**Output:**
+
+```
+Clear: slope=4.39 intercept=25.93 mean=44.0
+Cloudy: slope=4.32 intercept=26.14 mean=43.7
+Heavy Rain: slope=4.38 intercept=35.70 mean=53.9
+Rain: slope=4.35 intercept=31.14 mean=49.5
+```
+
+The slopes are almost the same, around 4.3 to 4.4 minutes per km. The intercepts are not. Heavy rain starts about 10 minutes higher than a clear day. Rain moves the whole line up. It does not make each km slower. This is a useful story for a manager: "Weather adds a fixed delay, and distance still costs the same per km."
+
+### Example 4: the residual that stands out
+
+```python
+d["predicted"] = intercept + slope * d["distance_km"]
+d["residual"] = d["actual_minutes"] - d["predicted"]
+top = d.loc[d["residual"].idxmax()]
+print(top[["delivery_id", "distance_km", "actual_minutes", "predicted", "residual"]].to_dict())
+```
+
+**Output:**
+
+```
+{'delivery_id': 12373, 'distance_km': 2.6, 'actual_minutes': 84.0, 'predicted': 38.20885934204877, 'residual': 45.79114065795123}
+```
+
+The line predicted about 38 minutes for a 2.6 km ride. The real delivery took 84 minutes, so its residual is about 46 minutes. This is the order to check first. It might be a data error, or a real problem such as a wrong address or a long wait at the restaurant.
+
+### Example 5: a different business question
+
+Does goal achievement rise with the manager's rating? Use the performance reviews, after removing duplicates and missing values.
+
+```python
+p = load("hr", "performance_reviews").drop_duplicates().dropna(subset=["manager_rating", "goals_met_pct"])
+b, a = np.polyfit(p["manager_rating"], p["goals_met_pct"], 1)
+rr = p["manager_rating"].corr(p["goals_met_pct"])
+print(f"slope={b:.2f} intercept={a:.2f} r2={rr**2:.2f} n={len(p)} pred4={a+4*b:.1f}")
+```
+
+**Output:**
+
+```
+slope=9.18 intercept=42.28 r2=0.55 n=4779 pred4=79.0
+```
+
+Each one-step rise in manager rating goes with about 9 more points of goals met. A rating of 4 predicts about 79 percent. The R-squared of 0.55 is solid for people data. Still, say "linked with", because a good manager may also set easier goals.
+
+## Common mistakes
+
+<CommonMistake>Extrapolating. Predicting 202 minutes for a 40 km trip because the line gives that number. Limit predictions to the range of x you actually have.</CommonMistake>
+
+<CommonMistake>Reading the slope as a cause. "Each km causes 4.4 minutes" may be true, but the slope alone does not prove it. Use words like "linked with" unless the data came from a designed test.</CommonMistake>
+
+<CommonMistake>Thinking a high R-squared means a good model always. R-squared can be high because of one far-away point. Plot the points and the residuals before you trust it.</CommonMistake>
+
+<CommonMistake>Ignoring outliers and leverage. A single 84-minute delivery can pull the line. Check how much the slope changes when you remove the most extreme point.</CommonMistake>
+
+<CommonMistake>Fitting a straight line to curved data. If the scatter bends, the residuals will show a pattern. A straight line then gives wrong predictions at both ends.</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="regression" module="statistics" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "In y = a + b x, what does the slope b tell you?", options: ["The predicted y when x is 0", "The change in y for each one-unit rise in x", "The share of variation explained", "The average of y"], answer: 1, explanation: "The slope is the rate of change. The intercept is the y value at x = 0." },
+  { q: "An R-squared of 0.49 means what?", options: ["The model is right 49 percent of the time", "The correlation is 0.49", "About 49 percent of the spread in y is explained by x", "49 percent of the points lie on the line"], answer: 2, explanation: "R-squared is the share of the variation in y that the line explains. The rest is left to other factors." },
+  { q: "A residual is defined as:", options: ["Predicted minus actual", "Actual minus predicted", "Slope times x", "The square of the correlation"], answer: 1, explanation: "A residual is the actual value minus the predicted value. Positive means the real value was higher than the line." },
+  { q: "Which prediction is most risky?", options: ["A value at x = 8 when data goes from 0.6 to 14", "A value at x = 3 when data goes from 0.6 to 14", "A value at x = 40 when data goes from 0.6 to 14", "A value at x = 14 when data goes from 0.6 to 14"], answer: 2, explanation: "x = 40 is far outside the fitted range, so it is an extrapolation." },
+  { q: "The best-fit line from least squares is the one that:", options: ["Passes through the first and last point", "Makes the largest residual as small as possible", "Minimises the sum of squared residuals", "Has a slope of exactly 1"], answer: 2, explanation: "Least squares chooses the line that makes the squared gaps add up to the smallest total." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers want you to explain regression without jargon. Practise one sentence on the slope with a unit, one sentence on R-squared, and one warning about extrapolation.
+</InterviewAlert>
+
+<InterviewQ q="Explain regression to a non-technical manager.">
+Regression finds the straight line that best fits a set of points. Here, it shows how delivery time rises with distance. The slope tells you the extra minutes per km, and the intercept tells you the base time. We also check how far the real points are from the line, so we know where the line is not a good story.
+</InterviewQ>
+
+<InterviewQ q="What does R-squared tell you, and what does it not tell you?">
+R-squared is the share of the spread in the outcome that the model explains, from 0 to 1. A value of 0.49 means distance explains about half the variation. It does not tell you the model is causal. It also does not protect you from a wrong model, so you still need to check the residuals.
+</InterviewQ>
+
+<InterviewQ q="How would you check the assumptions of a simple linear regression?">
+First, plot the points to see whether the relationship is roughly straight. Then plot the residuals against x and look for a curve or a fan shape. Look for a few points with very large residuals, and check how much the slope changes when they are removed. Finally, check that the predictions only use x values inside the fitted range.
+</InterviewQ>
+
+<InterviewQ q="What do you do if the relationship is curved?">
+A straight line will leave a pattern in the residuals. You can try a transformation, such as the log of the outcome, or add a squared term so the model can bend. Another option is to split the data into ranges and fit a line in each one. In every case, check the residual plot again after the change.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between correlation and regression?">
+Correlation gives one number, r, that measures how tightly two variables move together. Regression goes further. It gives a line with a slope and intercept, so you can predict y from x and say how many units y changes per unit of x. Correlation is symmetric, but regression has a direction: which variable you predict matters.
+</InterviewQ>
+
+## Key takeaways
+
+- Regression fits the best straight line by making the squared residuals as small as possible.
+- The slope is the change in y per one-unit rise in x. Always state the unit.
+- R-squared is the share of variation explained. It is not a measure of cause.
+- Residuals show which points the line misses. Check them before you trust the model.
+- Never predict far outside the range of x you fitted.
+
+## Further reading
+
+<FurtherReading ids={["khan-stats", "numpy-docs", "pandas-docs"]} />

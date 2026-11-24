@@ -1,0 +1,236 @@
+[
+  {
+    "id": "statistics-probability-001",
+    "difficulty": "easy",
+    "language": "python",
+    "dataset": "food_delivery",
+    "question": "The support team asks how often an order arrives late. Late means `delay_minutes` is more than 10. Using delivered orders only (remove duplicate `delivery_id` rows), find the share of late orders. Round to 4 decimals and assign it to `result`.",
+    "hint": "A boolean column averages to the share of True values. Filter to delivered rows first.",
+    "solutionCode": "d = load('food_delivery', 'deliveries').drop_duplicates(subset=['delivery_id'])\ndv = d.dropna(subset=['actual_minutes'])\nresult = round((dv['delay_minutes'] > 10).mean(), 4)",
+    "expectedOutput": {
+      "value": 0.1808
+    },
+    "explanation": "The comparison gives True or False for each row. The mean of True or False values is the share of True, which is the probability of being late. We limit the base to delivered orders because a cancelled order cannot be late.",
+    "commonMistake": "Using all orders as the base, including cancelled ones. That lowers the probability because cancelled rows have no delay value.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "probability",
+      "proportion"
+    ],
+    "module": "statistics",
+    "topic": "probability",
+    "orderMatters": false
+  },
+  {
+    "id": "statistics-probability-002",
+    "difficulty": "easy",
+    "language": "python",
+    "dataset": "food_delivery",
+    "question": "What is the chance that a delivery happens in rainy weather? Count `Rain` and `Heavy Rain` as rainy. Use all deliveries (remove duplicate `delivery_id` rows, keep cancelled ones). Round to 4 decimals and assign it to `result`.",
+    "hint": "Use `isin` with a list of the two labels, then take the mean.",
+    "solutionCode": "d = load('food_delivery', 'deliveries').drop_duplicates(subset=['delivery_id'])\nresult = round(d['weather'].isin(['Rain', 'Heavy Rain']).mean(), 4)",
+    "expectedOutput": {
+      "value": 0.1359
+    },
+    "explanation": "`isin` returns True for rainy rows. Its mean is the probability of rain across all deliveries. Here the base includes cancelled orders because the question asks about all deliveries.",
+    "commonMistake": "Using `== 'Rain'` only, which misses `Heavy Rain`. Also, the label text must match exactly.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "probability",
+      "isin"
+    ],
+    "module": "statistics",
+    "topic": "probability",
+    "orderMatters": false
+  },
+  {
+    "id": "statistics-probability-003",
+    "difficulty": "medium",
+    "language": "python",
+    "dataset": "food_delivery",
+    "question": "Find the probability that a delivery is late given that it rained heavily. Use delivered orders only, with `Heavy Rain` as the condition and late as `delay_minutes` over 10 (remove duplicate `delivery_id` rows). Round to 4 decimals and assign it to `result`.",
+    "hint": "Filter to `Heavy Rain` rows first, then take the share of late rows in that subset.",
+    "solutionCode": "d = load('food_delivery', 'deliveries').drop_duplicates(subset=['delivery_id'])\ndv = d.dropna(subset=['actual_minutes'])\nhr_rows = dv[dv['weather'] == 'Heavy Rain']\nresult = round((hr_rows['delay_minutes'] > 10).mean(), 4)",
+    "expectedOutput": {
+      "value": 0.5295
+    },
+    "explanation": "This is a conditional probability: P(late | Heavy Rain). We filter the base to heavy rain first, then count late orders inside it. The answer is much higher than the overall late share from question 1.",
+    "commonMistake": "Computing P(Heavy Rain | late) by mistake. That divides by the late orders instead of the heavy rain orders.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "conditional",
+      "probability"
+    ],
+    "module": "statistics",
+    "topic": "probability",
+    "orderMatters": false
+  },
+  {
+    "id": "statistics-probability-004",
+    "difficulty": "medium",
+    "language": "python",
+    "dataset": "food_delivery",
+    "question": "How much worse is lateness on heavy rain days? Using delivered orders only (remove duplicate `delivery_id` rows), find P(late | Clear) minus P(late | Heavy Rain), where late means `delay_minutes` over 10. Round to 4 decimals and assign the difference to `result`.",
+    "hint": "Compute the late share for each weather label separately, then subtract.",
+    "solutionCode": "d = load('food_delivery', 'deliveries').drop_duplicates(subset=['delivery_id'])\ndv = d.dropna(subset=['actual_minutes'])\nlate = dv['delay_minutes'] > 10\np_clear = late[dv['weather'] == 'Clear'].mean()\np_heavy = late[dv['weather'] == 'Heavy Rain'].mean()\nresult = round(p_clear - p_heavy, 4)",
+    "expectedOutput": {
+      "value": -0.3791
+    },
+    "explanation": "We find the late share for each weather and subtract. The negative answer shows that heavy rain adds a large chance of lateness. This is a difference in conditional probabilities.",
+    "commonMistake": "Subtracting the wrong way round and reporting a positive number while the text says 'worse'. Check the sign against the story.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 6,
+    "tags": [
+      "conditional",
+      "comparison"
+    ],
+    "module": "statistics",
+    "topic": "probability",
+    "orderMatters": false
+  },
+  {
+    "id": "statistics-probability-005",
+    "difficulty": "medium",
+    "language": "python",
+    "dataset": "subscription",
+    "question": "Which status is the most common among subscriptions? Remove duplicate `subscription_id` rows. Return a dict with keys `status` (the most common value) and `prob` (its share, rounded to 4 decimals). Assign it to `result`.",
+    "hint": "`value_counts(normalize=True)` gives shares. Take the first row.",
+    "solutionCode": "s = load('subscription', 'subscriptions').drop_duplicates(subset=['subscription_id'])\nshares = s['status'].value_counts(normalize=True)\nresult = {'status': shares.index[0], 'prob': round(float(shares.iloc[0]), 4)}",
+    "expectedOutput": {
+      "value": {
+        "status": "trial_expired",
+        "prob": 0.6261
+      }
+    },
+    "explanation": "`value_counts(normalize=True)` turns counts into shares that add up to 1. The first row is the most likely status. Read this as the chance a random subscription has that status.",
+    "commonMistake": "Using counts instead of shares, so the answer is a number like 2071 rather than a probability between 0 and 1.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "probability",
+      "value-counts"
+    ],
+    "module": "statistics",
+    "topic": "probability",
+    "orderMatters": false
+  },
+  {
+    "id": "statistics-probability-006",
+    "difficulty": "hard",
+    "language": "python",
+    "dataset": "food_delivery",
+    "question": "Is lateness independent of rain? Among delivered orders (remove duplicate `delivery_id` rows), let `late` be `delay_minutes` over 10 and `rainy` be `weather` in `Rain` or `Heavy Rain`. Return a dict with `joint` = P(late and rainy) and `product` = P(late) times P(rainy), both rounded to 4 decimals. Assign it to `result`.",
+    "hint": "Build two boolean columns, then compare the share where both are True with the product of the two shares.",
+    "solutionCode": "d = load('food_delivery', 'deliveries').drop_duplicates(subset=['delivery_id'])\ndv = d.dropna(subset=['actual_minutes'])\nlate = dv['delay_minutes'] > 10\nrainy = dv['weather'].isin(['Rain', 'Heavy Rain'])\nresult = {'joint': round((late & rainy).mean(), 4), 'product': round(late.mean() * rainy.mean(), 4)}",
+    "expectedOutput": {
+      "value": {
+        "joint": 0.0511,
+        "product": 0.0238
+      }
+    },
+    "explanation": "If lateness and rain were independent, the joint share would equal the product of the two shares. Here the joint share is about twice the product, so the two are linked. This is the test for independence written in numbers.",
+    "commonMistake": "Using `and` instead of `&` for boolean columns. Pandas needs the element-wise `&` operator.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 8,
+    "tags": [
+      "independence",
+      "probability"
+    ],
+    "module": "statistics",
+    "topic": "probability",
+    "orderMatters": false
+  },
+  {
+    "id": "statistics-probability-007",
+    "difficulty": "easy",
+    "language": "text",
+    "dataset": "none",
+    "question": "A fair coin is tossed 3 times. What is the probability of getting at least one head? Give the answer as a decimal.",
+    "hint": "Work out the chance of no heads at all, then take the complement.",
+    "solution": "**Step 1.** Chance of no heads in one toss is 0.5. For 3 tosses: 0.5 x 0.5 x 0.5 = 0.125.\n\n**Step 2.** Complement: P(at least one head) = 1 - 0.125 = 0.875.",
+    "explanation": "'At least one' is easier as the complement of 'none'. The tosses are independent, so we multiply the chances.",
+    "commonMistake": "Adding 0.5 three times to get 1.5. Probabilities cannot add past 1, and the events overlap.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "complement",
+      "independence"
+    ],
+    "module": "statistics",
+    "topic": "probability",
+    "orderMatters": false,
+    "expectedOutput": {
+      "value": 0.875
+    }
+  },
+  {
+    "id": "statistics-probability-008",
+    "difficulty": "medium",
+    "language": "text",
+    "dataset": "none",
+    "question": "For two events A and B, P(A) = 0.4, P(B) = 0.3 and P(A and B) = 0.12. Are the events independent? Then find P(A or B). Give P(A or B) as a decimal.",
+    "hint": "Check whether P(A and B) equals P(A) times P(B). Then use the OR rule.",
+    "solution": "**Step 1. Independent?** P(A) x P(B) = 0.4 x 0.3 = 0.12. This equals P(A and B), so yes, they are independent.\n\n**Step 2. OR rule.** P(A or B) = P(A) + P(B) - P(A and B) = 0.4 + 0.3 - 0.12 = 0.58.",
+    "explanation": "Independence is checked by multiplying the two single probabilities. The OR rule subtracts the overlap once so it is not counted twice.",
+    "commonMistake": "Adding 0.4 and 0.3 to get 0.7 and forgetting to subtract the overlap.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "or-rule",
+      "independence"
+    ],
+    "module": "statistics",
+    "topic": "probability",
+    "orderMatters": false,
+    "expectedOutput": {
+      "value": 0.58
+    }
+  },
+  {
+    "id": "statistics-probability-009",
+    "difficulty": "medium",
+    "language": "text",
+    "dataset": "none",
+    "question": "A cashback of ₹40 is given to a customer who claims it. Each order has a 5 percent chance of a claim. The company has 2,00,000 orders. What is the expected total cashback cost in rupees? Give the number only.",
+    "hint": "Expected value is the value times the probability, summed over all orders.",
+    "solution": "**Step 1.** Expected cost per order = ₹40 x 0.05 = ₹2.\n\n**Step 2.** Total for 2,00,000 orders = 2 x 2,00,000 = ₹4,00,000.",
+    "explanation": "Expected value gives the average cost you should plan for. It does not say what happens in any one month, but it is the right number for a budget.",
+    "commonMistake": "Multiplying the cashback by the number of orders and forgetting the 5 percent chance.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "expected-value"
+    ],
+    "module": "statistics",
+    "topic": "probability",
+    "orderMatters": false,
+    "expectedOutput": {
+      "value": 400000
+    }
+  },
+  {
+    "id": "statistics-probability-010",
+    "difficulty": "hard",
+    "language": "text",
+    "dataset": "none",
+    "question": "A manager must pick a team of 3 analysts from a group of 10. How many different teams are possible? Order does not matter. Give the number only.",
+    "hint": "This is a combination. Use n choose k with n = 10 and k = 3.",
+    "solution": "**Step 1.** Number of ways to pick 3 from 10 with order mattering: 10 x 9 x 8 = 720.\n\n**Step 2.** Order does not matter, so divide by the 3! = 6 ways to arrange 3 people: 720 / 6 = 120.\n\nThe answer is 120 teams.",
+    "explanation": "Combinations count groups where order does not matter. The formula is n! / (k! x (n-k)!). It is common in aptitude tests and in sampling questions.",
+    "commonMistake": "Giving 720, which counts the same team in 6 different orders.",
+    "interviewFrequency": "low",
+    "estimatedMinutes": 4,
+    "tags": [
+      "combinations"
+    ],
+    "module": "statistics",
+    "topic": "probability",
+    "orderMatters": false,
+    "expectedOutput": {
+      "value": 120
+    }
+  }
+]

@@ -1,0 +1,225 @@
+[
+  {
+    "id": "statistics-hypothesis-001",
+    "module": "statistics",
+    "topic": "hypothesis",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "The app promises a 40 minute average delivery time. Test whether delivered orders take 40 minutes on average. Return the one-sample z statistic of `actual_minutes` against a mean of 40, rounded to 2 decimals. Use only delivered rows and drop duplicate rows first.",
+    "dataset": "food_delivery",
+    "hint": "z = (sample mean - 40) / (sample SD / square root of n). Use pandas `.std()`, which uses n - 1.",
+    "solutionCode": "d = load(\"food_delivery\", \"deliveries\").drop_duplicates()\nd = d[d.delivery_status == \"Delivered\"].dropna(subset=[\"actual_minutes\"])\nimport math\nmu0 = 40\nz = (d.actual_minutes.mean() - mu0) / (d.actual_minutes.std() / math.sqrt(len(d)))\nresult = round(z, 2)",
+    "expectedOutput": {
+      "value": 44.36
+    },
+    "explanation": "The z statistic measures how many standard errors the sample mean sits away from the claimed value of 40. The standard error is the sample SD divided by the square root of n. A value far from zero means the claim is unlikely to hold.",
+    "commonMistake": "Dividing by the SD alone instead of the standard error. That gives a value near 3 when the real z is above 40, so the gap looks small when it is not.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "hypothesis",
+      "z-test"
+    ]
+  },
+  {
+    "id": "statistics-hypothesis-002",
+    "module": "statistics",
+    "topic": "hypothesis",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Is the mean delivery time of 44.8 minutes unusual? Treat 44.8 as the null value and return the two-sided p-value for the one-sample z test on delivered `actual_minutes`, rounded to 4 decimals. Use `math.erfc` for the normal tail.",
+    "dataset": "food_delivery",
+    "hint": "Compute z first, then p = erfc(|z| / sqrt(2)). Two-sided means you count both tails.",
+    "solutionCode": "d = load(\"food_delivery\", \"deliveries\").drop_duplicates()\nd = d[d.delivery_status == \"Delivered\"].dropna(subset=[\"actual_minutes\"])\nimport math\nmu0 = 44.8\nz = (d.actual_minutes.mean() - mu0) / (d.actual_minutes.std() / math.sqrt(len(d)))\np = math.erfc(abs(z) / math.sqrt(2))\nresult = round(p, 4)",
+    "expectedOutput": {
+      "value": 0.4928
+    },
+    "explanation": "The z value is small here, so the p-value is large. erfc gives the area in both tails of the standard normal curve beyond |z|. A large p means the data are consistent with a true mean of 44.8.",
+    "commonMistake": "Using `math.erfc(z)` without the absolute value and the square root of 2. Negative or wrong z values then give a p-value above 1 or a number that does not match the two-sided test.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "hypothesis",
+      "p-value"
+    ]
+  },
+  {
+    "id": "statistics-hypothesis-003",
+    "module": "statistics",
+    "topic": "hypothesis",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Ops wants the late rate (delay more than 10 minutes) to be 20 percent or less. Test whether the observed late rate differs from 20 percent. Return the one-sample z statistic for a proportion, rounded to 3 decimals, using delivered rows only.",
+    "dataset": "food_delivery",
+    "hint": "For a proportion the standard error uses the null value: sqrt(p0 * (1 - p0) / n). Here p0 = 0.20.",
+    "solutionCode": "d = load(\"food_delivery\", \"deliveries\").drop_duplicates()\nd = d[d.delivery_status == \"Delivered\"].dropna(subset=[\"actual_minutes\"])\nimport math\nlate = (d.delay_minutes > 10).astype(int)\nn = len(late)\np0 = 0.20\nz = (late.mean() - p0) / math.sqrt(p0 * (1 - p0) / n)\nresult = round(z, 3)",
+    "expectedOutput": {
+      "value": -5.738
+    },
+    "explanation": "A proportion is a mean of 0 and 1 values, so the same z idea works. The standard error uses the claimed rate of 20 percent, because the test assumes that rate is true. A negative z means the late rate is below the claim.",
+    "commonMistake": "Using the observed late rate inside the standard error. That is the confidence-interval formula, not the hypothesis-test formula, and it gives a slightly different z.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 6,
+    "tags": [
+      "hypothesis",
+      "proportion"
+    ]
+  },
+  {
+    "id": "statistics-hypothesis-004",
+    "module": "statistics",
+    "topic": "hypothesis",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "A small pilot looked at only 30 delivered orders. Take the first 30 delivered rows when sorted by `delivery_id`. Return the one-sample z statistic of their `actual_minutes` against a mean of 40, rounded to 3 decimals, using the sample SD.",
+    "dataset": "food_delivery",
+    "hint": "Sort by delivery_id and use head(30). Then apply the same z formula with n = 30.",
+    "solutionCode": "d = load(\"food_delivery\", \"deliveries\").drop_duplicates()\nd = d[d.delivery_status == \"Delivered\"].dropna(subset=[\"actual_minutes\"])\nimport math\ns30 = d.sort_values(\"delivery_id\").head(30).actual_minutes\nz = (s30.mean() - 40) / (s30.std() / math.sqrt(len(s30)))\nresult = round(z, 3)",
+    "expectedOutput": {
+      "value": 0.971
+    },
+    "explanation": "The same 4 minute gap gives a much smaller z here, because the standard error is larger with only 30 rows. Small samples are noisy, so a result that looks big may still be luck. Lesson 12 uses the t distribution for this case.",
+    "commonMistake": "Reading the z as if n were huge. With 30 rows the normal curve is only a rough guide, and a t-test is the more careful choice.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "hypothesis",
+      "sample-size"
+    ]
+  },
+  {
+    "id": "statistics-hypothesis-005",
+    "module": "statistics",
+    "topic": "hypothesis",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "Ops asks whether Heavy Rain orders take a different time from the average delivered order. Use the mean of all delivered orders as the null value. Return a dict with `z` (the one-sample z for Heavy Rain orders, using their own SD, 2 decimals) and `reject_at_0_05` (1 if the two-sided test rejects at alpha 0.05, otherwise 0).",
+    "dataset": "food_delivery",
+    "hint": "Build mu0 from all delivered rows first. Then filter to weather == 'Heavy Rain' and use that group's SD and n.",
+    "solutionCode": "d = load(\"food_delivery\", \"deliveries\").drop_duplicates()\nd = d[d.delivery_status == \"Delivered\"].dropna(subset=[\"actual_minutes\"])\nimport math\nmu0 = d.actual_minutes.mean()\nhr = d[d.weather == \"Heavy Rain\"].actual_minutes\nz = (hr.mean() - mu0) / (hr.std() / math.sqrt(len(hr)))\nresult = {\"z\": round(z, 2), \"reject_at_0_05\": int(abs(z) > 1.96)}",
+    "expectedOutput": {
+      "value": {
+        "z": 17.79,
+        "reject_at_0_05": 1
+      }
+    },
+    "explanation": "Heavy Rain orders have their own mean and spread, so the standard error comes from that group only. A z near 17 is far beyond the 1.96 cutoff, so the test rejects the null. The null value here is the overall average, which includes Heavy Rain itself, so the test is a rough check.",
+    "commonMistake": "Using the overall SD for the standard error. That mixes the spread of all orders with the spread of one group and changes the z.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 8,
+    "tags": [
+      "hypothesis",
+      "z-test"
+    ]
+  },
+  {
+    "id": "statistics-hypothesis-006",
+    "module": "statistics",
+    "topic": "hypothesis",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "HR wants to know if the average goals met percentage in performance reviews differs from 70 percent. Drop duplicate rows and missing `goals_met_pct` values. Return a dict with `z` (one-sample z against 70, 2 decimals) and `reject_at_0_05` (1 or 0, two-sided, alpha 0.05).",
+    "dataset": "hr",
+    "hint": "Use load(\"hr\", \"performance_reviews\"). Drop duplicates, then drop NA in goals_met_pct before computing the mean and SD.",
+    "solutionCode": "import math\nr = load(\"hr\", \"performance_reviews\").drop_duplicates().dropna(subset=[\"goals_met_pct\"])\ng = r.goals_met_pct\nz = (g.mean() - 70) / (g.std() / math.sqrt(len(g)))\nresult = {\"z\": round(z, 2), \"reject_at_0_05\": int(abs(z) > 1.96)}",
+    "expectedOutput": {
+      "value": {
+        "z": 9.73,
+        "reject_at_0_05": 1
+      }
+    },
+    "explanation": "The mean is about 71.7, which is above 70. With almost 4,800 reviews, the standard error is tiny, so even a 1.7 point gap gives a large z. The test rejects, but the gap itself is small, so check the size of the gap as well as the p-value.",
+    "commonMistake": "Keeping duplicate review rows. The same review counted twice shrinks the standard error and makes the z look stronger than the data support.",
+    "interviewFrequency": "low",
+    "estimatedMinutes": 8,
+    "tags": [
+      "hypothesis",
+      "z-test"
+    ]
+  },
+  {
+    "id": "statistics-hypothesis-007",
+    "module": "statistics",
+    "topic": "hypothesis",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "A one-sample z test gives z = 2.5. Using a two-sided test at alpha 0.05, do you reject the null hypothesis? Answer 1 for yes and 0 for no.",
+    "dataset": "none",
+    "hint": "The two-sided cutoff at alpha 0.05 is about 1.96 in either direction.",
+    "solution": "**Answer: 1 (yes, reject).** The two-sided cutoff at alpha 0.05 is z = 1.96 in both directions. A z of 2.5 is beyond 1.96, so the p-value is below 0.05 (about 0.012). The result is statistically significant at the 5 percent level.",
+    "explanation": "A two-sided test splits alpha into two tails, so each tail gets 2.5 percent. The cutoff is about 1.96. Any z beyond 1.96 in absolute value is significant.",
+    "commonMistake": "Using 1.645 as the cutoff. That value is for a one-sided test, which is not the default here.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "hypothesis",
+      "alpha"
+    ],
+    "expectedOutput": {
+      "value": 1
+    }
+  },
+  {
+    "id": "statistics-hypothesis-008",
+    "module": "statistics",
+    "topic": "hypothesis",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "A new checkout flow is tested. The p-value is 0.07 and alpha was set at 0.05 before the test. Write two or three sentences for a product manager saying what you conclude. Do not say the flow has no effect.",
+    "dataset": "none",
+    "hint": "Say what the p-value means in plain words and what you do with the null hypothesis.",
+    "solution": "**Model answer:** We do not reject the null hypothesis. The p-value is 0.07, which is above our 0.05 cutoff. The data do not show a clear difference yet. This does not prove the new flow has no effect; we may need a larger test to know.",
+    "explanation": "A p-value above alpha means we fail to reject the null. It does not mean the null is true. The honest answer is that the test was not sensitive enough to show a clear effect.",
+    "commonMistake": "Writing that the new flow has no effect. A high p-value only says the evidence is weak, not that the effect is zero.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "hypothesis",
+      "interpretation"
+    ]
+  },
+  {
+    "id": "statistics-hypothesis-009",
+    "module": "statistics",
+    "topic": "hypothesis",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "A test statistic is z = 1.96. Find the two-sided p-value. Give the answer rounded to 3 decimals.",
+    "dataset": "none",
+    "hint": "p = erfc(|z| / sqrt(2)) with math, or use the standard normal table.",
+    "solution": "**Answer: 0.050.** Two-sided p = erfc(1.96 / sqrt(2)) = 0.049996, which rounds to 0.050. This is the reason 1.96 is the standard cutoff for alpha 0.05 in a two-sided test.",
+    "explanation": "The two-sided p-value counts both tails beyond 1.96. Each tail holds about 2.5 percent of the normal curve, so the total is about 5 percent.",
+    "commonMistake": "Reporting the one-tailed value, about 0.025. That answer ignores the second tail of a two-sided test.",
+    "interviewFrequency": "low",
+    "estimatedMinutes": 4,
+    "tags": [
+      "hypothesis",
+      "p-value"
+    ],
+    "expectedOutput": {
+      "value": 0.05
+    }
+  },
+  {
+    "id": "statistics-hypothesis-010",
+    "module": "statistics",
+    "topic": "hypothesis",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "A sample of 100 orders has mean 52 minutes and SD 10 minutes. Test whether the true mean is 50 minutes. Give the z statistic.",
+    "dataset": "none",
+    "hint": "Standard error = SD / sqrt(n). Then z = (mean - 50) / standard error.",
+    "solution": "**Answer: z = 2.** Standard error = 10 / sqrt(100) = 1. z = (52 - 50) / 1 = 2. A z of 2 is just beyond the 1.96 cutoff, so a two-sided test at alpha 0.05 rejects, though only barely.",
+    "explanation": "The standard error shrinks with the square root of n. Here n = 100 gives an SE of 1 minute, so the 2 minute gap is two standard errors wide.",
+    "commonMistake": "Dividing by n instead of the square root of n. That gives a z of 0.2 and hides a real difference.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "hypothesis",
+      "z-test"
+    ],
+    "expectedOutput": {
+      "value": 2
+    }
+  }
+]

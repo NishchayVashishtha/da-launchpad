@@ -1,0 +1,228 @@
+[
+  {
+    "id": "statistics-abdesign-001",
+    "module": "statistics",
+    "topic": "abdesign",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "The growth team wants to know how many users each arm of the free shipping banner test really has. Clean the test table first: drop exact duplicate rows, then remove every user who appears in both variants. Return a dict with the row count for `control` and `treatment`.",
+    "dataset": "marketing",
+    "hint": "Use drop_duplicates(), then groupby on user_id and nunique() on variant to find users in both arms.",
+    "solutionCode": "df = load(\"marketing\", \"ab_test_results\").drop_duplicates()\nboth = df.groupby(\"user_id\")[\"variant\"].nunique()\ndf = df[~df.user_id.isin(both[both > 1].index)]\nresult = {k: int(v) for k, v in df[\"variant\"].value_counts().sort_index().items()}",
+    "expectedOutput": {
+      "value": {
+        "control": 6016,
+        "treatment": 5974
+      }
+    },
+    "explanation": "The first step removes repeated rows that came from a logging glitch. The second step finds users who were shown both variants. Those users have no clear result, so both of their rows are removed. The counts after cleaning are the sizes you use in every later calculation.",
+    "commonMistake": "Counting the raw rows (6,034 control and 5,996 treatment). This keeps duplicates and contaminated users, so the arms look bigger than they are.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "ab-testing",
+      "data-cleaning",
+      "contamination"
+    ]
+  },
+  {
+    "id": "statistics-abdesign-002",
+    "module": "statistics",
+    "topic": "abdesign",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "Before you trust an A/B test, check how many users were put into both arms by mistake. Use the raw test table after removing exact duplicate rows. Return the number of users who appear in both `control` and `treatment` as an integer.",
+    "dataset": "marketing",
+    "hint": "Group by user_id, count the distinct variants for each user, and count the users with more than one.",
+    "solutionCode": "df = load(\"marketing\", \"ab_test_results\").drop_duplicates()\nboth = df.groupby(\"user_id\")[\"variant\"].nunique()\nresult = int((both > 1).sum())",
+    "expectedOutput": {
+      "value": 10
+    },
+    "explanation": "nunique() counts how many different variants each user has. A value of 2 means the user was assigned to both arms. Counting those users tells you how much contamination the test has.",
+    "commonMistake": "Counting rows instead of users. A contaminated user usually has two rows, so the row count is double the user count.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "ab-testing",
+      "contamination"
+    ]
+  },
+  {
+    "id": "statistics-abdesign-003",
+    "module": "statistics",
+    "topic": "abdesign",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Use the cleaned test table (no duplicates, no users in both arms). Find the baseline conversion rate of the `control` arm as a percentage, rounded to 2 decimals. This is the number you use to plan the next test.",
+    "dataset": "marketing",
+    "hint": "The converted column is 0 or 1, so its mean is the conversion rate.",
+    "solutionCode": "df = load(\"marketing\", \"ab_test_results\").drop_duplicates()\nboth = df.groupby(\"user_id\")[\"variant\"].nunique()\ndf = df[~df.user_id.isin(both[both > 1].index)]\nresult = round(df.loc[df[\"variant\"] == \"control\", \"converted\"].mean() * 100, 2)",
+    "expectedOutput": {
+      "value": 10.57
+    },
+    "explanation": "The converted column holds 1 for a buyer and 0 for everyone else. Its mean is therefore the share of users who converted. Multiplying by 100 turns the share into a percentage.",
+    "commonMistake": "Using the uncleaned table. The duplicate and contaminated rows move the baseline a little, and a planning number should come from clean data.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "ab-testing",
+      "baseline",
+      "conversion"
+    ]
+  },
+  {
+    "id": "statistics-abdesign-004",
+    "module": "statistics",
+    "topic": "abdesign",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Run a sample ratio mismatch (SRM) check on the cleaned test. If the split was truly 50/50, both arms should have the same expected size. Compute the chi-square statistic for the observed `control` and `treatment` counts against an expected 50/50 split, rounded to 3 decimals.",
+    "dataset": "marketing",
+    "hint": "Expected count per arm is the total divided by 2. Sum (observed minus expected) squared divided by expected over both arms.",
+    "solutionCode": "df = load(\"marketing\", \"ab_test_results\").drop_duplicates()\nboth = df.groupby(\"user_id\")[\"variant\"].nunique()\ndf = df[~df.user_id.isin(both[both > 1].index)]\ncounts = df[\"variant\"].value_counts()\nobs = [counts[\"control\"], counts[\"treatment\"]]\nexp = sum(obs) / 2\nresult = round(sum((o - exp) ** 2 / exp for o in obs), 3)",
+    "expectedOutput": {
+      "value": 0.147
+    },
+    "explanation": "The SRM check asks whether the counts look like a fair coin flip. The statistic adds up how far each arm is from the expected count. With one degree of freedom, a value above 3.84 would mean the split is off at the 5 percent level.",
+    "commonMistake": "Using the raw counts before cleaning. Duplicates can make one arm look bigger, and the check then flags a problem that is not really in the assignment.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "ab-testing",
+      "srm",
+      "chi-square"
+    ]
+  },
+  {
+    "id": "statistics-abdesign-005",
+    "module": "statistics",
+    "topic": "abdesign",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "A subscription app wants its trial-to-paid rate. Use only the subscriptions that started a trial. Return the percentage of those subscriptions that have a paid start date, rounded to 2 decimals.",
+    "dataset": "subscription",
+    "hint": "Filter to rows where trial_start_date is not null. Then check paid_start_date with notna() and take the mean.",
+    "solutionCode": "s = load(\"subscription\", \"subscriptions\")\ns = s[s[\"trial_start_date\"].notna()]\nresult = round(s[\"paid_start_date\"].notna().mean() * 100, 2)",
+    "expectedOutput": {
+      "value": 36.06
+    },
+    "explanation": "Every row in this filtered set started a trial, so the denominator is the number of trials. notna() is True for subscriptions that converted to paid, and its mean is the conversion share.",
+    "commonMistake": "Dividing by all rows in the table, including users who never started a trial. That gives a lower number and mixes two different funnels.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "funnel",
+      "conversion",
+      "baseline"
+    ]
+  },
+  {
+    "id": "statistics-abdesign-006",
+    "module": "statistics",
+    "topic": "abdesign",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "The next checkout test should detect a lift of 1.5 percentage points over the cleaned control baseline. Use the baseline p1 from the control arm and set pbar as p1 plus half the lift. Using the rule of thumb n per arm = 15.7 x pbar x (1 - pbar) / delta squared, return the sample size per arm as a whole number, rounded up.",
+    "dataset": "marketing",
+    "hint": "Work out p1 first, as a proportion between 0 and 1, not a percentage. Use math.ceil for the round-up.",
+    "solutionCode": "import math\ndf = load(\"marketing\", \"ab_test_results\").drop_duplicates()\nboth = df.groupby(\"user_id\")[\"variant\"].nunique()\ndf = df[~df.user_id.isin(both[both > 1].index)]\np1 = df.loc[df[\"variant\"] == \"control\", \"converted\"].mean()\ndelta = 0.015\npbar = p1 + delta / 2\nresult = int(math.ceil(15.7 * pbar * (1 - pbar) / delta ** 2))",
+    "expectedOutput": {
+      "value": 7006
+    },
+    "explanation": "The rule of thumb gives the users needed in each arm for 80 percent power at a 5 percent significance level. pbar is the average of the two rates you hope to see, which is a good stand-in for the variance. Rounding up makes sure you never plan for a little too few users.",
+    "commonMistake": "Using p1 instead of pbar in the formula, or using p as 10.57 instead of 0.1057. Both give a wrong sample size that looks plausible.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "sample-size",
+      "power",
+      "formula"
+    ]
+  },
+  {
+    "id": "statistics-abdesign-007",
+    "module": "statistics",
+    "topic": "abdesign",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "A UPI cashback test will look for a lift from a 10 percent baseline to 12 percent, which is a 2 percentage point MDE. Use pbar = 0.11 in the rule of thumb n per arm = 15.7 x pbar x (1 - pbar) / delta squared. Give the sample size per arm, rounded up to the next whole number.",
+    "dataset": "none",
+    "hint": "Compute 15.7 times 0.11 times 0.89, then divide by 0.02 squared. Round up.",
+    "solution": "### Working\n\n- pbar = 0.11, so pbar x (1 - pbar) = 0.11 x 0.89 = 0.0979.\n- 15.7 x 0.0979 = 1.5370.\n- delta squared = 0.02 x 0.02 = 0.0004.\n- n per arm = 1.5370 / 0.0004 = 3842.6, which rounds up to **3843**.\n\nEach arm needs about 3,843 users.",
+    "explanation": "The formula gives the users per arm for 80 percent power at a 5 percent two-sided significance level. Always round up, because a fraction of a user is not possible and the test would fall short.",
+    "commonMistake": "Using 0.1 as pbar instead of 0.11. The result is a little too small and the test is underpowered.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "sample-size",
+      "formula"
+    ],
+    "expectedOutput": {
+      "value": 3843
+    }
+  },
+  {
+    "id": "statistics-abdesign-008",
+    "module": "statistics",
+    "topic": "abdesign",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "A product manager asks what happens to the sample size if the team cuts the minimum detectable effect in half, from 2 percentage points to 1 percentage point. Using the same baseline and alpha, by what multiple does the sample size per arm change?",
+    "dataset": "none",
+    "hint": "Look at how delta appears in the formula. It is squared in the denominator.",
+    "solution": "### Working\n\nThe formula has delta squared in the denominator:\n\n`n = 15.7 x pbar x (1 - pbar) / delta^2`\n\nHalving delta makes delta squared one quarter as large. Dividing by a quarter multiplies the result by 4.\n\nThe sample size per arm becomes **4 times** bigger. This is why very small lifts are expensive to test.",
+    "explanation": "Sample size grows with the inverse square of the MDE. Halving the lift means four times as many users, so planning a test for a tiny lift can take months.",
+    "commonMistake": "Answering 2 times, because the effect is halved. The effect is squared, so the multiple is 2 squared.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "sample-size",
+      "mde"
+    ],
+    "expectedOutput": {
+      "value": 4
+    }
+  },
+  {
+    "id": "statistics-abdesign-009",
+    "module": "statistics",
+    "topic": "abdesign",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "The team needs 20,000 users in each arm of a new test. The app gets about 1,600 eligible users a day in total, and both arms share that traffic. How many whole days must the test run to fill both arms? Round up.",
+    "dataset": "none",
+    "hint": "Add the two arms together first. Then divide by the daily traffic.",
+    "solution": "### Working\n\n- Users needed in total = 20,000 + 20,000 = 40,000.\n- Days needed = 40,000 / 1,600 = 25.\n\nThe test runs for **25 days**. Rounding up is not needed here, but in real planning you round up to full weeks as well.",
+    "explanation": "Both arms come from the same traffic, so the total is what matters. Dividing the total need by the daily flow gives the days.",
+    "commonMistake": "Dividing 20,000 by 1,600. That counts only one arm and makes the test look twice as fast as it is.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "duration",
+      "planning"
+    ],
+    "expectedOutput": {
+      "value": 25
+    }
+  },
+  {
+    "id": "statistics-abdesign-010",
+    "module": "statistics",
+    "topic": "abdesign",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "A fintech app wants to test a UPI cashback offer. The team lists these metrics: (a) share of users who make at least one UPI payment in the test week, (b) average cashback paid per user, (c) failed payment rate, (d) app crash rate. Which one is the primary metric, which are guardrails, and why?",
+    "dataset": "none",
+    "hint": "The primary metric is the one the test is built to move. Guardrails are the things that must not get worse.",
+    "solution": "### Recommended answer\n\n- **Primary metric:** (a) share of users who make at least one UPI payment in the test week. The cashback is meant to get more users paying, so this is the number the decision depends on. Pick it before the test starts.\n- **Guardrails:** (c) failed payment rate and (d) app crash rate. A cashback offer could push users into more payments on a weak system, and that would hurt trust. If either guardrail gets worse, the team should not ship even if the primary metric improves.\n- **Secondary, not a decision metric:** (b) average cashback paid per user. It is a cost, so it belongs in the business case, not in the pass or fail rule.\n\nKeep one primary metric. Too many primary metrics raise the chance that one of them looks good by luck.",
+    "explanation": "A primary metric answers the question the test was built for. Guardrails protect the product from harm while the primary metric moves. Cost metrics matter for the business case but usually do not decide the test alone.",
+    "commonMistake": "Making the cashback spend the primary metric. Spending always rises when you give money away, so the test would never look like a loss on the metric that matters least.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "metrics",
+      "guardrail",
+      "primary-metric"
+    ]
+  }
+]

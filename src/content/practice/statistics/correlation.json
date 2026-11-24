@@ -1,0 +1,251 @@
+[
+  {
+    "id": "statistics-correlation-001",
+    "difficulty": "easy",
+    "language": "python",
+    "dataset": "food_delivery",
+    "question": "Operations wants to know how closely trip distance follows delivery time. Find the Pearson correlation between `distance_km` and `actual_minutes` for delivered orders (drop cancelled rows, remove duplicate `delivery_id` rows). Round to 2 decimals and assign it to `result`.",
+    "hint": "Use `.corr()` on the two columns after you drop rows with no `actual_minutes`.",
+    "solutionCode": "d = load('food_delivery', 'deliveries').drop_duplicates(subset=['delivery_id'])\ndv = d.dropna(subset=['actual_minutes'])\nresult = round(dv['distance_km'].corr(dv['actual_minutes']), 2)",
+    "expectedOutput": {
+      "value": 0.7
+    },
+    "explanation": "Cancelled orders have no `actual_minutes`, so we drop them first. `.corr()` gives Pearson r, which is near +1 when longer trips take longer. An r of 0.70 is a strong positive link.",
+    "commonMistake": "Keeping cancelled rows. pandas then skips NaN pairs quietly, so the count changes without any warning. Always check how many rows you used.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "correlation",
+      "pearson"
+    ],
+    "module": "statistics",
+    "topic": "correlation",
+    "orderMatters": false
+  },
+  {
+    "id": "statistics-correlation-002",
+    "difficulty": "easy",
+    "language": "python",
+    "dataset": "hr",
+    "question": "HR wants to see if managers and employees rate performance the same way. Find the Pearson correlation between `manager_rating` and `self_rating` in performance reviews (remove duplicate `review_id` rows). Round to 2 decimals and assign it to `result`.",
+    "hint": "Select the two columns and call `.corr()`. Pandas returns a matrix; take the cell where the two names meet.",
+    "solutionCode": "h = load('hr', 'performance_reviews').drop_duplicates(subset=['review_id'])\nresult = round(h[['manager_rating','self_rating']].corr().iloc[0, 1], 2)",
+    "expectedOutput": {
+      "value": 0.78
+    },
+    "explanation": "Both ratings are on a 1 to 5 scale. A high r means people who score high on one tend to score high on the other. The value is not a causal claim about who is right.",
+    "commonMistake": "Using the full table without removing duplicate reviews. The duplicates slightly change r and the answer no longer matches the clean data.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "correlation",
+      "hr"
+    ],
+    "module": "statistics",
+    "topic": "correlation",
+    "orderMatters": false
+  },
+  {
+    "id": "statistics-correlation-003",
+    "difficulty": "medium",
+    "language": "python",
+    "dataset": "hr",
+    "question": "A manager claims that staying late raises goal achievement. Check the claim: find the Pearson correlation between `avg_monthly_overtime_hours` and `goals_met_pct` in performance reviews (remove duplicate `review_id` rows). Round to 3 decimals and assign it to `result`.",
+    "hint": "Same steps as a basic correlation. Then read the size of r, not only its sign.",
+    "solutionCode": "h = load('hr', 'performance_reviews').drop_duplicates(subset=['review_id'])\nresult = round(h['avg_monthly_overtime_hours'].corr(h['goals_met_pct']), 3)",
+    "expectedOutput": {
+      "value": -0.004
+    },
+    "explanation": "The r is almost zero, so overtime and goal achievement show no straight-line link in this data. A correlation near zero does not prove there is no effect, but it does mean the claim is not supported.",
+    "commonMistake": "Saying 'overtime does not help' because r is negative. The sign is tiny and not meaningful at this size. Report the strength, not the sign alone.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "correlation",
+      "causation"
+    ],
+    "module": "statistics",
+    "topic": "correlation",
+    "orderMatters": false
+  },
+  {
+    "id": "statistics-correlation-004",
+    "difficulty": "medium",
+    "language": "python",
+    "dataset": "food_delivery",
+    "question": "Find the rank-based (Spearman) correlation between `distance_km` and `actual_minutes` for delivered orders (remove duplicate `delivery_id` rows). Rank each column first, then take Pearson r of the two ranks. Round to 2 decimals and assign it to `result`.",
+    "hint": "Call `.rank()` on the two columns before `.corr()`. Ranks replace each value with its position in sorted order.",
+    "solutionCode": "d = load('food_delivery', 'deliveries').drop_duplicates(subset=['delivery_id'])\ndv = d.dropna(subset=['actual_minutes'])\nranks = dv[['distance_km','actual_minutes']].rank()\nresult = round(ranks['distance_km'].corr(ranks['actual_minutes']), 2)",
+    "expectedOutput": {
+      "value": 0.66
+    },
+    "explanation": "Spearman uses ranks, so one very long trip cannot pull the answer as much as it does for Pearson. This value is lower than the Pearson value from the first question. The gap shows that the relation is monotonic but not perfectly straight.",
+    "commonMistake": "Using `.corr(method='spearman')`. That call needs scipy, which is not in this practice environment. Ranking first gives the same result with pandas alone.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 6,
+    "tags": [
+      "correlation",
+      "spearman"
+    ],
+    "module": "statistics",
+    "topic": "correlation",
+    "orderMatters": false
+  },
+  {
+    "id": "statistics-correlation-005",
+    "difficulty": "medium",
+    "language": "python",
+    "dataset": "food_delivery",
+    "question": "Does the distance and time link change with weather? For delivered orders (remove duplicate `delivery_id` rows), compute the Pearson r between `distance_km` and `actual_minutes` inside each `weather` group. Return a DataFrame with columns `weather` and `r` (rounded to 2 decimals), sorted by `weather`, and assign it to `result`.",
+    "hint": "Use `groupby('weather')` and an `apply` or loop that calls `.corr()` inside each group.",
+    "solutionCode": "d = load('food_delivery', 'deliveries').drop_duplicates(subset=['delivery_id'])\ndv = d.dropna(subset=['actual_minutes'])\nrows = []\nfor w, g in dv.groupby('weather'):\n    rows.append({'weather': w, 'r': round(g['distance_km'].corr(g['actual_minutes']), 2)})\nresult = pd.DataFrame(rows).sort_values('weather').reset_index(drop=True)",
+    "expectedOutput": {
+      "columns": [
+        "weather",
+        "r"
+      ],
+      "rows": [
+        [
+          "Clear",
+          0.71
+        ],
+        [
+          "Cloudy",
+          0.7
+        ],
+        [
+          "Heavy Rain",
+          0.73
+        ],
+        [
+          "Rain",
+          0.72
+        ]
+      ]
+    },
+    "explanation": "We split the rows into weather groups and measure the link inside each group. If r stays about the same in every group, weather is not changing the distance effect. Splitting by a third variable like this is a basic check for confounding.",
+    "commonMistake": "Computing one overall r and reading it as the answer for every weather. A group-level check needs one r per group.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 7,
+    "tags": [
+      "correlation",
+      "groupby",
+      "confounder"
+    ],
+    "module": "statistics",
+    "topic": "correlation",
+    "orderMatters": false
+  },
+  {
+    "id": "statistics-correlation-006",
+    "difficulty": "hard",
+    "language": "python",
+    "dataset": "food_delivery",
+    "question": "Do late deliveries get worse ratings? For delivered orders, join ratings to deliveries on `delivery_id` (inner join, remove duplicates first). Find the Pearson r between `delay_minutes` and `delivery_rating`. Round to 2 decimals and assign it to `result`.",
+    "hint": "Remove duplicate ids in both tables before the merge, or the join will repeat rows.",
+    "solutionCode": "d = load('food_delivery', 'deliveries').drop_duplicates(subset=['delivery_id'])\ndv = d.dropna(subset=['actual_minutes'])\nr = load('food_delivery', 'ratings').drop_duplicates(subset=['rating_id'])\nm = dv.merge(r[['delivery_id','delivery_rating']], on='delivery_id', how='inner')\nresult = round(m['delay_minutes'].corr(m['delivery_rating']), 2)",
+    "expectedOutput": {
+      "value": -0.7
+    },
+    "explanation": "The inner join keeps only delivered orders that have a rating. Then we measure the straight-line link between how late an order was and the rating it got. A strong negative r means later orders tend to get lower ratings.",
+    "commonMistake": "Joining before removing duplicates. Duplicate rows add extra weight to some orders and change r, even though each row looks valid on its own.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "correlation",
+      "join"
+    ],
+    "module": "statistics",
+    "topic": "correlation",
+    "orderMatters": false
+  },
+  {
+    "id": "statistics-correlation-007",
+    "difficulty": "easy",
+    "language": "text",
+    "dataset": "none",
+    "question": "Two columns have a correlation of r = 0.8. What percent of the variation in one column is shared with the other? Give the answer as a number (r squared, as a percent).",
+    "hint": "The shared part is r squared. Multiply by 100 to turn it into a percent.",
+    "solution": "**Step 1.** Shared variation is r squared: 0.8 x 0.8 = 0.64.\n\n**Step 2.** As a percent: 0.64 x 100 = 64.\n\nSo 64% of the variation in one column is linked to the other. The other 36% comes from other factors.",
+    "explanation": "r squared is the share of variation that the straight-line link explains. It is always between 0 and 1, so the percent is always between 0 and 100.",
+    "commonMistake": "Reading r = 0.8 as '80% of the variation'. Squaring is needed to get the shared share.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "r-squared"
+    ],
+    "module": "statistics",
+    "topic": "correlation",
+    "orderMatters": false,
+    "expectedOutput": {
+      "value": 64
+    }
+  },
+  {
+    "id": "statistics-correlation-008",
+    "difficulty": "medium",
+    "language": "text",
+    "dataset": "none",
+    "question": "A shop finds that its daily ice cream sales and its daily air conditioner sales have a correlation of r = 0.92. Should the owner stock more ice cream to sell more air conditioners? Explain what the strong r really shows and name the likely hidden driver.",
+    "hint": "Ask what happens on a hot day. Does one of the two columns cause the other?",
+    "solution": "**Answer.** No. The r of 0.92 is strong, but it does not show that ice cream causes air conditioner sales, or the other way round.\n\n**Likely hidden driver.** Hot weather. On hot days, many people buy ice cream and many people buy air conditioners. Heat is a confounder, so it drives both columns.\n\n**What to do.** Check the idea with data that holds heat fixed. For example, compare days with the same temperature. Or run a small test where the shop stocks more ice cream in one branch and not in another.",
+    "explanation": "A strong correlation means the two columns move together. It does not show direction, and a third variable can drive both. Simple checks, such as comparing within groups, can reveal the hidden driver.",
+    "commonMistake": "Stocking more ice cream because the r is high. That treats a shared cause as a direct cause.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "causation",
+      "confounder"
+    ],
+    "module": "statistics",
+    "topic": "correlation",
+    "orderMatters": false
+  },
+  {
+    "id": "statistics-correlation-009",
+    "difficulty": "medium",
+    "language": "text",
+    "dataset": "none",
+    "question": "Two columns X and Y have a correlation of r = 0.6. Every value in Y is then multiplied by 2. What is the new correlation? Give the number only.",
+    "hint": "Pearson r measures the shape of a straight-line link. Think about what happens to the scale of Y.",
+    "solution": "**Step 1.** Pearson r is based on standard scores. Each value is turned into (value - mean) / standard deviation.\n\n**Step 2.** Doubling Y doubles its mean and its standard deviation. The standard scores of Y do not change.\n\n**Step 3.** So r stays at 0.6. Pearson r does not depend on units or scale.",
+    "explanation": "Correlation is unit-free. Changing km to metres, or rupees to paise, does not change r. Only a change in the pattern of pairs can change it.",
+    "commonMistake": "Thinking r doubles with Y. The scale of r is fixed between -1 and 1.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "correlation",
+      "properties"
+    ],
+    "module": "statistics",
+    "topic": "correlation",
+    "orderMatters": false,
+    "expectedOutput": {
+      "value": 0.6
+    }
+  },
+  {
+    "id": "statistics-correlation-010",
+    "difficulty": "hard",
+    "language": "python",
+    "dataset": "food_delivery",
+    "question": "Is the delay effect on ratings the same on clear days? For delivered orders on `Clear` weather only, join ratings to deliveries on `delivery_id` (remove duplicates first). Find the Pearson r between `delay_minutes` and `delivery_rating`. Round to 2 decimals and assign it to `result`.",
+    "hint": "Filter to `weather == 'Clear'` after the merge, then compute r on the filtered rows.",
+    "solutionCode": "d = load('food_delivery', 'deliveries').drop_duplicates(subset=['delivery_id'])\ndv = d.dropna(subset=['actual_minutes'])\nr = load('food_delivery', 'ratings').drop_duplicates(subset=['rating_id'])\nm = dv.merge(r[['delivery_id','delivery_rating']], on='delivery_id', how='inner')\nclear = m[m['weather'] == 'Clear']\nresult = round(clear['delay_minutes'].corr(clear['delivery_rating']), 2)",
+    "expectedOutput": {
+      "value": -0.68
+    },
+    "explanation": "We repeat the delay and rating link inside one weather group. The r is close to the overall value, so weather does not explain the link. That is a useful check before you blame delay for low ratings.",
+    "commonMistake": "Filtering the ratings table before the join, which can drop delivered orders with no rating and bias the sample.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 9,
+    "tags": [
+      "correlation",
+      "confounder",
+      "join"
+    ],
+    "module": "statistics",
+    "topic": "correlation",
+    "orderMatters": false
+  }
+]

@@ -1,0 +1,228 @@
+[
+  {
+    "id": "statistics-errors-001",
+    "module": "statistics",
+    "topic": "errors",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "A growth analyst runs 20 separate tests, each at alpha 0.05, on a feature that has no real effect. What is the chance that at least one test says 'significant' by luck? Return the probability rounded to 4 decimals.",
+    "dataset": "none",
+    "hint": "Chance that one test is clean = 0.95. All 20 clean = 0.95 to the power 20. At least one false alarm is the opposite.",
+    "solutionCode": "result = round(1 - 0.95 ** 20, 4)",
+    "expectedOutput": {
+      "value": 0.6415
+    },
+    "explanation": "Each test has a 95 percent chance of no false alarm. For all 20 to be clean, multiply 0.95 by itself 20 times. Subtracting from 1 gives the chance of at least one false positive, about 64 percent.",
+    "commonMistake": "Multiplying 20 by 0.05 to get 1.0 and calling that the probability. That number is the expected count of false alarms, not a chance, and it can go above 1.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "errors",
+      "statistics"
+    ]
+  },
+  {
+    "id": "statistics-errors-002",
+    "module": "statistics",
+    "topic": "errors",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "A team plans to run 8 tests on the same experiment. To keep the overall false alarm chance near 5 percent, they use the Bonferroni rule and divide alpha by the number of tests. What per-test alpha do they use? Return the value rounded to 5 decimals.",
+    "dataset": "none",
+    "hint": "Bonferroni alpha = overall alpha divided by the number of tests.",
+    "solutionCode": "result = round(0.05 / 8, 5)",
+    "expectedOutput": {
+      "value": 0.00625
+    },
+    "explanation": "Dividing alpha by the number of tests keeps the total chance of any false alarm at or below 5 percent. Each test must now clear a stricter bar, so the threshold is 0.00625 instead of 0.05.",
+    "commonMistake": "Keeping alpha at 0.05 for each test. That is the same as no correction and lets the false alarm rate grow with the number of tests.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "errors",
+      "statistics"
+    ]
+  },
+  {
+    "id": "statistics-errors-003",
+    "module": "statistics",
+    "topic": "errors",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "An A/A test uses two identical groups, so any 'win' is a false alarm. Simulate 2,000 A/A experiments. Each experiment has 2 groups of 200 users with true conversion rate 0.10. Use a two-proportion z-test with |z| greater than 1.96 as 'significant'. Return the percent of experiments flagged as significant, rounded to 1 decimal. Use `np.random.default_rng(11)` and draw the two groups in this order: group A first, then group B, each as one binomial draw of size 2,000.",
+    "dataset": "none",
+    "hint": "Draw conversions for each group with rng.binomial(200, 0.10, 2000). Then compute the z value for each pair and count how many are bigger than 1.96 in size.",
+    "solutionCode": "rng = np.random.default_rng(11)\nn = 200\nx1 = rng.binomial(n, 0.10, 2000)\nx2 = rng.binomial(n, 0.10, 2000)\np1 = x1 / n\np2 = x2 / n\npp = (x1 + x2) / (2 * n)\nse = np.sqrt(pp * (1 - pp) * (2 / n))\nok = se > 0\nz = np.where(ok, (p2 - p1) / np.where(ok, se, 1), 0)\nresult = round(100 * float(np.mean(np.abs(z) > 1.96)), 1)",
+    "expectedOutput": {
+      "value": 4.7
+    },
+    "explanation": "Both groups have the same true rate, so every significant result is a false alarm. The rate of flagged experiments should be close to the alpha level of 5 percent. The z formula uses the pooled rate, which is the right choice when the null says the two rates are equal.",
+    "commonMistake": "Expecting zero false alarms. Random noise always produces some, and about 5 percent of A/A tests cross the line at alpha 0.05.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "errors",
+      "statistics"
+    ]
+  },
+  {
+    "id": "statistics-errors-004",
+    "module": "statistics",
+    "topic": "errors",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Product wants to look at each device and city tier separately. Clean the A/B data (no duplicates, no users in both variants). For each device_type and city_tier cell, compute the treatment minus control conversion z value with the pooled two-proportion z-test. Return a dict with `segments` (the number of cells) and `significant_raw` (the number of cells with |z| greater than 1.96).",
+    "dataset": "marketing",
+    "hint": "Use groupby on device_type and city_tier. Inside the loop, split the rows into control and treatment, then compute the z value for each cell.",
+    "solutionCode": "import math\ndf = load('marketing', 'ab_test_results').drop_duplicates()\nv = df.groupby('user_id')['variant'].nunique()\ndf = df[~df.user_id.isin(v[v > 1].index)]\nzs = []\nfor _, g in df.groupby(['device_type', 'city_tier']):\n    c = g[g.variant == 'control'].converted\n    t = g[g.variant == 'treatment'].converted\n    n1, n2 = len(c), len(t)\n    pp = (c.sum() + t.sum()) / (n1 + n2)\n    zs.append((t.mean() - c.mean()) / math.sqrt(pp * (1 - pp) * (1 / n1 + 1 / n2)))\nresult = {'segments': len(zs), 'significant_raw': int(sum(abs(z) > 1.96 for z in zs))}",
+    "expectedOutput": {
+      "value": {
+        "segments": 4,
+        "significant_raw": 2
+      }
+    },
+    "explanation": "Slicing the test into 4 cells gives 4 chances to find a 'win'. The raw count uses the normal alpha of 5 percent for each cell, so it is the number a careless analyst would report. Notice how this count changes once we correct for many cells in another question.",
+    "commonMistake": "Reporting only the cell with the biggest lift. Picking the best of several slices inflates the apparent effect and is a false positive trap.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "errors",
+      "statistics"
+    ]
+  },
+  {
+    "id": "statistics-errors-005",
+    "module": "statistics",
+    "topic": "errors",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "A PM plans a test where the true control rate is 9.5 percent and the true treatment rate is 11 percent. Each group has 6,000 users. Simulate 2,000 experiments with `np.random.default_rng(5)`. Draw the control group first, then the treatment group, each as one binomial draw per experiment. Use a two-proportion z-test with |z| greater than 1.96 as significant. Return the power (percent of experiments that detect the difference), as a whole number.",
+    "dataset": "none",
+    "hint": "Power is the share of simulated experiments that come out significant when the effect is real. Use rng.binomial for each group.",
+    "solutionCode": "rng = np.random.default_rng(5)\nn = 6000\nx1 = rng.binomial(n, 0.095, 2000)\nx2 = rng.binomial(n, 0.11, 2000)\np1 = x1 / n\np2 = x2 / n\npp = (x1 + x2) / (2 * n)\nse = np.sqrt(pp * (1 - pp) * (2 / n))\nok = se > 0\nz = np.where(ok, (p2 - p1) / np.where(ok, se, 1), 0)\nresult = int(round(100 * float(np.mean(np.abs(z) > 1.96))))",
+    "expectedOutput": {
+      "value": 76
+    },
+    "explanation": "A simulation runs the same experiment many times and counts how often it finds the real effect. Here the effect is 1.5 percentage points, and 6,000 users per arm gives a power of about 76 percent. That means about 1 in 4 real effects would still be missed.",
+    "commonMistake": "Stopping at the average effect size and ignoring how often the test misses it. A test that finds a real lift only about 3 times in 4 is still underpowered for many business decisions.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "errors",
+      "statistics"
+    ]
+  },
+  {
+    "id": "statistics-errors-006",
+    "module": "statistics",
+    "topic": "errors",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "The same 4 device and city tier cells from the A/B test are now checked with a Bonferroni correction. Clean the data (no duplicates, no users in both variants). Use a two-proportion z-test for each cell. Count a cell as significant only if its two-sided p-value is below 0.05 divided by the number of cells. Return a dict with `cells` and `significant_bonferroni`.",
+    "dataset": "marketing",
+    "hint": "Two-sided p-value = erfc(|z| / sqrt(2)). Compare each p-value to the corrected threshold, not to 0.05.",
+    "solutionCode": "import math\ndf = load('marketing', 'ab_test_results').drop_duplicates()\nv = df.groupby('user_id')['variant'].nunique()\ndf = df[~df.user_id.isin(v[v > 1].index)]\nps = []\nfor _, g in df.groupby(['device_type', 'city_tier']):\n    c = g[g.variant == 'control'].converted\n    t = g[g.variant == 'treatment'].converted\n    n1, n2 = len(c), len(t)\n    pp = (c.sum() + t.sum()) / (n1 + n2)\n    z = (t.mean() - c.mean()) / math.sqrt(pp * (1 - pp) * (1 / n1 + 1 / n2))\n    ps.append(math.erfc(abs(z) / math.sqrt(2)))\nthr = 0.05 / len(ps)\nresult = {'cells': len(ps), 'significant_bonferroni': int(sum(p < thr for p in ps))}",
+    "expectedOutput": {
+      "value": {
+        "cells": 4,
+        "significant_bonferroni": 1
+      }
+    },
+    "explanation": "Bonferroni divides the alpha by the number of cells, so each cell must clear 0.0125 instead of 0.05. The raw test found two cells, but only the strongest one survives the stricter threshold. This is the honest answer to report.",
+    "commonMistake": "Comparing each p-value with 0.05 and reporting all raw wins. That ignores the 4 separate looks at the same data.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "errors",
+      "statistics"
+    ]
+  },
+  {
+    "id": "statistics-errors-007",
+    "module": "statistics",
+    "topic": "errors",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "A team runs 5 independent tests at alpha 0.05, all on a feature with no real effect. What is the chance of at least one false positive? Give the probability rounded to 3 decimals.",
+    "dataset": "none",
+    "hint": "Compute 0.95 to the power 5 and subtract from 1.",
+    "solution": "**Step 1:** Chance that one test is clean = 0.95.\n\n**Step 2:** Chance that all 5 are clean = 0.95 x 0.95 x 0.95 x 0.95 x 0.95 = 0.7738.\n\n**Step 3:** Chance of at least one false positive = 1 - 0.7738 = **0.226**.",
+    "explanation": "Multiplying the chance of a clean result across independent tests gives the chance that none fire. Subtracting that from 1 gives the chance that at least one fires. With 5 tests it is already above 22 percent.",
+    "commonMistake": "Answering 5 x 0.05 = 0.25. That is close, but it adds the chances instead of working with the complement, and it is not exact.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "errors",
+      "statistics"
+    ],
+    "expectedOutput": {
+      "value": 0.226
+    }
+  },
+  {
+    "id": "statistics-errors-008",
+    "module": "statistics",
+    "topic": "errors",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "A data team runs 200 tests on ideas that have no real effect. Each test uses alpha 5 percent. How many false positives do you expect? Give the number.",
+    "dataset": "none",
+    "hint": "Expected false positives = number of tests times alpha, when there is no real effect in any of them.",
+    "solution": "**Step 1:** Alpha = 0.05.\n\n**Step 2:** Number of tests = 200.\n\n**Step 3:** Expected false positives = 200 x 0.05 = **10**.\n\nSo a team that reports every 'win' from these tests would ship about 10 features that do nothing.",
+    "explanation": "When a test has no real effect, the chance of a false alarm is exactly alpha. Across many such tests, the expected number of false alarms is simply the number of tests times alpha.",
+    "commonMistake": "Assuming alpha 0.05 means only 5 percent of the 'wins' are false. That is wrong. Alpha is the false alarm rate among tests with no effect, not the share of all wins.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "errors",
+      "statistics"
+    ],
+    "expectedOutput": {
+      "value": 10
+    }
+  },
+  {
+    "id": "statistics-errors-009",
+    "module": "statistics",
+    "topic": "errors",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "A test has a Type II error rate (beta) of 0.20. What is its power? Give the number.",
+    "dataset": "none",
+    "hint": "Power = 1 minus beta.",
+    "solution": "**Step 1:** Beta = 0.20 is the chance of missing a real effect.\n\n**Step 2:** Power = 1 - beta = 1 - 0.20 = **0.8**.\n\nThat means an 80 percent chance to detect a real effect of the planned size.",
+    "explanation": "Power is the chance that the test finds a real effect. It is the complement of beta, the chance of a Type II error. Teams often aim for 0.8 as a default target.",
+    "commonMistake": "Reporting beta as the power. A beta of 0.20 is a weak test, and it means 1 in 5 real effects is missed.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "errors",
+      "statistics"
+    ],
+    "expectedOutput": {
+      "value": 0.8
+    }
+  },
+  {
+    "id": "statistics-errors-010",
+    "module": "statistics",
+    "topic": "errors",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "A feature has no real effect, but the team tracks 4 independent metrics and calls the feature a win if any metric is significant at alpha 0.05. What is the chance of a false 'win'? Give the probability rounded to 3 decimals.",
+    "dataset": "none",
+    "hint": "Same idea as the family-wise error: 1 minus 0.95 to the power of the number of metrics.",
+    "solution": "**Step 1:** Chance that all 4 metrics are clean = 0.95 x 0.95 x 0.95 x 0.95 = 0.8145.\n\n**Step 2:** Chance of at least one false 'win' = 1 - 0.8145 = **0.185**.\n\nWith one metric the chance is 5 percent. With four it is about 18.5 percent.",
+    "explanation": "Looking at more metrics gives more chances for a lucky false alarm. The complement method works for any number of independent metrics. This is why teams name one primary metric before the test starts.",
+    "commonMistake": "Thinking that 4 metrics at 5 percent each still gives 5 percent overall. Each extra metric adds a new chance of a false alarm.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "errors",
+      "statistics"
+    ],
+    "expectedOutput": {
+      "value": 0.185
+    }
+  }
+]

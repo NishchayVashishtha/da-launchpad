@@ -1,0 +1,274 @@
+[
+  {
+    "id": "stat-mcq-07-1",
+    "module": "statistics",
+    "topic": "bayes",
+    "section": "Bayes theorem: updating beliefs with evidence",
+    "difficulty": "easy",
+    "question": "In Bayes theorem, what is the prior?",
+    "options": [
+      "The belief about an event before the evidence is seen",
+      "The updated belief after the evidence is seen",
+      "The chance of the evidence if the event is true",
+      "The total chance of the evidence across all cases"
+    ],
+    "answerIndex": 0,
+    "explanation": "The prior is the starting chance, such as the base rate of fraud. It is updated into the posterior once the evidence arrives.",
+    "shortcut": "Prior means before."
+  },
+  {
+    "id": "stat-mcq-07-2",
+    "module": "statistics",
+    "topic": "bayes",
+    "section": "Bayes theorem: updating beliefs with evidence",
+    "difficulty": "easy",
+    "question": "Which term names the updated probability after you see the evidence?",
+    "options": [
+      "Prior",
+      "Likelihood",
+      "Sensitivity",
+      "Posterior"
+    ],
+    "answerIndex": 3,
+    "explanation": "The posterior is the probability after the evidence, which is the answer Bayes rule gives. The prior is the starting point and the likelihood is the chance of the evidence.",
+    "shortcut": "Posterior means after."
+  },
+  {
+    "id": "stat-mcq-07-3",
+    "module": "statistics",
+    "topic": "bayes",
+    "section": "Bayes theorem: updating beliefs with evidence",
+    "difficulty": "medium",
+    "question": "A fraud test is 95% accurate, but only 1 in 10,000 payments is fraud. Why is a flag still usually a false alarm?",
+    "options": [
+      "The genuine group is so large that its false flags outnumber the real frauds",
+      "The test misses most real fraud",
+      "The test only checks new users",
+      "Every flagged payment is checked twice"
+    ],
+    "answerIndex": 0,
+    "explanation": "With a rare event, the 99.99% genuine group produces far more false flags than the few real frauds. This is base rate neglect, which is easy to miss when you only read the accuracy.",
+    "shortcut": "Rare events make false alarms common."
+  },
+  {
+    "id": "stat-mcq-07-4",
+    "module": "statistics",
+    "topic": "bayes",
+    "section": "Bayes theorem: updating beliefs with evidence",
+    "difficulty": "medium",
+    "question": "Is P(A given B) always equal to P(B given A)?",
+    "options": [
+      "Yes, always",
+      "Yes, but only when both events are rare",
+      "No, not in general",
+      "Yes, when the test is accurate"
+    ],
+    "answerIndex": 2,
+    "explanation": "The two conditionals are different in general, and they can differ by a lot. Bayes rule is the formula that links them through the base rates.",
+    "shortcut": "Swapping the condition changes the answer."
+  },
+  {
+    "id": "stat-mcq-07-5",
+    "module": "statistics",
+    "topic": "bayes",
+    "section": "Bayes theorem: updating beliefs with evidence",
+    "difficulty": "medium",
+    "question": "If the false-positive rate of an alert goes up while everything else stays the same, what happens to the posterior for a flagged payment?",
+    "options": [
+      "It goes up",
+      "It stays the same",
+      "It becomes exactly 100%",
+      "It goes down"
+    ],
+    "answerIndex": 3,
+    "explanation": "More genuine payments get flagged, so more of the flags are false and the share of flags that are fraud drops. The posterior therefore goes down.",
+    "shortcut": "More false alarms, lower posterior."
+  },
+  {
+    "id": "stat-mcq-07-6",
+    "module": "statistics",
+    "topic": "bayes",
+    "section": "Bayes theorem: updating beliefs with evidence",
+    "difficulty": "medium",
+    "question": "The same alert is used on an event that is ten times rarer. What happens to the posterior for a flag?",
+    "options": [
+      "It goes up",
+      "It stays the same",
+      "It goes down",
+      "It becomes exactly 0"
+    ],
+    "answerIndex": 2,
+    "explanation": "A rarer event means fewer real cases among the flags, so a larger share of the flags are false. The posterior falls, even though the test itself has not changed.",
+    "shortcut": "Rarer event, lower posterior."
+  },
+  {
+    "id": "stat-mcq-07-7",
+    "module": "statistics",
+    "topic": "bayes",
+    "section": "Bayes theorem: updating beliefs with evidence",
+    "difficulty": "hard",
+    "question": "In Bayes rule, what is the denominator P(B)?",
+    "options": [
+      "The prior P(A)",
+      "The posterior P(A given B)",
+      "The total chance of the evidence across both cases",
+      "The sensitivity of the test alone"
+    ],
+    "answerIndex": 2,
+    "explanation": "P(B) adds the evidence chance from the event case and from the no-event case. Leaving out the second part is a common error that inflates the posterior.",
+    "shortcut": "Denominator = all the ways B can happen."
+  },
+  {
+    "id": "stat-mcq-07-8",
+    "module": "statistics",
+    "topic": "bayes",
+    "section": "Bayes theorem: updating beliefs with evidence",
+    "difficulty": "medium",
+    "question": "In an alert system, what does precision measure?",
+    "options": [
+      "The share of real fraud that gets flagged",
+      "The share of flagged cases that are truly fraud",
+      "The share of genuine payments that are not flagged",
+      "The share of all payments that are fraud"
+    ],
+    "answerIndex": 3,
+    "explanation": "Precision is the share of alerts that are real, which is the same as the posterior. The share of real fraud that gets flagged is recall, which is a different number.",
+    "shortcut": "Precision asks: of my flags, how many are right?"
+  },
+  {
+    "id": "stat-mcq-08-1",
+    "module": "statistics",
+    "topic": "sampling",
+    "section": "Sampling and sampling bias",
+    "difficulty": "easy",
+    "question": "A city team wants every city to appear in the sample in its population share. Which method fits best?",
+    "options": [
+      "Cluster sampling with one hub",
+      "Convenience sampling",
+      "Stratified sampling",
+      "Snowball sampling"
+    ],
+    "answerIndex": 2,
+    "explanation": "Stratified sampling samples each city on its own, so each city keeps its share. Cluster sampling picks whole hubs and can miss cities entirely.",
+    "shortcut": "Stratify = split first, then sample."
+  },
+  {
+    "id": "stat-mcq-08-2",
+    "module": "statistics",
+    "topic": "sampling",
+    "section": "Sampling and sampling bias",
+    "difficulty": "easy",
+    "question": "A student surveys 50 college friends and reports the result as the views of all app users. What is the main problem?",
+    "options": [
+      "The sample is too small to be useful",
+      "The sampling error is too high to report",
+      "The survey needs a random_state",
+      "The sample is a convenience sample, so it does not represent all users"
+    ],
+    "answerIndex": 3,
+    "explanation": "Friends are easy to reach, but they are not a random group of users. The result describes the friends, not the user base.",
+    "shortcut": "Easy to reach is not the same as representative."
+  },
+  {
+    "id": "stat-mcq-08-3",
+    "module": "statistics",
+    "topic": "sampling",
+    "section": "Sampling and sampling bias",
+    "difficulty": "medium",
+    "question": "A study looks only at startups that are still operating and ignores the ones that shut down. Which bias is this?",
+    "options": [
+      "Selection bias from a random sample",
+      "Survivorship bias",
+      "Sampling error",
+      "Response rate bias"
+    ],
+    "answerIndex": 1,
+    "explanation": "Survivorship bias happens when only the survivors are studied. The failures are missing, so the findings look better than reality.",
+    "shortcut": "Only survivors are in the data."
+  },
+  {
+    "id": "stat-mcq-08-4",
+    "module": "statistics",
+    "topic": "sampling",
+    "section": "Sampling and sampling bias",
+    "difficulty": "medium",
+    "question": "Which statement about bias and sampling error is true?",
+    "options": [
+      "A larger sample reduces bias",
+      "A larger sample reduces sampling error but not bias",
+      "Bias and sampling error are the same thing",
+      "Random sampling removes all bias"
+    ],
+    "answerIndex": 1,
+    "explanation": "Sampling error is random and shrinks as the sample grows. Bias is a steady push from how people were chosen, and a bigger sample does not remove it.",
+    "shortcut": "More data cures error, not bias."
+  },
+  {
+    "id": "stat-mcq-08-5",
+    "module": "statistics",
+    "topic": "sampling",
+    "section": "Sampling and sampling bias",
+    "difficulty": "medium",
+    "question": "What is a sampling frame?",
+    "options": [
+      "The list you sample from",
+      "The average of the sample",
+      "The full group you want to learn about",
+      "The fixed true value about the population"
+    ],
+    "answerIndex": 0,
+    "explanation": "The sampling frame is the list of units that could be picked. If someone is missing from the list, they have no chance of being sampled.",
+    "shortcut": "Frame = the list you pick from."
+  },
+  {
+    "id": "stat-mcq-08-6",
+    "module": "statistics",
+    "topic": "sampling",
+    "section": "Sampling and sampling bias",
+    "difficulty": "easy",
+    "question": "In simple random sampling, what is true?",
+    "options": [
+      "Units are taken in order from the top of the list",
+      "Every unit has the same chance of being chosen",
+      "Only units with high ratings are picked",
+      "Every tenth unit is picked"
+    ],
+    "answerIndex": 1,
+    "explanation": "Simple random sampling gives every unit an equal chance, so no group is favoured by accident. Taking every tenth unit is systematic sampling, which is a different method.",
+    "shortcut": "Random means equal chance for all."
+  },
+  {
+    "id": "stat-mcq-08-7",
+    "module": "statistics",
+    "topic": "sampling",
+    "section": "Sampling and sampling bias",
+    "difficulty": "medium",
+    "question": "A sample mean is best described as a what?",
+    "options": [
+      "Parameter",
+      "Statistic",
+      "Census",
+      "Sampling fraction"
+    ],
+    "answerIndex": 1,
+    "explanation": "A statistic is a value computed from the sample. A parameter is the fixed true value for the whole population, which is usually unknown.",
+    "shortcut": "Sample value = statistic."
+  },
+  {
+    "id": "stat-mcq-08-8",
+    "module": "statistics",
+    "topic": "sampling",
+    "section": "Sampling and sampling bias",
+    "difficulty": "hard",
+    "question": "Only 10% of customers reply to a feedback survey, and most replies come from unhappy customers. What is the main issue?",
+    "options": [
+      "Non-response bias",
+      "Simple random sampling error",
+      "Stratification error",
+      "Too many variables in the survey"
+    ],
+    "answerIndex": 0,
+    "explanation": "The people who reply differ from the people who do not, so the replies do not describe all customers. This is non-response bias, and a bigger survey sent to the same people will not fix it.",
+    "shortcut": "Silent customers are different customers."
+  }
+]

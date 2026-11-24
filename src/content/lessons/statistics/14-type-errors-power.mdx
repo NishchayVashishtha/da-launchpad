@@ -1,0 +1,264 @@
+---
+title: "Type I and Type II errors, power and multiple testing"
+description: "The two ways a test can be wrong, and how sample size and many tests change the risk."
+module: statistics
+order: 14
+estimatedMinutes: 45
+objectives:
+  - "Define Type I and Type II errors in plain words"
+  - "Link alpha, beta and power"
+  - "See what drives power, and plan a sample size"
+  - "Explain multiple-comparison inflation and apply a Bonferroni correction"
+tags: ["statistics", "type-1-error", "power"]
+---
+
+## Learning objectives
+
+- Define a Type I error (false alarm) and a Type II error (missed effect).
+- Link alpha, beta and power with one formula.
+- List what makes a test more powerful.
+- Compute the chance of at least one false positive across many tests.
+- Apply a Bonferroni correction and explain why it is needed.
+
+## Why this matters for a Data Analyst job
+
+Every A/B test and every report with many metrics can be wrong in two ways. You can call a useless change a winner, or miss a change that really works. Good analysts plan for both risks before they look at the data. If they do not, they ship false wins, or they stop a good test too early because the result was "not significant."
+
+<RealWorld>
+A growth team checks 20 metrics, 5 device types and 4 cities after a test. Some cut will look like a big win by pure luck. An analyst who knows about multiple testing picks one main metric before the test, reports the rest as exploratory, and uses a stricter bar for the cuts. That saves the company from shipping a change that does nothing.
+</RealWorld>
+
+## Concept
+
+### The fire alarm picture
+
+Think of a smoke alarm. There are two ways it can fail:
+
+- It rings when there is no fire. That is a **false alarm**.
+- It stays silent when there is a fire. That is a **missed fire**.
+
+Statistical tests have the same two failures.
+
+| | No real effect (H0 true) | Real effect (H0 false) |
+|---|---|---|
+| Test says "significant" | **Type I error** (false alarm) | Correct: true positive |
+| Test says "not significant" | Correct: true negative | **Type II error** (missed effect) |
+
+### Alpha, beta and power
+
+- **Alpha** is the chance of a Type I error. When we say alpha = 0.05, we mean: if there is no real effect, we will still call it significant 5 percent of the time.
+- **Beta** is the chance of a Type II error, a missed real effect.
+- **Power** is `1 - beta`. It is the chance that the test finds a real effect when one exists.
+
+<Tip>
+Alpha is a rule about the "no effect" world. It is not the share of your wins that are false. Among a set of wins, the false share depends on how many real effects you test. Keep those two ideas apart.
+</Tip>
+
+### What makes power go up
+
+Power grows when:
+
+- **The sample is bigger.** More users means less noise. This is the lever you control most.
+- **The effect is bigger.** A 5 point lift is easier to see than a 0.3 point lift.
+- **The noise is smaller.** A metric with less spread is easier to read.
+- **Alpha is bigger.** A looser bar finds more things, but it also gives more false alarms. This trade-off is why alpha is usually fixed at 0.05.
+
+A common target is 80 percent power. That means you accept a 20 percent chance of missing the planned effect.
+
+### Which error costs more?
+
+The right balance depends on the cost of each mistake:
+
+- A **fraud model** that misses fraud (Type II) costs money. A few false alarms (Type I) that block good customers are cheaper, so the team accepts more of them.
+- A **risky feature launch** where a false win (Type I) causes damage to users needs a strict alpha.
+
+Write the cost of each error before you pick alpha and the sample size.
+
+### Many tests, many chances
+
+Each test has its own 5 percent chance of a false alarm. Run 20 independent tests on a feature that does nothing, and the chance of at least one false alarm is much bigger.
+
+<FormulaCard title="Family-wise error rate">
+For `m` independent tests, each at alpha:
+
+`P(at least one false positive) = 1 - (1 - alpha) to the power m`
+
+With alpha = 0.05 and m = 20: `1 - 0.95 to the power 20 = 0.642`, about 64 percent.
+</FormulaCard>
+
+<FormulaCard title="Bonferroni correction">
+Divide alpha by the number of tests `m`. Each test must then clear `alpha / m`.
+
+With 4 tests: `0.05 / 4 = 0.0125` for each test. The total chance of any false alarm stays at or below 0.05.
+</FormulaCard>
+
+Bonferroni is simple and safe, but it is strict. Some teams use a looser method called false discovery rate control when they have many tests. You will see that name in advanced courses.
+
+### Peeking inflates false alarms
+
+If you check a test every day and stop the first time p drops below 0.05, you give random noise many chances to cross the line. The real false alarm rate can climb far above 5 percent. Decide the sample size up front, and read the result once at the end.
+
+<Warning>
+A result that is "not significant" is not the same as "no effect." It may only mean the test was too small to see the effect. Check the power before you say there is no difference.
+</Warning>
+
+## Worked examples
+
+### Example 1: A/A tests, where every win is false
+
+An A/A test gives both groups the same experience, so there is no real effect. Any "significant" result is a Type I error. We simulate 2,000 such tests. Each has 200 users per group and a true conversion rate of 10 percent.
+
+```python
+import numpy as np
+
+rng = np.random.default_rng(11)
+n = 200
+x1 = rng.binomial(n, 0.10, 2000)
+x2 = rng.binomial(n, 0.10, 2000)
+p1, p2 = x1 / n, x2 / n
+pp = (x1 + x2) / (2 * n)
+se = np.sqrt(pp * (1 - pp) * (2 / n))
+ok = se > 0
+z = np.where(ok, (p2 - p1) / np.where(ok, se, 1), 0)
+
+print(round(100 * np.mean(np.abs(z) > 1.96), 1))
+```
+
+Output:
+
+```
+4.7
+```
+
+About 4.7 percent of the 2,000 tests were flagged, close to the 5 percent we set. With 2,000 A/A tests we expect about 100 false alarms. The simulation shows that alpha is exactly the false alarm rate when there is no effect.
+
+### Example 2: 20 metrics on one test
+
+After a test, a team looks at 20 metrics. Nothing changed, and each metric is tested at alpha 0.05.
+
+```python
+print(round(1 - 0.95 ** 5, 3))
+print(round(1 - 0.95 ** 20, 3))
+print(round(0.05 / 20, 5))
+```
+
+Output:
+
+```
+0.226
+0.642
+0.0025
+```
+
+With 5 metrics, the chance of a false win is 22.6 percent. With 20 metrics, it is 64.2 percent. Two out of three runs will show at least one "significant" metric even though nothing changed. The Bonferroni threshold for 20 metrics is 0.0025 per metric.
+
+### Example 3: power for a planned test
+
+The product team plans a test. The current conversion rate is 9.5 percent and the goal is 11 percent. That is a 1.5 point lift. We want to know how often a test with 6,000 users per group would detect it. We run 2,000 simulated experiments.
+
+```python
+import numpy as np
+
+rng = np.random.default_rng(5)
+n = 6000
+x1 = rng.binomial(n, 0.095, 2000)
+x2 = rng.binomial(n, 0.11, 2000)
+p1, p2 = x1 / n, x2 / n
+pp = (x1 + x2) / (2 * n)
+se = np.sqrt(pp * (1 - pp) * (2 / n))
+ok = se > 0
+z = np.where(ok, (p2 - p1) / np.where(ok, se, 1), 0)
+
+print(round(100 * np.mean(np.abs(z) > 1.96), 1))
+```
+
+Output:
+
+```
+76.4
+```
+
+The power is about 76 percent. The test would miss the real lift about 1 time in 4. If the team wants 80 percent or more, it needs a bigger sample. This is why you run a power check before you launch, not after.
+
+### Example 4: segment cuts with and without correction
+
+The A/B test from the previous lesson can be split into 4 cells: two device types times two city tiers. We run a z-test in each cell (the data is cleaned first: no duplicates, no users in both variants).
+
+| device | city tier | diff (pp) | z | raw p | significant at 0.05? | significant after Bonferroni (0.0125)? |
+|---|---|---|---|---|---|---|
+| Desktop | Metro | -0.69 | -0.44 | 0.658 | no | no |
+| Desktop | Tier-2 | -2.56 | -1.43 | 0.154 | no | no |
+| Mobile | Metro | 1.68 | 1.99 | 0.047 | yes | no |
+| Mobile | Tier-2 | 3.29 | 3.31 | 0.0009 | yes | yes |
+
+Two cells look significant on their own. After the Bonferroni cut, only Mobile Tier-2 stays significant. The Mobile Metro result (p = 0.047) was a plausible false alarm. A good report says: "The lift is clear for Mobile users in Tier-2 cities. Other cuts are not conclusive."
+
+## Common mistakes
+
+<CommonMistake>
+**Believing alpha = 0.05 means 5 percent of your wins are false.** Alpha is the false alarm rate when there is no effect. The share of wins that are false depends on how many real effects exist.
+</CommonMistake>
+
+<CommonMistake>
+**Skipping the power plan.** A test with small power often ends "not significant." The team then says "no effect," when the test simply could not see the effect.
+</CommonMistake>
+
+<CommonMistake>
+**Slicing many segments and reporting the lucky one.** Testing 20 cuts gives about a 64 percent chance of at least one false win. Choose the main metric before the test and correct the rest.
+</CommonMistake>
+
+<CommonMistake>
+**Stopping early when p dips below 0.05.** Peeking every day inflates the false alarm rate far above 5 percent. Fix the sample size first.
+</CommonMistake>
+
+<CommonMistake>
+**Treating a non-significant result as proof of no effect.** Check the confidence interval and the power. A wide interval that includes a useful lift means the test is inconclusive.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="errors" module="statistics" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "A test says a feature works, but in reality it does nothing. Which error is this?", options: ["Type I error", "Type II error", "Power", "Alpha of zero"], answer: 0, explanation: "Calling a no-effect change a win is a false alarm, which is a Type I error." },
+  { q: "Beta is 0.20. What is the power?", options: ["0.20", "0.80", "0.05", "1.20"], answer: 1, explanation: "Power is 1 minus beta, so 1 - 0.20 = 0.80." },
+  { q: "Which change raises the power of a test?", options: ["Using fewer users", "Shrinking the true effect", "Adding more users per group", "Stopping the test on the first day"], answer: 2, explanation: "A bigger sample reduces noise, so a real effect is easier to see." },
+  { q: "You test 4 independent metrics on a feature with no effect, each at alpha 0.05. Roughly what is the chance of at least one false win?", options: ["5 percent", "10 percent", "About 19 percent", "About 50 percent"], answer: 2, explanation: "1 - 0.95 to the power 4 = 1 - 0.815 = 0.185, about 19 percent." },
+  { q: "Which correction divides alpha by the number of tests?", options: ["Power analysis", "Bonferroni correction", "The z-test", "Chi-square correction"], answer: 1, explanation: "Bonferroni uses alpha divided by the number of tests as the threshold for each test." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers test whether you can explain errors in plain words with a business example. Say which error is worse in the case in front of you, then name the lever you would pull to reduce it. Mention multiple testing when the question involves many metrics or cuts.
+</InterviewAlert>
+
+<InterviewQ q="Explain Type I and Type II errors with an example.">
+A Type I error is a false alarm: we launch a checkout change that does nothing. A Type II error is a missed win: we keep the old checkout even though the new one works. For a fraud model, a missed fraud (Type II) usually costs more, so the team accepts more false alarms. I would pick alpha and sample size using that cost.
+</InterviewQ>
+
+<InterviewQ q="What is statistical power, and how do you raise it?">
+Power is the chance that the test finds a real effect of the size we care about. It is 1 minus beta. To raise it, I would use a bigger sample, reduce noise in the metric, or plan for a bigger effect. I would run the power calculation before the test starts.
+</InterviewQ>
+
+<InterviewQ q="We have 15 metrics and one test. How do you handle the risk of a false win?">
+I pick one primary metric before the test and make the decision on it. The other metrics are secondary. If I must check many metrics as equal, I apply a Bonferroni correction and only call a win if it clears 0.05 divided by the number of metrics.
+</InterviewQ>
+
+<InterviewQ q="A PM stops a test on day 3 because p is 0.03. What is the problem?">
+Checking the p-value every day and stopping at the first clear result is called peeking. It gives noise many chances to look like a win, so the real false alarm rate is far above 5 percent. The fix is to set the sample size in advance and read the result once at the end.
+</InterviewQ>
+
+## Key takeaways
+
+- A Type I error is a false alarm (alpha). A Type II error is a missed real effect (beta). Power = 1 - beta.
+- Power rises with a bigger sample, a bigger effect, less noise and a looser alpha. Plan for 80 percent power.
+- Across m independent tests at alpha 0.05, the chance of at least one false positive is `1 - 0.95 to the power m`.
+- Bonferroni divides alpha by the number of tests. It is simple and strict.
+- Fix the sample size in advance and do not stop a test early when it looks good.
+
+## Further reading
+
+<FurtherReading ids={["khan-stats"]} />

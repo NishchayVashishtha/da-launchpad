@@ -1,0 +1,327 @@
+[
+  {
+    "id": "statistics-sampling-001",
+    "module": "statistics",
+    "topic": "sampling",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "The ops team wants the true average delivery time. Across all delivered orders (unique `delivery_id` rows only, so this is the full population), what is the mean `actual_minutes`? Round to 2 decimals and assign it to `result`.",
+    "dataset": "food_delivery",
+    "hint": "Remove duplicate `delivery_id` rows, keep only `Delivered` orders, then take the mean of `actual_minutes`.",
+    "solutionCode": "d = load(\"food_delivery\", \"deliveries\").drop_duplicates(subset=\"delivery_id\")\ndl = d[d[\"delivery_status\"] == \"Delivered\"]\nresult = round(float(dl[\"actual_minutes\"].mean()), 2)",
+    "expectedOutput": {
+      "value": 44.88
+    },
+    "explanation": "This is the population mean, the number we want to estimate from a sample. Cancelled orders have no delivery time, so they are removed before the mean. Duplicate rows are removed so that no order counts twice.",
+    "commonMistake": "Skipping the status filter. Cancelled orders have a blank `actual_minutes`, so pandas skips them, but the duplicate rows still count twice and push the mean away from the true value.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "sampling",
+      "population"
+    ]
+  },
+  {
+    "id": "statistics-sampling-002",
+    "module": "statistics",
+    "topic": "sampling",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "A quick check takes a random sample of 500 delivered orders with `random_state=42` so the result can be reproduced. What is the sample mean `actual_minutes`? Round to 2 decimals and assign it to `result`.",
+    "dataset": "food_delivery",
+    "hint": "Build the clean delivered-order table first, then call `sample(n=500, random_state=42)`.",
+    "solutionCode": "d = load(\"food_delivery\", \"deliveries\").drop_duplicates(subset=\"delivery_id\")\ndl = d[d[\"delivery_status\"] == \"Delivered\"]\nsample = dl.sample(n=500, random_state=42)\nresult = round(float(sample[\"actual_minutes\"].mean()), 2)",
+    "expectedOutput": {
+      "value": 45.53
+    },
+    "explanation": "`sample(n=500)` picks 500 random rows, one for each draw without replacement. Setting `random_state` fixes the seed, so the same rows come out every time. The sample mean is an estimate of the population mean from the previous question.",
+    "commonMistake": "Sampling before removing duplicates and cancelled orders. The sample then mixes in rows that should not be there, and its mean drifts from the true clean value.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "sampling",
+      "random-sample"
+    ]
+  },
+  {
+    "id": "statistics-sampling-003",
+    "module": "statistics",
+    "topic": "sampling",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "The product team asks what share of delivered orders have a customer rating. Use the `ratings` table and the clean delivered-order table. Give the share as a percentage, rounded to 2 decimals, and assign it to `result`.",
+    "dataset": "food_delivery",
+    "hint": "Make a set of the rated `delivery_id` values, then check which delivered orders are in that set.",
+    "solutionCode": "d = load(\"food_delivery\", \"deliveries\").drop_duplicates(subset=\"delivery_id\")\ndl = d[d[\"delivery_status\"] == \"Delivered\"]\nratings = load(\"food_delivery\", \"ratings\")\nrated = dl[\"delivery_id\"].isin(ratings[\"delivery_id\"])\nresult = round(float(100 * rated.mean()), 2)",
+    "expectedOutput": {
+      "value": 60.39
+    },
+    "explanation": "The rating step is a voluntary response. Only customers who choose to rate leave a row, so the ratings table is not a random sample of orders. `isin` marks each delivered order as rated or not, and the mean gives the share.",
+    "commonMistake": "Dividing the number of rating rows by the number of all deliveries. Cancelled orders can not be rated, and duplicate delivery rows in the raw file change the count too.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "sampling",
+      "non-response",
+      "bias"
+    ]
+  },
+  {
+    "id": "statistics-sampling-004",
+    "module": "statistics",
+    "topic": "sampling",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Do customers who rate an order differ from those who do not? For delivered orders, compare the mean `delay_minutes` of rated orders with unrated orders. Return a dict with keys `rated` and `unrated`, each rounded to 2 decimals, and assign it to `result`.",
+    "dataset": "food_delivery",
+    "hint": "Use the same `isin` mask as the rating-share question. Then take the mean of `delay_minutes` inside each group.",
+    "solutionCode": "d = load(\"food_delivery\", \"deliveries\").drop_duplicates(subset=\"delivery_id\")\ndl = d[d[\"delivery_status\"] == \"Delivered\"]\nratings = load(\"food_delivery\", \"ratings\")\nrated = dl[\"delivery_id\"].isin(ratings[\"delivery_id\"])\nresult = {\n    \"rated\": round(float(dl.loc[rated, \"delay_minutes\"].mean()), 2),\n    \"unrated\": round(float(dl.loc[~rated, \"delay_minutes\"].mean()), 2),\n}",
+    "expectedOutput": {
+      "value": {
+        "rated": 3.78,
+        "unrated": 1.35
+      }
+    },
+    "explanation": "If the two means differ, the people who rate are not like the people who do not. That is a sign of non-response or voluntary response bias. A bigger sample of rated orders would not fix this, because the gap is in who answers.",
+    "commonMistake": "Reading the gap as a fact about all orders. The rated group is a self-selected slice, so its average can not stand in for everyone.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "sampling",
+      "bias",
+      "pandas"
+    ]
+  },
+  {
+    "id": "statistics-sampling-005",
+    "module": "statistics",
+    "topic": "sampling",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "The city team wants a 10% stratified sample of delivered orders, with each city sampled on its own. Return a DataFrame with columns `city`, `population_orders` and `sample_orders`, sorted by `city`. Use `random_state=7` and assign it to `result`. Clean city names first with stripped spaces and title case.",
+    "dataset": "food_delivery",
+    "hint": "Use `groupby(\"city\").sample(frac=0.1, random_state=7)`. Count the rows per city before and after the sample, then join the two counts.",
+    "solutionCode": "d = load(\"food_delivery\", \"deliveries\").drop_duplicates(subset=\"delivery_id\")\ndl = d[d[\"delivery_status\"] == \"Delivered\"].copy()\ndl[\"city\"] = dl[\"city\"].str.strip().str.title()\npop = dl.groupby(\"city\").size().rename(\"population_orders\")\nsamp = dl.groupby(\"city\").sample(frac=0.1, random_state=7).groupby(\"city\").size().rename(\"sample_orders\")\nresult = pd.concat([pop, samp], axis=1).reset_index().sort_values(\"city\")",
+    "expectedOutput": {
+      "columns": [
+        "city",
+        "population_orders",
+        "sample_orders"
+      ],
+      "rows": [
+        [
+          "Ahmedabad",
+          828,
+          83
+        ],
+        [
+          "Bengaluru",
+          2086,
+          209
+        ],
+        [
+          "Chennai",
+          1357,
+          136
+        ],
+        [
+          "Delhi",
+          2415,
+          242
+        ],
+        [
+          "Hyderabad",
+          1610,
+          161
+        ],
+        [
+          "Jaipur",
+          668,
+          67
+        ],
+        [
+          "Kolkata",
+          1214,
+          121
+        ],
+        [
+          "Lucknow",
+          604,
+          60
+        ],
+        [
+          "Mumbai",
+          2445,
+          244
+        ],
+        [
+          "Pune",
+          1063,
+          106
+        ]
+      ]
+    },
+    "explanation": "A stratified sample takes the same share from each group, so every city keeps its place in the mix. Cleaning the city names first matters, because `MUMBAI` and ` Mumbai` would otherwise form separate groups. The two counts side by side show that the sample keeps the city proportions.",
+    "commonMistake": "Sampling 10% of all rows at once. A big city can then dominate the sample, and a small city can get no rows at all.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 6,
+    "tags": [
+      "sampling",
+      "stratified",
+      "groupby"
+    ]
+  },
+  {
+    "id": "statistics-sampling-006",
+    "module": "statistics",
+    "topic": "sampling",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "The city team wants an equal-size check. Take 100 delivered orders from each city with `random_state=1`, then find the mean `actual_minutes` per city. Return a DataFrame with columns `city` and `avg_actual_minutes` (rounded to 2 decimals), sorted by `city`, and assign it to `result`. Clean city names first.",
+    "dataset": "food_delivery",
+    "hint": "Use `groupby(\"city\").sample(n=100, random_state=1)`, then aggregate with `groupby` and the mean.",
+    "solutionCode": "d = load(\"food_delivery\", \"deliveries\").drop_duplicates(subset=\"delivery_id\")\ndl = d[d[\"delivery_status\"] == \"Delivered\"].copy()\ndl[\"city\"] = dl[\"city\"].str.strip().str.title()\ns = dl.groupby(\"city\").sample(n=100, random_state=1)\nout = s.groupby(\"city\", as_index=False).agg(avg_actual_minutes=(\"actual_minutes\", \"mean\"))\nout[\"avg_actual_minutes\"] = out[\"avg_actual_minutes\"].round(2)\nresult = out.sort_values(\"city\")",
+    "expectedOutput": {
+      "columns": [
+        "city",
+        "avg_actual_minutes"
+      ],
+      "rows": [
+        [
+          "Ahmedabad",
+          44.96
+        ],
+        [
+          "Bengaluru",
+          46.73
+        ],
+        [
+          "Chennai",
+          45.69
+        ],
+        [
+          "Delhi",
+          44.12
+        ],
+        [
+          "Hyderabad",
+          44.24
+        ],
+        [
+          "Jaipur",
+          46.38
+        ],
+        [
+          "Kolkata",
+          44.63
+        ],
+        [
+          "Lucknow",
+          45.38
+        ],
+        [
+          "Mumbai",
+          43.86
+        ],
+        [
+          "Pune",
+          46.54
+        ]
+      ]
+    },
+    "explanation": "An equal-size sample gives each city the same weight, which helps compare cities of different sizes. The fixed seed makes the 100 rows per city repeatable. The mean is computed per city after the sample is taken.",
+    "commonMistake": "Taking the first 100 rows per city with `head(100)`. That is not random, and the rows are whatever order the file happens to hold.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 8,
+    "tags": [
+      "sampling",
+      "stratified",
+      "groupby"
+    ]
+  },
+  {
+    "id": "statistics-sampling-007",
+    "module": "statistics",
+    "topic": "sampling",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "A fintech app has 12 lakh (1,200,000) active users. A research team surveys 600 of them. What is the sampling fraction, as a percentage? Give the answer rounded to 2 decimals.",
+    "dataset": "none",
+    "hint": "Sampling fraction = sample size divided by population size. Multiply by 100 for a percentage.",
+    "solution": "Sampling fraction = 600 / 1,200,000 = 0.0005.\n\nAs a percentage, that is **0.05%**.\n\nThe survey is small compared with the user base. Size alone does not make a sample fair, though. How the 600 users were picked matters more.",
+    "explanation": "The sampling fraction tells you what share of the population you looked at. Here it is tiny, so the sample is not a big share of users, which is common in surveys.",
+    "commonMistake": "Dividing 1,200,000 by 600. That gives 2,000, which is the reverse ratio and not a percentage.",
+    "interviewFrequency": "low",
+    "estimatedMinutes": 2,
+    "tags": [
+      "sampling",
+      "fraction"
+    ],
+    "expectedOutput": {
+      "value": 0.05
+    }
+  },
+  {
+    "id": "statistics-sampling-008",
+    "module": "statistics",
+    "topic": "sampling",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "A shopping app shows a rating survey only to users who finished checkout. Only users who tap the survey and answer it are counted. Name the main bias in this survey and explain it in 2 to 3 sentences.",
+    "dataset": "none",
+    "hint": "Ask two questions: who was able to see the survey, and who chose to answer it?",
+    "solution": "**Selection bias**, with **voluntary response bias** on top of it.\n\nThe survey reaches only users who finished checkout, so people who abandoned their carts are never in the sample. Within that group, only users who choose to answer are counted, and people with strong opinions tend to answer more often. The result describes happy checkout users who like to give feedback, not all shoppers.",
+    "explanation": "A survey can only describe the people who could be reached and who chose to respond. Both steps can push the answer away from the truth. Larger samples do not fix either problem.",
+    "commonMistake": "Calling it sampling error and saying a bigger survey will fix it. Error shrinks with more data, but a biased group stays biased.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "sampling",
+      "bias"
+    ]
+  },
+  {
+    "id": "statistics-sampling-009",
+    "module": "statistics",
+    "topic": "sampling",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "A city has 6,000 Metro users and 4,000 Tier-2 users. The team wants a proportional stratified sample of 500 users. How many of the 500 should be Tier-2 users? Give a whole number.",
+    "dataset": "none",
+    "hint": "Find the Tier-2 share of all users, then apply it to 500.",
+    "solution": "Total users = 6,000 + 4,000 = 10,000.\n\nTier-2 share = 4,000 / 10,000 = 40%.\n\nTier-2 in the sample = 40% of 500 = **200**. The Metro share gets the other 300.",
+    "explanation": "A proportional stratified sample keeps each group's share of the population. Tier-2 is 40% of users, so it should be 40% of the sample.",
+    "commonMistake": "Taking 500 Tier-2 users, or splitting 500 evenly into 250 and 250. Equal splits do not match the real mix unless the groups are the same size.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "sampling",
+      "stratified"
+    ],
+    "expectedOutput": {
+      "value": 200
+    }
+  },
+  {
+    "id": "statistics-sampling-010",
+    "module": "statistics",
+    "topic": "sampling",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "A team sends a feedback form to 1,000 randomly chosen users. Only 200 reply. The replies skew toward users who had a problem. What is the response rate, as a percentage? Give a whole number.",
+    "dataset": "none",
+    "hint": "Response rate = replies divided by people who were asked.",
+    "solution": "Response rate = 200 / 1,000 = 0.20, which is **20%**.\n\nThe 800 people who did not reply may differ from the 200 who did. Here they likely had fewer problems. So the average of the 200 replies can be too negative. A low response rate is a warning sign for non-response bias, and more invitations will not remove it.",
+    "explanation": "Non-response bias happens when the people who answer are not like the people who do not. The 1,000 users were chosen at random, but the 200 replies are not a random group.",
+    "commonMistake": "Treating the 200 replies as a random sample of 1,000 users. The sample was random at the start, but the replies are self-selected.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "sampling",
+      "non-response"
+    ],
+    "expectedOutput": {
+      "value": 20
+    }
+  }
+]

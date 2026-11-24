@@ -1,0 +1,270 @@
+---
+title: "Descriptive statistics: summarising data"
+description: "Mean, median, mode, spread and percentiles in plain English."
+module: statistics
+order: 1
+estimatedMinutes: 40
+objectives:
+  - "Compute and choose the mean, median and mode"
+  - "Measure spread with range, variance, standard deviation and IQR"
+  - "Read percentiles and use them as service targets"
+  - "Summarise a column with pandas describe and groupby"
+tags: ["statistics", "descriptive", "mean", "median"]
+---
+
+## Learning objectives
+
+- Pick the right centre measure (mean, median or mode) for the data in front of you.
+- Measure spread with range, variance, standard deviation and the interquartile range (IQR).
+- Explain why the sample standard deviation divides by n minus 1.
+- Read a percentile such as the 90th and use it as a target.
+- Summarise a column in pandas with `describe()` and `groupby()`.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Every dashboard starts with a summary. A delivery app's ops lead asks, "How long does a delivery take?" The honest answer is never one number. It is a centre (the typical time), a spread (how much times vary) and a tail (how bad the worst 10 percent are). Analysts who report only an average get caught when a manager asks why the customers are angry. Descriptive statistics is the first skill every analyst uses, and interviewers ask about it in almost every round.
+</RealWorld>
+
+## Concept
+
+### Describing a team with a few numbers
+
+Think about a cricket coach who wants to know how her batting order is doing. She does not read every score from every match. She looks at a few numbers: the average runs, the highest score and how often the batter gets out early. Those few numbers describe a long list of scores.
+
+Descriptive statistics does the same for a column of data. We use a small set of numbers to say three things:
+
+1. **Centre**: what is a typical value?
+2. **Spread**: how far do the values usually sit from that centre?
+3. **Shape and tail**: are there a few very large or very small values?
+
+### The centre: mean, median and mode
+
+- **Mean** is the sum of all values divided by the count. It uses every value, so one extreme value pulls it.
+- **Median** is the middle value after sorting. Half the values are below it and half above. It ignores how extreme the far values are.
+- **Mode** is the most common value. It works for text and categories, where a mean does not make sense.
+
+<FormulaCard title="Mean">
+`mean = (x1 + x2 + ... + xn) / n`. Add all values, then divide by the number of values.
+</FormulaCard>
+
+When data is **skewed** (a long tail on one side), the mean moves toward the tail and the median stays near the typical value. Order values in a food app, salaries in a company, and house prices in a city are all skewed. For these, the median is the honest "typical" number.
+
+<Tip>
+Always report the centre and the spread together. A mean of 45 minutes means something very different when the spread is 5 minutes and when it is 30 minutes.
+</Tip>
+
+### The spread: range, variance, SD and IQR
+
+- **Range** is the maximum minus the minimum. It is easy to read but depends on just two values.
+- **Variance** is the average squared distance from the mean. Its unit is squared, so it is hard to read directly.
+- **Standard deviation (SD)** is the square root of the variance. It is in the same unit as the data, so it is the spread number you quote.
+- **IQR** (interquartile range) is the 75th percentile minus the 25th percentile. It is the width of the middle half of the data, and it ignores the far tails.
+
+<FormulaCard title="Sample standard deviation">
+`s = square root of [ sum of (x - xbar) squared / (n - 1) ]`. Here `xbar` is the sample mean.
+</FormulaCard>
+
+### Why divide by n minus 1?
+
+The data you have is usually a **sample**, a small group taken from a bigger population. A sample is slightly more tightly bunched than the whole population, because it misses the extreme cases. Dividing by `n - 1` instead of `n` makes the estimate a little bigger, which corrects for that. With large data the difference is tiny. With five values it is large (about 12 percent).
+
+| Name | Symbol | Meaning |
+|---|---|---|
+| Population mean | mu | Mean of everyone |
+| Sample mean | x-bar | Mean of your sample |
+| Population SD | sigma | Divides by n |
+| Sample SD | s | Divides by n minus 1 |
+
+pandas `.std()` returns the sample SD by default. NumPy `np.std()` returns the population SD by default. This difference is a common source of small but confusing mismatches.
+
+### Percentiles and quartiles
+
+A **percentile** is the value below which a given share of the data falls. The 90th percentile (P90) is the time that 90 percent of orders beat. The **quartiles** are the 25th, 50th (the median) and 75th percentiles.
+
+Percentiles make good service targets. "90 percent of orders arrive within 62 minutes" is clearer than an average, and it protects the customer who waits the longest.
+
+### Population or sample, and the coefficient of variation
+
+To compare spread across things with different units or different averages, use the **coefficient of variation (CV)**: the SD divided by the mean, often shown as a percentage. A salary SD of 40,000 rupees is not comparable with an age SD of 8 years, but their CVs are both simple percentages.
+
+<Tip>
+Quick rule for the centre: if the mean and median are far apart, the data is skewed. Report the median as the typical value and explain the gap.
+</Tip>
+
+## Worked examples
+
+### Example 1: mean, median and P90 of delivery time
+
+We use the `food_delivery` deliveries table. Cancelled orders have no delivery time, so we keep only the 14,407 delivered rows. Here is the summary in pandas.
+
+```python
+delivered = deliveries[deliveries["delivery_status"] == "Delivered"]
+delivered["actual_minutes"].describe()
+```
+
+**Output:**
+
+```
+count    14407.000000
+mean        44.874922
+std         13.160377
+min         12.000000
+25%         36.000000
+50%         44.000000
+75%         53.000000
+max        108.000000
+Name: actual_minutes, dtype: float64
+```
+
+Read it like this:
+
+- The mean is about 44.9 minutes and the median is 44. They are close, so the data is only mildly skewed.
+- The SD is 13.2 minutes. Most orders land within about 13 minutes of the mean.
+- The middle half runs from 36 to 53 minutes, so the IQR is 17 minutes.
+- The maximum is 108 minutes, the single slowest order. It says nothing about a typical bad day, which is why the P90 is a better target. The 90th percentile is 62 minutes.
+
+### Example 2: summary by group in SQL
+
+SQL is the other common tool. This query summarises delivered orders by weather.
+
+<SqlPlayground dataset="food_delivery" query={`SELECT weather,
+       COUNT(actual_minutes) AS delivered_orders,
+       ROUND(AVG(actual_minutes), 2) AS avg_minutes,
+       MIN(actual_minutes) AS min_minutes,
+       MAX(actual_minutes) AS max_minutes
+FROM deliveries
+WHERE delivery_status = 'Delivered'
+GROUP BY weather
+ORDER BY avg_minutes DESC;`} title="Delivery time by weather" />
+
+**Output:**
+
+| weather | delivered_orders | avg_minutes | min_minutes | max_minutes |
+|---|---|---|---|---|
+| Heavy Rain | 633 | 53.89 | 19 | 108 |
+| Rain | 1266 | 49.42 | 14 | 97 |
+| Clear | 9967 | 44.02 | 12 | 108 |
+| Cloudy | 2541 | 43.71 | 12 | 89 |
+
+Heavy Rain adds about 10 minutes on average compared with Clear.
+
+SQLite does not have `MEDIAN` or `STDDEV`. You can get the median by sorting and taking the middle row. The `OFFSET` is the number of rows to skip, here half the count.
+
+<SqlPlayground dataset="food_delivery" query={`SELECT actual_minutes AS median_minutes
+FROM deliveries
+WHERE delivery_status = 'Delivered'
+ORDER BY actual_minutes
+LIMIT 1 OFFSET (SELECT COUNT(*) / 2 FROM deliveries WHERE delivery_status = 'Delivered');`} title="Median in SQLite" />
+
+**Output:**
+
+| median_minutes |
+|---|
+| 44 |
+
+PostgreSQL and SQL Server have `PERCENTILE_CONT` for an exact median, and MySQL needs a similar workaround. SQLite has no percentile function, so the offset trick is the practical way. It returns the exact middle value when the count is odd, as it is here (14,407 rows).
+
+### Example 3: mean, SD and count by group in pandas
+
+Pandas gives you all three in one line. Rain adds about five to ten minutes compared with a clear day.
+
+```python
+delivered.groupby("weather")["actual_minutes"].agg(["mean", "std", "count"]).round(2)
+```
+
+**Output:**
+
+```
+            mean    std  count
+weather
+Cloudy     43.71  12.74   2541
+Clear      44.02  12.97   9967
+Heavy Rain 53.89  12.69    633
+Rain       49.42  13.11   1266
+```
+
+Notice that the SD is almost the same in every weather. Bad weather moves the centre, not the spread.
+
+### Example 4: the mean is pulled by one outlier
+
+Take seven rider tips in rupees: 20, 25, 30, 30, 35, 40 and 200.
+
+- Mean: (20 + 25 + 30 + 30 + 35 + 40 + 200) / 7 = 380 / 7 = **54.29**.
+- Median: the middle value of the sorted list is **30**.
+
+One tip of 200 lifts the mean by about 24 rupees. Without it, the other six tips average 30. The median still says 30. Neither number is wrong, but only the median describes what a typical rider gets.
+
+## Common mistakes
+
+<CommonMistake>
+**Using the mean for skewed money data.** Average order value or salary is often pulled up by a few big values. Saying "the average customer spends 1,200 rupees" can overstate what most customers spend. Check the median, then report both.
+</CommonMistake>
+
+<CommonMistake>
+**Mixing up `np.std` and pandas `std`.** NumPy divides by n, pandas divides by n minus 1. On big data the results look the same. On a short list they differ by about 12 percent, and a careful reviewer will ask why.
+</CommonMistake>
+
+<CommonMistake>
+**Averaging averages.** If Pune has 80 orders with an average of 35 minutes and Surat has 20 orders with an average of 55 minutes, the overall average is not 45. It is the weighted mean, 39. Always add the totals first.
+</CommonMistake>
+
+<CommonMistake>
+**Reporting the centre with no spread.** "Average delivery is 45 minutes" hides whether most orders take 40 minutes or 90. Add the SD, the IQR or a percentile next to every average.
+</CommonMistake>
+
+<CommonMistake>
+**Treating empty values as zeros.** Cancelled orders have no delivery time. Filling them with 0 pulls the mean down from 44.9 to about 42.8 minutes. Drop or filter empty values first, and say so in your report.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="descriptive" module="statistics" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Most delivery times are 30 to 50 minutes, but a few orders took 200 minutes. Which measure best describes a typical order?", options: ["The mean, because it uses every value", "The median, because the few extreme values do not move it much", "The range, because it covers all values", "The maximum, because it is the worst case"], answer: 1, explanation: "The median is the middle value, so a few very slow orders barely move it. The mean would be pulled upward by the 200-minute orders." },
+  { q: "You have a sample of 5 daily sales numbers. Why does the sample standard deviation divide by n minus 1?", options: ["To make the answer smaller", "Because the sample is a limited view and tends to look less spread out than the population", "Because n minus 1 is always the correct denominator for a mean", "Because the mean cannot be computed with 5 values"], answer: 1, explanation: "A sample misses some extreme cases, so it looks tighter than the population. Dividing by n minus 1 corrects for that and gives a slightly bigger, more honest estimate of spread." },
+  { q: "A shop records the most common shoe size sold each month. Which measure should you use to find the typical shoe size?", options: ["The mean shoe size", "The median shoe size", "The mode", "The range"], answer: 2, explanation: "Shoe size is a category-like number where the most common value is what the shop needs to stock. The mode gives the most frequent size directly." },
+  { q: "Team A has 90 customers with an average order of 400 rupees. Team B has 10 customers with an average order of 500 rupees. What is the overall average order value across all 100 customers?", options: ["450 rupees, the simple average of the two", "410 rupees, the weighted mean", "400 rupees, the larger group's average", "500 rupees, the larger average"], answer: 1, explanation: "Weighted mean: (90 x 400 + 10 x 500) / 100 = 41,000 / 100 = 410. The simple average of 400 and 500 gives Team B the same weight as Team A, which is wrong here." },
+  { q: "What does the interquartile range (IQR) measure?", options: ["The maximum minus the minimum", "The 75th percentile minus the 25th percentile", "The mean plus or minus one standard deviation", "The total count of values"], answer: 1, explanation: "The IQR is the width of the middle half of the data. Because it ignores the lowest and highest quarters, a few extreme values do not stretch it." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers test whether you report centre and spread together, whether you know when the median beats the mean, and whether you can explain the n minus 1 without reciting a formula. Being able to say "I would give the median and the 90th percentile to the manager" is a strong answer.
+</InterviewAlert>
+
+<InterviewQ q="When would you use the median instead of the mean?">
+When the data is skewed or has outliers, such as order values, salaries or delivery times. A few very large values pull the mean up, so the median describes a typical customer better. I would still show the mean as well, because the gap between the two tells me how skewed the data is.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between variance and standard deviation?">
+Both measure how spread out the values are. Variance is the average squared distance from the mean, so its unit is squared (rupees squared, for example). The standard deviation is its square root, so it is in the same unit as the data. I quote the standard deviation to a manager because it is easy to read.
+</InterviewQ>
+
+<InterviewQ q="Why do we divide by n minus 1 for the sample standard deviation?">
+The data is a sample, and a sample usually looks a little less spread out than the full population because it misses some extremes. Dividing by n minus 1 instead of n corrects that and gives a slightly larger, more honest estimate. The correction matters a lot for small samples and very little for large ones.
+</InterviewQ>
+
+<InterviewQ q="How would you compare the spread of salaries with the spread of employee ages?">
+Their units and averages are different, so the raw standard deviations cannot be compared. I would use the coefficient of variation, which is the standard deviation divided by the mean. It turns both into a percentage, so I can see which one varies more relative to its own average.
+</InterviewQ>
+
+<InterviewQ q="A manager asks how long a delivery usually takes. What do you show?">
+I would show the median as the typical time, the 90th percentile as the "most orders arrive within" target, and the IQR or SD to show how much times vary. I would also mention how many cancelled orders I removed, because they have no delivery time and would pull the average down if counted as zero.
+</InterviewQ>
+
+## Key takeaways
+
+- Always report a centre and a spread together. A single average hides risk.
+- For skewed data such as order values or salaries, the median is the honest typical value.
+- The sample standard deviation divides by n minus 1 because a sample tends to look less spread out than the population.
+- Percentiles such as P90 are good service targets because they ignore the single worst case.
+- Remove cancelled or empty rows before computing averages. Filling them with zero gives a wrong answer.
+
+## Further reading
+
+<FurtherReading ids={["khan-stats", "pandas-docs", "numpy-docs"]} />

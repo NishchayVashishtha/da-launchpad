@@ -1,0 +1,249 @@
+[
+  {
+    "id": "statistics-ci-001",
+    "module": "statistics",
+    "topic": "ci",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "The operations head at a fictional Pune food delivery app asks for a range, not one number, for the average delivery time. Build a 95% confidence interval for the mean `actual_minutes` of completed deliveries. Use z = 1.96 and the sample SD. Return the lower bound rounded to 2 decimals.",
+    "dataset": "food_delivery",
+    "hint": "Lower bound = mean minus 1.96 times the standard error. The standard error is the sample SD divided by the square root of n.",
+    "solutionCode": "import math\n\ndf = load(\"food_delivery\", \"deliveries\")\nx = df[\"actual_minutes\"].dropna()\nse = x.std() / math.sqrt(len(x))\nresult = round(x.mean() - 1.96 * se, 2)",
+    "expectedOutput": {
+      "value": 44.66
+    },
+    "orderMatters": false,
+    "explanation": "The interval starts from the sample mean and moves down by 1.96 standard errors. With about 14,000 orders the standard error is small, so the interval is narrow. The lower bound is the smallest average we still consider plausible.",
+    "commonMistake": "Using the SD instead of the standard error in the margin. The interval then looks about 120 times too wide and says almost nothing about the mean.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "ci",
+      "mean"
+    ]
+  },
+  {
+    "id": "statistics-ci-002",
+    "module": "statistics",
+    "topic": "ci",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "Using the same delivery data, build the 95% confidence interval for the mean `actual_minutes` of completed deliveries (z = 1.96, sample SD). Return the upper bound rounded to 2 decimals.",
+    "dataset": "food_delivery",
+    "hint": "Upper bound = mean plus 1.96 times the standard error.",
+    "solutionCode": "import math\n\ndf = load(\"food_delivery\", \"deliveries\")\nx = df[\"actual_minutes\"].dropna()\nse = x.std() / math.sqrt(len(x))\nresult = round(x.mean() + 1.96 * se, 2)",
+    "expectedOutput": {
+      "value": 45.09
+    },
+    "orderMatters": false,
+    "explanation": "The upper bound is the mean plus the same margin used for the lower bound. Together, the two bounds give the range of averages consistent with the data at 95% confidence. The interval is symmetric around the sample mean.",
+    "commonMistake": "Adding the margin to the median or to the promised minutes. The interval must be built around the mean of the same column.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "ci",
+      "mean"
+    ]
+  },
+  {
+    "id": "statistics-ci-003",
+    "module": "statistics",
+    "topic": "ci",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Heavy Rain slows deliveries in the fictional Mumbai and Kolkata networks. Build a 95% confidence interval for the mean `actual_minutes` of completed deliveries where `weather` is `Heavy Rain`. Use z = 1.96 and the sample SD. Return a dict with keys `lower` and `upper`, each rounded to 2 decimals.",
+    "dataset": "food_delivery",
+    "hint": "Filter the rows on `weather` first, then drop blank `actual_minutes`. The same formula works for any subgroup with a large enough n.",
+    "solutionCode": "import math\n\ndf = load(\"food_delivery\", \"deliveries\")\nx = df[df[\"weather\"] == \"Heavy Rain\"][\"actual_minutes\"].dropna()\nse = x.std() / math.sqrt(len(x))\nresult = {\"lower\": round(x.mean() - 1.96 * se, 2), \"upper\": round(x.mean() + 1.96 * se, 2)}",
+    "expectedOutput": {
+      "value": {
+        "lower": 52.9,
+        "upper": 54.88
+      }
+    },
+    "orderMatters": false,
+    "explanation": "Filtering first gives the interval for that subgroup only. The sample has over 600 completed orders, so the z value of 1.96 is a fair approximation. The interval is wider than the overall one because the group is smaller.",
+    "commonMistake": "Building the interval from all deliveries and then reading it as the Heavy Rain result. The overall interval hides the rain effect.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "ci",
+      "subgroup"
+    ]
+  },
+  {
+    "id": "statistics-ci-004",
+    "module": "statistics",
+    "topic": "ci",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "A growth team at a fictional fintech app checks the control arm of a cleaned A/B test. Clean the data first: drop exact duplicate rows, then remove any user who appears in both variants. For the control arm, compute the conversion rate p (the mean of `converted`) and its 95% confidence interval with z = 1.96 and SE = sqrt(p(1 - p) / n). Return a dict with keys `p`, `lower`, and `upper`, each rounded to 4 decimals.",
+    "dataset": "marketing",
+    "hint": "After cleaning, filter the control rows. The mean of a 0/1 column is the conversion rate.",
+    "solutionCode": "import math\n\ndf = load(\"marketing\", \"ab_test_results\").drop_duplicates()\nboth = df.groupby(\"user_id\")[\"variant\"].nunique()\ndf = df[~df.user_id.isin(both[both > 1].index)]\nc = df[df[\"variant\"] == \"control\"][\"converted\"].astype(float)\np = c.mean()\nse = math.sqrt(p * (1 - p) / len(c))\nresult = {\"p\": round(p, 4), \"lower\": round(p - 1.96 * se, 4), \"upper\": round(p + 1.96 * se, 4)}",
+    "expectedOutput": {
+      "value": {
+        "p": 0.1057,
+        "lower": 0.0979,
+        "upper": 0.1135
+      }
+    },
+    "orderMatters": false,
+    "explanation": "The conversion rate is the share of control users who converted. The interval uses the proportion formula for the standard error. Cleaning first keeps duplicate and contaminated users from changing n and p.",
+    "commonMistake": "Computing the CI on the raw file. The duplicate rows and the users in both arms change p and n, so the interval is built on the wrong group.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "ci",
+      "proportion",
+      "ab-test"
+    ]
+  },
+  {
+    "id": "statistics-ci-005",
+    "module": "statistics",
+    "topic": "ci",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "The same growth team now checks the treatment arm. Clean the data the same way: drop exact duplicate rows, then remove every user who appears in both variants. For the treatment arm, compute the conversion rate p and its 95% CI with z = 1.96 and SE = sqrt(p(1 - p) / n). Return a dict with keys `p`, `lower`, and `upper`, each rounded to 4 decimals.",
+    "dataset": "marketing",
+    "hint": "Change the variant filter from control to treatment. Keep the cleaning steps identical.",
+    "solutionCode": "import math\n\ndf = load(\"marketing\", \"ab_test_results\").drop_duplicates()\nboth = df.groupby(\"user_id\")[\"variant\"].nunique()\ndf = df[~df.user_id.isin(both[both > 1].index)]\nt = df[df[\"variant\"] == \"treatment\"][\"converted\"].astype(float)\np = t.mean()\nse = math.sqrt(p * (1 - p) / len(t))\nresult = {\"p\": round(p, 4), \"lower\": round(p - 1.96 * se, 4), \"upper\": round(p + 1.96 * se, 4)}",
+    "expectedOutput": {
+      "value": {
+        "p": 0.1172,
+        "lower": 0.109,
+        "upper": 0.1253
+      }
+    },
+    "orderMatters": false,
+    "explanation": "The same method gives the treatment interval. Keeping the cleaning identical matters, because a different cleaning step would make the two intervals not comparable.",
+    "commonMistake": "Cleaning only the control arm. The two intervals then rest on different rows, and the comparison is not fair.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "ci",
+      "proportion",
+      "ab-test"
+    ]
+  },
+  {
+    "id": "statistics-ci-006",
+    "module": "statistics",
+    "topic": "ci",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "Using the cleaned A/B test data from the previous two questions, do the control and treatment 95% confidence intervals overlap? Return a dict with keys `control_lower`, `control_upper`, `treatment_lower`, `treatment_upper` (each rounded to 4 decimals) and `overlap`, which is 1 if the two intervals share at least one value and 0 if they do not.",
+    "dataset": "marketing",
+    "hint": "Compute both intervals with the same method. Two intervals overlap when the lower bound of one is at or below the upper bound of the other.",
+    "solutionCode": "import math\n\ndf = load(\"marketing\", \"ab_test_results\").drop_duplicates()\nboth = df.groupby(\"user_id\")[\"variant\"].nunique()\ndf = df[~df.user_id.isin(both[both > 1].index)]\n\ndef ci(arm):\n    x = df[df[\"variant\"] == arm][\"converted\"].astype(float)\n    p = x.mean()\n    se = math.sqrt(p * (1 - p) / len(x))\n    return p - 1.96 * se, p + 1.96 * se\n\nc_lo, c_hi = ci(\"control\")\nt_lo, t_hi = ci(\"treatment\")\noverlap = 1 if (c_lo <= t_hi and t_lo <= c_hi) else 0\nresult = {\"control_lower\": round(c_lo, 4), \"control_upper\": round(c_hi, 4), \"treatment_lower\": round(t_lo, 4), \"treatment_upper\": round(t_hi, 4), \"overlap\": overlap}",
+    "expectedOutput": {
+      "value": {
+        "control_lower": 0.0979,
+        "control_upper": 0.1135,
+        "treatment_lower": 0.109,
+        "treatment_upper": 0.1253,
+        "overlap": 1
+      }
+    },
+    "orderMatters": false,
+    "explanation": "Two intervals overlap when each one starts before the other one ends. Here the intervals overlap, which is one reason the result is not yet a clear win. Overlap is a quick check only: the formal test of the difference is in the A/B analysis lesson.",
+    "commonMistake": "Saying that overlapping intervals prove no difference. Two intervals can overlap and the difference can still be significant, because the test of the difference uses a different standard error.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 7,
+    "tags": [
+      "ci",
+      "overlap",
+      "ab-test"
+    ]
+  },
+  {
+    "id": "statistics-ci-007",
+    "module": "statistics",
+    "topic": "ci",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "A sample of 50 gives an estimate with a standard error of 2. What is the margin of error for a 95% confidence interval? Use z = 1.96 and give the answer to 2 decimals.",
+    "dataset": "none",
+    "hint": "Margin of error = z times SE.",
+    "solution": "**Model answer:** Margin = 1.96 x 2 = **3.92**. The interval is the estimate plus or minus 3.92.",
+    "explanation": "The margin of error is the z value times the standard error. The interval reaches that far on each side of the estimate. A bigger standard error or a higher confidence level makes the margin larger.",
+    "commonMistake": "Using z = 2.0 and rounding too early, or dropping the factor of 2 for the SE. Both give a margin that does not match the 95% rule.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "ci",
+      "margin-of-error"
+    ],
+    "expectedOutput": {
+      "value": 3.92
+    }
+  },
+  {
+    "id": "statistics-ci-008",
+    "module": "statistics",
+    "topic": "ci",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "A sample of 400 users has a conversion rate of 10 percent (p-hat = 0.10). What is the 95% margin of error for this proportion? Give the answer to 4 decimals.",
+    "dataset": "none",
+    "hint": "Margin = 1.96 x sqrt(p(1 - p) / n).",
+    "solution": "**Model answer:** SE = sqrt(0.10 x 0.90 / 400) = sqrt(0.00025) = 0.015. Margin = 1.96 x 0.015 = **0.0294** (about 2.9 percentage points).",
+    "explanation": "For a proportion, the SE uses p(1 - p) under the square root. Multiply the SE by 1.96 to get the margin. Here the margin is about 2.9 percentage points on each side.",
+    "commonMistake": "Putting the 10 percent in as 10 instead of 0.10. The SE then becomes about 1.5 and the margin is wildly wrong.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "ci",
+      "proportion",
+      "margin-of-error"
+    ],
+    "expectedOutput": {
+      "value": 0.0294
+    }
+  },
+  {
+    "id": "statistics-ci-009",
+    "module": "statistics",
+    "topic": "ci",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "A product manager wants a 95% margin of error of plus or minus 3 percentage points on a conversion rate. Assume p = 0.5, which is the worst case. What is the minimum sample size, rounded up to a whole number?",
+    "dataset": "none",
+    "hint": "Solve 1.96 x sqrt(0.25 / n) = 0.03 for n. Then round up.",
+    "solution": "**Model answer:** n = (1.96 / 0.03)^2 x 0.25 = 4268.4 x 0.25 = 1067.1, so round up to **1068** users.",
+    "explanation": "Turn the margin formula around to solve for n. Using p = 0.5 gives the largest possible spread, so the answer works for any rate. Rounding up keeps the margin at or below 3 percentage points.",
+    "commonMistake": "Using 3 instead of 0.03. The sample size then comes out about 100 times too small, because the margin is a fraction, not a percentage number.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "ci",
+      "sample-size"
+    ],
+    "expectedOutput": {
+      "value": 1068
+    }
+  },
+  {
+    "id": "statistics-ci-010",
+    "module": "statistics",
+    "topic": "ci",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "A 95% confidence interval from a sample of 100 has a width of 8 units. If the same study is repeated with 400 observations and the same SD and confidence level, what is the new width? Answer with one number.",
+    "dataset": "none",
+    "hint": "Width is proportional to SE, and SE is proportional to 1 / sqrt(n). What happens when n goes up by 4?",
+    "solution": "**Model answer:** The width is 2 x 1.96 x SD / sqrt(n). Going from n = 100 to n = 400 multiplies the width by sqrt(100 / 400) = 0.5. The new width is 8 x 0.5 = **4 units**.",
+    "explanation": "Width depends on the square root of n. Four times the data halves the width. This is the same rule as the SE, because the width is two margins of error.",
+    "commonMistake": "Dividing the width by 4 instead of by 2. Four times the data gives half the width, not a quarter.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "ci",
+      "width"
+    ],
+    "expectedOutput": {
+      "value": 4
+    }
+  }
+]

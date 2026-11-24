@@ -1,0 +1,320 @@
+---
+title: "A/B testing, part 2: analysis, interpretation and pitfalls"
+description: "Clean the data, test the lift, read the confidence interval and write the recommendation."
+module: statistics
+order: 16
+estimatedMinutes: 60
+objectives:
+  - "Clean a raw experiment table before analysis"
+  - "Test the conversion lift with a two-proportion z-test"
+  - "Read a confidence interval for the lift and explain it"
+  - "Check revenue per user and order value as guardrails"
+  - "Treat segment results as clues, not as proof"
+  - "Write a ship, do-not-ship or re-test recommendation"
+tags: ["statistics", "ab-testing", "analysis", "decision-making"]
+---
+
+## Learning objectives
+
+- Run the cleaning steps that every A/B analysis needs: duplicates, contamination and the split check.
+- Compute the conversion lift in percentage points and in relative terms, and know which one to quote.
+- Run a two-proportion z-test and turn it into a p-value.
+- Build a 95 percent confidence interval for the lift and say what it means.
+- Check guardrails such as revenue per user and average order value (AOV).
+- Write a recommendation that a product manager can act on.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Once a test ends, the product team asks one question: "Did it work, and should we ship it?" Analysts answer this every week at fintech, e-commerce and subscription companies. The answer is rarely a simple yes. A lift can be real but tiny, a revenue number can fall while conversion rises, and a segment can look great by chance. Analysts who clean the data, show the interval and name the risks are trusted. Analysts who quote one p-value and declare a winner are not.
+</RealWorld>
+
+## Concept
+
+### The analysis pipeline
+
+Work through the same steps every time, in this order:
+
+1. **Validate the data.** Remove exact duplicate rows. Check for users in both arms. Check the split (SRM).
+2. **Test the primary metric.** Compare conversion between the arms with a z-test. Report the p-value.
+3. **Estimate the size of the effect.** Build a confidence interval on the difference.
+4. **Check the guardrails.** Revenue per user, AOV, refunds, complaints.
+5. **Look at segments.** Only as exploration. Label them as clues.
+6. **Decide and write it up.** Summary, setup, result with interval, guardrails, risks, recommendation, next test.
+
+### Absolute and relative lift
+
+Suppose conversion goes from 10.57 percent to 11.72 percent.
+
+- The **absolute lift** is the gap: 11.72 minus 10.57 is **1.15 percentage points (pp)**.
+- The **relative lift** is the gap as a share of the control: 1.15 divided by 10.57 is about **10.8 percent**.
+
+Both numbers describe the same change. The relative number sounds bigger. For planning and for the business case, the absolute number is clearer, because it says how many extra buyers each 100 users bring. Always quote both, and never quote a relative lift alone.
+
+### The two-proportion z-test
+
+The z-test asks: if the banner did nothing, how surprising is this gap?
+
+<FormulaCard title="Two-proportion z-test (pooled)">
+`pbar = (conversions in both arms) / (users in both arms)`
+
+`SE_pool = sqrt(pbar x (1 - pbar) x (1 / n1 + 1 / n2))`
+
+`z = (p2 - p1) / SE_pool`
+
+The p-value for a two-sided test is `erfc(|z| / sqrt(2))`. A z near 2 gives a p-value near 0.05.
+</FormulaCard>
+
+The pooled rate is used because the test assumes both arms have the same true rate. That is the null hypothesis.
+
+### The confidence interval on the difference
+
+A p-value says whether the gap is likely to be zero. A **confidence interval (CI)** says how big the true gap might be. The unpooled standard error is used here, because the CI does not assume the two arms are the same.
+
+<FormulaCard title="95 percent CI for the difference">
+`diff = p2 - p1`
+
+`SE = sqrt(p1 x (1 - p1) / n1 + p2 x (1 - p2) / n2)`
+
+`CI = diff +/- 1.96 x SE`
+</FormulaCard>
+
+Read the CI like this:
+
+- If the interval **includes zero**, the data does not rule out no effect.
+- If the interval is **all above zero**, the lift is likely positive, but its size could still be small.
+- The **lower bound** is the honest worst case for the lift. A decision should work at the lower bound, not only at the middle.
+
+### Guardrails: revenue and order value
+
+A free shipping banner might bring more buyers who spend less. Conversion alone hides this. Two guardrails catch it:
+
+- **Revenue per user** = average revenue over all users in the arm, with non-buyers counted as 0. It combines conversion and order value into one number.
+- **Average order value (AOV)** = average revenue of buyers only. It shows how much each buyer spends.
+
+Revenue is skewed (most users spend zero, and a few spend a lot), so the test uses a Welch t-test instead of the z-test. With samples this large, the t-test and z-test give almost the same answer.
+
+### Segments are clues
+
+Splitting results by device, city tier or user type is common. It is also risky. Each split is another test, so a split can look like a win by chance. A segment that was not planned in advance is **exploratory**.
+
+Treat a segment result as a reason to run a new, planned test, not as proof. If you do report one, check whether the effect differs between groups (an interaction), and state that the split was not planned.
+
+### Pitfalls that change the answer
+
+- **Peeking and stopping early.** The p-value you see mid-test is not the one you planned.
+- **Simpson's paradox.** The overall result can reverse when you split by a group, if the groups are unevenly mixed across arms.
+- **Ignoring a guardrail.** A win on conversion with a drop in revenue per user is not a win.
+- **Declaring significance as importance.** A tiny lift can be significant with a big sample, and still not worth the cost.
+- **Novelty.** The first week often looks better than the rest.
+
+## Worked examples
+
+All examples use the cleaned checkout banner data from the `marketing` dataset. The numbers come from running the code shown.
+
+### Example 1: cleaning the table
+
+The raw table has exact duplicate rows and users who were put in both arms. Clean both before you analyse.
+
+```python
+raw = load("marketing", "ab_test_results")
+print("raw rows", len(raw), raw["variant"].value_counts().sort_index().to_dict())
+df = raw.drop_duplicates()
+print("after drop_duplicates", len(df))
+both = df.groupby("user_id")["variant"].nunique()
+print("users in both arms", int((both > 1).sum()))
+df = df[~df.user_id.isin(both[both > 1].index)]
+print("clean rows", len(df), df["variant"].value_counts().sort_index().to_dict())
+```
+
+**Output:**
+
+```
+raw rows 12030 {'control': 6034, 'treatment': 5996}
+after drop_duplicates 12010
+users in both arms 10
+clean rows 11990 {'control': 6016, 'treatment': 5974}
+```
+
+Twenty exact duplicate rows came out first. Then ten users who appeared in both arms were removed, with all their rows. The clean table has 11,990 rows: 6,016 control and 5,974 treatment. Always write these counts in the report, so readers know what was removed.
+
+### Example 2: the primary test
+
+Now test the conversion lift, build the CI and compute the relative lift.
+
+```python
+import math
+c = df[df["variant"] == "control"]["converted"]
+t = df[df["variant"] == "treatment"]["converted"]
+p1, p2, n1, n2 = c.mean(), t.mean(), len(c), len(t)
+print("control %", round(p1 * 100, 2), "treatment %", round(p2 * 100, 2))
+print("absolute lift pp", round((p2 - p1) * 100, 2))
+print("relative lift %", round((p2 / p1 - 1) * 100, 1))
+pbar = (c.sum() + t.sum()) / (n1 + n2)
+se_pool = math.sqrt(pbar * (1 - pbar) * (1 / n1 + 1 / n2))
+z = (p2 - p1) / se_pool
+print("z", round(z, 3), "p-value", round(math.erfc(abs(z) / math.sqrt(2)), 4))
+se = math.sqrt(p1 * (1 - p1) / n1 + p2 * (1 - p2) / n2)
+d = p2 - p1
+print("95% CI pp", round((d - 1.96 * se) * 100, 2), "to", round((d + 1.96 * se) * 100, 2))
+```
+
+**Output:**
+
+```
+control % 10.57 treatment % 11.72
+absolute lift pp 1.15
+relative lift % 10.8
+z 1.993 p-value 0.0462
+95% CI pp 0.02 to 2.27
+```
+
+The lift is +1.15 pp, or +10.8 percent in relative terms. The p-value is 0.046, just under 0.05. The interval runs from +0.02 pp to +2.27 pp. The lower end is almost zero. So the banner probably helps, but the size of the help could be very small. This is a borderline result. A team should not describe it as a big win.
+
+### Example 3: revenue per user and order value
+
+Conversion went up. Did revenue per user go up? Did buyers spend less?
+
+```python
+import math
+df["rev"] = df["revenue_inr"].fillna(0)
+rc = df[df["variant"] == "control"]["rev"]
+rt = df[df["variant"] == "treatment"]["rev"]
+print("revenue per user", round(rc.mean(), 2), round(rt.mean(), 2))
+print("difference", round(rt.mean() - rc.mean(), 2), "relative %", round((rt.mean() / rc.mean() - 1) * 100, 1))
+se_r = math.sqrt(rc.var() / len(rc) + rt.var() / len(rt))
+t_stat = (rt.mean() - rc.mean()) / se_r
+print("welch t", round(t_stat, 2), "CI", round(rt.mean() - rc.mean() - 1.96 * se_r, 2), "to", round(rt.mean() - rc.mean() + 1.96 * se_r, 2))
+bc = df[(df["variant"] == "control") & (df["converted"] == 1)]["revenue_inr"]
+bt = df[(df["variant"] == "treatment") & (df["converted"] == 1)]["revenue_inr"]
+print("AOV (buyers only)", round(bc.mean(), 2), round(bt.mean(), 2), "relative %", round((bt.mean() / bc.mean() - 1) * 100, 1))
+print("buyers", len(bc), len(bt))
+```
+
+**Output:**
+
+```
+revenue per user 113.33 123.96
+difference 10.63 relative % 9.4
+welch t 1.48 CI -3.41 to 24.68
+AOV (buyers only) 1071.97 1057.9 relative % -1.3
+buyers 636 700
+```
+
+Revenue per user rose by ₹10.63, about 9.4 percent. But the interval runs from minus ₹3.41 to plus ₹24.68. It includes zero, so the extra revenue is not clear yet. AOV fell by about 1.3 percent. That is small and not clear either, but it is in the wrong direction for a banner that costs shipping. The main story: more buyers, similar spend, and an uncertain revenue gain.
+
+<Warning>
+Do not quote the revenue-per-user lift as proven just because the point estimate is positive. Always read the interval next to it.
+</Warning>
+
+### Example 4: segments by device
+
+The test was not planned by device. Split it anyway to find clues for the next test.
+
+```python
+import math
+import pandas as pd
+rows = []
+for dev, sub in df.groupby("device_type"):
+    cc = sub[sub["variant"] == "control"]["converted"]
+    tt = sub[sub["variant"] == "treatment"]["converted"]
+    a, b = cc.mean(), tt.mean()
+    pb = (cc.sum() + tt.sum()) / (len(cc) + len(tt))
+    zz = (b - a) / math.sqrt(pb * (1 - pb) * (1 / len(cc) + 1 / len(tt)))
+    rows.append({"device_type": dev, "control %": round(a * 100, 2), "treatment %": round(b * 100, 2), "lift_pp": round((b - a) * 100, 2), "z": round(zz, 2)})
+print(pd.DataFrame(rows).sort_values("device_type").to_string(index=False))
+```
+
+**Output:**
+
+```
+device_type  control %  treatment %  lift_pp     z
+    Desktop      15.35        13.91    -1.44 -1.22
+     Mobile       8.47        10.81     2.33  3.62
+```
+
+Mobile shows +2.33 pp (z 3.62). Desktop shows -1.44 pp (z -1.22). The overall lift is mostly a mobile story, and desktop may be hurt. The gap between the two device lifts is large enough that a formal check flags it. But the split was not planned, and there are only two groups here, so the result is a strong clue, not a verdict. The right next step is a planned test on mobile, with desktop as a guardrail.
+
+Note the two sample sizes: the desktop group has only about 3,500 users, so its interval is wide.
+
+### Example 5: the write-up
+
+Analysts are judged on how clearly they explain the result. Here is a short summary for the product manager.
+
+> **Summary.** The free shipping banner raised conversion from 10.57 percent to 11.72 percent (+1.15 pp, p = 0.046, 95 percent CI +0.02 to +2.27 pp). Revenue per user rose 9.4 percent, but its interval includes zero. AOV fell 1.3 percent. Mobile improved and desktop fell, but the device split was not planned.
+>
+> **Recommendation.** Do not ship to all users yet. Run a planned mobile-only test for three full weeks, with revenue per user as the primary metric and AOV and desktop conversion as guardrails.
+
+## Common mistakes
+
+<CommonMistake>
+**Quoting a p-value without the effect size.** "p equals 0.046, so it works" hides the size of the lift. Always add the difference and the CI.
+</CommonMistake>
+
+<CommonMistake>
+**Mixing up relative and absolute lift.** A move from 10.57 to 11.72 is +1.15 pp, which is about +10.8 percent relative. Saying "+10 percent" in one place and "+1 point" in another confuses readers.
+</CommonMistake>
+
+<CommonMistake>
+**Declaring a winner from a segment.** Shipping only to mobile because mobile won is a post-hoc decision. Plan the segment test first.
+</CommonMistake>
+
+<CommonMistake>
+**Ignoring the AOV or revenue guardrail.** Conversion can go up while revenue per user stays flat or falls. The guardrail is the check that protects the business.
+</CommonMistake>
+
+<CommonMistake>
+**Skipping the cleaning step.** Duplicate rows and users in both arms change the counts and the rates. Clean first, and report the counts you removed.
+</CommonMistake>
+
+<CommonMistake>
+**Treating "not significant" as "no effect".** A CI that includes zero means the data is not clear. It does not prove the change does nothing.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="abanalysis" module="statistics" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Conversion goes from 10 percent to 11 percent. What are the absolute and relative lifts?", options: ["+1 pp absolute and +1 percent relative", "+1 pp absolute and +10 percent relative", "+10 pp absolute and +1 percent relative", "+0.1 pp absolute and +10 percent relative"], answer: 1, explanation: "The gap is 1 percentage point. Divided by the control rate of 10 percent, the relative lift is 10 percent." },
+  { q: "A 95 percent confidence interval for the lift is -0.3 pp to +2.1 pp. What does this mean?", options: ["The lift is definitely positive", "The data does not rule out zero, so the result is not clear", "The test failed and should be stopped", "The lift is exactly +0.9 pp"], answer: 1, explanation: "The interval includes zero, so no effect is still plausible. The midpoint is only the best guess, and the real range is wide." },
+  { q: "Conversion rose, but revenue per user fell. What should the analyst do?", options: ["Ship, because conversion is the primary metric", "Report the guardrail drop and treat the result as a warning", "Remove the revenue metric from the report", "Run the test again with the same settings and no changes"], answer: 1, explanation: "A guardrail that gets worse is a warning sign. The analyst should report it clearly and decide with the business whether the trade-off is acceptable." },
+  { q: "The mobile lift is significant but the desktop lift is negative. The split was not planned. How should the result be described?", options: ["Mobile is a proven win, so ship to mobile only", "Mobile is a clue, and a planned test on mobile is the next step", "Desktop must be wrong, so remove it", "The overall result is no longer valid"], answer: 1, explanation: "Segments found after the test are exploratory. They point to a question for the next, planned test, not to a decision by themselves." },
+  { q: "Why is the pooled standard error used in the z-test, but the unpooled one in the CI?", options: ["The z-test assumes both arms have the same true rate, while the CI does not", "The CI is always one-sided", "Pooling is only for sample sizes under 100", "There is no difference, the two are used at random"], answer: 0, explanation: "The z-test is built on the null hypothesis that both arms are equal, so the pooled rate fits. The CI estimates the difference without that assumption, so each arm uses its own rate." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers want a structured walk-through: clean the data, check the split, test the primary metric, read the CI, check guardrails, then decide. Naming the risks and saying what you would do next is worth more than a perfect p-value.
+</InterviewAlert>
+
+<InterviewQ q="Walk me through how you would analyse an A/B test.">
+First I clean the data: remove exact duplicates and users in both arms. Then I check the split with an SRM test. Next I run a two-proportion z-test on the primary metric and build a 95 percent CI on the lift. I check guardrails such as revenue per user and AOV. I look at segments only as exploratory. Last, I write a summary with the effect size, the interval, the risks and a clear recommendation.
+</InterviewQ>
+
+<InterviewQ q="The results are ambiguous. What do you do?">
+I report the lift and its interval honestly. I do not pick the best-looking number. I explain what the data can and cannot rule out, and I check whether the test had enough users to answer the question. Then I recommend either a longer test with a fixed sample size or a smaller, targeted test on the segment where the signal is strongest.
+</InterviewQ>
+
+<InterviewQ q="Conversion is up but revenue is flat. Why, and what would you say?">
+More users buy, but each user spends less, or the new buyers spend less than the old ones. I would split revenue into conversion and AOV to show which part moved. Then I would tell the team the trade-off clearly and let them decide whether more buyers at a lower order value is worth it.
+</InterviewQ>
+
+<InterviewQ q="How would you explain a p-value to a product manager?">
+A p-value is the chance of seeing a gap this big, if the change really did nothing. A small p-value means the gap is unlikely to be pure luck. It does not tell you how big the effect is or whether it is worth shipping, so I always show the lift and its interval next to it.
+</InterviewQ>
+
+## Key takeaways
+
+- Clean first: remove duplicate rows and users in both arms, and report the counts you removed.
+- Quote the absolute lift in percentage points, and add the relative lift and the 95 percent CI.
+- A p-value says how surprising the gap is. The CI says how big the true gap might be.
+- Guardrails such as revenue per user and AOV can overturn a conversion win.
+- Segment results are clues for the next planned test, not proof for shipping.
+
+## Further reading
+
+<FurtherReading ids={["khan-stats", "pandas-docs"]} />

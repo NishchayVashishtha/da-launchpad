@@ -1,0 +1,224 @@
+[
+  {
+    "id": "statistics-ttest-001",
+    "module": "statistics",
+    "topic": "ttest",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "Ops wants to know how much rain slows deliveries. Return the difference in mean `actual_minutes` between Rain and Clear days (Rain minus Clear), rounded to 2 decimals. Use delivered rows only, with duplicates removed.",
+    "dataset": "food_delivery",
+    "hint": "Filter by weather for each group, take the mean of actual_minutes, then subtract.",
+    "solutionCode": "d = load(\"food_delivery\", \"deliveries\").drop_duplicates()\nd = d[d.delivery_status == \"Delivered\"].dropna(subset=[\"actual_minutes\"])\nrain = d[d.weather == \"Rain\"].actual_minutes.mean()\nclear = d[d.weather == \"Clear\"].actual_minutes.mean()\nresult = round(rain - clear, 2)",
+    "expectedOutput": {
+      "value": 5.43
+    },
+    "explanation": "The difference is a point estimate of the extra time caused by rain. A positive value means Rain orders take longer. This number alone does not say if the gap is real, which the t-test checks next.",
+    "commonMistake": "Subtracting in the wrong order. Clear minus Rain gives a negative number, and the sign then reads as if rain made deliveries faster.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "ttest",
+      "difference"
+    ]
+  },
+  {
+    "id": "statistics-ttest-002",
+    "module": "statistics",
+    "topic": "ttest",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Is the Rain delay real or just noise? Return the Welch t statistic comparing Rain and Clear delivered `actual_minutes`, rounded to 2 decimals. Do not assume equal variances.",
+    "dataset": "food_delivery",
+    "hint": "Welch t = (mean1 - mean2) / sqrt(var1/n1 + var2/n2). Use pandas `.var()` for each group.",
+    "solutionCode": "d = load(\"food_delivery\", \"deliveries\").drop_duplicates()\nd = d[d.delivery_status == \"Delivered\"].dropna(subset=[\"actual_minutes\"])\nimport math\na = d[d.weather == \"Rain\"].actual_minutes\nb = d[d.weather == \"Clear\"].actual_minutes\nse = math.sqrt(a.var() / len(a) + b.var() / len(b))\nt = (a.mean() - b.mean()) / se\nresult = round(t, 2)",
+    "expectedOutput": {
+      "value": 13.85
+    },
+    "explanation": "Welch's t divides the mean gap by the combined standard error. Each group uses its own variance, so the test does not assume the two groups have the same spread. A t of about 14 is far beyond the cutoff.",
+    "commonMistake": "Using the pooled-variance formula without checking spread. When one group is much more spread out, the pooled version gives a misleading t.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "ttest",
+      "welch"
+    ]
+  },
+  {
+    "id": "statistics-ttest-003",
+    "module": "statistics",
+    "topic": "ttest",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "The worst weather is Heavy Rain. Return the Welch t statistic comparing Heavy Rain with Clear delivered `actual_minutes`, rounded to 2 decimals.",
+    "dataset": "food_delivery",
+    "hint": "Same as the Rain test. Change the first filter to weather == 'Heavy Rain'.",
+    "solutionCode": "d = load(\"food_delivery\", \"deliveries\").drop_duplicates()\nd = d[d.delivery_status == \"Delivered\"].dropna(subset=[\"actual_minutes\"])\nimport math\na = d[d.weather == \"Heavy Rain\"].actual_minutes\nb = d[d.weather == \"Clear\"].actual_minutes\nse = math.sqrt(a.var() / len(a) + b.var() / len(b))\nt = (a.mean() - b.mean()) / se\nresult = round(t, 2)",
+    "expectedOutput": {
+      "value": 18.86
+    },
+    "explanation": "Heavy Rain has a bigger mean gap and a large sample, so t is large. The formula is the same Welch t as before, only the first group changes.",
+    "commonMistake": "Comparing Heavy Rain with Rain, which is a different question. The question asks for a comparison with Clear.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "ttest",
+      "welch"
+    ]
+  },
+  {
+    "id": "statistics-ttest-004",
+    "module": "statistics",
+    "topic": "ttest",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "HR compares each employee's self rating with the manager rating on the same review. Return the paired t statistic for `self_rating` minus `manager_rating`, rounded to 2 decimals. Drop duplicate rows and rows with a missing rating.",
+    "dataset": "hr",
+    "hint": "Make one difference column per row, then use the t formula for one mean: mean / (SD / sqrt(n)).",
+    "solutionCode": "import math\nr = load(\"hr\", \"performance_reviews\").drop_duplicates().dropna(subset=[\"self_rating\", \"manager_rating\"])\ndiff = r.self_rating - r.manager_rating\nt = diff.mean() / (diff.std() / math.sqrt(len(diff)))\nresult = round(t, 2)",
+    "expectedOutput": {
+      "value": 43.58
+    },
+    "explanation": "A paired test works on the differences within each review, not on two separate groups. Because the same review gives both ratings, this removes the spread between people. A large positive t means self ratings run higher than manager ratings.",
+    "commonMistake": "Running an independent two-sample test on the two rating columns. That ignores the pairing and usually gives a much smaller t.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 6,
+    "tags": [
+      "ttest",
+      "paired"
+    ]
+  },
+  {
+    "id": "statistics-ttest-005",
+    "module": "statistics",
+    "topic": "ttest",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "For the same self minus manager ratings, return a dict with `mean_diff` (mean of the differences) and `se` (standard error of that mean), each rounded to 4 decimals. Use the rows after removing duplicates and missing ratings.",
+    "dataset": "hr",
+    "hint": "se = SD of the differences divided by the square root of n.",
+    "solutionCode": "import math\nr = load(\"hr\", \"performance_reviews\").drop_duplicates().dropna(subset=[\"self_rating\", \"manager_rating\"])\ndiff = r.self_rating - r.manager_rating\nresult = {\"mean_diff\": round(diff.mean(), 4), \"se\": round(diff.std() / math.sqrt(len(diff)), 4)}",
+    "expectedOutput": {
+      "value": {
+        "mean_diff": 0.4434,
+        "se": 0.0102
+      }
+    },
+    "explanation": "The mean difference says how much higher the self rating is on average. The standard error says how precise that estimate is. Dividing one by the other gives the paired t from the previous question.",
+    "commonMistake": "Using the SD of the ratings instead of the SD of the differences. The paired standard error must use the differences.",
+    "interviewFrequency": "low",
+    "estimatedMinutes": 5,
+    "tags": [
+      "ttest",
+      "paired"
+    ]
+  },
+  {
+    "id": "statistics-ttest-006",
+    "module": "statistics",
+    "topic": "ttest",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "Return the Welch degrees of freedom for the Rain versus Clear comparison on delivered `actual_minutes`, rounded to 1 decimal. Use the Welch-Satterthwaite formula.",
+    "dataset": "food_delivery",
+    "hint": "df = (v1/n1 + v2/n2)^2 / ((v1/n1)^2/(n1 - 1) + (v2/n2)^2/(n2 - 1)), where v is the variance.",
+    "solutionCode": "d = load(\"food_delivery\", \"deliveries\").drop_duplicates()\nd = d[d.delivery_status == \"Delivered\"].dropna(subset=[\"actual_minutes\"])\na = d[d.weather == \"Rain\"].actual_minutes\nb = d[d.weather == \"Clear\"].actual_minutes\nva = a.var() / len(a)\nvb = b.var() / len(b)\ndf = (va + vb) ** 2 / (va ** 2 / (len(a) - 1) + vb ** 2 / (len(b) - 1))\nresult = round(df, 1)",
+    "expectedOutput": {
+      "value": 1585.8
+    },
+    "explanation": "Welch df is smaller than n1 + n2 - 2 when the groups differ in spread or size. With groups this large, df is about 1,586, so the t distribution is almost the normal curve.",
+    "commonMistake": "Using n1 + n2 - 2, the pooled df. That is only right when the two variances are equal, and it overstates the df here.",
+    "interviewFrequency": "low",
+    "estimatedMinutes": 7,
+    "tags": [
+      "ttest",
+      "welch",
+      "df"
+    ]
+  },
+  {
+    "id": "statistics-ttest-007",
+    "module": "statistics",
+    "topic": "ttest",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "Report a 95 percent interval for the extra time from rain. Return the lower bound of the approximate 95 percent CI for Rain minus Clear (mean difference minus 1.96 times the Welch standard error), rounded to 2 decimals.",
+    "dataset": "food_delivery",
+    "hint": "The group sizes are large, so the normal value 1.96 is a good stand-in for the t value.",
+    "solutionCode": "d = load(\"food_delivery\", \"deliveries\").drop_duplicates()\nd = d[d.delivery_status == \"Delivered\"].dropna(subset=[\"actual_minutes\"])\nimport math\na = d[d.weather == \"Rain\"].actual_minutes\nb = d[d.weather == \"Clear\"].actual_minutes\nse = math.sqrt(a.var() / len(a) + b.var() / len(b))\nlow = (a.mean() - b.mean()) - 1.96 * se\nresult = round(low, 2)",
+    "expectedOutput": {
+      "value": 4.66
+    },
+    "explanation": "A confidence interval shows a range of likely gaps, not just a yes or no. The lower bound is still above zero, which means rain adds time with confidence. This is the reporting style that works best for managers.",
+    "commonMistake": "Reporting the CI as containing the true value with 95 percent probability. The 95 percent describes how often the method captures the true gap over many samples.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 7,
+    "tags": [
+      "ttest",
+      "confidence-interval"
+    ]
+  },
+  {
+    "id": "statistics-ttest-008",
+    "module": "statistics",
+    "topic": "ttest",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "Group A has mean 50 and group B has mean 46. The standard error of the difference is 2. What is the t statistic for the difference A minus B?",
+    "dataset": "none",
+    "hint": "t = difference in means / standard error of the difference.",
+    "solution": "**Answer: t = 2.** The difference is 50 - 46 = 4. Divide by the standard error of 2 to get t = 4 / 2 = 2.",
+    "explanation": "The t statistic is a signal-to-noise ratio. A gap of 4 with noise of 2 gives a ratio of 2, which is just past the usual cutoff.",
+    "commonMistake": "Dividing by the sum of the standard errors. The correct denominator is the single standard error of the difference.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "ttest",
+      "signal-noise"
+    ],
+    "expectedOutput": {
+      "value": 2
+    }
+  },
+  {
+    "id": "statistics-ttest-009",
+    "module": "statistics",
+    "topic": "ttest",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "The same 10 delivery riders are timed before and after a training course. Which t-test should you use: paired or independent (Welch)? Answer in one or two sentences with a reason.",
+    "dataset": "none",
+    "hint": "Think about whether each before value has an after value from the same rider.",
+    "solution": "**Model answer:** Use a paired t-test. Each rider gives a before value and an after value, so the two sets of numbers are linked. Take the difference for each rider and test whether the mean difference is zero. An independent test would ignore the link and would lose power.",
+    "explanation": "A paired test removes the rider-to-rider spread. The pairing is the key fact. The sample of 10 is small, so the t distribution matters here.",
+    "commonMistake": "Choosing Welch because the groups have a similar size. Shape and size do not decide the test; the pairing does.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "ttest",
+      "paired",
+      "interpretation"
+    ]
+  },
+  {
+    "id": "statistics-ttest-010",
+    "module": "statistics",
+    "topic": "ttest",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "Group 1 has mean 52, SD 10 and n = 50. Group 2 has mean 48, SD 12 and n = 50. Compute the Welch t statistic for mean 1 minus mean 2. Round to 2 decimals.",
+    "dataset": "none",
+    "hint": "SE = sqrt(s1^2/n1 + s2^2/n2). Then t = difference / SE.",
+    "solution": "**Answer: t = 1.81.** Variance terms: 10^2/50 = 2 and 12^2/50 = 2.88. SE = sqrt(2 + 2.88) = sqrt(4.88) = 2.209. t = (52 - 48) / 2.209 = 1.81.",
+    "explanation": "Each group's variance is divided by its own n before the terms are added. The larger spread in group 2 raises the standard error, so the t is smaller than a simple 4 divided by 2 would suggest.",
+    "commonMistake": "Adding the SDs before squaring, or leaving out the division by n. Both give a much smaller or larger t than the correct value.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 6,
+    "tags": [
+      "ttest",
+      "welch"
+    ],
+    "expectedOutput": {
+      "value": 1.81
+    }
+  }
+]

@@ -1,0 +1,241 @@
+[
+  {
+    "id": "statistics-chisquare-001",
+    "module": "statistics",
+    "topic": "chisquare",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "Operations asks whether rain makes deliveries fail more often. Return a dict with `clear` and `heavy_rain`: the cancellation rate in percent (0 to 100) for orders placed in Clear weather and in Heavy Rain weather, rounded to 2 decimals. Use one row per `delivery_id`.",
+    "dataset": "food_delivery",
+    "hint": "Make a column that is True when `delivery_status` is Cancelled. The mean of a True/False column is the share of cancelled orders.",
+    "solutionCode": "d = load('food_delivery', 'deliveries').drop_duplicates(subset='delivery_id')\nd = d[d.weather.isin(['Clear', 'Heavy Rain'])]\nrate = d.assign(c=d.delivery_status.eq('Cancelled')).groupby('weather')['c'].mean() * 100\nresult = {'clear': round(rate['Clear'], 2), 'heavy_rain': round(rate['Heavy Rain'], 2)}",
+    "expectedOutput": {
+      "value": {
+        "clear": 4.06,
+        "heavy_rain": 9.26
+      }
+    },
+    "explanation": "We keep one row per delivery and only the two weather types we compare. A True/False column for cancelled orders, averaged by weather, gives the cancellation share directly. Multiplying by 100 turns the share into a percent.",
+    "commonMistake": "Counting cancelled orders and dividing by all orders in the city. That gives a city-wide rate, not the rate for each weather type, so the comparison is wrong.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "chisquare",
+      "statistics"
+    ]
+  },
+  {
+    "id": "statistics-chisquare-002",
+    "module": "statistics",
+    "topic": "chisquare",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "For the same two weather types (Clear and Heavy Rain), build a 2 x 2 table of counts. Return a dict with the keys `clear_cancelled`, `clear_delivered`, `heavy_rain_cancelled` and `heavy_rain_delivered`. Use one row per `delivery_id`.",
+    "dataset": "food_delivery",
+    "hint": "Use pd.crosstab with weather on one side and delivery_status on the other, then read the four cells.",
+    "solutionCode": "d = load('food_delivery', 'deliveries').drop_duplicates(subset='delivery_id')\nd = d[d.weather.isin(['Clear', 'Heavy Rain'])]\nt = pd.crosstab(d.weather, d.delivery_status)\nresult = {'clear_cancelled': int(t.loc['Clear', 'Cancelled']), 'clear_delivered': int(t.loc['Clear', 'Delivered']), 'heavy_rain_cancelled': int(t.loc['Heavy Rain', 'Cancelled']), 'heavy_rain_delivered': int(t.loc['Heavy Rain', 'Delivered'])}",
+    "expectedOutput": {
+      "value": {
+        "clear_cancelled": 419,
+        "clear_delivered": 9890,
+        "heavy_rain_cancelled": 64,
+        "heavy_rain_delivered": 627
+      }
+    },
+    "explanation": "crosstab counts each combination of weather and status. A chi-square test needs these counts, not the percentages. The four numbers are the observed values O in the chi-square formula.",
+    "commonMistake": "Putting the percentages into the table instead of the counts. A chi-square test on percentages gives a wrong statistic because it loses the sample sizes.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "chisquare",
+      "statistics"
+    ]
+  },
+  {
+    "id": "statistics-chisquare-003",
+    "module": "statistics",
+    "topic": "chisquare",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Using the same 2 x 2 weather and cancellation table, compute the chi-square statistic without any continuity correction. Return a dict with `chi2` (rounded to 2 decimals) and `df` (the degrees of freedom).",
+    "dataset": "food_delivery",
+    "hint": "For each cell, expected = row total * column total / grand total. Then add up (observed - expected) squared divided by expected.",
+    "solutionCode": "d = load('food_delivery', 'deliveries').drop_duplicates(subset='delivery_id')\nd = d[d.weather.isin(['Clear', 'Heavy Rain'])]\nt = pd.crosstab(d.weather, d.delivery_status)\nobs = t.values.astype(float)\nexp = obs.sum(axis=1, keepdims=True) @ obs.sum(axis=0, keepdims=True) / obs.sum()\nchi2 = ((obs - exp) ** 2 / exp).sum()\nresult = {'chi2': round(float(chi2), 2), 'df': (obs.shape[0] - 1) * (obs.shape[1] - 1)}",
+    "expectedOutput": {
+      "value": {
+        "chi2": 41.67,
+        "df": 1
+      }
+    },
+    "explanation": "The expected table is built from row and column totals, as if weather and status had nothing to do with each other. The chi-square sum measures how far the real counts sit from that picture. Degrees of freedom are (rows - 1) times (columns - 1), which is 1 for a 2 x 2 table.",
+    "commonMistake": "Using the observed counts in the denominator instead of the expected counts. The result looks plausible but is not the chi-square statistic.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "chisquare",
+      "statistics"
+    ]
+  },
+  {
+    "id": "statistics-chisquare-004",
+    "module": "statistics",
+    "topic": "chisquare",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Product wants to know how many trial users would have paid if platform made no difference. Using one row per user and only users who started a trial, build the platform by paid table. Return the expected count for the cell `Android` and paid, rounded to 2 decimals.",
+    "dataset": "subscription",
+    "hint": "Expected count = row total * column total / grand total for that cell. Remove duplicate user rows before you join.",
+    "solutionCode": "u = load('subscription', 'users')[['user_id', 'platform']].drop_duplicates()\ns = load('subscription', 'subscriptions')\ns = s[s.trial_start_date.notna()].merge(u, on='user_id')\ns['paid'] = s.paid_start_date.notna()\nt = pd.crosstab(s.platform, s.paid)\nobs = t.values.astype(float)\nexp = obs.sum(axis=1, keepdims=True) @ obs.sum(axis=0, keepdims=True) / obs.sum()\nresult = round(float(exp[list(t.index).index('Android'), list(t.columns).index(True)]), 2)",
+    "expectedOutput": {
+      "value": 711.54
+    },
+    "explanation": "The users table has 8 exact duplicate rows, so we keep one row per user before joining. The expected count for Android and paid is the Android row total times the paid column total, divided by the grand total. It is the count we would expect if platform did not matter.",
+    "commonMistake": "Joining the full users table with duplicates. Duplicate users make the trial rows repeat, which changes both the observed and the expected counts.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "chisquare",
+      "statistics"
+    ]
+  },
+  {
+    "id": "statistics-chisquare-005",
+    "module": "statistics",
+    "topic": "chisquare",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Growth team ran an A/B test on a new checkout. Clean the data first: drop exact duplicate rows, then drop every user who appears in both variants. Return a dict with `control_converted`, `control_total`, `treatment_converted` and `treatment_total` counting rows in the cleaned data.",
+    "dataset": "marketing",
+    "hint": "Find user_ids with more than one distinct variant, then remove them with isin and the tilde (not) operator.",
+    "solutionCode": "df = load('marketing', 'ab_test_results').drop_duplicates()\nv = df.groupby('user_id')['variant'].nunique()\ndf = df[~df.user_id.isin(v[v > 1].index)]\nc = df[df.variant == 'control']\nt = df[df.variant == 'treatment']\nresult = {'control_converted': int(c.converted.sum()), 'control_total': int(len(c)), 'treatment_converted': int(t.converted.sum()), 'treatment_total': int(len(t))}",
+    "expectedOutput": {
+      "value": {
+        "control_converted": 636,
+        "control_total": 6016,
+        "treatment_converted": 700,
+        "treatment_total": 5974
+      }
+    },
+    "explanation": "Exact duplicates are removed first so no user counts twice. Users who saw both variants cannot be fairly compared, so we drop them. The converted column is 0 or 1, so its sum is the number of converted users.",
+    "commonMistake": "Removing only the duplicate rows and keeping the contaminated users. Those users were in both groups, so the two counts are mixed and the test is biased.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "chisquare",
+      "statistics"
+    ]
+  },
+  {
+    "id": "statistics-chisquare-006",
+    "module": "statistics",
+    "topic": "chisquare",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "Using the cleaned A/B data (no duplicates, no users in both variants), compare the conversion rate of treatment with control using a pooled two-proportion z-test. Return `z` rounded to 3 decimals. A positive value means treatment is higher.",
+    "dataset": "marketing",
+    "hint": "Pooled proportion = all conversions / all users. The standard error is sqrt(p * (1 - p) * (1/n1 + 1/n2)).",
+    "solutionCode": "import math\ndf = load('marketing', 'ab_test_results').drop_duplicates()\nv = df.groupby('user_id')['variant'].nunique()\ndf = df[~df.user_id.isin(v[v > 1].index)]\ng = df.groupby('variant')['converted'].agg(['sum', 'count'])\nx1, n1 = g.loc['control', 'sum'], g.loc['control', 'count']\nx2, n2 = g.loc['treatment', 'sum'], g.loc['treatment', 'count']\np1, p2 = x1 / n1, x2 / n2\npp = (x1 + x2) / (n1 + n2)\nse = math.sqrt(pp * (1 - pp) * (1 / n1 + 1 / n2))\nresult = round(float((p2 - p1) / se), 3)",
+    "expectedOutput": {
+      "value": 1.993
+    },
+    "explanation": "The pooled proportion assumes both groups share one true rate under the null idea of no effect. The z value is the gap between the two rates divided by the standard error of that gap. Values above 1.96 (in size) are significant at the 5 percent level.",
+    "commonMistake": "Using the raw sums instead of rates, or dividing by one group size only. Both give a z value that looks like a number but is not the correct test statistic.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "chisquare",
+      "statistics"
+    ]
+  },
+  {
+    "id": "statistics-chisquare-007",
+    "module": "statistics",
+    "topic": "chisquare",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "On the same cleaned A/B data, compute the chi-square statistic for the 2 x 2 table of variant by converted (no continuity correction). Return a dict with `chi2` and `z_squared` (the square of the z value from the two-proportion test), both rounded to 3 decimals.",
+    "dataset": "marketing",
+    "hint": "Build the 2 x 2 table with crosstab, then use the same expected-count formula as before. The two numbers should match.",
+    "solutionCode": "import math\ndf = load('marketing', 'ab_test_results').drop_duplicates()\nv = df.groupby('user_id')['variant'].nunique()\ndf = df[~df.user_id.isin(v[v > 1].index)]\nt = pd.crosstab(df.variant, df.converted)\nobs = t.values.astype(float)\nexp = obs.sum(axis=1, keepdims=True) @ obs.sum(axis=0, keepdims=True) / obs.sum()\nchi2 = ((obs - exp) ** 2 / exp).sum()\ng = df.groupby('variant')['converted'].agg(['sum', 'count'])\nx1, n1 = g.loc['control', 'sum'], g.loc['control', 'count']\nx2, n2 = g.loc['treatment', 'sum'], g.loc['treatment', 'count']\np1, p2 = x1 / n1, x2 / n2\npp = (x1 + x2) / (n1 + n2)\nz = (p2 - p1) / math.sqrt(pp * (1 - pp) * (1 / n1 + 1 / n2))\nresult = {'chi2': round(float(chi2), 3), 'z_squared': round(float(z * z), 3)}",
+    "expectedOutput": {
+      "value": {
+        "chi2": 3.973,
+        "z_squared": 3.973
+      }
+    },
+    "explanation": "For a 2 x 2 table, the chi-square statistic equals the square of the pooled z value. Seeing the two numbers match is a good check that both calculations are right. The chi-square version is two-sided, so it does not tell you the direction of the change.",
+    "commonMistake": "Expecting the two numbers to differ. They are the same test written two ways, so a mismatch means one of the formulas has a mistake.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "chisquare",
+      "statistics"
+    ]
+  },
+  {
+    "id": "statistics-chisquare-008",
+    "module": "statistics",
+    "topic": "chisquare",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "A cell in a chi-square table has observed count 30 and expected count 20. What is its contribution to the chi-square statistic, (O - E) squared divided by E? Give the number.",
+    "dataset": "none",
+    "hint": "Find the difference first, square it, then divide by the expected count.",
+    "solution": "**Step 1:** O - E = 30 - 20 = 10.\n\n**Step 2:** Square it: 10 x 10 = 100.\n\n**Step 3:** Divide by the expected count: 100 / 20 = **5**.\n\nThe cell adds 5 to the chi-square total.",
+    "explanation": "Each cell adds (O - E) squared divided by E to the total. Squaring makes every gap positive, and dividing by E scales it so a gap of 10 counts more when the expected count is small.",
+    "commonMistake": "Dividing by O instead of E, which gives 100 / 30 = 3.33 and a wrong total.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "chisquare",
+      "statistics"
+    ],
+    "expectedOutput": {
+      "value": 5
+    }
+  },
+  {
+    "id": "statistics-chisquare-009",
+    "module": "statistics",
+    "topic": "chisquare",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "A survey table has 3 rows (for example, three city tiers) and 4 columns (for example, four plan types). What are the degrees of freedom for the chi-square test of independence? Give the number.",
+    "dataset": "none",
+    "hint": "Degrees of freedom = (rows - 1) times (columns - 1).",
+    "solution": "**Step 1:** Rows - 1 = 3 - 1 = 2.\n\n**Step 2:** Columns - 1 = 4 - 1 = 3.\n\n**Step 3:** Multiply: 2 x 3 = **6**.\n\nAt the 5 percent level the critical value for 6 degrees of freedom is 12.59.",
+    "explanation": "Degrees of freedom count how many cells can change freely once the row and column totals are fixed. The last row and last column are set by the totals, so only (rows - 1) times (columns - 1) cells are free.",
+    "commonMistake": "Using rows times columns (12) or rows plus columns minus 1 (6 by luck, but wrong for other sizes).",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "chisquare",
+      "statistics"
+    ],
+    "expectedOutput": {
+      "value": 6
+    }
+  },
+  {
+    "id": "statistics-chisquare-010",
+    "module": "statistics",
+    "topic": "chisquare",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "In a 2-way table the row total is 200, the column total is 150 and the grand total is 1,000. What is the expected count for that cell? Give the number.",
+    "dataset": "none",
+    "hint": "Expected = row total times column total, divided by the grand total.",
+    "solution": "**Step 1:** Row total x column total = 200 x 150 = 30,000.\n\n**Step 2:** Divide by the grand total: 30,000 / 1,000 = **30**.\n\nThe expected count for that cell is 30.",
+    "explanation": "The expected count is the count you would see if the row and the column were unrelated. Each row share is multiplied by each column share, then multiplied by the grand total.",
+    "commonMistake": "Dividing by the row total only, which gives 150 and ignores the grand total.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "chisquare",
+      "statistics"
+    ],
+    "expectedOutput": {
+      "value": 30
+    }
+  }
+]

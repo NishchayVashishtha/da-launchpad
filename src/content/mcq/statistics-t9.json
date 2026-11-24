@@ -1,0 +1,138 @@
+[
+  {
+    "id": "stat-mcq-17-1",
+    "module": "statistics",
+    "topic": "regression",
+    "section": "Regression intuition: lines that explain data",
+    "difficulty": "easy",
+    "question": "In y = a + b x, what does the slope b measure?",
+    "options": [
+      "The predicted y when x is 0",
+      "The share of variation explained",
+      "The change in y for each one-unit rise in x",
+      "The average of y"
+    ],
+    "answerIndex": 2,
+    "explanation": "The slope is the rate of change of y per unit of x. The intercept is the value of y when x is 0.",
+    "shortcut": "Slope = rate per unit."
+  },
+  {
+    "id": "stat-mcq-17-2",
+    "module": "statistics",
+    "topic": "regression",
+    "section": "Regression intuition: lines that explain data",
+    "difficulty": "easy",
+    "question": "An R-squared of 0.64 means what?",
+    "options": [
+      "About 64 percent of the spread in y is explained by x",
+      "The correlation is 0.64 and the model is correct",
+      "64 percent of the points sit exactly on the line",
+      "The average error is 0.64 units"
+    ],
+    "answerIndex": 0,
+    "explanation": "R-squared is the share of the variation in y that the line explains. The other 36 percent is left to factors outside the model.",
+    "shortcut": "R-squared is a share, not a rate."
+  },
+  {
+    "id": "stat-mcq-17-3",
+    "module": "statistics",
+    "topic": "regression",
+    "section": "Regression intuition: lines that explain data",
+    "difficulty": "easy",
+    "question": "A residual is calculated as:",
+    "options": [
+      "Actual value minus predicted value",
+      "Slope times x",
+      "The square of the correlation",
+      "Predicted value minus actual value"
+    ],
+    "answerIndex": 3,
+    "explanation": "Residual means actual minus predicted. A positive residual means the real value was above the line.",
+    "shortcut": "Actual minus predicted, always."
+  },
+  {
+    "id": "stat-mcq-17-4",
+    "module": "statistics",
+    "topic": "regression",
+    "section": "Regression intuition: lines that explain data",
+    "difficulty": "medium",
+    "question": "Which prediction is the most risky for a delivery model fitted on 0.6 to 14 km?",
+    "options": [
+      "A trip of 3 km",
+      "A trip of 40 km",
+      "A trip of 8 km",
+      "A trip of 14 km"
+    ],
+    "answerIndex": 1,
+    "explanation": "40 km is far outside the fitted range, so it is an extrapolation. The line may not hold there.",
+    "shortcut": "Predictions outside the x range are extrapolations."
+  },
+  {
+    "id": "stat-mcq-17-5",
+    "module": "statistics",
+    "topic": "regression",
+    "section": "Regression intuition: lines that explain data",
+    "difficulty": "medium",
+    "question": "The least squares line is the one that:",
+    "options": [
+      "Passes through the first and last points",
+      "Makes the largest single residual zero",
+      "Minimises the sum of squared residuals",
+      "Has a slope of exactly 1"
+    ],
+    "answerIndex": 2,
+    "explanation": "Least squares chooses the line that makes the squared gaps add up to the smallest total. Squaring stops positive and negative gaps from cancelling.",
+    "shortcut": "Least squares = smallest squared gaps."
+  },
+  {
+    "id": "stat-mcq-17-6",
+    "module": "statistics",
+    "topic": "regression",
+    "section": "Regression intuition: lines that explain data",
+    "difficulty": "medium",
+    "question": "A slope of 4.4 minutes per km in a delivery model shows that:",
+    "options": [
+      "Distance and minutes are linked, but the link alone does not prove a cause",
+      "Distance causes the delivery to take 4.4 minutes per km",
+      "Every delivery takes 4.4 minutes per km",
+      "Weather has no effect on the slope"
+    ],
+    "answerIndex": 0,
+    "explanation": "A slope describes an association in the data. Proving cause needs a designed test or strong reasoning about other factors.",
+    "shortcut": "A slope shows association, not cause."
+  },
+  {
+    "id": "stat-mcq-17-7",
+    "module": "statistics",
+    "topic": "regression",
+    "section": "Regression intuition: lines that explain data",
+    "difficulty": "medium",
+    "question": "What does np.polyfit(x, y, 1) fit to the data?",
+    "options": [
+      "A curve with a squared term",
+      "A line through the origin only",
+      "A smoothed average of y",
+      "A straight line"
+    ],
+    "answerIndex": 3,
+    "explanation": "Degree 1 means a straight line, which is y = a + b x. Degree 2 would add a squared term and bend the curve.",
+    "shortcut": "Degree 1 means a straight line."
+  },
+  {
+    "id": "stat-mcq-17-8",
+    "module": "statistics",
+    "topic": "regression",
+    "section": "Regression intuition: lines that explain data",
+    "difficulty": "hard",
+    "question": "Two groups of deliveries show the same slope but different intercepts. What is the most useful reading?",
+    "options": [
+      "The distance effect is different in the two groups",
+      "The groups differ by a fixed amount at every distance, such as a base delay",
+      "The model is wrong and must be thrown away",
+      "The R-squared must be zero"
+    ],
+    "answerIndex": 1,
+    "explanation": "Same slope and different intercepts means the lines run parallel. One group is shifted up by a fixed amount, such as a rain delay, while distance costs the same per km.",
+    "shortcut": "Same slope, different intercept means a shift."
+  }
+]

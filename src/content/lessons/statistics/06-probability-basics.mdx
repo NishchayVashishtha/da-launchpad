@@ -1,0 +1,299 @@
+---
+title: "Probability basics for analysts"
+description: "Events, rules, independence and conditional probability, with data you already know."
+module: statistics
+order: 6
+estimatedMinutes: 45
+objectives:
+  - "Compute simple and compound probabilities"
+  - "Use the complement, AND and OR rules"
+  - "Tell independent events from mutually exclusive events"
+  - "Compute conditional probability from a table"
+  - "Use expected value to plan a cost"
+tags: ["statistics", "probability", "conditional"]
+---
+
+## Learning objectives
+
+- Read a probability as a share between 0 and 1 (or 0% and 100%).
+- Use the complement rule to find "not A" and "at least one".
+- Use the AND and OR rules, and know when to multiply or add.
+- Tell independent events from mutually exclusive events.
+- Compute a conditional probability, P(A given B), from a table.
+- Use expected value to estimate the average cost of a promotion.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+A payments team asks, "What is the chance a payment fails?" Another asks, "If a payment fails, what is the chance it came from a rainy-day order?" These are different questions. Mixing them up leads to wrong budgets and wrong alerts. Probability is the language that lets you answer both correctly, and it is the base for every A/B test and every risk report you will write.
+</RealWorld>
+
+## Concept
+
+### A probability is a share of times
+
+A weather app says "70% chance of rain". The simplest way to read it: think of 100 days that look like today. About 70 of them had rain. A probability is always between 0 and 1, or between 0% and 100%.
+
+With data, the same idea holds. If 1,000 deliveries happened and 180 were late, the probability of a late delivery is 180 / 1,000 = 0.18. This is called the **relative frequency** view. It is what most analysts use.
+
+### The complement rule
+
+The complement of an event A is "not A". Its probability is:
+
+<FormulaCard title="Complement">
+`P(not A) = 1 - P(A)`
+
+Use it when "not A" is easy and "A" is hard. A common case is "at least one". For example, "at least one of 3 payments fails" is easier as 1 minus "none fail".
+</FormulaCard>
+
+### The OR rule
+
+For "A or B", add the two probabilities, then subtract the overlap so it is counted once.
+
+<FormulaCard title="Addition rule">
+`P(A or B) = P(A) + P(B) - P(A and B)`
+
+If A and B cannot happen together, the overlap is 0 and the formula becomes `P(A) + P(B)`.
+</FormulaCard>
+
+### The AND rule and independence
+
+For "A and B", the rule depends on whether the events affect each other.
+
+- **Independent events:** one does not change the other. Then `P(A and B) = P(A) x P(B)`. Two coin tosses are independent.
+- **Dependent events:** one changes the chance of the other. Then you need the conditional probability (next section).
+
+### Independent is not the same as mutually exclusive
+
+This is the most common mix-up.
+
+| Idea | Meaning | Check | Example |
+|---|---|---|---|
+| Mutually exclusive | A and B cannot happen together | `P(A and B) = 0` | A delivery is either "Delivered" or "Cancelled" |
+| Independent | knowing A does not change the chance of B | `P(A and B) = P(A) x P(B)` | two fair coin tosses |
+
+Exclusive events are strongly dependent: if A happens, B cannot. So two events that are exclusive and both have a positive probability are never independent.
+
+### Conditional probability
+
+The probability of A **given** B is written `P(A | B)`. You restrict the world to the cases where B happened, and then count A inside that world.
+
+<FormulaCard title="Conditional probability">
+`P(A | B) = P(A and B) / P(B)`
+
+Read it as: among the rows where B is true, what share also have A?
+</FormulaCard>
+
+Two events are independent when `P(A | B)` equals `P(A)`. In other words, knowing B does not change the chance of A.
+
+<Warning>
+`P(A | B)` is not `P(B | A)`. The chance a delivery is late, given it rained, is not the same as the chance it rained, given it was late. Always check which group you divide by.
+</Warning>
+
+### Expected value
+
+The **expected value** is the average result if you could repeat the event many times. For a list of outcomes:
+
+<FormulaCard title="Expected value">
+`E = sum of (value x probability)`
+</FormulaCard>
+
+Expected value is the right tool to plan a budget. It tells you the cost per customer or per order, not what happens to any one customer.
+
+### Counting: combinations
+
+A short counting idea that comes up in aptitude tests and sampling. The number of ways to choose k items from n, when order does not matter, is written "n choose k":
+
+`C(n, k) = n! / (k! x (n - k)!)`
+
+For example, choosing 3 stores out of 8 for a pilot gives `C(8, 3) = 56` different groups.
+
+## Worked examples
+
+### Example 1: late deliveries and rain
+
+We use delivered orders only (cancelled orders have no delay). We ask: how likely is a late order, and does rain change that?
+
+```python
+import pandas as pd
+
+d = pd.read_csv("food_delivery/deliveries.csv").drop_duplicates(subset=["delivery_id"])
+dv = d.dropna(subset=["actual_minutes"])
+
+late = dv["delay_minutes"] > 10
+rainy = dv["weather"].isin(["Rain", "Heavy Rain"])
+
+print(round(late.mean(), 4))                                  # P(late)
+print(round(rainy.mean(), 4))                                 # P(rainy)
+print(round(late[dv["weather"] == "Heavy Rain"].mean(), 4))   # P(late | Heavy Rain)
+print(round(late[dv["weather"] == "Clear"].mean(), 4))        # P(late | Clear)
+```
+
+**Output:**
+
+```
+0.1808
+0.1315
+0.5295
+0.1505
+```
+
+About 18% of delivered orders are late. Only 13% of orders are rainy. But on heavy rain days, 53% of orders are late, against 15% on clear days. Rain changes the chance of lateness a lot, so lateness and weather are **dependent**.
+
+Now the independence test in numbers. If late and rainy were independent, the chance of both would equal the product of the two chances.
+
+```python
+print(round((late & rainy).mean(), 4))                  # joint: P(late and rainy)
+print(round(late.mean() * rainy.mean(), 4))             # product: P(late) x P(rainy)
+```
+
+**Output:**
+
+```
+0.0511
+0.0238
+```
+
+The joint share (0.0511) is more than double the product (0.0238). That confirms the link.
+
+Last, the two conditional directions. They look similar in name but mean different things.
+
+```python
+print(round((late & rainy).sum() / rainy.sum(), 4))    # P(late | rainy)
+print(round((late & rainy).sum() / late.sum(), 4))     # P(rainy | late)
+```
+
+**Output:**
+
+```
+0.3885
+0.2826
+```
+
+Of rainy orders, 39% are late. Of late orders, 28% are rainy. Both are useful, but they answer different questions. Pick the one your question asks for.
+
+### Example 2: subscription status shares
+
+The subscription table has one row per subscription. The chance a random subscription has a given status is its share of rows.
+
+```python
+s = pd.read_csv("subscription/subscriptions.csv").drop_duplicates(subset=["subscription_id"])
+print(s["status"].value_counts(normalize=True).round(4))
+```
+
+**Output:**
+
+```
+trial_expired    0.6261
+cancelled        0.1977
+active           0.1629
+trialing         0.0133
+Name: status, dtype: float64
+```
+
+About 63% of subscriptions ended their trial without paying. Only about 16% are active. This is a clean example of a probability as a share. The four shares add up to 1, as they should.
+
+### Example 3: expected cost of a promotion
+
+A cashback of ₹50 is given to a customer who claims it. Assume 4% of orders claim it, and there are 10 lakh orders. What should the team budget?
+
+```python
+per_order = 50 * 0.04          # expected cost per order
+total = per_order * 1_000_000  # expected cost for all orders
+print(per_order, total)
+```
+
+**Output:**
+
+```
+2.0 2000000.0
+```
+
+The expected cost is ₹2 per order, which is ₹20 lakh in total. The team should budget about ₹20 lakh. Some months will be above it and some below. The expected value is the right number for planning.
+
+### Example 4: choosing a pilot group
+
+A team has 8 stores and must choose 3 for a pilot. Order does not matter, so this is a combination.
+
+```python
+import math
+print(math.comb(8, 3))
+```
+
+**Output:**
+
+```
+56
+```
+
+There are 56 different groups of 3 stores. If the team picks one group at random, each group has a 1 in 56 chance.
+
+## Common mistakes
+
+<CommonMistake>
+Adding probabilities for events that can happen together. For "rain or late", `P(rain) + P(late)` counts the rainy late orders twice. Subtract the overlap with the OR rule.
+</CommonMistake>
+
+<CommonMistake>
+Assuming two events are independent without checking. Heavy rain and lateness are clearly dependent in our data. Multiplying their shares gives a wrong answer.
+</CommonMistake>
+
+<CommonMistake>
+Confusing `P(A | B)` with `P(B | A)`. Check which group you divide by. The conditioning group is the one after the bar.
+</CommonMistake>
+
+<CommonMistake>
+Forgetting the complement shortcut. "At least one" is almost always easier as 1 minus "none". Writing the full list of cases is slow and error prone.
+</CommonMistake>
+
+<CommonMistake>
+Mixing percent and fraction. 18% and 0.18 are the same. Multiplying a percent by a probability gives a wrong answer unless you convert first.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="probability" module="statistics" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "P(rain) = 0.3. What is the probability of no rain?", options: ["0.3", "0.7", "0.5", "0.03"], answer: 1, explanation: "The complement rule says P(not A) = 1 - P(A), so 1 - 0.3 = 0.7." },
+  { q: "Two events are mutually exclusive. What is P(A and B)?", options: ["P(A) x P(B)", "0", "P(A) + P(B)", "1"], answer: 1, explanation: "Mutually exclusive events cannot both happen, so the overlap is zero." },
+  { q: "P(A) = 0.5, P(B) = 0.4 and P(A and B) = 0.2. What is P(A or B)?", options: ["0.9", "0.1", "0.7", "0.2"], answer: 2, explanation: "Add the two probabilities and subtract the overlap: 0.5 + 0.4 - 0.2 = 0.7." },
+  { q: "Of 120 deliveries, 30 were late and 9 of those late deliveries happened in rain. What is P(rain | late)?", options: ["0.25", "0.075", "0.3", "0.9"], answer: 2, explanation: "You divide by the late deliveries: 9 out of 30 is 0.3." },
+  { q: "A cashback of ₹40 is claimed by 5% of orders. What is the expected cost per order?", options: ["₹40", "₹2", "₹0.05", "₹20"], answer: 1, explanation: "Expected value is value times probability: ₹40 x 0.05 = ₹2." },
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Probability questions in interviews are short but tricky. Interviewers look for three things: you check independence before you multiply, you know which group you divide by, and you can explain a result in plain words with a quick number.
+</InterviewAlert>
+
+<InterviewQ q="What is the chance that at least one of 3 payments fails, if each fails with probability 0.05 and they are independent?">
+The easy route is the complement. The chance that none fail is 0.95 x 0.95 x 0.95, which is about 0.857. So the chance that at least one fails is 1 minus 0.857, which is about 0.143. I use the complement because listing every case for "at least one" is slow and easy to get wrong.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between independent and mutually exclusive events?">
+Mutually exclusive events cannot happen together, so their overlap is zero. Independent events can happen together, but one does not change the chance of the other. Exclusive events are actually strongly dependent, because if one happens the other cannot. Interviewers often ask this to test whether you can apply the right rule to each case.
+</InterviewQ>
+
+<InterviewQ q="Given a table of counts, how do you find P(A | B)?">
+I restrict to the rows where B is true, then count the share of those rows where A is also true. In formula form, that is P(A and B) divided by P(B). I always state which group I divided by in the answer, because P(A | B) and P(B | A) can be very different.
+</InterviewQ>
+
+<InterviewQ q="A promo gives ₹50 to 4% of users. How would you estimate its cost?">
+I use expected value. Per user, the cost is ₹50 times 0.04, which is ₹2. For 10 lakh users that is about ₹20 lakh. I would then say this is the average, and that the real cost will vary from month to month. I would also check whether the 4% claim rate is stable before I rely on it.
+</InterviewQ>
+
+## Key takeaways
+
+- A probability is a share between 0 and 1. With data, it is the share of rows that have the event.
+- Use the complement for "at least one", and the OR rule with overlap for "A or B".
+- Multiply for AND only when events are independent. Check with `P(A | B) = P(A)`.
+- Mutually exclusive is not the same as independent. Exclusive events are strongly dependent.
+- Divide by the conditioning group. `P(A | B)` and `P(B | A)` are different numbers.
+
+## Further reading
+
+<FurtherReading ids={["khan-stats"]} />

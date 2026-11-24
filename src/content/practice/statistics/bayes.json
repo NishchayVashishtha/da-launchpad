@@ -1,0 +1,231 @@
+[
+  {
+    "id": "statistics-bayes-001",
+    "module": "statistics",
+    "topic": "bayes",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "A fraud team wants the base rate of its alert system. Across all unique transactions in the `transactions` table, what share has `is_flagged` equal to 1? Assign the share, rounded to 4 decimals, to `result`.",
+    "dataset": "fintech",
+    "hint": "Remove duplicate `txn_id` rows first. The mean of a 0/1 column is the share of 1s.",
+    "solutionCode": "t = load(\"fintech\", \"transactions\").drop_duplicates(subset=\"txn_id\")\nresult = round(float((t[\"is_flagged\"] == 1).mean()), 4)",
+    "expectedOutput": {
+      "value": 0.0135
+    },
+    "explanation": "The flag column holds 0 or 1, so its mean equals the share of flagged rows. We drop duplicate `txn_id` rows first so that no transaction is counted twice. This share is the prior, the base rate of flags before we look at any other column.",
+    "commonMistake": "Counting flagged rows with `sum()` and dividing by the raw row count. The raw file has about 89 duplicated transactions, so the share comes out slightly low.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "bayes",
+      "base-rate",
+      "pandas"
+    ]
+  },
+  {
+    "id": "statistics-bayes-002",
+    "module": "statistics",
+    "topic": "bayes",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "The fraud team asks: among transactions that were flagged, what share are P2P transfers? Use `txn_type` equal to `P2P`. Assign the share, rounded to 4 decimals, to `result`.",
+    "dataset": "fintech",
+    "hint": "Filter to the flagged rows first, then take the mean of a True/False test on `txn_type`.",
+    "solutionCode": "t = load(\"fintech\", \"transactions\").drop_duplicates(subset=\"txn_id\")\nflagged = t[t[\"is_flagged\"] == 1]\nresult = round(float((flagged[\"txn_type\"] == \"P2P\").mean()), 4)",
+    "expectedOutput": {
+      "value": 0.1656
+    },
+    "explanation": "This is P(P2P | flagged): we condition on the flagged rows and ask how often a P2P transfer shows up inside them. Filtering first, then taking the mean of a True/False column, gives the share directly. Compare it with the share of all rows that are P2P to see if P2P is over- or under-represented among flags.",
+    "commonMistake": "Dividing the count of flagged P2P rows by all transactions. That gives P(flagged and P2P), not P(P2P | flagged), and the result is far too small.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "bayes",
+      "conditional-probability"
+    ]
+  },
+  {
+    "id": "statistics-bayes-003",
+    "module": "statistics",
+    "topic": "bayes",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "The fraud team also asks the reverse question: among P2P transfers, what share were flagged? Assign the share, rounded to 4 decimals, to `result`.",
+    "dataset": "fintech",
+    "hint": "Filter to P2P rows first, then take the mean of the `is_flagged` column.",
+    "solutionCode": "t = load(\"fintech\", \"transactions\").drop_duplicates(subset=\"txn_id\")\np2p = t[t[\"txn_type\"] == \"P2P\"]\nresult = round(float((p2p[\"is_flagged\"] == 1).mean()), 4)",
+    "expectedOutput": {
+      "value": 0.0092
+    },
+    "explanation": "This is P(flagged | P2P), the reverse of the previous question. The answer is a different number, which shows that P(A | B) and P(B | A) are not the same. Use the group you condition on as the denominator.",
+    "commonMistake": "Reading the answer to the previous question as this one. P(P2P | flagged) and P(flagged | P2P) are two different numbers.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "bayes",
+      "conditional-probability"
+    ]
+  },
+  {
+    "id": "statistics-bayes-004",
+    "module": "statistics",
+    "topic": "bayes",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Build a 2 by 2 count table of `is_flagged` (flagged or not) against `txn_type` (P2P or other types). Return a dict with the keys `flagged_p2p`, `flagged_other`, `not_flagged_p2p` and `not_flagged_other`, each holding a whole number, and assign it to `result`.",
+    "dataset": "fintech",
+    "hint": "Make two True/False masks, one for flagged and one for P2P, then count each combination with `&` and `~`.",
+    "solutionCode": "t = load(\"fintech\", \"transactions\").drop_duplicates(subset=\"txn_id\")\nflag = t[\"is_flagged\"] == 1\np2p = t[\"txn_type\"] == \"P2P\"\nresult = {\n    \"flagged_p2p\": int((flag & p2p).sum()),\n    \"flagged_other\": int((flag & ~p2p).sum()),\n    \"not_flagged_p2p\": int((~flag & p2p).sum()),\n    \"not_flagged_other\": int((~flag & ~p2p).sum()),\n}",
+    "expectedOutput": {
+      "value": {
+        "flagged_p2p": 50,
+        "flagged_other": 252,
+        "not_flagged_p2p": 5375,
+        "not_flagged_other": 16623
+      }
+    },
+    "explanation": "Each cell of the table is one combination of the two conditions. The four counts add up to the number of unique transactions. From these counts you can get every conditional probability in this set.",
+    "commonMistake": "Using `and` or `or` between pandas Series. Python raises an error on Series, so use `&`, `|` and `~` with brackets around each mask.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 6,
+    "tags": [
+      "bayes",
+      "crosstab"
+    ]
+  },
+  {
+    "id": "statistics-bayes-005",
+    "module": "statistics",
+    "topic": "bayes",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "Check Bayes' rule on the flag data. Compute P(P2P | flagged) two ways: (1) directly, by counting, and (2) with Bayes' rule using P(flagged | P2P), P(P2P) and P(flagged). Return a dict with keys `direct` and `bayes`, each rounded to 4 decimals, and assign it to `result`.",
+    "dataset": "fintech",
+    "hint": "For the Bayes version, the likelihood is the share of flagged rows inside the P2P group. Multiply it by the P2P share, then divide by the overall flag share.",
+    "solutionCode": "t = load(\"fintech\", \"transactions\").drop_duplicates(subset=\"txn_id\")\nflag = t[\"is_flagged\"] == 1\np2p = t[\"txn_type\"] == \"P2P\"\ndirect = (flag & p2p).sum() / flag.sum()\nlikelihood = flag[p2p].mean()\nprior = p2p.mean()\nevidence = flag.mean()\nbayes = likelihood * prior / evidence\nresult = {\"direct\": round(float(direct), 4), \"bayes\": round(float(bayes), 4)}",
+    "expectedOutput": {
+      "value": {
+        "direct": 0.1656,
+        "bayes": 0.1656
+      }
+    },
+    "explanation": "Bayes' rule says P(B | A) times P(A), divided by P(B), gives P(A | B). Both methods must give the same number, because they measure the same thing. Seeing the two agree is a good check when you build a conditional probability by hand.",
+    "commonMistake": "Using P(P2P) as the answer. That is the prior before the flag is known, and it does not use the evidence at all.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 8,
+    "tags": [
+      "bayes",
+      "bayes-rule"
+    ]
+  },
+  {
+    "id": "statistics-bayes-006",
+    "module": "statistics",
+    "topic": "bayes",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "An ops analyst asks about ThaliDash deliveries. A delivery is late when `delay_minutes` is greater than 10. Among delivered orders (after removing duplicate `delivery_id` rows), what is P(Heavy Rain | late)? Compute it with Bayes' rule from P(late | Heavy Rain), P(Heavy Rain) and P(late), and assign it, rounded to 4 decimals, to `result`.",
+    "dataset": "food_delivery",
+    "hint": "Work only with rows where `delivery_status` is `Delivered`. Build the three inputs as shares of True values, then combine them in one formula.",
+    "solutionCode": "d = load(\"food_delivery\", \"deliveries\").drop_duplicates(subset=\"delivery_id\")\ndl = d[d[\"delivery_status\"] == \"Delivered\"]\nlate = dl[\"delay_minutes\"] > 10\nhr = dl[\"weather\"] == \"Heavy Rain\"\nlikelihood = late[hr].mean()\nprior = hr.mean()\nevidence = late.mean()\nresult = round(float(likelihood * prior / evidence), 4)",
+    "expectedOutput": {
+      "value": 0.1285
+    },
+    "explanation": "Bayes' rule turns the question around. We know how often orders are late on a heavy rain day, and we want the share of late orders that came from heavy rain. The three inputs come from the same delivered-order base, so the answer is consistent.",
+    "commonMistake": "Using all deliveries, including cancelled ones. Cancelled orders have no delay value, so they must be removed before you take any shares.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 8,
+    "tags": [
+      "bayes",
+      "delivery"
+    ]
+  },
+  {
+    "id": "statistics-bayes-007",
+    "module": "statistics",
+    "topic": "bayes",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "A churn model is run on 1,000 users. 20 of them churn. The model flags 18 of the 20 churners. It also flags 98 of the 980 users who do not churn. Given that a user is flagged, what is the chance (in %) that the user churns? Give the answer rounded to 1 decimal.",
+    "dataset": "none",
+    "hint": "Count everyone who is flagged first. Then ask how many of them churned.",
+    "solution": "Flagged users = 18 churners + 98 non-churners = 116.\n\nP(churn | flagged) = 18 / 116 = 0.1552, which is **15.5%**.\n\nThe base rate is 2%, but a flag lifts the chance to about 15.5%. It is still far from certain.",
+    "explanation": "Among the 116 flagged users, 18 really churned. The answer is the share of churners inside the flagged group.",
+    "commonMistake": "Answering 18 / 20 = 90%. That is P(flagged | churn), which is the reverse of what was asked.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "bayes",
+      "churn"
+    ],
+    "expectedOutput": {
+      "value": 15.5
+    }
+  },
+  {
+    "id": "statistics-bayes-008",
+    "module": "statistics",
+    "topic": "bayes",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "A UPI fraud alert catches 90% of fraud (sensitivity). It flags 2% of genuine transactions (false-positive rate). Fraud is 0.1% of all transactions. What is the chance (in %) that a flagged transaction is fraud? Give the answer rounded to 1 decimal.",
+    "dataset": "none",
+    "hint": "Use 100,000 transactions. Count fraud and genuine cases separately, then find the flagged share that is fraud.",
+    "solution": "Out of 100,000 transactions:\n\n- Fraud = 0.1% = 100. Flagged fraud = 90% of 100 = 90.\n- Genuine = 99,900. Flagged genuine = 2% of 99,900 = 1,998.\n- Total flagged = 90 + 1,998 = 2,088.\n\nP(fraud | flagged) = 90 / 2,088 = 0.0431, which is **4.3%**.",
+    "explanation": "Most flags are false, because genuine transactions are so many. The 2% false-alarm rate on 99,900 genuine rows creates far more flags than the 90 real frauds.",
+    "commonMistake": "Answering 90%, the sensitivity. That ignores the base rate and mixes up P(flag | fraud) with P(fraud | flag).",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "bayes",
+      "fraud"
+    ],
+    "expectedOutput": {
+      "value": 4.3
+    }
+  },
+  {
+    "id": "statistics-bayes-009",
+    "module": "statistics",
+    "topic": "bayes",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "Use the same alert as the last question (90% sensitivity, 2% false-positive rate). But now 1% of transactions are fraud, not 0.1%. What is the chance (in %) that a flagged transaction is fraud? Give the answer rounded to 1 decimal.",
+    "dataset": "none",
+    "hint": "Redo the count table with 1,000 fraud cases and 99,000 genuine cases out of 100,000.",
+    "solution": "Out of 100,000 transactions:\n\n- Fraud = 1% = 1,000. Flagged fraud = 90% of 1,000 = 900.\n- Genuine = 99,000. Flagged genuine = 2% of 99,000 = 1,980.\n- Total flagged = 900 + 1,980 = 2,880.\n\nP(fraud | flagged) = 900 / 2,880 = 0.3125, which is **31.3%**.\n\nA 10 times higher base rate lifts the posterior from 4.3% to 31.3%.",
+    "explanation": "The same test is much more useful when the event is more common. The false alarms are the same 2%, but there are fewer genuine rows to create them.",
+    "commonMistake": "Keeping the old 0.1% base rate. The posterior depends on the base rate, so a new base rate needs a new table.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "bayes",
+      "base-rate"
+    ],
+    "expectedOutput": {
+      "value": 31.3
+    }
+  },
+  {
+    "id": "statistics-bayes-010",
+    "module": "statistics",
+    "topic": "bayes",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "Out of 100,000 transactions, 0.1% are fraud. The alert catches 90% of fraud and flags 2% of genuine transactions. How many flagged transactions are genuine? Give the whole number.",
+    "dataset": "none",
+    "hint": "Find the genuine transactions first, then take 2% of them.",
+    "solution": "Genuine transactions = 100,000 - 100 fraud = 99,900.\n\nGenuine flags = 2% of 99,900 = 1,998.\n\nSo about **1,998** of the flags are genuine, and only 90 flags are real fraud. Most flagged transactions need a human check, which is why analysts tune the threshold.",
+    "explanation": "The false-alarm rate is applied to the genuine group, not to all transactions. Because the genuine group is 999 times bigger than the fraud group, a small false-alarm rate still gives many flags.",
+    "commonMistake": "Taking 2% of 100,000 and getting 2,000. That applies the false-alarm rate to fraud cases too, which is not how a false positive works.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "bayes",
+      "false-positive"
+    ],
+    "expectedOutput": {
+      "value": 1998
+    }
+  }
+]

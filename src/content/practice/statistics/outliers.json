@@ -1,0 +1,248 @@
+[
+  {
+    "id": "statistics-outliers-001",
+    "module": "statistics",
+    "topic": "outliers",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "The delivery ops team wants the middle half of delivery delays. For delivered orders (duplicates removed), find the first quartile (q1) and third quartile (q3) of delay_minutes. Return them as a dict with keys q1 and q3, rounded to 2 decimals, and assign it to result.",
+    "dataset": "food_delivery",
+    "hint": "Use quantile(0.25) and quantile(0.75) on the delay_minutes column of delivered rows.",
+    "solutionCode": "d = load(\"food_delivery\", \"deliveries\").drop_duplicates(subset=[\"delivery_id\"])\ndl = d[d.delivery_status == \"Delivered\"].dropna(subset=[\"delay_minutes\"])\nq1 = dl.delay_minutes.quantile(0.25)\nq3 = dl.delay_minutes.quantile(0.75)\nresult = {\"q1\": round(float(q1), 2), \"q3\": round(float(q3), 2)}",
+    "expectedOutput": {
+      "value": {
+        "q1": -3,
+        "q3": 8
+      }
+    },
+    "orderMatters": false,
+    "explanation": "Quartiles split the sorted values into four equal groups. Q1 is the 25th percentile and Q3 is the 75th, so the middle 50 percent of orders sit between them. Pandas uses linear interpolation, which is the default and the method used throughout this module.",
+    "commonMistake": "Using the median in place of Q1 and Q3. The median is the 50th percentile and gives one number, so the spread of the middle half is lost.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "quartiles",
+      "iqr"
+    ]
+  },
+  {
+    "id": "statistics-outliers-002",
+    "module": "statistics",
+    "topic": "outliers",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "The delivery team wants the spread of the middle half of actual delivery times. For delivered orders (duplicates removed), compute the interquartile range (IQR) of actual_minutes. Round to 2 decimals and assign it to result.",
+    "dataset": "food_delivery",
+    "hint": "IQR = Q3 minus Q1. Pandas quantile(0.75) and quantile(0.25) give those values.",
+    "solutionCode": "d = load(\"food_delivery\", \"deliveries\").drop_duplicates(subset=[\"delivery_id\"])\na = d[d.delivery_status == \"Delivered\"].actual_minutes.dropna()\niqr = a.quantile(0.75) - a.quantile(0.25)\nresult = round(float(iqr), 2)",
+    "expectedOutput": {
+      "value": 17
+    },
+    "orderMatters": false,
+    "explanation": "The IQR is the width of the middle 50 percent of the data. Unlike the standard deviation, it is not pulled around by a few very slow orders. A value of 17 means the middle half of deliveries span 17 minutes.",
+    "commonMistake": "Subtracting the minimum from the maximum. That gives the full range, which is 96 minutes here, and one extreme order can change it completely.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "iqr",
+      "quartiles"
+    ]
+  },
+  {
+    "id": "statistics-outliers-003",
+    "module": "statistics",
+    "topic": "outliers",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Flag the unusual delivery times. For delivered orders (duplicates removed), use the 1.5 x IQR rule on actual_minutes and count the orders that fall below the lower fence or above the upper fence. Assign the integer count to result.",
+    "dataset": "food_delivery",
+    "hint": "Lower fence = Q1 minus 1.5 times IQR. Upper fence = Q3 plus 1.5 times IQR. Count the rows outside both.",
+    "solutionCode": "d = load(\"food_delivery\", \"deliveries\").drop_duplicates(subset=[\"delivery_id\"])\na = d[d.delivery_status == \"Delivered\"].actual_minutes.dropna()\nq1 = a.quantile(0.25)\nq3 = a.quantile(0.75)\niqr = q3 - q1\nout = (a < q1 - 1.5 * iqr) | (a > q3 + 1.5 * iqr)\nresult = int(out.sum())",
+    "expectedOutput": {
+      "value": 210
+    },
+    "orderMatters": false,
+    "explanation": "The fences are the points 1.5 IQR beyond the quartiles. A value outside either fence is flagged as an outlier by the Tukey rule. The rule flags unusual values but does not say whether they are errors or real events, so the count is a starting point for review.",
+    "commonMistake": "Using 1 times the IQR instead of 1.5. That makes the fences much tighter and flags about 683 orders instead of 211.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "iqr",
+      "outliers",
+      "fences"
+    ]
+  },
+  {
+    "id": "statistics-outliers-004",
+    "module": "statistics",
+    "topic": "outliers",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "The marketing team's ad_spend file stores spend_inr as text. Some values have a rupee sign or commas. Remove duplicate rows, convert spend_inr to a number (strip the rupee sign, commas and spaces), and count the IQR outliers using the 1.5 x IQR fences. Assign the integer count to result.",
+    "dataset": "marketing",
+    "hint": "Use str.replace with a regex for the rupee sign, commas and spaces, then pd.to_numeric with errors='coerce'. Only then compute the quartiles.",
+    "solutionCode": "ad = load(\"marketing\", \"ad_spend\").drop_duplicates(subset=[\"ad_spend_id\"])\ns = pd.to_numeric(ad.spend_inr.astype(str).str.replace(r\"[₹,\\s]\", \"\", regex=True), errors=\"coerce\")\nq1 = s.quantile(0.25)\nq3 = s.quantile(0.75)\niqr = q3 - q1\nout = (s < q1 - 1.5 * iqr) | (s > q3 + 1.5 * iqr)\nresult = int(out.sum())",
+    "expectedOutput": {
+      "value": 169
+    },
+    "orderMatters": false,
+    "explanation": "The text cleaning comes first, because text values cannot be sorted into quartiles. Duplicates are removed so that repeated days do not change the quartiles. The fence rule then flags spend values that are far above or below the rest.",
+    "commonMistake": "Computing quartiles on the raw text column. Pandas sorts the text as strings, so 99 can come after 1000 and the fences are wrong.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 12,
+    "tags": [
+      "iqr",
+      "cleaning",
+      "text-numbers"
+    ]
+  },
+  {
+    "id": "statistics-outliers-005",
+    "module": "statistics",
+    "topic": "outliers",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Find the single largest ad spend. Remove duplicate rows, convert spend_inr to a number (strip rupee signs, commas and spaces), then return the campaign_id and spend_inr of the row with the highest spend as a dict with keys campaign_id and spend_inr. Assign it to result.",
+    "dataset": "marketing",
+    "hint": "Clean the text column into a new numeric column, then use idxmax() to find the row with the largest value.",
+    "solutionCode": "ad = load(\"marketing\", \"ad_spend\").drop_duplicates(subset=[\"ad_spend_id\"])\nad[\"spend\"] = pd.to_numeric(ad.spend_inr.astype(str).str.replace(r\"[₹,\\s]\", \"\", regex=True), errors=\"coerce\")\ntop = ad.loc[ad.spend.idxmax()]\nresult = {\"campaign_id\": int(top.campaign_id), \"spend_inr\": round(float(top.spend), 2)}",
+    "expectedOutput": {
+      "value": {
+        "campaign_id": 25,
+        "spend_inr": 99637
+      }
+    },
+    "orderMatters": false,
+    "explanation": "idxmax() returns the index label of the largest value, and loc pulls that whole row. The result is a single row that is far above the typical spend of its campaign, which is a good candidate for a data-entry check.",
+    "commonMistake": "Taking the max of the raw text column. Text compares character by character, so the answer can be wrong or the code can fail.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 8,
+    "tags": [
+      "outliers",
+      "cleaning",
+      "idxmax"
+    ]
+  },
+  {
+    "id": "statistics-outliers-006",
+    "module": "statistics",
+    "topic": "outliers",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "The finance team asks how much the extreme ad spends distort the average. Remove duplicate rows, clean spend_inr to a number, then compute the mean spend with all rows and the mean after dropping IQR outliers (1.5 x IQR fences). Return a dict with keys all_rows and without_outliers, each rounded to 2 decimals, and assign it to result.",
+    "dataset": "marketing",
+    "hint": "Build a boolean mask for the outliers, then compare s.mean() with s[~mask].mean().",
+    "solutionCode": "ad = load(\"marketing\", \"ad_spend\").drop_duplicates(subset=[\"ad_spend_id\"])\ns = pd.to_numeric(ad.spend_inr.astype(str).str.replace(r\"[₹,\\s]\", \"\", regex=True), errors=\"coerce\")\nq1 = s.quantile(0.25)\nq3 = s.quantile(0.75)\niqr = q3 - q1\nout = (s < q1 - 1.5 * iqr) | (s > q3 + 1.5 * iqr)\nresult = {\"all_rows\": round(float(s.mean()), 2), \"without_outliers\": round(float(s[~out].mean()), 2)}",
+    "expectedOutput": {
+      "value": {
+        "all_rows": 152.21,
+        "without_outliers": 70.69
+      }
+    },
+    "orderMatters": false,
+    "explanation": "A few very large values pull the mean up. Comparing the two means shows how much the flagged rows matter. A large gap is a signal to check whether those rows are errors or real spikes before reporting the average.",
+    "commonMistake": "Dropping the outliers silently and reporting only the cleaned mean. The reader then never learns that the spend was dominated by a few rows.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 12,
+    "tags": [
+      "outliers",
+      "mean",
+      "cleaning"
+    ]
+  },
+  {
+    "id": "statistics-outliers-007",
+    "module": "statistics",
+    "topic": "outliers",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Compare two outlier rules on delay_minutes. For delivered orders (duplicates removed), count the rows where the absolute z-score is greater than 3, and the rows outside the 1.5 x IQR fences. Return a dict with keys z_rule and iqr_rule, and assign it to result.",
+    "dataset": "food_delivery",
+    "hint": "Compute both masks separately. The z-rule uses the mean and SD, and the IQR rule uses the quartiles.",
+    "solutionCode": "d = load(\"food_delivery\", \"deliveries\").drop_duplicates(subset=[\"delivery_id\"])\ndl = d[d.delivery_status == \"Delivered\"].dropna(subset=[\"delay_minutes\"])\nx = dl.delay_minutes\nz = (x - x.mean()) / x.std()\nq1 = x.quantile(0.25)\nq3 = x.quantile(0.75)\niqr = q3 - q1\niqr_out = (x < q1 - 1.5 * iqr) | (x > q3 + 1.5 * iqr)\nresult = {\"z_rule\": int((z.abs() > 3).sum()), \"iqr_rule\": int(iqr_out.sum())}",
+    "expectedOutput": {
+      "value": {
+        "z_rule": 108,
+        "iqr_rule": 298
+      }
+    },
+    "orderMatters": false,
+    "explanation": "Both rules are fair tests, but they give different counts. The IQR rule uses the quartiles, which are not moved much by extreme values. The z-rule depends on the mean and SD, which the outliers themselves can inflate, so it can miss some values or flag more.",
+    "commonMistake": "Assuming the two rules must agree. A skewed column like delay_minutes often gives very different counts, so the rule choice must be explained.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 10,
+    "tags": [
+      "outliers",
+      "z-score",
+      "iqr"
+    ]
+  },
+  {
+    "id": "statistics-outliers-008",
+    "module": "statistics",
+    "topic": "outliers",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "Daily orders (in hundreds) for a small kitchen are: 3, 5, 6, 7, 8, 9, 10, 40. Use the median-of-halves method for the quartiles: Q1 is the median of the lower half and Q3 is the median of the upper half. What is the IQR?",
+    "dataset": "none",
+    "hint": "Split the eight values into two halves of four. Find the median of each half, then subtract Q1 from Q3.",
+    "solution": "**Model answer:** Lower half 3, 5, 6, 7 gives Q1 = (5 + 6) / 2 = 5.5. Upper half 8, 9, 10, 40 gives Q3 = (9 + 10) / 2 = 9.5. IQR = 9.5 - 5.5 = **4**.",
+    "explanation": "The median-of-halves method is a simple way to find quartiles by hand. The value 40 sits in the upper half, but it does not change Q3, because Q3 is the median and not the mean. That is why the IQR is robust.",
+    "commonMistake": "Including the median 7.5 in both halves or using 40 to set Q3. Both mistakes move the quartiles and change the IQR.",
+    "interviewFrequency": "low",
+    "estimatedMinutes": 4,
+    "tags": [
+      "iqr",
+      "quartiles",
+      "manual"
+    ],
+    "expectedOutput": {
+      "value": 4
+    }
+  },
+  {
+    "id": "statistics-outliers-009",
+    "module": "statistics",
+    "topic": "outliers",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "Using the same numbers as the previous question (3, 5, 6, 7, 8, 9, 10, 40) and the median-of-halves quartiles, what is the upper fence for the 1.5 x IQR rule? Give the value.",
+    "dataset": "none",
+    "hint": "Upper fence = Q3 + 1.5 x IQR. You found Q1 = 5.5 and Q3 = 9.5 earlier.",
+    "solution": "**Model answer:** Q1 = 5.5, Q3 = 9.5, IQR = 4. Upper fence = 9.5 + 1.5 x 4 = 9.5 + 6 = **15.5**. The value 40 is above 15.5, so it is flagged.",
+    "explanation": "The fence is the upper limit of the normal range. Anything above it is flagged for review, not deleted automatically. Here 40 is well above 15.5, so it is a clear outlier candidate.",
+    "commonMistake": "Adding 1.5 to Q3 instead of 1.5 times the IQR. That gives 11, which flags 10 as an outlier too.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "iqr",
+      "fences"
+    ],
+    "expectedOutput": {
+      "value": 15.5
+    }
+  },
+  {
+    "id": "statistics-outliers-010",
+    "module": "statistics",
+    "topic": "outliers",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "A store records daily sales in lakh rupees: 12, 14, 15, 15, 16, 18, 95. Its Q1 is 14 and Q3 is 18. Using the 1.5 x IQR rule, what is the upper fence? Give the number only.",
+    "dataset": "none",
+    "hint": "Find the IQR from the given Q1 and Q3, then add 1.5 times the IQR to Q3.",
+    "solution": "**Model answer:** IQR = 18 - 14 = 4. Upper fence = 18 + 1.5 x 4 = 18 + 6 = **24**. The day with 95 lakh is far above 24, so it is flagged. A day with 16 lakh is not.",
+    "explanation": "The fence uses only the middle half of the data, so the single 95 lakh day does not move it. The 95 lakh day is then a candidate for a data check, such as a missing decimal point or a one-off bulk order.",
+    "commonMistake": "Computing the fence from the mean and SD of all seven values. The 95 lakh day inflates the mean, so the fence becomes too high and the outlier is missed.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 6,
+    "tags": [
+      "iqr",
+      "fences",
+      "robust"
+    ],
+    "expectedOutput": {
+      "value": 24
+    }
+  }
+]

@@ -1,0 +1,402 @@
+[
+  {
+    "id": "interview-stats-001",
+    "category": "statistics",
+    "question": "What is the difference between mean and median, and when would you use each?",
+    "whatInterviewerIsTesting": "Mean vs median; skewed data; robustness to outliers.",
+    "modelAnswer": "The **mean** is the average: add all values and divide by the count. The **median** is the middle value when the data is sorted. The mean is pulled by very large or very small values, while the median is not. Order values on a food app are often skewed, because a few big family orders push the mean up. So for a typical customer's order value, I would report the median and also show the mean. For salaries, the median is usually the better summary for the same reason.",
+    "followUps": [
+      "When would the mean and median be the same?",
+      "Which one would you use for total revenue?"
+    ],
+    "commonMistakes": [
+      "Reporting only the mean for skewed data.",
+      "Saying the median is always better."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-stats-002",
+    "category": "statistics",
+    "question": "What is the difference between a population and a sample?",
+    "whatInterviewerIsTesting": "Basic vocabulary; parameter vs statistic; why we sample.",
+    "modelAnswer": "The **population** is the full group you care about, such as every UPI user in India. A **sample** is a smaller group you actually measure, such as 2,000 users from a survey. A value that describes the population is a **parameter**, and a value calculated from the sample is a **statistic**. We use statistics to estimate parameters, because measuring everyone is slow and costly. The sample must be picked fairly, or the estimate will be biased.",
+    "followUps": [
+      "Give an example of a parameter and a statistic.",
+      "What makes a sample biased?"
+    ],
+    "commonMistakes": [
+      "Calling a sample average a population value without saying it is an estimate.",
+      "Thinking a bigger sample always fixes a biased sample."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-stats-003",
+    "category": "statistics",
+    "question": "What is standard deviation, and why do we divide by n minus 1 for a sample?",
+    "whatInterviewerIsTesting": "Understanding spread; sample variance; degrees of freedom.",
+    "modelAnswer": "**Standard deviation** tells you how far values usually sit from the mean. A small value means the data is tight, and a large value means it is spread out. When we use a sample to estimate the population spread, the sample values sit a bit closer to their own mean than to the true mean. Dividing by n minus 1 instead of n corrects this small bias. The idea is called degrees of freedom. For large samples, the difference is tiny.",
+    "followUps": [
+      "What is the variance?",
+      "Does standard deviation have the same units as the data?"
+    ],
+    "commonMistakes": [
+      "Saying standard deviation measures the average error.",
+      "Dividing by n for a sample without a reason."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-stats-004",
+    "category": "statistics",
+    "question": "What is a z-score, and what do you use it for?",
+    "whatInterviewerIsTesting": "Standardising; comparing values on different scales; flagging outliers.",
+    "modelAnswer": "A **z-score** says how many standard deviations a value is from the mean. You calculate it as the value minus the mean, divided by the standard deviation. It lets you compare things on different scales, such as a marks score and a delivery time. A z-score above 3 or below minus 3 is often flagged as an outlier. Z-scores assume the data is roughly normal, so check the shape first.",
+    "followUps": [
+      "What does a z-score of 0 mean?",
+      "What is the z-score of a value equal to the mean plus one standard deviation?"
+    ],
+    "commonMistakes": [
+      "Using z-scores on very skewed data without checking.",
+      "Thinking a z-score is a percentage."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-stats-005",
+    "category": "statistics",
+    "question": "What is the difference between correlation and causation? Give an example.",
+    "whatInterviewerIsTesting": "Core inference thinking; confounders; the need for experiments.",
+    "modelAnswer": "**Correlation** means two things move together. **Causation** means one thing makes the other happen. Ice cream sales and drowning cases both rise in summer. Hot weather is the confounder that drives both, and ice cream does not cause drowning. To prove causation, you usually need a controlled experiment, such as an A/B test, where only one thing changes. In an analysis, I always ask, \"What else could explain this?\" before I say a cause.",
+    "followUps": [
+      "What is a confounding variable?",
+      "Can a correlation ever suggest a cause?"
+    ],
+    "commonMistakes": [
+      "Writing that X causes Y just because the chart shows a trend.",
+      "Ignoring the third factor that moves both variables."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-stats-006",
+    "category": "statistics",
+    "question": "What is a p-value? Explain it in one plain sentence for a manager.",
+    "whatInterviewerIsTesting": "Correct interpretation of p-values; avoiding common myths.",
+    "modelAnswer": "A **p-value** is the chance of seeing a result this extreme, or more extreme, if there were really no effect. For a manager, I would say: \"If the change did nothing, we would see a gap this large only about 4 times in 100 tests.\" A small p-value means the result is unlikely to be pure chance. It does not tell you the size of the effect or the chance that the idea is true.",
+    "followUps": [
+      "Does a p-value of 0.03 mean there is a 97 percent chance the effect is real?",
+      "What is the usual cut-off for significance?"
+    ],
+    "commonMistakes": [
+      "Saying the p-value is the probability that the null hypothesis is true.",
+      "Confusing a small p-value with a large effect."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-stats-007",
+    "category": "statistics",
+    "question": "What is a Type I error and a Type II error? Give a fraud alert example.",
+    "whatInterviewerIsTesting": "Hypothesis testing vocabulary; trade-offs between errors.",
+    "modelAnswer": "A **Type I error** is a false alarm: you say there is an effect when there is none. A **Type II error** is a miss: you say there is no effect when there really is one. In a fraud alert system, a Type I error blocks a genuine customer's UPI payment, which annoys them. A Type II error lets a fraud payment through, which costs money. The team picks the alpha level and the threshold based on which cost is bigger.",
+    "followUps": [
+      "What is alpha?",
+      "What is power, in one sentence?"
+    ],
+    "commonMistakes": [
+      "Mixing up which error is the false alarm.",
+      "Saying you can remove both errors by collecting more data only."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-stats-008",
+    "category": "statistics",
+    "question": "What is a confidence interval, and what is the right way to word a 95 percent interval?",
+    "whatInterviewerIsTesting": "Correct interpretation; not confusing the interval with probability of the parameter.",
+    "modelAnswer": "A **confidence interval** is a range of values built from a sample, such as 4.2 to 4.6 minutes. The 95 percent describes the method: if we repeated the sampling many times, about 95 percent of the intervals built this way would contain the true value. It does not mean there is a 95 percent chance the true value is inside this one interval. A simple wording is: \"We are 95 percent confident the average lies between 4.2 and 4.6 minutes.\"",
+    "followUps": [
+      "What makes a confidence interval wider?",
+      "How does a 99 percent interval compare with a 95 percent interval?"
+    ],
+    "commonMistakes": [
+      "Saying there is a 95 percent probability that the true mean is inside this interval.",
+      "Forgetting to state the units."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-stats-009",
+    "category": "statistics",
+    "question": "How do you detect and handle outliers in a dataset?",
+    "whatInterviewerIsTesting": "Practical data judgement; IQR and z methods; reporting with and without.",
+    "modelAnswer": "First, I look at a box plot or a histogram to see the extreme values. The IQR rule flags values below Q1 minus 1.5 times IQR, or above Q3 plus 1.5 times IQR. A z-score can also help, but it is weaker on skewed data. Then I check the context: a 100 times error in a price is a data bug, while a real large order may be valid. I fix bugs, and I report the result both with and without the rest of the outliers so the reader sees the impact.",
+    "followUps": [
+      "Why is the IQR method safer than the z-score on skewed data?",
+      "What would you do if the outlier is real?"
+    ],
+    "commonMistakes": [
+      "Deleting every outlier without asking why it exists.",
+      "Reporting only the cleaned average without saying what was removed."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-stats-010",
+    "category": "statistics",
+    "question": "Explain the central limit theorem and why it matters for A/B tests.",
+    "whatInterviewerIsTesting": "Understanding sampling distributions; why normal-based tests work.",
+    "modelAnswer": "The **central limit theorem** says that the average of many independent values tends toward a normal shape, even if the raw values are not normal. The bigger the sample, the closer the average is to this shape. In an A/B test, we compare the average conversion or revenue of two groups. Because the averages are roughly normal for large samples, we can use z-tests and confidence intervals. Skewed metrics like revenue need bigger samples before this works well.",
+    "followUps": [
+      "How large a sample is big enough?",
+      "Does the theorem say the raw data becomes normal?"
+    ],
+    "commonMistakes": [
+      "Saying the raw data becomes normal.",
+      "Ignoring the sample size when a metric is very skewed."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-stats-011",
+    "category": "statistics",
+    "question": "What is the difference between standard deviation and standard error?",
+    "whatInterviewerIsTesting": "Separating spread of data from precision of an estimate.",
+    "modelAnswer": "**Standard deviation** is the spread of individual values, such as how much delivery times vary from order to order. **Standard error** is the spread of an average across repeated samples. It is calculated as the standard deviation divided by the square root of n. So the standard error gets smaller as the sample grows, but the standard deviation does not. I use the standard error when I build confidence intervals for a mean.",
+    "followUps": [
+      "If the sample size is 100 times bigger, how does the standard error change?",
+      "Which one goes into a confidence interval?"
+    ],
+    "commonMistakes": [
+      "Using standard deviation in place of standard error in a confidence interval.",
+      "Thinking standard error measures the data spread."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-stats-012",
+    "category": "statistics",
+    "question": "What is the difference between Pearson and Spearman correlation?",
+    "whatInterviewerIsTesting": "Choosing a measure based on shape and outliers.",
+    "modelAnswer": "**Pearson** correlation measures a straight-line relationship between two numeric variables. It is sensitive to outliers. **Spearman** correlation first ranks the values, then measures how well the ranks agree. It works well for curved but always-rising relationships and is less affected by outliers. For ratings with a few extreme scores, I would check both, and say which one I used in the report.",
+    "followUps": [
+      "When would Spearman be a better choice?",
+      "Can Pearson be zero when the variables are related?"
+    ],
+    "commonMistakes": [
+      "Using Pearson on a curved relationship and calling the link weak.",
+      "Forgetting that both measures only show association."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-stats-013",
+    "category": "statistics",
+    "question": "Explain Bayes theorem with a fraud alert example. What is base rate neglect?",
+    "whatInterviewerIsTesting": "Updating beliefs; false positives in rare events; base rate neglect.",
+    "modelAnswer": "Bayes theorem updates the chance of an event after you see evidence. Suppose only 1 in 1,000 payments is fraud, and the alert catches 95 percent of fraud but also flags 5 percent of good payments. Out of 1,000 payments, about 1 is fraud and about 50 good ones are flagged, while the alert also catches that one fraud. So a flagged payment is fraud only about 1 time in 50 flags, which is about 2 percent. This is base rate neglect: people forget how rare the event is, and they overestimate the alert.",
+    "followUps": [
+      "How would the answer change if the fraud rate was 1 in 100?",
+      "Why does a better test not fix a low base rate?"
+    ],
+    "commonMistakes": [
+      "Reading a 95 percent detection rate as a 95 percent chance of fraud.",
+      "Ignoring the false positives because they seem small."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-stats-014",
+    "category": "statistics",
+    "question": "When would you use a t-test, a z-test or a chi-square test?",
+    "whatInterviewerIsTesting": "Choosing the right test by data type and sample size.",
+    "modelAnswer": "I use a **t-test** to compare the mean of one or two groups when the population spread is unknown, which is the usual case. A **z-test** is for means or proportions when the population spread is known or the sample is very large. A **chi-square** test is for counts in categories, such as whether conversion differs by device type. In practice, most analysts use a t-test for means and a chi-square or two-proportion test for rates.",
+    "followUps": [
+      "When would you use a two-proportion z-test?",
+      "What assumptions does a t-test need?"
+    ],
+    "commonMistakes": [
+      "Using a t-test on counts in categories.",
+      "Running a test without checking the data type first."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-stats-015",
+    "category": "statistics",
+    "question": "What is the difference between a paired and an independent t-test?",
+    "whatInterviewerIsTesting": "Recognising repeated measures; reducing noise.",
+    "modelAnswer": "An **independent** t-test compares two different groups, such as customers who saw banner A and customers who saw banner B. A **paired** t-test compares the same units before and after, such as the same store's sales before and after a campaign. Pairing removes the noise of differences between units, so it can detect a smaller effect. Using an independent test on paired data throws away that information and is a common mistake.",
+    "followUps": [
+      "Give an example of paired data from a sales dataset.",
+      "What is the difference between the two tests in the formula?"
+    ],
+    "commonMistakes": [
+      "Using an independent test on before and after data from the same users.",
+      "Forgetting that paired tests need the same units in both columns."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-stats-016",
+    "category": "statistics",
+    "question": "A test shows p less than 0.05, but the effect is tiny. What do you say?",
+    "whatInterviewerIsTesting": "Statistical significance is not practical significance; effect size matters.",
+    "modelAnswer": "A small p-value only says the effect is unlikely to be zero. It does not say the effect is big enough to matter. With a large sample, even a tiny change can be significant. I would report the size of the change, such as \"conversion up 0.1 percentage points\", and its confidence interval. Then I compare it with the business cost of the change. If the gain is too small to pay for the work, I would say the result is significant but not worth shipping.",
+    "followUps": [
+      "How do you decide the minimum effect that matters?",
+      "What is an effect size?"
+    ],
+    "commonMistakes": [
+      "Saying the feature is a success because p is below 0.05.",
+      "Reporting only the p-value and not the size of the change."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-stats-017",
+    "category": "statistics",
+    "question": "What is statistical power, and what affects it?",
+    "whatInterviewerIsTesting": "Understanding Type II error and sample design.",
+    "modelAnswer": "**Power** is the chance that a test finds a real effect when one exists. It equals 1 minus the chance of a Type II error. A common target is 80 percent. Power goes up with a larger sample, a bigger true effect, a lower noise level and a higher alpha. Before an A/B test, I use power to choose the sample size, so the test has a fair chance to detect the change we care about.",
+    "followUps": [
+      "What power target do you usually use and why?",
+      "What happens to power if the effect is smaller?"
+    ],
+    "commonMistakes": [
+      "Running a test with a tiny sample and then saying there was no effect.",
+      "Thinking power is the same as the p-value."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-stats-018",
+    "category": "statistics",
+    "question": "What are selection bias and survivorship bias? Give examples from ratings or reviews.",
+    "whatInterviewerIsTesting": "Recognising biased samples in real data.",
+    "modelAnswer": "**Selection bias** happens when the people in your data are not a fair mirror of the population. **Survivorship bias** happens when you only see the items that survived a filter. For example, a restaurant's average rating from reviews only includes customers who chose to review. Very happy and very angry customers review more, so the average looks extreme. A closed restaurant's reviews disappear from the data, so the rating of the average surviving restaurant looks better than the market.",
+    "followUps": [
+      "How would you test for selection bias in ratings?",
+      "Can a large dataset still be biased?"
+    ],
+    "commonMistakes": [
+      "Assuming a big dataset is automatically unbiased.",
+      "Ignoring who chooses to leave a review."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-stats-019",
+    "category": "statistics",
+    "question": "Walk me through how you would design an A/B test for a new checkout banner.",
+    "whatInterviewerIsTesting": "Experiment design thinking; hypothesis, metric, guardrails and randomisation.",
+    "modelAnswer": "I would start with a clear question: does the banner raise the checkout completion rate? I would pick one primary metric, such as the share of carts that complete, and a few guardrails, such as refunds and average order value. I would randomise users into control and treatment, so both groups look alike. Next, I would set the sample size using the baseline rate, the smallest change worth detecting, alpha and power. I would run the test for a fixed period, check that the split is even, and only then read the result.",
+    "followUps": [
+      "What is a guardrail metric?",
+      "How would you check that randomisation worked?"
+    ],
+    "commonMistakes": [
+      "Changing the primary metric after seeing the results.",
+      "Starting the test without deciding the sample size."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-stats-020",
+    "category": "statistics",
+    "question": "How do you choose the sample size for an A/B test?",
+    "whatInterviewerIsTesting": "Inputs to sample size: baseline, minimum detectable effect, alpha and power.",
+    "modelAnswer": "Four inputs drive the answer. The **baseline** is the current rate, such as 10 percent conversion. The **minimum detectable effect** is the smallest change that matters, such as 1 percentage point. **Alpha** is the false alarm rate, usually 5 percent, and **power** is the chance to find a real change, usually 80 percent. Smaller effects, lower baselines and higher power all need more users. I use a calculator or a short formula in Python, and I report the inputs so the business can see the trade-off.",
+    "followUps": [
+      "Why does a smaller minimum effect need more users?",
+      "What happens if you stop the test early?"
+    ],
+    "commonMistakes": [
+      "Picking the sample size after the test has run.",
+      "Choosing an effect size that is too small to be realistic."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-stats-021",
+    "category": "statistics",
+    "question": "The conversion rate went up, but revenue is flat. What do you do?",
+    "whatInterviewerIsTesting": "Metric trade-offs; average order value; guardrails; revenue per user.",
+    "modelAnswer": "First, I check that the test is valid: the split, the sample size and the time period. Then I break the revenue into conversion and average order value. If more users buy but each spends less, revenue per user stays flat. I would look at revenue per visitor as the main metric, because it captures both effects. I would also check refunds, cancellations and repeat purchase rates, since a discount can bring in low-value buyers who do not return.",
+    "followUps": [
+      "What is revenue per visitor?",
+      "How would you explain this to a product manager in one sentence?"
+    ],
+    "commonMistakes": [
+      "Declaring a win because conversion rose.",
+      "Ignoring the average order value."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-stats-022",
+    "category": "statistics",
+    "question": "You tested 20 metrics and one is significant. What do you say?",
+    "whatInterviewerIsTesting": "Multiple comparisons; family-wise error; Bonferroni correction; honest reporting.",
+    "modelAnswer": "With 20 tests at a 5 percent alpha, you expect about one false positive by chance. The chance of at least one false alarm is about 64 percent. I would say the one significant metric is a hint, not a result. I would apply a correction such as Bonferroni, which divides alpha by 20, so the threshold becomes 0.0025. Then I would run a follow-up test on that metric alone, with a planned sample size, before making a decision.",
+    "followUps": [
+      "What is the Bonferroni correction?",
+      "Why is the chance of a false alarm about 64 percent with 20 tests?"
+    ],
+    "commonMistakes": [
+      "Reporting the one significant metric as a finding without a correction.",
+      "Hiding the other 19 metrics from the report."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-stats-023",
+    "category": "statistics",
+    "question": "Explain Simpson's paradox with an example, and how to guard against it.",
+    "whatInterviewerIsTesting": "Confounders and segment mix; reading aggregate versus segment results.",
+    "modelAnswer": "**Simpson's paradox** happens when a trend in each group reverses when the groups are combined. Imagine two cities where a new payment flow wins in each city, but overall it looks worse. This happens if the new flow was tested more in the city with lower success rates. To guard against it, check results by important segments such as city, device and new versus repeat users. Use randomisation, or adjust for the segment mix before you trust the overall number.",
+    "followUps": [
+      "How does randomisation prevent Simpson's paradox?",
+      "Give an example of a segment that could cause the reversal."
+    ],
+    "commonMistakes": [
+      "Reporting only the overall number.",
+      "Adjusting for segments you chose after seeing the results."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-stats-024",
+    "category": "statistics",
+    "question": "Explain regression and R-squared to a non-technical manager. What are the assumptions and the risks?",
+    "whatInterviewerIsTesting": "Communicating models simply; knowing assumptions; extrapolation risk.",
+    "modelAnswer": "Regression finds the straight line that best fits the points, such as delivery minutes against distance. The slope tells us the extra minutes per km, and the intercept is the base time. R-squared is the share of the variation that distance explains, such as 49 percent. The assumptions are that the relationship is roughly straight and that no few points dominate it. The main risk is extrapolation: predicting far outside the range of data we fitted, such as a 40 km delivery when our data stops at 14 km.",
+    "followUps": [
+      "How would you check the assumptions?",
+      "What does a high R-squared not prove?"
+    ],
+    "commonMistakes": [
+      "Using technical words like residual variance with a manager.",
+      "Predicting outside the range of the data."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-stats-025",
+    "category": "statistics",
+    "question": "A manager checks the A/B test daily and stops as soon as p is below 0.05. What is wrong, and how do you fix it?",
+    "whatInterviewerIsTesting": "Peeking problem; false positive inflation; sequential testing; fixed horizon.",
+    "modelAnswer": "Checking daily and stopping at the first p below 0.05 raises the false alarm rate well above 5 percent. Each look is another chance for noise to cross the line. The fix is to decide the sample size and the end date before the test starts, and run it to that horizon. If the business needs early looks, use a sequential testing method, which sets stricter thresholds for each look. I would explain to the manager that an early win is often a false win.",
+    "followUps": [
+      "What is a sequential test?",
+      "Why does a fixed end date protect the result?"
+    ],
+    "commonMistakes": [
+      "Stopping when the graph looks good.",
+      "Changing the stopping rule after seeing the data."
+    ],
+    "difficulty": "hard"
+  }
+]

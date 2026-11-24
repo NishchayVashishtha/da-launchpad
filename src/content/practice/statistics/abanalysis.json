@@ -1,0 +1,256 @@
+[
+  {
+    "id": "statistics-abanalysis-001",
+    "module": "statistics",
+    "topic": "abanalysis",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "The product team wants the conversion rate of each arm of the free shipping banner test before they read any other number. Use the cleaned table (no duplicates, no users in both arms). Return a dict with the conversion rate as a percentage for `control` and `treatment`, each rounded to 2 decimals.",
+    "dataset": "marketing",
+    "hint": "The converted column is 0 or 1. Group by variant and take the mean, then multiply by 100.",
+    "solutionCode": "df = load(\"marketing\", \"ab_test_results\").drop_duplicates()\nboth = df.groupby(\"user_id\")[\"variant\"].nunique()\ndf = df[~df.user_id.isin(both[both > 1].index)]\nrates = df.groupby(\"variant\")[\"converted\"].mean() * 100\nresult = {k: round(float(v), 2) for k, v in rates.sort_index().items()}",
+    "expectedOutput": {
+      "value": {
+        "control": 10.57,
+        "treatment": 11.72
+      }
+    },
+    "explanation": "The mean of a 0 or 1 column is the share of users who converted. groupby() repeats that for each arm, so you get one rate per variant on the same clean data.",
+    "commonMistake": "Skipping the cleaning step. Contaminated users count in both arms and blur the difference between them, which makes the lift look smaller than it is.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "ab-testing",
+      "conversion",
+      "groupby"
+    ]
+  },
+  {
+    "id": "statistics-abanalysis-002",
+    "module": "statistics",
+    "topic": "abanalysis",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "Report the lift of the treatment over the control in percentage points, rounded to 2 decimals. Use the cleaned table. Treatment minus control, not the other way round.",
+    "dataset": "marketing",
+    "hint": "Compute the two conversion rates as proportions, subtract control from treatment, then multiply by 100.",
+    "solutionCode": "df = load(\"marketing\", \"ab_test_results\").drop_duplicates()\nboth = df.groupby(\"user_id\")[\"variant\"].nunique()\ndf = df[~df.user_id.isin(both[both > 1].index)]\nc = df.loc[df[\"variant\"] == \"control\", \"converted\"].mean()\nt = df.loc[df[\"variant\"] == \"treatment\", \"converted\"].mean()\nresult = round((t - c) * 100, 2)",
+    "expectedOutput": {
+      "value": 1.15
+    },
+    "explanation": "An absolute lift is the simple gap between two rates, measured in percentage points (pp). A gap from 10.57 percent to 11.72 percent is 1.15 pp.",
+    "commonMistake": "Dividing the gap by the control rate. That gives a relative lift (about 10.8 percent), a different number that is easy to mix up with the pp gap.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "ab-testing",
+      "lift",
+      "percentage-points"
+    ]
+  },
+  {
+    "id": "statistics-abanalysis-003",
+    "module": "statistics",
+    "topic": "abanalysis",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Leadership asks for the relative lift as well, because it sounds bigger. Use the cleaned table and return the relative lift of treatment over control as a percentage, rounded to 1 decimal.",
+    "dataset": "marketing",
+    "hint": "Relative lift is treatment divided by control, minus 1. Multiply by 100 at the end.",
+    "solutionCode": "df = load(\"marketing\", \"ab_test_results\").drop_duplicates()\nboth = df.groupby(\"user_id\")[\"variant\"].nunique()\ndf = df[~df.user_id.isin(both[both > 1].index)]\nc = df.loc[df[\"variant\"] == \"control\", \"converted\"].mean()\nt = df.loc[df[\"variant\"] == \"treatment\", \"converted\"].mean()\nresult = round((t / c - 1) * 100, 1)",
+    "expectedOutput": {
+      "value": 10.8
+    },
+    "explanation": "The relative lift scales the gap by the control rate. It is the same test and the same data as the pp lift, so it does not add any evidence. It only changes how the result is framed.",
+    "commonMistake": "Quoting the relative lift as if it were a pp gain. Saying the lift is 10.8 percent in the headline without the pp figure makes a small change look large.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "ab-testing",
+      "lift",
+      "relative-lift"
+    ]
+  },
+  {
+    "id": "statistics-abanalysis-004",
+    "module": "statistics",
+    "topic": "abanalysis",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Run a two-proportion z-test on the conversion rates of the two arms. Use the pooled standard error. Use the cleaned table and return the z statistic rounded to 3 decimals.",
+    "dataset": "marketing",
+    "hint": "Pooled rate = total conversions / total users. Standard error = sqrt(pbar x (1 - pbar) x (1/n1 + 1/n2)).",
+    "solutionCode": "import math\ndf = load(\"marketing\", \"ab_test_results\").drop_duplicates()\nboth = df.groupby(\"user_id\")[\"variant\"].nunique()\ndf = df[~df.user_id.isin(both[both > 1].index)]\nc = df[df[\"variant\"] == \"control\"][\"converted\"]\nt = df[df[\"variant\"] == \"treatment\"][\"converted\"]\np1, p2, n1, n2 = c.mean(), t.mean(), len(c), len(t)\npbar = (c.sum() + t.sum()) / (n1 + n2)\nse = math.sqrt(pbar * (1 - pbar) * (1 / n1 + 1 / n2))\nresult = round((p2 - p1) / se, 3)",
+    "expectedOutput": {
+      "value": 1.993
+    },
+    "explanation": "The z statistic measures how many standard errors the lift sits away from zero. The pooled rate is used because the test assumes both arms have the same true rate, which is the null hypothesis.",
+    "commonMistake": "Using the unpooled standard error for the test (it is right for the CI, not for the test). Or forgetting the square root and getting a z that is far too big.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "ab-testing",
+      "z-test",
+      "hypothesis-testing"
+    ]
+  },
+  {
+    "id": "statistics-abanalysis-005",
+    "module": "statistics",
+    "topic": "abanalysis",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Turn the z statistic from the same test into a two-sided p-value. Use the cleaned table and round the p-value to 4 decimals. A two-sided test checks for a change in either direction.",
+    "dataset": "marketing",
+    "hint": "For a normal distribution, the two-sided p-value is erfc(|z| / sqrt(2)). The math module has erfc.",
+    "solutionCode": "import math\ndf = load(\"marketing\", \"ab_test_results\").drop_duplicates()\nboth = df.groupby(\"user_id\")[\"variant\"].nunique()\ndf = df[~df.user_id.isin(both[both > 1].index)]\nc = df[df[\"variant\"] == \"control\"][\"converted\"]\nt = df[df[\"variant\"] == \"treatment\"][\"converted\"]\np1, p2, n1, n2 = c.mean(), t.mean(), len(c), len(t)\npbar = (c.sum() + t.sum()) / (n1 + n2)\nse = math.sqrt(pbar * (1 - pbar) * (1 / n1 + 1 / n2))\nz = (p2 - p1) / se\nresult = round(math.erfc(abs(z) / math.sqrt(2)), 4)",
+    "expectedOutput": {
+      "value": 0.0462
+    },
+    "explanation": "erfc gives the area in both tails of the normal curve beyond the observed z. With a z near 2, the two-sided p-value is near 0.05, so this result is close to the usual cut-off.",
+    "commonMistake": "Using a one-sided p-value (half of the answer) because the team hoped for a lift. Deciding the direction before the test does not make the one-sided version the right choice here.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "ab-testing",
+      "p-value",
+      "two-sided"
+    ]
+  },
+  {
+    "id": "statistics-abanalysis-006",
+    "module": "statistics",
+    "topic": "abanalysis",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Give a 95 percent confidence interval for the difference in conversion rate between treatment and control. Use the cleaned table. Return a dict with `lower` and `upper` in percentage points, each rounded to 2 decimals.",
+    "dataset": "marketing",
+    "hint": "For a CI, use each arm's own rate in the standard error (unpooled). Multiply the SE by 1.96 and add and subtract it from the lift.",
+    "solutionCode": "import math\ndf = load(\"marketing\", \"ab_test_results\").drop_duplicates()\nboth = df.groupby(\"user_id\")[\"variant\"].nunique()\ndf = df[~df.user_id.isin(both[both > 1].index)]\nc = df[df[\"variant\"] == \"control\"][\"converted\"]\nt = df[df[\"variant\"] == \"treatment\"][\"converted\"]\np1, p2, n1, n2 = c.mean(), t.mean(), len(c), len(t)\nse = math.sqrt(p1 * (1 - p1) / n1 + p2 * (1 - p2) / n2)\nd = p2 - p1\nresult = {\"lower\": round((d - 1.96 * se) * 100, 2), \"upper\": round((d + 1.96 * se) * 100, 2)}",
+    "expectedOutput": {
+      "value": {
+        "lower": 0.02,
+        "upper": 2.27
+      }
+    },
+    "explanation": "A CI gives a range of likely true lifts, not just one number. If the interval includes zero, the data does not rule out no effect. Here the interval is narrow on the positive side, which is why the result is borderline.",
+    "commonMistake": "Using the pooled SE in the CI. That is a test tool, not an interval tool, and it gives a slightly different range.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "ab-testing",
+      "confidence-interval"
+    ]
+  },
+  {
+    "id": "statistics-abanalysis-007",
+    "module": "statistics",
+    "topic": "abanalysis",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "The CFO cares about revenue, not only conversion. Use the cleaned table and return the average revenue per user for each arm, counting every user in the arm (non-buyers count as 0). Round each value to 2 decimals.",
+    "dataset": "marketing",
+    "hint": "Revenue per user is the mean of revenue_inr over all rows in each arm. Fill any missing revenue with 0 first.",
+    "solutionCode": "df = load(\"marketing\", \"ab_test_results\").drop_duplicates()\nboth = df.groupby(\"user_id\")[\"variant\"].nunique()\ndf = df[~df.user_id.isin(both[both > 1].index)]\ndf[\"revenue_inr\"] = df[\"revenue_inr\"].fillna(0)\nrpu = df.groupby(\"variant\")[\"revenue_inr\"].mean()\nresult = {k: round(float(v), 2) for k, v in rpu.sort_index().items()}",
+    "expectedOutput": {
+      "value": {
+        "control": 113.33,
+        "treatment": 123.96
+      }
+    },
+    "explanation": "Revenue per user combines the conversion effect and the order value effect into one number. Averaging over every user in the arm, not only buyers, keeps the comparison fair.",
+    "commonMistake": "Averaging only converters. The treatment group can look worse on average order value and the metric then ignores the extra buyers it brought in.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "ab-testing",
+      "revenue",
+      "guardrail"
+    ]
+  },
+  {
+    "id": "statistics-abanalysis-008",
+    "module": "statistics",
+    "topic": "abanalysis",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "The team wants to know whether the free shipping banner changed the order value. Use only users who converted in the cleaned table. Return the average order value (AOV) in rupees for each arm, rounded to 2 decimals.",
+    "dataset": "marketing",
+    "hint": "Filter to converted == 1 first. Then take the mean revenue_inr for each variant.",
+    "solutionCode": "df = load(\"marketing\", \"ab_test_results\").drop_duplicates()\nboth = df.groupby(\"user_id\")[\"variant\"].nunique()\ndf = df[~df.user_id.isin(both[both > 1].index)]\nbuyers = df[df[\"converted\"] == 1]\naov = buyers.groupby(\"variant\")[\"revenue_inr\"].mean()\nresult = {k: round(float(v), 2) for k, v in aov.sort_index().items()}",
+    "expectedOutput": {
+      "value": {
+        "control": 1071.97,
+        "treatment": 1057.9
+      }
+    },
+    "explanation": "AOV is measured among buyers only, because non-buyers have no order. This split shows whether people who buy spend more or less. Together with conversion, it explains the change in revenue per user.",
+    "commonMistake": "Dividing the total revenue by all users (that is revenue per user, not AOV). The two numbers answer different questions.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "ab-testing",
+      "aov",
+      "guardrail"
+    ]
+  },
+  {
+    "id": "statistics-abanalysis-009",
+    "module": "statistics",
+    "topic": "abanalysis",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "The notes say the lift is mainly on mobile. Check each device type separately on the cleaned table. For each device, return the lift in pp and the pooled z statistic, both rounded to 2 decimals. Return a DataFrame with columns device_type, lift_pp, z, sorted by device_type.",
+    "dataset": "marketing",
+    "hint": "Loop over the device types with groupby. Inside each group, use the same pooled z formula as the overall test.",
+    "solutionCode": "import math\nimport pandas as pd\ndf = load(\"marketing\", \"ab_test_results\").drop_duplicates()\nboth = df.groupby(\"user_id\")[\"variant\"].nunique()\ndf = df[~df.user_id.isin(both[both > 1].index)]\nrows = []\nfor dev, sub in df.groupby(\"device_type\"):\n    c = sub[sub[\"variant\"] == \"control\"][\"converted\"]\n    t = sub[sub[\"variant\"] == \"treatment\"][\"converted\"]\n    p1, p2, n1, n2 = c.mean(), t.mean(), len(c), len(t)\n    pbar = (c.sum() + t.sum()) / (n1 + n2)\n    se = math.sqrt(pbar * (1 - pbar) * (1 / n1 + 1 / n2))\n    rows.append({\"device_type\": dev, \"lift_pp\": round((p2 - p1) * 100, 2), \"z\": round((p2 - p1) / se, 2)})\nresult = pd.DataFrame(rows).sort_values(\"device_type\").reset_index(drop=True)",
+    "expectedOutput": {
+      "columns": [
+        "device_type",
+        "lift_pp",
+        "z"
+      ],
+      "rows": [
+        [
+          "Desktop",
+          -1.44,
+          -1.22
+        ],
+        [
+          "Mobile",
+          2.33,
+          3.62
+        ]
+      ]
+    },
+    "explanation": "Splitting by device shows where the effect sits. These sub-group tests were not planned, so treat them as clues for the next test, not as proof. Checking many groups also raises the chance of a lucky result.",
+    "commonMistake": "Declaring mobile the winner and shipping it to mobile only, because the overall result was borderline. The split was not planned, and the desktop drop is a warning sign.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 7,
+    "tags": [
+      "ab-testing",
+      "segments",
+      "heterogeneity"
+    ]
+  },
+  {
+    "id": "statistics-abanalysis-010",
+    "module": "statistics",
+    "topic": "abanalysis",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "A growth manager reports this result for the free shipping banner test: conversion lift +1.15 pp, 95 percent CI from +0.02 pp to +2.27 pp, and average order value about 1 percent lower in the treatment arm. Revenue per user is up but its CI includes zero. Write a short recommendation: ship, do not ship, or run more tests, and give the reasons in 3 to 5 sentences.",
+    "dataset": "none",
+    "hint": "Think about three things: is the main result clear, is the guardrail safe, and what would change your mind?",
+    "solution": "### Recommended answer\n\nDo not ship yet. Run one more test with a fixed, longer duration.\n\n1. The primary result is positive but weak. The CI starts at +0.02 pp, so the true lift could be almost zero.\n2. Revenue per user rose, but its confidence interval includes zero. The result does not clearly show more money per user.\n3. Order value fell slightly. The fall is small and not significant, but the free shipping cost is real.\n4. The mobile lift is the only clear positive, and the desktop split was not planned. Treat it as a reason to test mobile only, not as proof.\n\nNext step: run a mobile-only test with a set sample size, and track revenue per user as the primary metric.",
+    "explanation": "A decision needs the size of the lift, its uncertainty, and the guardrails. A result with a lower bound near zero and a flat revenue signal is not enough to ship to everyone.",
+    "commonMistake": "Shipping because p is below 0.05. The p-value says the lift is probably not zero, but it does not say the lift is big enough to pay for the free shipping cost.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "ab-testing",
+      "decision",
+      "recommendation"
+    ]
+  }
+]

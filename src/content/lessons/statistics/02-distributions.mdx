@@ -1,0 +1,239 @@
+---
+title: "Distributions and the shape of data"
+description: "Histograms, skew, and the common distributions analysts meet."
+module: statistics
+order: 2
+estimatedMinutes: 40
+objectives:
+  - "Read a histogram and choose sensible bin widths"
+  - "Spot skew and bimodal shapes in a column"
+  - "Tell discrete data from continuous data"
+  - "Use the binomial and Poisson ideas for counts"
+tags: ["statistics", "distributions", "histogram", "skew"]
+---
+
+## Learning objectives
+
+- Explain what a distribution is and read a frequency table or histogram.
+- Recognise right skew, left skew, symmetry and bimodal shapes.
+- Decide whether a variable is discrete or continuous.
+- Know when a binomial model fits (yes or no outcomes out of n tries) and when a Poisson model fits (events per time window).
+- Avoid reading the shape of data from too few or too many bins.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Before you report any number, you should know what the data looks like. A histogram of delivery times in a food app shows whether there is one peak or two, and whether a long tail of very slow orders exists. A count of failed UPI payments per hour follows a different pattern from the number of yes or no purchases out of 100 visitors. Knowing the shape stops you from using a model that does not fit, and it helps you spot data problems such as a second hidden group inside the data.
+</RealWorld>
+
+## Concept
+
+### The shape of the crowd
+
+Picture a railway platform at a busy station. Some people stand near the stairs, some near the ladies' coach, and a few wander far away. If you mark where each person stands, the crowd forms a pattern. That pattern is a **distribution**: how often each value shows up in your data.
+
+A distribution tells you three things: where the values bunch up (the centre), how far they spread, and whether the shape is lopsided.
+
+### Discrete and continuous data
+
+- **Discrete** data takes countable values, usually whole numbers. Examples: the number of orders a customer placed, or a star rating from 1 to 5.
+- **Continuous** data can take any value in a range. Examples: delivery distance in kilometres, or time in minutes with decimals.
+
+Why does it matter? Discrete values show up as bars with gaps, and a 1 to 5 rating is never 3.7. You summarise discrete data with counts and shares. Continuous data is usually shown as a histogram with bins.
+
+### Frequency tables and histograms
+
+A **frequency table** counts how many values fall in each **bin** (a range of values). A **histogram** draws those counts as bars that touch each other. The bin width changes the picture:
+
+- Too few bins hide the structure, because everything looks like one blob.
+- Too many bins show noise, because a few values create tall and empty bars at random.
+
+Try a few widths before you trust the shape. For delivery times, 10-minute bins are a good default.
+
+### Common shapes
+
+- **Symmetric**: the left and right halves mirror each other. The mean and median are close.
+- **Right skew (positive skew)**: a long tail stretches to the right. Order values, salaries and distances are usually like this. The mean is larger than the median.
+- **Left skew (negative skew)**: a long tail stretches to the left. Marks on an easy exam, where most students score near the top, are an example.
+- **Bimodal**: two peaks. Often this means two groups are mixed in one column, such as weekday and weekend orders, or two different kinds of customer.
+
+<Tip>
+Quick rule: when the mean is well above the median, the data is probably right-skewed. Check a histogram before you trust the rule, because it can fail on small discrete data.
+</Tip>
+
+### Three models analysts meet
+
+**Binomial.** You have `n` yes or no trials, and each has the same chance `p` of success. Example: 100 website visitors, each with a 15 percent chance of buying. The number of buyers is binomial.
+
+<FormulaCard title="Binomial mean and spread">
+Mean = `n x p`. Standard deviation = `square root of [n x p x (1 - p)]`.
+</FormulaCard>
+
+**Poisson.** You count events in a fixed time or space window, where events happen at a steady average rate and independently of one another. Example: failed UPI payments per hour, with an average of 3 per hour.
+
+<FormulaCard title="Poisson mean and variance">
+Mean = variance = `lambda`, the average count in the window.
+</FormulaCard>
+
+**Uniform.** Every value in a range is equally likely, like a fair die. Use it as a simple baseline.
+
+You do not need to memorise every formula for an analyst job. You do need to know when each one applies. Ask: "Is this a count out of a known number of tries (binomial), or a count per time window (Poisson)?"
+
+<Tip>
+Binomial counts out of n. Poisson counts per time window. A number of orders out of 200 visitors is binomial. A number of failed payments per hour is Poisson.
+</Tip>
+
+## Worked examples
+
+### Example 1: frequency table of delivery times
+
+We use delivered orders from the `food_delivery` deliveries table. Ten-minute bins, with each bin including its left edge, count how many orders fall in each range.
+
+```python
+delivered = deliveries[deliveries["delivery_status"] == "Delivered"]
+bins = pd.cut(delivered["actual_minutes"], bins=range(0, 130, 10), right=False)
+bins.value_counts(sort=False)
+```
+
+**Output (orders per bin):**
+
+| Bin (minutes) | Orders |
+|---|---|
+| 0 to 10 | 0 |
+| 10 to 20 | 166 |
+| 20 to 30 | 1415 |
+| 30 to 40 | 3647 |
+| 40 to 50 | 4443 |
+| 50 to 60 | 2823 |
+| 60 to 70 | 1275 |
+| 70 to 80 | 455 |
+| 80 to 90 | 139 |
+| 90 to 100 | 38 |
+| 100 to 110 | 6 |
+| 110 to 120 | 0 |
+
+The counts rise to a peak in the 40 to 50 bin and then fall off. The tail on the right is long but thin. This is a right-skewed shape, with one main peak.
+
+Plot it with a few lines of matplotlib if you want to see it, for example `plt.hist(delivered["actual_minutes"], bins=range(0, 130, 10))`.
+
+### Example 2: a discrete variable
+
+Customer ratings are whole numbers from 1 to 5. Counting them is the right tool.
+
+```python
+ratings["overall_rating"].value_counts().sort_index()
+```
+
+**Output:**
+
+| overall_rating | count |
+|---|---|
+| 2 | 121 |
+| 3 | 1444 |
+| 4 | 4635 |
+| 5 | 2430 |
+
+There are no 1-star ratings in this data. A histogram with bins of width 1 would show that gap clearly, which is why discrete data is better read as counts than as smooth bars. The bars pile up at 4 and 5 with a thin tail down to 2. The skew is -0.36, a mild left skew.
+
+Notice that the mean (4.09) is just above the median (4). The "mean above median means right skew" rule is only a guide, and it can mislead on a short discrete scale. Always check the shape.
+
+### Example 3: skew by group
+
+Skewness is a number that summarises the tail. A positive value means a longer tail on the right. Here is the skew of delivery time for each weather.
+
+```python
+delivered.groupby("weather")["actual_minutes"].skew().round(2)
+```
+
+**Output:**
+
+```
+weather
+Clear        0.57
+Cloudy       0.50
+Heavy Rain   0.62
+Rain         0.56
+Name: actual_minutes, dtype: float64
+```
+
+All four groups are mildly right-skewed. The shape is similar across weather, so the mean and SD give a fair summary of each group. A group with a very different skew would need its own look before you compare averages.
+
+### Example 4: binomial by hand
+
+A small app has 20 visitors a day. Each visitor has a 10 percent chance of signing up.
+
+- Trials `n` = 20, chance `p` = 0.10.
+- Expected sign-ups = `n x p` = 20 x 0.10 = **2** a day.
+- Spread = square root of [20 x 0.10 x 0.90] = square root of 1.8 = **1.34** sign-ups.
+
+So on a typical day the count lands about 1 to 3 sign-ups either side of the average. A day with 0 sign-ups is not a crisis. It is well within the normal spread.
+
+## Common mistakes
+
+<CommonMistake>
+**Judging the shape from the wrong number of bins.** Five bins can hide a second peak, and forty bins can invent peaks that are just noise. Try two or three widths and see whether the shape holds.
+</CommonMistake>
+
+<CommonMistake>
+**Assuming everything is normal.** Delivery times, order values and salaries are usually skewed. Using a normal-style summary (mean plus or minus two SDs) on them can give impossible values. For `distance_km`, the mean minus two SDs is about -0.08 km, which cannot happen for a real trip.
+</CommonMistake>
+
+<CommonMistake>
+**Calling a rating continuous.** A 1 to 5 star rating is discrete. Averaging ratings is common, but you should show the counts and a shape, not pretend the scale is smooth.
+</CommonMistake>
+
+<CommonMistake>
+**Reporting one mean for a bimodal column.** If weekday orders peak at lunch and weekend orders peak at dinner, one mean lands between the two peaks and describes almost nobody. Split the data first.
+</CommonMistake>
+
+<CommonMistake>
+**Mixing up Poisson and binomial.** Failed payments per hour is a count per time window, so use Poisson. Buyers out of 200 visitors is a count out of a fixed number of tries, so use binomial.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="distributions" module="statistics" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "In a column of order values, the mean is 1,450 rupees and the median is 980 rupees. What shape is the data most likely to have?", options: ["Left skew", "Right skew", "Perfectly symmetric", "Bimodal with two equal peaks"], answer: 1, explanation: "The mean sits well above the median, which means a few large order values pull the average to the right. That is right skew." },
+  { q: "Which variable is discrete?", options: ["Delivery distance in kilometres", "The time taken to cook a meal, in minutes with decimals", "The number of orders a customer placed this year", "The weight of a parcel"], answer: 2, explanation: "The number of orders is a whole count that can only take values like 0, 1, 2. Distance, time and weight can take any value in a range, so they are continuous." },
+  { q: "A column of delivery times has two clear peaks, one near 25 minutes and one near 55 minutes. What is the most likely explanation?", options: ["The data has measurement error", "The column mixes two groups, such as two different cities or meal types", "The bins are too wide", "The data is normal"], answer: 1, explanation: "Two peaks usually mean two groups with different typical values are mixed together. Splitting by the grouping variable makes each part easier to describe." },
+  { q: "The number of failed UPI payments per hour, averaging 3 per hour, is best modelled with which distribution?", options: ["Binomial, because each payment succeeds or fails", "Poisson, because it counts events in a fixed time window", "Uniform, because every hour is equally likely", "Normal, because it is a count"], answer: 1, explanation: "Counting events per fixed time window at a steady average rate is the Poisson setup. The binomial model needs a fixed number of tries, such as a set number of visitors." },
+  { q: "Adding one extremely large value to a column with no other outliers will most likely do what to its skew?", options: ["Make it more negative", "Make it more positive, by stretching the right tail", "Leave it unchanged", "Make the median larger than the mean"], answer: 1, explanation: "A single very large value stretches the right tail, pushing the mean up and making the skew more positive. The median moves very little." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers check whether you look at the shape before you trust a number. They also check that you can tell binomial from Poisson, and that you know bin width changes the story. Give a concrete example from a dataset you know.
+</InterviewAlert>
+
+<InterviewQ q="What is skew and how do you detect it?">
+Skew describes whether a distribution has a longer tail on one side. I detect it by plotting a histogram first, then checking whether the mean is well above or below the median, and finally looking at the skewness number. A positive skew means a long right tail. Order values and salaries are usually right-skewed.
+</InterviewQ>
+
+<InterviewQ q="Give an example of a right-skewed variable from a business you know.">
+Delivery distance in a food app is right-skewed. Most orders come from a few kilometres away, but a small number come from far corners of the city. The mean distance is pulled up by those long trips, so the median is a better picture of a typical order.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between a binomial and a Poisson distribution?">
+Binomial counts successes out of a fixed number of tries, each with the same chance. For example, buyers out of 200 visitors. Poisson counts events in a fixed time or space window at a steady average rate, for example failed payments per hour. The question I ask is whether there is a known number of tries.
+</InterviewQ>
+
+<InterviewQ q="Why does bin width matter when you draw a histogram?">
+Bin width decides what you see. Very wide bins can merge two peaks into one, and very narrow bins create noise with empty and tall bars at random. I try two or three widths and only trust a shape that stays the same across them.
+</InterviewQ>
+
+## Key takeaways
+
+- A distribution shows where values bunch up, how far they spread and whether the shape is lopsided.
+- Discrete data (counts, star ratings) is read as counts. Continuous data (time, distance) is read as a histogram.
+- Right skew means a long right tail, usually with the mean above the median. Check the histogram before you trust that rule.
+- A bimodal column often mixes two groups. Split it before you summarise it.
+- Binomial counts out of a fixed number of tries. Poisson counts events per time window.
+
+## Further reading
+
+<FurtherReading ids={["khan-stats", "pandas-docs", "matplotlib-docs"]} />

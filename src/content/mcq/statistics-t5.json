@@ -1,0 +1,178 @@
+[
+  {
+    "id": "stat-mcq-09-1",
+    "module": "statistics",
+    "topic": "clt",
+    "section": "The central limit theorem and standard error",
+    "difficulty": "easy",
+    "question": "Which formula gives the standard error of a sample mean?",
+    "options": ["SD divided by n", "SD times n", "SD divided by the square root of n", "SD squared divided by n"],
+    "answerIndex": 2,
+    "explanation": "The standard error is SD / sqrt(n), so it shrinks with the square root of the sample size. Dividing by n gives a value that is far too small."
+  },
+  {
+    "id": "stat-mcq-09-2",
+    "module": "statistics",
+    "topic": "clt",
+    "section": "The central limit theorem and standard error",
+    "difficulty": "easy",
+    "question": "What does the central limit theorem say about sample means?",
+    "options": ["They are close to normal for a large enough n, even if the raw data is skewed", "The raw data becomes normal", "They always equal the population mean", "They have the same SD as the raw data"],
+    "answerIndex": 0,
+    "explanation": "The CLT is about the distribution of the sample mean, which becomes bell shaped as n grows. The raw data keeps its shape, and the sample mean is not always exact."
+  },
+  {
+    "id": "stat-mcq-09-3",
+    "module": "statistics",
+    "topic": "n",
+    "section": "The central limit theorem and standard error",
+    "difficulty": "easy",
+    "question": "You make the sample size four times bigger. What happens to the standard error?",
+    "options": ["It is quartered", "It doubles", "It stays the same", "It is halved"],
+    "answerIndex": 3,
+    "explanation": "The SE depends on the square root of n, and the square root of 4 is 2. So the SE is halved."
+  },
+  {
+    "id": "stat-mcq-09-4",
+    "module": "statistics",
+    "topic": "sd vs se",
+    "section": "The central limit theorem and standard error",
+    "difficulty": "easy",
+    "question": "Which statement about SD and SE is true?",
+    "options": ["SD shrinks as n grows", "SE describes how precise the sample mean is", "SE describes the spread of single orders", "SD and SE are always equal"],
+    "answerIndex": 1,
+    "explanation": "The SD describes single values and does not shrink with more data. The SE describes how precise the sample mean is, and it does shrink as n grows."
+  },
+  {
+    "id": "stat-mcq-09-5",
+    "module": "statistics",
+    "topic": "skew",
+    "section": "The central limit theorem and standard error",
+    "difficulty": "medium",
+    "question": "Order values have a few huge outliers. Which statement is right?",
+    "options": ["Any n of 3 or more is enough for the CLT", "Outliers vanish in the sample mean", "With a very small n, such as 3, the CLT is not reliable", "The CLT makes the raw orders normal"],
+    "answerIndex": 2,
+    "explanation": "Heavy skew needs a much bigger n before the sample mean looks bell shaped. A very small n on skewed data gives a lopsided sampling distribution."
+  },
+  {
+    "id": "stat-mcq-09-6",
+    "module": "statistics",
+    "topic": "proportion",
+    "section": "The central limit theorem and standard error",
+    "difficulty": "medium",
+    "question": "A test has p = 0.5 and n = 100. What is the standard error of the proportion?",
+    "options": ["0.5", "0.05", "0.25", "0.005"],
+    "answerIndex": 1,
+    "explanation": "SE = sqrt(0.5 x 0.5 / 100) = sqrt(0.0025) = 0.05. The value 0.25 is p(1 - p) without the square root, and it is not the SE."
+  },
+  {
+    "id": "stat-mcq-09-7",
+    "module": "statistics",
+    "topic": "independence",
+    "section": "The central limit theorem and standard error",
+    "difficulty": "hard",
+    "question": "A dataset has 50 orders from one customer. What is the main risk for the plain SE formula?",
+    "options": ["No issue, each row counts once", "The SE becomes zero", "The SE is too big", "The rows are not independent, so the SE is too small"],
+    "answerIndex": 3,
+    "explanation": "The formula assumes independent rows, and orders from one customer are alike. Treating them as independent makes n look bigger than it is, so the SE comes out too small."
+  },
+  {
+    "id": "stat-mcq-09-8",
+    "module": "statistics",
+    "topic": "shape",
+    "section": "The central limit theorem and standard error",
+    "difficulty": "medium",
+    "question": "What is the centre of the sampling distribution of the mean?",
+    "options": ["The population mean (mu)", "The mean of the first sample you draw", "The median of the raw data", "The largest sample value"],
+    "answerIndex": 0,
+    "explanation": "Averages of many samples centre on the true population mean. One sample's mean is only one point in that distribution."
+  },
+  {
+    "id": "stat-mcq-10-1",
+    "module": "statistics",
+    "topic": "meaning",
+    "section": "Confidence intervals",
+    "difficulty": "easy",
+    "question": "Which sentence best describes a 95% confidence interval?",
+    "options": ["There is a 95% chance this interval holds the true value", "If we repeated the study many times, about 95% of such intervals would contain the true value", "95% of the data points lie inside this interval", "The sample mean is 95% accurate"],
+    "answerIndex": 1,
+    "explanation": "The 95% describes the method across many repeats. It does not give a probability for one fixed interval, because the true value is either inside it or not."
+  },
+  {
+    "id": "stat-mcq-10-2",
+    "module": "statistics",
+    "topic": "width n",
+    "section": "Confidence intervals",
+    "difficulty": "easy",
+    "question": "You quadruple the sample size, with the same SD. What happens to the width of a 95% CI?",
+    "options": ["It is quartered", "It doubles", "It is halved", "It stays the same"],
+    "answerIndex": 2,
+    "explanation": "The width depends on the SE, which falls with the square root of n. Four times the data halves the width."
+  },
+  {
+    "id": "stat-mcq-10-3",
+    "module": "statistics",
+    "topic": "level",
+    "section": "Confidence intervals",
+    "difficulty": "medium",
+    "question": "Which change makes a 95% CI wider, with everything else the same?",
+    "options": ["Changing to 99% confidence", "A bigger sample", "A smaller SD", "Changing to 90% confidence"],
+    "answerIndex": 0,
+    "explanation": "A 99% interval uses z = 2.58, which is bigger than 1.96, so it is wider. A bigger sample, a smaller SD or a lower confidence level all make the interval narrower."
+  },
+  {
+    "id": "stat-mcq-10-4",
+    "module": "statistics",
+    "topic": "crit",
+    "section": "Confidence intervals",
+    "difficulty": "easy",
+    "question": "Which z value is used for a 95% CI with a large sample?",
+    "options": ["1.00", "1.64", "2.58", "1.96"],
+    "answerIndex": 3,
+    "explanation": "1.96 leaves 2.5 percent in each tail, which gives 95 percent in the middle. 1.64 is for 90 percent and 2.58 is for 99 percent."
+  },
+  {
+    "id": "stat-mcq-10-5",
+    "module": "statistics",
+    "topic": "margin",
+    "section": "Confidence intervals",
+    "difficulty": "medium",
+    "question": "What is the margin of error of a CI?",
+    "options": ["The standard error alone", "z times the standard error", "The SD times z", "The sample size divided by z"],
+    "answerIndex": 1,
+    "explanation": "The margin of error is z times the SE. The CI is the estimate plus or minus this margin."
+  },
+  {
+    "id": "stat-mcq-10-6",
+    "module": "statistics",
+    "topic": "sd",
+    "section": "Confidence intervals",
+    "difficulty": "medium",
+    "question": "The SD of the data doubles from 10 to 20, and n stays the same. What happens to the width of the 95% CI?",
+    "options": ["It stays the same", "It halves", "It doubles", "It is cut to a quarter"],
+    "answerIndex": 2,
+    "explanation": "The SE is proportional to the SD, so a doubled SD doubles the margin and the width. More noise means a less precise estimate."
+  },
+  {
+    "id": "stat-mcq-10-7",
+    "module": "statistics",
+    "topic": "zero",
+    "section": "Confidence intervals",
+    "difficulty": "hard",
+    "question": "The 95% CI for the difference between two groups includes 0. What can you say?",
+    "options": ["The two groups are proven to be identical", "The groups differ by exactly 0", "The test failed to run", "No clear evidence of a difference at this confidence level"],
+    "answerIndex": 3,
+    "explanation": "If 0 is inside the interval, the data does not give clear evidence of a difference at 95 percent confidence. It does not prove the groups are the same."
+  },
+  {
+    "id": "stat-mcq-10-8",
+    "module": "statistics",
+    "topic": "units",
+    "section": "Confidence intervals",
+    "difficulty": "medium",
+    "question": "A 95% CI for average delivery time is 44.7 to 45.1. Which report line is correct?",
+    "options": ["44.7 to 45.1 minutes (95% CI)", "44.7 to 45.1 percent", "44.7 to 45.1 with no units", "44.7 to 45.1 minutes squared"],
+    "answerIndex": 0,
+    "explanation": "A CI has the same units as the estimate, which here is minutes. Saying percent or minutes squared is wrong, and leaving out units makes the range hard to act on."
+  }
+]

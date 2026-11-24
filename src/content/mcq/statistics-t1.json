@@ -1,0 +1,224 @@
+[
+  {
+    "id": "stat-mcq-01-1",
+    "module": "statistics",
+    "topic": "descriptive",
+    "section": "Descriptive statistics: summarising data",
+    "difficulty": "easy",
+    "question": "Four employees earn 5 lakh a year each, and one earns 90 lakh. Which number best describes what a typical employee earns?",
+    "options": ["The mean", "The median", "The range", "The total payroll"],
+    "answerIndex": 1,
+    "explanation": "The median is 5 lakh, which is what four of the five employees earn. The mean is 22 lakh, pulled up by the one high salary.",
+    "shortcut": "With one big outlier, pick the median."
+  },
+  {
+    "id": "stat-mcq-01-2",
+    "module": "statistics",
+    "topic": "descriptive",
+    "section": "Descriptive statistics: summarising data",
+    "difficulty": "easy",
+    "question": "A shoe store wants to know which size to stock the most of. Which measure answers that question?",
+    "options": ["The mean shoe size", "The range of shoe sizes", "The variance of shoe sizes", "The mode"],
+    "answerIndex": 3,
+    "explanation": "The mode is the most common value, which is the size that sells most often. A mean can fall at a size nobody buys.",
+    "shortcut": "Most common means mode."
+  },
+  {
+    "id": "stat-mcq-01-3",
+    "module": "statistics",
+    "topic": "descriptive",
+    "section": "Descriptive statistics: summarising data",
+    "difficulty": "medium",
+    "question": "Why does the sample standard deviation divide by n minus 1?",
+    "options": [
+      "A sample misses some extreme values, so dividing by n minus 1 gives a slightly larger and fairer spread estimate",
+      "To make the standard deviation smaller",
+      "Because the mean uses up one value",
+      "Because n minus 1 is the default in every statistics formula"
+    ],
+    "answerIndex": 0,
+    "explanation": "A sample usually looks a little tighter than the full population. Dividing by n minus 1 corrects for that and gives a slightly bigger, more honest spread.",
+    "shortcut": "Sample means n minus 1, and the answer goes up a bit."
+  },
+  {
+    "id": "stat-mcq-01-4",
+    "module": "statistics",
+    "topic": "descriptive",
+    "section": "Descriptive statistics: summarising data",
+    "difficulty": "medium",
+    "question": "You want to compare how much monthly salaries (in rupees) vary with how much employee ages (in years) vary. Which measure makes that comparison fair?",
+    "options": ["The raw standard deviation of each", "The range of each", "The coefficient of variation of each", "The variance of each"],
+    "answerIndex": 2,
+    "explanation": "The coefficient of variation divides the standard deviation by the mean, so both become a percentage. The raw standard deviations are in different units and cannot be compared.",
+    "shortcut": "Different units or averages: use CV."
+  },
+  {
+    "id": "stat-mcq-01-5",
+    "module": "statistics",
+    "topic": "descriptive",
+    "section": "Descriptive statistics: summarising data",
+    "difficulty": "easy",
+    "question": "The 90th percentile of delivery time is 52 minutes. What does that mean?",
+    "options": [
+      "Exactly 90 percent of orders took 52 minutes",
+      "90 percent of orders took 52 minutes or less",
+      "10 percent of orders took 52 minutes or less",
+      "The average order took 52 minutes"
+    ],
+    "answerIndex": 1,
+    "explanation": "A percentile is a cut-off. 90 percent of orders are at or below 52 minutes, and 10 percent take longer. It does not say that exactly 90 percent took 52 minutes.",
+    "shortcut": "P90 means 90 percent are at or below it."
+  },
+  {
+    "id": "stat-mcq-01-6",
+    "module": "statistics",
+    "topic": "descriptive",
+    "section": "Descriptive statistics: summarising data",
+    "difficulty": "medium",
+    "question": "What is the range of the values 4, 9 and 15?",
+    "options": ["15", "9", "4", "11"],
+    "answerIndex": 3,
+    "explanation": "Range is the maximum minus the minimum: 15 minus 4 equals 11. The 15 is the maximum, not the range.",
+    "shortcut": "Range = max minus min."
+  },
+  {
+    "id": "stat-mcq-01-7",
+    "module": "statistics",
+    "topic": "descriptive",
+    "section": "Descriptive statistics: summarising data",
+    "difficulty": "medium",
+    "question": "A column holds amounts in rupees. What unit is its variance measured in?",
+    "options": ["Rupees squared", "Rupees", "Percent", "It has no unit"],
+    "answerIndex": 0,
+    "explanation": "Variance averages squared distances from the mean, so its unit is squared. The standard deviation takes the square root and returns to rupees.",
+    "shortcut": "Variance is squared, SD is back to the original unit."
+  },
+  {
+    "id": "stat-mcq-01-8",
+    "module": "statistics",
+    "topic": "descriptive",
+    "section": "Descriptive statistics: summarising data",
+    "difficulty": "medium",
+    "question": "You add 5 to every value in a column. What happens to the standard deviation?",
+    "options": ["It increases by 5", "It is multiplied by 5", "It becomes 5", "It stays the same"],
+    "answerIndex": 3,
+    "explanation": "Adding a constant shifts every value by the same amount, so the distances from the mean do not change. The mean moves by 5, but the spread stays the same.",
+    "shortcut": "Shifting the data does not change the spread."
+  },
+  {
+    "id": "stat-mcq-02-1",
+    "module": "statistics",
+    "topic": "distributions",
+    "section": "Distributions and the shape of data",
+    "difficulty": "easy",
+    "question": "A column of order values has a mean of 52 and a median of 40. What shape is it most likely to have?",
+    "options": ["Left skew", "Right skew", "Symmetric", "Uniform"],
+    "answerIndex": 1,
+    "explanation": "When the mean is well above the median, a few large values pull the average to the right. That is right skew.",
+    "shortcut": "Mean above median usually means right skew."
+  },
+  {
+    "id": "stat-mcq-02-2",
+    "module": "statistics",
+    "topic": "distributions",
+    "section": "Distributions and the shape of data",
+    "difficulty": "easy",
+    "question": "Which variable is discrete?",
+    "options": ["Delivery distance in kilometres", "Time to deliver in minutes", "Order value in rupees and paise", "Number of orders per customer"],
+    "answerIndex": 3,
+    "explanation": "The number of orders is a whole count, such as 0, 1 or 2. Distance, time and money can take any value in a range, so they are continuous.",
+    "shortcut": "Counts are discrete. Measurements are continuous."
+  },
+  {
+    "id": "stat-mcq-02-3",
+    "module": "statistics",
+    "topic": "distributions",
+    "section": "Distributions and the shape of data",
+    "difficulty": "medium",
+    "question": "Delivery distance is recorded in kilometres with decimals, such as 3.7 km. Which statement is correct?",
+    "options": [
+      "It is continuous, so a histogram with bins is the natural picture",
+      "It is discrete, because it is measured in kilometres",
+      "It is binomial, because each trip either succeeds or fails",
+      "It is discrete only when it is rounded"
+    ],
+    "answerIndex": 0,
+    "explanation": "A distance can take any value in a range, so it is continuous. Rounding the data does not change what the variable is.",
+    "shortcut": "Decimals in a measurement mean continuous."
+  },
+  {
+    "id": "stat-mcq-02-4",
+    "module": "statistics",
+    "topic": "distributions",
+    "section": "Distributions and the shape of data",
+    "difficulty": "medium",
+    "question": "A histogram of delivery times has two clear peaks. What is the most likely cause?",
+    "options": [
+      "Measurement error in the timer",
+      "The bins are too narrow",
+      "Two groups with different typical values are mixed together",
+      "The data is perfectly normal"
+    ],
+    "answerIndex": 2,
+    "explanation": "Two peaks usually mean two groups, such as weekday and weekend orders, are in one column. Split the data by the grouping variable and summarise each part.",
+    "shortcut": "Two peaks means two groups."
+  },
+  {
+    "id": "stat-mcq-02-5",
+    "module": "statistics",
+    "topic": "distributions",
+    "section": "Distributions and the shape of data",
+    "difficulty": "medium",
+    "question": "A landing page gets 200 visitors a day, and each visitor has a 5 percent chance of buying. Which model describes the daily number of buyers?",
+    "options": [
+      "Poisson, because buyers arrive per day",
+      "Binomial, because there is a fixed number of tries",
+      "Uniform, because every count is equally likely",
+      "Normal, because counts are always normal"
+    ],
+    "answerIndex": 1,
+    "explanation": "There is a fixed number of visitors (200 tries), each with the same chance of buying. That is the binomial setup, with an expected 10 buyers a day.",
+    "shortcut": "Known number of tries means binomial."
+  },
+  {
+    "id": "stat-mcq-02-6",
+    "module": "statistics",
+    "topic": "distributions",
+    "section": "Distributions and the shape of data",
+    "difficulty": "medium",
+    "question": "A payment gateway logs an average of 6 failed payments every 10 minutes. Which model fits the count in a 10-minute window?",
+    "options": ["Binomial", "Uniform", "Symmetric normal", "Poisson"],
+    "answerIndex": 3,
+    "explanation": "Counting events in a fixed time window at a steady average rate is the Poisson setup. The mean and the variance are both 6.",
+    "shortcut": "Events per time window means Poisson."
+  },
+  {
+    "id": "stat-mcq-02-7",
+    "module": "statistics",
+    "topic": "distributions",
+    "section": "Distributions and the shape of data",
+    "difficulty": "medium",
+    "question": "A histogram looks very different with 3 bins than with 30 bins. What is the best next step?",
+    "options": [
+      "Try a few bin widths and check whether the shape holds",
+      "Trust the 3-bin version because it is simpler",
+      "Use the 30-bin version because it is more detailed",
+      "Delete the data with the most extreme values"
+    ],
+    "answerIndex": 0,
+    "explanation": "Bin width can create or hide peaks. A shape that stays the same across several sensible widths is the one you can trust.",
+    "shortcut": "Check the shape across several bin widths."
+  },
+  {
+    "id": "stat-mcq-02-8",
+    "module": "statistics",
+    "topic": "distributions",
+    "section": "Distributions and the shape of data",
+    "difficulty": "easy",
+    "question": "Which distribution is the simplest model for a fair six-sided die roll?",
+    "options": ["Binomial", "Poisson", "Uniform", "Right-skewed"],
+    "answerIndex": 2,
+    "explanation": "Each face from 1 to 6 is equally likely, which is the uniform distribution. The other options describe counts or skewed shapes, not equal chances.",
+    "shortcut": "Equal chance for every value means uniform."
+  }
+]

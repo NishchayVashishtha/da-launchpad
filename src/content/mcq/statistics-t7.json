@@ -1,0 +1,259 @@
+[
+  {
+    "id": "stat-mcq-13-1",
+    "module": "statistics",
+    "topic": "chisquare",
+    "section": "Chi-square test and comparing proportions",
+    "difficulty": "easy",
+    "question": "A 2 x 2 table compares two groups on a yes or no outcome. What are the degrees of freedom for chi-square?",
+    "options": [
+      "4",
+      "1",
+      "2",
+      "0"
+    ],
+    "answerIndex": 1,
+    "explanation": "Degrees of freedom are (rows - 1) x (columns - 1), so a 2 x 2 table has 1 x 1 = 1. Counting all four cells (4) is a common mistake.",
+    "shortcut": "2 x 2 always gives df = 1."
+  },
+  {
+    "id": "stat-mcq-13-2",
+    "module": "statistics",
+    "topic": "chisquare",
+    "section": "Chi-square test and comparing proportions",
+    "difficulty": "easy",
+    "question": "What is the expected count for a cell in a contingency table?",
+    "options": [
+      "Observed count plus column total",
+      "Row total divided by column total",
+      "The average of the whole table",
+      "Row total times column total, divided by grand total"
+    ],
+    "answerIndex": 3,
+    "explanation": "Expected counts assume the two categories are not linked, so they follow the row and column totals. The formula is row total times column total, divided by the grand total."
+  },
+  {
+    "id": "stat-mcq-13-3",
+    "module": "statistics",
+    "topic": "chisquare",
+    "section": "Chi-square test and comparing proportions",
+    "difficulty": "medium",
+    "question": "You want to know whether city tier and plan choice are linked. Both are categories. Which test fits?",
+    "options": [
+      "Chi-square test of independence",
+      "Paired t-test",
+      "One-sample z-test on the mean",
+      "Correlation of two averages"
+    ],
+    "answerIndex": 0,
+    "explanation": "Two categorical variables need a chi-square test of independence. A t-test needs an average number, which these columns do not give."
+  },
+  {
+    "id": "stat-mcq-13-4",
+    "module": "statistics",
+    "topic": "chisquare",
+    "section": "Chi-square test and comparing proportions",
+    "difficulty": "medium",
+    "question": "A 1 x 2 comparison gives chi-square 12.4 with df = 1. What is the conclusion at the 5 percent level?",
+    "options": [
+      "Not significant, because 12.4 is below 5.99",
+      "Significant, because df is 1 so the test is always yes",
+      "Significant: 12.4 is above the 5 percent critical value 3.84",
+      "Cannot tell without the sample mean"
+    ],
+    "answerIndex": 2,
+    "explanation": "The critical value for df = 1 at 5 percent is 3.84. Since 12.4 is well above it, the link is significant."
+  },
+  {
+    "id": "stat-mcq-13-5",
+    "module": "statistics",
+    "topic": "chisquare",
+    "section": "Chi-square test and comparing proportions",
+    "difficulty": "medium",
+    "question": "Why must you pass counts, not percentages, into a chi-square test?",
+    "options": [
+      "Percentages cannot be added together",
+      "The test uses the sample size, which percentages hide",
+      "Percentages always make chi-square negative",
+      "Counts are always whole numbers"
+    ],
+    "answerIndex": 1,
+    "explanation": "Chi-square compares observed counts with expected counts built from totals, so the sample size matters. Percentages drop that information and give a wrong statistic."
+  },
+  {
+    "id": "stat-mcq-13-6",
+    "module": "statistics",
+    "topic": "chisquare",
+    "section": "Chi-square test and comparing proportions",
+    "difficulty": "medium",
+    "question": "A cell in your table has an expected count of 2.5. What should you do?",
+    "options": [
+      "Declare the test significant",
+      "Trust the result because it is one cell",
+      "Drop the table from the report",
+      "Merge small categories or use a different approach, because the result is not reliable"
+    ],
+    "answerIndex": 3,
+    "explanation": "A common rule needs expected counts of at least 5. Small cells make the chi-square approximation weak, so group categories or pick another method."
+  },
+  {
+    "id": "stat-mcq-13-7",
+    "module": "statistics",
+    "topic": "chisquare",
+    "section": "Chi-square test and comparing proportions",
+    "difficulty": "hard",
+    "question": "For a 2 x 2 table, the chi-square statistic is 3.97. What is the matching two-proportion z value?",
+    "options": [
+      "About 1.99",
+      "3.97",
+      "0.50",
+      "1.96"
+    ],
+    "answerIndex": 0,
+    "explanation": "For a 2 x 2 table, chi-square equals z squared. The square root of 3.97 is about 1.99. The value 3.97 is the chi-square itself, not z."
+  },
+  {
+    "id": "stat-mcq-13-8",
+    "module": "statistics",
+    "topic": "chisquare",
+    "section": "Chi-square test and comparing proportions",
+    "difficulty": "hard",
+    "question": "A chi-square test on platform and paid status is significant. Which statement is safe to make?",
+    "options": [
+      "iOS causes higher payment",
+      "The test proves the cause",
+      "The two are linked in this data, but it does not say why",
+      "Android users never pay"
+    ],
+    "answerIndex": 2,
+    "explanation": "Significant chi-square shows an association in the data. It does not show a cause, so other factors such as city or campaign may explain it."
+  },
+  {
+    "id": "stat-mcq-14-1",
+    "module": "statistics",
+    "topic": "errors",
+    "section": "Type I and Type II errors, power and multiple testing",
+    "difficulty": "easy",
+    "question": "A test says a feature works, but in reality it does nothing. Which error is this?",
+    "options": [
+      "Type II error",
+      "Power loss",
+      "Type I error",
+      "Sample bias"
+    ],
+    "answerIndex": 2,
+    "explanation": "Calling a no-effect change a win is a false alarm, which is a Type I error. A Type II error is the opposite: missing a real effect."
+  },
+  {
+    "id": "stat-mcq-14-2",
+    "module": "statistics",
+    "topic": "errors",
+    "section": "Type I and Type II errors, power and multiple testing",
+    "difficulty": "easy",
+    "question": "The Type II error rate (beta) is 0.20. What is the power?",
+    "options": [
+      "0.80",
+      "0.20",
+      "0.05",
+      "1.20"
+    ],
+    "answerIndex": 0,
+    "explanation": "Power is 1 minus beta, so 1 - 0.20 = 0.80. Power is the chance of detecting a real effect."
+  },
+  {
+    "id": "stat-mcq-14-3",
+    "module": "statistics",
+    "topic": "errors",
+    "section": "Type I and Type II errors, power and multiple testing",
+    "difficulty": "medium",
+    "question": "Which change raises the power of a test?",
+    "options": [
+      "Using fewer users",
+      "A smaller true effect",
+      "Stopping the test on day 1",
+      "More users per group"
+    ],
+    "answerIndex": 3,
+    "explanation": "More users reduce noise, so a real effect is easier to see. Smaller effects and early stops both lower power or inflate errors."
+  },
+  {
+    "id": "stat-mcq-14-4",
+    "module": "statistics",
+    "topic": "errors",
+    "section": "Type I and Type II errors, power and multiple testing",
+    "difficulty": "medium",
+    "question": "You run 4 tests and want the overall false alarm risk to stay near 5 percent using Bonferroni. What is the threshold for each test?",
+    "options": [
+      "0.05",
+      "0.0125",
+      "0.2",
+      "0.00125"
+    ],
+    "answerIndex": 1,
+    "explanation": "Bonferroni divides alpha by the number of tests: 0.05 / 4 = 0.0125. Each test must clear this stricter line."
+  },
+  {
+    "id": "stat-mcq-14-5",
+    "module": "statistics",
+    "topic": "errors",
+    "section": "Type I and Type II errors, power and multiple testing",
+    "difficulty": "medium",
+    "question": "Ten tests at alpha 0.05 are run on a feature with no real effect. What is the chance of at least one false win, roughly?",
+    "options": [
+      "5 percent",
+      "10 percent",
+      "About 40 percent",
+      "50 percent"
+    ],
+    "answerIndex": 2,
+    "explanation": "The chance that all 10 tests are clean is 0.95 to the power 10, about 0.60. So the chance of at least one false win is about 40 percent."
+  },
+  {
+    "id": "stat-mcq-14-6",
+    "module": "statistics",
+    "topic": "errors",
+    "section": "Type I and Type II errors, power and multiple testing",
+    "difficulty": "medium",
+    "question": "An analyst checks a test every day and stops as soon as p drops below 0.05. What happens to the false alarm rate?",
+    "options": [
+      "It rises above 5 percent",
+      "It stays at exactly 5 percent",
+      "It rises to 100 percent power",
+      "It is not affected"
+    ],
+    "answerIndex": 0,
+    "explanation": "Each daily look gives noise another chance to cross the line. This inflates the real false alarm rate well above the planned 5 percent."
+  },
+  {
+    "id": "stat-mcq-14-7",
+    "module": "statistics",
+    "topic": "errors",
+    "section": "Type I and Type II errors, power and multiple testing",
+    "difficulty": "hard",
+    "question": "In a test with 4 segments, one segment has p = 0.047. After a Bonferroni correction, what is the right conclusion?",
+    "options": [
+      "It is significant at 0.05 and stays so",
+      "It becomes significant only with a bigger alpha",
+      "A p of 0.047 is always a true effect",
+      "It is not a clear win, because it is above the corrected threshold of 0.0125"
+    ],
+    "answerIndex": 3,
+    "explanation": "With 4 segments the threshold is 0.0125, and 0.047 is above it. The result is still a possible false alarm and should be reported as inconclusive."
+  },
+  {
+    "id": "stat-mcq-14-8",
+    "module": "statistics",
+    "topic": "errors",
+    "section": "Type I and Type II errors, power and multiple testing",
+    "difficulty": "hard",
+    "question": "A test ends with no significant result and the team has low power. Which conclusion is safest?",
+    "options": [
+      "There is no effect",
+      "The test may be underpowered, so the result is inconclusive",
+      "Launch the feature anyway",
+      "The power is 100 percent"
+    ],
+    "answerIndex": 1,
+    "explanation": "A non-significant result from a small test does not prove there is no effect. The honest reading is that the test could not see a real effect of that size."
+  }
+]

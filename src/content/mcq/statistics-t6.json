@@ -1,0 +1,261 @@
+[
+  {
+    "id": "stat-mcq-11-1",
+    "module": "statistics",
+    "topic": "hypothesis",
+    "section": "Hypothesis testing and p-values",
+    "difficulty": "easy",
+    "question": "A team tests whether a new ad creative changes the click rate. Which statement is the null hypothesis H0?",
+    "options": [
+      "The new creative raises the click rate",
+      "The click rate stays the same as before",
+      "The creative was made by the design team",
+      "The p-value is below 0.05"
+    ],
+    "answerIndex": 0,
+    "explanation": "H0 is the no-effect claim. The team hopes to show the opposite, which is H1.",
+    "shortcut": "H0 is the boring claim to beat."
+  },
+  {
+    "id": "stat-mcq-11-2",
+    "module": "statistics",
+    "topic": "hypothesis",
+    "section": "Hypothesis testing and p-values",
+    "difficulty": "easy",
+    "question": "A test gives p = 0.02 and alpha is 0.05. What is the correct conclusion?",
+    "options": [
+      "There is a 2 percent chance that H0 is true",
+      "Accept H0 because the p is small",
+      "Reject H0; the result is statistically significant",
+      "The effect must be large"
+    ],
+    "answerIndex": 2,
+    "explanation": "p is below alpha, so H0 is rejected. The p-value is not the chance H0 is true, and it does not give the effect size."
+  },
+  {
+    "id": "stat-mcq-11-3",
+    "module": "statistics",
+    "topic": "hypothesis",
+    "section": "Hypothesis testing and p-values",
+    "difficulty": "medium",
+    "question": "The p-value is 0.20 with alpha 0.05. Which sentence is the most careful conclusion?",
+    "options": [
+      "The change has no effect",
+      "H0 is proven true",
+      "The sample must be too small",
+      "We fail to reject H0; the data do not show a clear effect"
+    ],
+    "answerIndex": 3,
+    "explanation": "A high p-value means weak evidence. It does not prove there is no effect, so write fail to reject, not accept."
+  },
+  {
+    "id": "stat-mcq-11-4",
+    "module": "statistics",
+    "topic": "hypothesis",
+    "section": "Hypothesis testing and p-values",
+    "difficulty": "medium",
+    "question": "Alpha is the value you set before the test. What does it represent?",
+    "options": [
+      "The chance that H1 is true",
+      "The false alarm rate you accept when H0 is actually true",
+      "The size of the effect",
+      "The number of rows you need"
+    ],
+    "answerIndex": 1,
+    "explanation": "Alpha is the risk of rejecting a true H0. With 0.05, you accept a 5 percent chance of a false alarm.",
+    "shortcut": "Alpha is the false alarm budget."
+  },
+  {
+    "id": "stat-mcq-11-5",
+    "module": "statistics",
+    "topic": "hypothesis",
+    "section": "Hypothesis testing and p-values",
+    "difficulty": "medium",
+    "question": "You have no reason to expect a direction before the test. Which test should you use?",
+    "options": [
+      "Two-tailed, because it checks both directions",
+      "One-tailed, because it gives a smaller p-value",
+      "Either, after you see which way the data point",
+      "Neither; tests need a direction"
+    ],
+    "answerIndex": 0,
+    "explanation": "A two-tailed test checks for a difference in either direction. A one-tailed test needs the direction decided in advance."
+  },
+  {
+    "id": "stat-mcq-11-6",
+    "module": "statistics",
+    "topic": "hypothesis",
+    "section": "Hypothesis testing and p-values",
+    "difficulty": "hard",
+    "question": "An analyst tests 20 metrics at alpha 0.05 and reports the one that is significant. What is the main risk?",
+    "options": [
+      "The test has too little power",
+      "The p-values are negative",
+      "Many tests inflate false positives, so one hit can be chance",
+      "One-tailed tests were used by mistake"
+    ],
+    "answerIndex": 2,
+    "explanation": "Testing many metrics makes it likely that one looks significant by chance. This is p-hacking, and the fix is to pick the main metric first or correct for many tests."
+  },
+  {
+    "id": "stat-mcq-11-7",
+    "module": "statistics",
+    "topic": "hypothesis",
+    "section": "Hypothesis testing and p-values",
+    "difficulty": "hard",
+    "question": "With 500,000 delivery rows, a gap of 0.1 minutes gives p = 0.001. What is the best response?",
+    "options": [
+      "The gap is important and should be scaled up",
+      "Ignore the gap because p is not zero",
+      "Use a one-tailed test to make it stronger",
+      "It is statistically significant, but the gap may be too small to matter"
+    ],
+    "answerIndex": 3,
+    "explanation": "Very big samples make tiny gaps significant. Report the size of the effect and judge it in business terms."
+  },
+  {
+    "id": "stat-mcq-11-8",
+    "module": "statistics",
+    "topic": "hypothesis",
+    "section": "Hypothesis testing and p-values",
+    "difficulty": "medium",
+    "question": "The z statistic is 2.5 and the test is two-sided at alpha 0.05. What is the decision?",
+    "options": [
+      "Fail to reject H0",
+      "Reject H0",
+      "The test cannot be used with z",
+      "Accept H1"
+    ],
+    "answerIndex": 1,
+    "explanation": "The two-sided cutoff is about 1.96. A z of 2.5 is beyond it, so H0 is rejected.",
+    "shortcut": "The cutoff for two-sided 0.05 is about 1.96."
+  },
+  {
+    "id": "stat-mcq-12-1",
+    "module": "statistics",
+    "topic": "ttest",
+    "section": "t-tests: comparing means",
+    "difficulty": "easy",
+    "question": "Before and after training are measured for the same 10 riders. Which t-test fits best?",
+    "options": [
+      "Welch two-sample",
+      "One-sample z-test",
+      "Paired t-test",
+      "Chi-square test"
+    ],
+    "answerIndex": 2,
+    "explanation": "The before and after values are linked by rider, so a paired test on the differences is right."
+  },
+  {
+    "id": "stat-mcq-12-2",
+    "module": "statistics",
+    "topic": "ttest",
+    "section": "t-tests: comparing means",
+    "difficulty": "easy",
+    "question": "What does the Welch t-test assume differently from the pooled t-test?",
+    "options": [
+      "It does not assume the two groups have equal spread",
+      "It always gives a bigger t",
+      "It needs only one group",
+      "It works only for samples above 1,000"
+    ],
+    "answerIndex": 0,
+    "explanation": "Welch keeps a separate variance for each group, so it does not need equal spread."
+  },
+  {
+    "id": "stat-mcq-12-3",
+    "module": "statistics",
+    "topic": "ttest",
+    "section": "t-tests: comparing means",
+    "difficulty": "medium",
+    "question": "What do the degrees of freedom control in a t-test?",
+    "options": [
+      "The mean of the data",
+      "The alpha level",
+      "The number of duplicate rows",
+      "How close the t distribution is to the normal curve"
+    ],
+    "answerIndex": 3,
+    "explanation": "Bigger df makes the t distribution look more like the normal curve. Small df means heavier tails and a larger critical value."
+  },
+  {
+    "id": "stat-mcq-12-4",
+    "module": "statistics",
+    "topic": "ttest",
+    "section": "t-tests: comparing means",
+    "difficulty": "medium",
+    "question": "A t of 3.1 has 15 degrees of freedom. The two-sided critical value at alpha 0.05 is about 2.13. What is the decision?",
+    "options": [
+      "Fail to reject H0, since 3.1 is below 2.13",
+      "Reject H0, since 3.1 is above 2.13 in absolute value",
+      "Reject H0 because every t is significant",
+      "Accept H0 because df is small"
+    ],
+    "answerIndex": 1,
+    "explanation": "The absolute t of 3.1 beats the critical value of about 2.13, so H0 is rejected."
+  },
+  {
+    "id": "stat-mcq-12-5",
+    "module": "statistics",
+    "topic": "ttest",
+    "section": "t-tests: comparing means",
+    "difficulty": "medium",
+    "question": "Which situation calls for a one-sample t-test?",
+    "options": [
+      "Comparing Rain and Clear deliveries",
+      "Comparing self and manager ratings on the same review",
+      "Comparing average delivery time with a 40 minute target",
+      "Comparing two campaigns in two cities"
+    ],
+    "answerIndex": 2,
+    "explanation": "A one-sample test compares one sample mean with a fixed target value."
+  },
+  {
+    "id": "stat-mcq-12-6",
+    "module": "statistics",
+    "topic": "ttest",
+    "section": "t-tests: comparing means",
+    "difficulty": "hard",
+    "question": "Repeated rows from the same restaurant are used as if they were separate. Which assumption is broken?",
+    "options": [
+      "Independence",
+      "Alpha being 0.05",
+      "Equal variance",
+      "Normality"
+    ],
+    "answerIndex": 0,
+    "explanation": "Rows from one restaurant are linked, so they are not independent. The standard error becomes too small and the t too big."
+  },
+  {
+    "id": "stat-mcq-12-7",
+    "module": "statistics",
+    "topic": "ttest",
+    "section": "t-tests: comparing means",
+    "difficulty": "hard",
+    "question": "Group 1 has mean 52, SD 10 and n = 50. Group 2 has mean 48, SD 12 and n = 50. What is the Welch t for group 1 minus group 2?",
+    "options": [
+      "About 4.00",
+      "About 2.00",
+      "About 0.36",
+      "About 1.81"
+    ],
+    "answerIndex": 3,
+    "explanation": "The standard error is the square root of 10^2/50 plus 12^2/50, which is about 2.21. Then 4 divided by 2.21 is about 1.81."
+  },
+  {
+    "id": "stat-mcq-12-8",
+    "module": "statistics",
+    "topic": "ttest",
+    "section": "t-tests: comparing means",
+    "difficulty": "medium",
+    "question": "A report shows a Rain gap of 5.4 minutes with a 95 percent CI of 4.7 to 6.2. What is the best summary for a manager?",
+    "options": [
+      "Rain has no effect because the p-value is not shown",
+      "Rain adds about 5 to 6 minutes per delivery, and the range is narrow",
+      "Rain adds exactly 5.4 minutes every time",
+      "The t-test cannot say anything about rain"
+    ],
+    "answerIndex": 1,
+    "explanation": "The interval shows a likely range of the extra time. The mean gap is the business number, and the interval shows the uncertainty."
+  }
+]

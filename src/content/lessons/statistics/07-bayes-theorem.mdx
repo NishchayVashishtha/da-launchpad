@@ -1,0 +1,217 @@
+---
+title: "Bayes theorem: updating beliefs with evidence"
+description: "Why a positive fraud alert may still be wrong, explained step by step."
+module: statistics
+order: 7
+estimatedMinutes: 40
+objectives:
+  - "State Bayes rule in words and in a formula"
+  - "Solve a problem with a natural-frequency table"
+  - "Explain base rate neglect with a simple example"
+  - "Apply Bayes rule to fraud and spam alerts"
+tags: ["statistics", "bayes", "probability"]
+---
+
+## Learning objectives
+
+- State Bayes rule in plain words and as a formula.
+- Solve a conditional probability problem with a natural-frequency table.
+- Explain base rate neglect and why it fools smart people.
+- Apply Bayes rule to a fraud alert and read the result for a business decision.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Fraud and risk teams in banks and UPI apps live on alerts. An alert model may catch 90% of fraud, yet most alerts can still be false. An analyst who reads a precision number correctly can save the team hours of wasted review. Many analyst interviews ask a Bayes-style question, and the wrong answer is usually the one most people give first.
+</RealWorld>
+
+## Concept
+
+### An alarm that is "95% accurate" can still be wrong most of the time
+
+Think of a home smoke alarm. It rings when there is smoke, and it rings once in a while when you make toast. Now imagine a UPI fraud alarm. It is "95% accurate", which sounds strong. But suppose only 1 in 1,000 UPI payments is fraud. Out of 1,000 payments, 1 is fraud. The alarm may ring on about 50 of the 999 honest payments. So a ring means real fraud only about 1 time in 51. Most alerts are false alarms.
+
+The lesson is simple. How likely a thing is **before** you see the evidence matters a lot. Bayes theorem is the rule that combines the two.
+
+### The words you need
+
+- **Prior**: the chance of the event before you see the evidence. For fraud, this is the base rate, for example 0.1%.
+- **Likelihood**: the chance of the evidence if the event is true. For example, the chance that fraud gets flagged.
+- **Posterior**: the updated chance after the evidence. This is the answer we want.
+- **Sensitivity**: the share of real fraud the alarm catches. Also called recall or true positive rate.
+- **False-positive rate**: the share of honest transactions the alarm flags by mistake.
+
+### Bayes rule
+
+The formula is:
+
+<FormulaCard title="Bayes rule">
+
+`P(A | B) = P(B | A) x P(A) / P(B)`
+
+Read `P(A | B)` as "the chance of A, given B". The bottom line, `P(B)`, is the total chance of the evidence. It has two parts:
+
+`P(B) = P(B | A) x P(A) + P(B | not A) x P(not A)`
+
+</FormulaCard>
+
+Most people find the formula hard at first. The table method is easier, and it gives the same answer.
+
+### Teach it with natural frequencies
+
+Do not start with percentages. Start with a fixed number of people or payments, for example 100,000 UPI payments. Then count each group:
+
+1. Start with the base rate. 0.1% of 100,000 is 100 fraud payments and 99,900 genuine ones.
+2. Apply the sensitivity to the fraud group. 90% of 100 is 90 flagged, and 10 are missed.
+3. Apply the false-positive rate to the genuine group. 2% of 99,900 is about 1,998 flagged, and 97,902 are not flagged.
+4. Add up all flagged payments. 90 + 1,998 = 2,088.
+5. The posterior is the fraud share of the flagged group. 90 / 2,088 = 4.3%.
+
+The table keeps every term in view, so you can see why the number is small.
+
+| | Flagged | Not flagged | Total |
+|---|---|---|---|
+| Fraud | 90 | 10 | 100 |
+| Genuine | 1,998 | 97,902 | 99,900 |
+| Total | 2,088 | 97,912 | 100,000 |
+
+### Precision is the posterior
+
+In an alert system, **precision** means: of the alerts we raised, how many were real? That is exactly the posterior `P(fraud | flagged)`. **Recall** (sensitivity) means: of the real fraud, how much did we catch? That is `P(flagged | fraud)`. The two numbers are different. A model can have high recall and low precision, which is the pattern in our example.
+
+This is why analysts tune thresholds. A stricter threshold lowers false alarms (better precision) but misses more fraud (lower recall). The right balance depends on how costly a missed fraud is compared with a wasted review.
+
+<Tip>
+Whenever you see a test result, ask two questions before you trust it. What is the base rate? How many false positives come from the large genuine group? Those two answers often tell you more than the headline accuracy.
+</Tip>
+
+<Warning>
+Do not swap `P(A | B)` and `P(B | A)`. "The alarm is 90% sensitive" is `P(flag | fraud)`. "The flag is 90% likely to be fraud" is a different and much stronger claim. Mixing them up is called the prosecutor fallacy.
+</Warning>
+
+## Worked examples
+
+### Example 1: the UPI fraud alert
+
+The base rate is 0.1%, the sensitivity is 90%, and the false-positive rate is 2%. Find the chance that a flagged payment is fraud.
+
+Use the table method from the concept section. The answer is 90 / 2,088 = 0.0431, so the posterior is **4.3%**.
+
+In formula form:
+
+```text
+P(fraud | flagged) = (0.90 x 0.001) / ((0.90 x 0.001) + (0.02 x 0.999))
+                   = 0.0009 / 0.02088
+                   = 0.0431
+```
+
+Only about 1 flag in 23 is real fraud. The team must review about 23 alerts to find one fraud.
+
+### Example 2: flags in the fintech data
+
+The `transactions` table in the fintech dataset has an `is_flagged` column. We can check the same idea on real data. Use the clean rows (unique `txn_id` only). This is the code.
+
+```python
+import pandas as pd
+
+t = pd.read_csv("public/data/csv/fintech/transactions.csv").drop_duplicates(subset="txn_id")
+flag = t["is_flagged"] == 1
+p2p = t["txn_type"] == "P2P"
+
+print(len(t), flag.sum(), p2p.sum(), (flag & p2p).sum())
+print("P(flag)", round(flag.mean(), 4))
+print("P(P2P)", round(p2p.mean(), 4))
+print("P(flag | P2P)", round(flag[p2p].mean(), 4))
+print("P(P2P | flag)", round(p2p[flag].mean(), 4))
+```
+
+Output:
+
+```text
+22300 302 5425 50
+P(flag) 0.0135
+P(P2P) 0.2433
+P(flag | P2P) 0.0092
+P(P2P | flag) 0.1656
+```
+
+Here is the story. Only 1.35% of transactions are flagged. Among P2P transfers, just 0.92% are flagged. But among flagged transactions, 16.56% are P2P. Flags are **not** mostly P2P, because P2P is a large group of its own. Bayes rule links the two numbers:
+
+`P(P2P | flag) = P(flag | P2P) x P(P2P) / P(flag) = 0.0092 x 0.2433 / 0.0135 = 0.1656`
+
+Both routes give the same answer. The fraud team would still want to know the flag rate inside each transaction type before it trusts a single flag.
+
+### Example 3: the base rate changes everything
+
+The same alert, but now we change one number at a time. Fraud is 0.1% in the baseline case.
+
+| Scenario | Base rate | Sensitivity | False-positive rate | Posterior |
+|---|---|---|---|---|
+| Baseline | 0.1% | 90% | 2% | 4.3% |
+| Better detector | 0.1% | 99% | 2% | 4.7% |
+| Fewer false alarms | 0.1% | 90% | 0.5% | 15.3% |
+| More common fraud | 1% | 90% | 2% | 31.3% |
+
+The better detector barely moves the answer. Cutting the false-alarm rate helps much more. Raising the base rate helps the most. The same idea also works for spam. If 1% of emails are spam, a filter that flags 90% of spam and 2% of real mail gives a posterior of 31.3%, so about 1 in 3 flagged emails is spam.
+
+### Example 4: two independent alerts
+
+What if a second, independent check also flags the same payment? Each alert has a likelihood ratio of 0.90 / 0.02 = 45. Start with prior odds of 0.001 / 0.999, which is about 1 to 999. Two independent alerts multiply the odds by 45 twice.
+
+- Prior odds: 1 to 999.
+- After two alerts: 1 to 999 x 45 x 45, which is about 2,025 to 999, or about 2.03 to 1.
+- Posterior: 2.03 / 3.03 = 0.670, which is about **67%**.
+
+Two alerts lift the chance from 4.3% to about 67%. This only works if the two checks are truly independent. If both use the same features, the second alert adds little new evidence.
+
+## Common mistakes
+
+- **Base-rate neglect.** Judging a test by its accuracy alone and forgetting how rare the event is. Result: you trust most false alarms.
+- **Swapping the two conditionals.** Reading `P(flag | fraud)` as `P(fraud | flag)`. Result: you overstate the alert by a factor of 20 or more in this example.
+- **Forgetting the denominator.** Using only the flagged-fraud part and not adding the flagged-genuine part to `P(B)`. Result: the posterior comes out near 90%, which is far too high.
+- **Mixing percentages and counts.** Using 0.1% in one place and 0.001 in another without converting. Result: a wrong answer that looks plausible.
+- **Assuming independence.** Multiplying two alert probabilities when both alerts use the same signal. Result: an overconfident posterior.
+
+## Practice questions
+
+<PracticeSet topic="bayes" module="statistics" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "In Bayes language, what is the base rate of an event?", options: ["The likelihood of the evidence", "The prior, the chance of the event before any evidence", "The posterior, the chance after the evidence", "The false-positive rate"], answer: 1, explanation: "The base rate is the prior. It is how common the event is before you look at the alert." },
+  { q: "A fraud alert has 90% sensitivity and 2% false-positive rate. Fraud is 0.1% of payments. What is the chance a flagged payment is fraud?", options: ["About 90%", "About 2%", "About 4.3%", "About 0.1%"], answer: 2, explanation: "Out of 100,000 payments there are 90 flagged frauds and 1,998 flagged genuine payments, so 90 / 2,088 is about 4.3%." },
+  { q: "Which statement is correct?", options: ["P(fraud given flag) always equals P(flag given fraud)", "P(flag given fraud) is the sensitivity, which is a different number from P(fraud given flag)", "The sensitivity tells you how many flags are fraud", "P(fraud given flag) never depends on the base rate"], answer: 1, explanation: "Sensitivity is the chance of a flag when fraud is present. The chance that a flag is fraud depends on the base rate too, so the two numbers differ." },
+  { q: "If fraud becomes 10 times more common, with the same alert, what happens to the posterior?", options: ["It goes down", "It stays the same", "It goes up", "It becomes exactly 100%"], answer: 2, explanation: "A higher base rate means more real fraud in the flagged group, so the share of flags that are fraud rises. In the example it rises from 4.3% to 31.3%." },
+  { q: "In the fintech data, what does the `is_flagged` column measure?", options: ["Whether a transaction failed", "Whether the fraud model raised an alert on that transaction", "Whether the user is a new customer", "Whether the payment was in rupees"], answer: 1, explanation: "A flag of 1 means the alert system raised an alert on that transaction. It is the evidence in the Bayes calculation." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers ask Bayes questions to see if you think about the base rate. A strong answer uses a count table, not just a formula. Say the base rate out loud before you say the accuracy.
+</InterviewAlert>
+
+<InterviewQ q="Explain Bayes theorem using a fraud example.">
+Bayes theorem updates the chance of an event after I see evidence. Suppose a model flags a payment. The posterior is the chance the payment is fraud, given the flag. It depends on three things: how common fraud is (the prior), how often the model flags real fraud (sensitivity), and how often it flags genuine payments by mistake (false-positive rate). I like to show this with 100,000 payments, because the count table makes the base rate visible.
+</InterviewQ>
+
+<InterviewQ q="Why does an accurate test still give many false positives?">
+When the event is rare, the genuine group is huge. A 2% false-positive rate on 99,900 genuine payments gives about 2,000 false flags. The 90 true frauds are a small group in comparison. So even a good test gives mostly false alarms when the base rate is low.
+</InterviewQ>
+
+<InterviewQ q="How does precision relate to Bayes theorem?">
+Precision is the share of flagged cases that are truly positive. That is the same as the posterior, P(positive | flagged). Recall is the sensitivity, P(flagged | positive). Changing the threshold trades one against the other. Precision rises when we flag fewer cases, and recall rises when we flag more.
+</InterviewQ>
+
+## Key takeaways
+
+- Bayes rule updates a prior chance with evidence to get a posterior: `P(A | B) = P(B | A) x P(A) / P(B)`.
+- A rare event with a good test can still give mostly false alarms. Always check the base rate first.
+- Natural-frequency tables, with counts of 100,000 people or payments, are the safest way to solve Bayes problems.
+- Precision is the posterior, and recall is the sensitivity. They are different numbers, so report both.
+- Two alerts only add up if they are independent. Otherwise the second alert adds little new information.
+
+## Further reading
+
+<FurtherReading ids={["khan-stats"]} />

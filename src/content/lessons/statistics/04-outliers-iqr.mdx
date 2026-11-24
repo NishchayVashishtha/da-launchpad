@@ -1,0 +1,249 @@
+---
+title: "Outliers: spotting them with IQR and z-scores"
+description: "Find unusual values and decide what to do with them."
+module: statistics
+order: 4
+estimatedMinutes: 40
+objectives:
+  - "Compute quartiles and the IQR"
+  - "Apply the 1.5 x IQR fence"
+  - "Compare the IQR rule with the z-score rule"
+  - "Decide whether to remove, cap or keep an outlier, with business reasoning"
+tags: ["statistics", "outliers", "iqr"]
+---
+
+## Learning objectives
+
+- Compute quartiles and the interquartile range (IQR).
+- Apply the 1.5 x IQR fence to flag outliers.
+- Compare the IQR rule with the z-score rule and say why they differ.
+- Decide whether to remove, cap or keep an outlier, with a business reason.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+A Mumbai fintech analyst reported that average transaction value had jumped 40 percent in one week. The cause was one merchant account where a typing error added two extra zeros to a bill. Spotting that single row took five minutes with an IQR check. Without it, the leadership team would have planned for a growth spike that never happened.
+</RealWorld>
+
+Almost every real dataset has unusual values. Some are typing errors. Some are real events, like a festival spike in orders. Your job is to find them, understand them and then decide what to do. Dropping them without thinking is one of the most common analyst mistakes.
+
+## Concept
+
+### The billionaire in the tea stall
+
+Imagine ten customers at a tea stall. Each spends about Rs 50. Then one billionaire walks in and spends Rs 1 crore. The average spend now looks huge, but nothing real changed for the other ten customers. The average was pulled by one extreme value.
+
+That is the core problem with outliers. A single unusual value can move the **mean** and the **standard deviation** a lot. To judge outliers fairly, we need measures that do not move much when extreme values appear.
+
+### Quartiles and the IQR
+
+A **quartile** splits sorted data into four equal groups.
+
+- **Q1** (first quartile) is the 25th percentile. Only 25% of values sit below it.
+- **Q2** is the median, the 50th percentile.
+- **Q3** (third quartile) is the 75th percentile.
+- The **interquartile range (IQR)** is Q3 minus Q1. It is the width of the middle 50% of the data.
+
+The median and quartiles barely move when one extreme value is added. That makes the IQR a robust measure of spread.
+
+### The 1.5 x IQR fence
+
+A **fence** is a cut-off beyond which a value is flagged as a possible outlier. The most common rule (from John Tukey, who popularised box plots) is:
+
+<FormulaCard title="IQR fences">
+Lower fence = Q1 - 1.5 x IQR
+
+Upper fence = Q3 + 1.5 x IQR
+
+Any value below the lower fence or above the upper fence is flagged.
+</FormulaCard>
+
+A box plot draws this rule. The box covers Q1 to Q3. The whiskers stop at the last value inside the fences, and the points beyond them are shown as dots.
+
+<Tip>
+In pandas, `quantile(0.25)` and `quantile(0.75)` compute Q1 and Q3 with linear interpolation. Use the same method every time so your answers match across tools.
+</Tip>
+
+### Why the z-score rule can fail
+
+The z-score rule flags values with an absolute z above 3. That works well for clean, roughly normal data. But the mean and SD are themselves affected by outliers. A big outlier inflates the SD, so it can hide itself: its own z-score looks smaller than it should. The IQR rule does not have this problem, because quartiles do not depend on the size of the extremes.
+
+### Three kinds of unusual values
+
+Before you act, decide what kind of value you are looking at:
+
+- **Data error.** A typo, a dropped decimal point or an extra zero. Example: a Rs 3,314 ad spend that should be Rs 33.14. Fix it if you can prove it, or remove it if the source is unclear.
+- **Genuine extreme.** A real event. Example: a Diwali sales spike. Keep it, and report the result both with and without it.
+- **Different population.** Values that belong to another group, like a test account or a bulk corporate order. Separate that group and analyse it on its own.
+
+### What to do with an outlier
+
+Your options are:
+
+- **Remove** it, only when you are sure it is an error.
+- **Cap** it (winsorise), by replacing it with the fence value. This keeps the row but limits its pull.
+- **Transform** the data, such as taking a log, to reduce the skew.
+- **Use a robust statistic**, like the median, instead of the mean.
+- **Keep** it, and say so in the report.
+
+<Warning>
+Never delete every flagged row automatically. The rule finds unusual values, not wrong ones. A festival spike or a real VIP order can be flagged and still be correct.
+</Warning>
+
+## Worked examples
+
+### Example 1: Ad spend with text values
+
+The `ad_spend` file stores `spend_inr` as text. Some values carry a rupee sign or commas. Text cannot be sorted into quartiles, so we clean the column first. We also drop duplicate rows by `ad_spend_id`.
+
+```python
+import pandas as pd
+
+def load(dataset, table):
+    return pd.read_csv(f"public/data/csv/{dataset}/{table}.csv")
+
+ad = load("marketing", "ad_spend").drop_duplicates(subset=["ad_spend_id"])
+ad["spend"] = pd.to_numeric(ad.spend_inr.astype(str).str.replace(r"[₹,\s]", "", regex=True), errors="coerce")
+
+q1, q3 = ad.spend.quantile(0.25), ad.spend.quantile(0.75)
+iqr = q3 - q1
+lo, hi = q1 - 1.5 * iqr, q3 + 1.5 * iqr
+print("rows:", len(ad), "Q1:", round(q1, 2), "Q3:", round(q3, 2), "IQR:", round(iqr, 2))
+print("fences:", round(lo, 2), round(hi, 2))
+flag = (ad.spend < lo) | (ad.spend > hi)
+print("flagged:", int(flag.sum()))
+top = ad.loc[ad.spend.idxmax()]
+print("largest:", top.campaign_id, top.spend_date, top.spend)
+print("campaign 25 median:", round(ad.loc[ad.campaign_id == 25, "spend"].median(), 2))
+```
+
+**Output:**
+
+```text
+rows: 2103 Q1: 17.87 Q3: 130.3 IQR: 112.43
+fences: -150.78 298.95
+flagged: 169
+largest: 25 2024-10-08 99637.0
+campaign 25 median: 234.28
+```
+
+The fence flags 169 rows, which is a lot. The largest value is Rs 99,637 on campaign 25, where a typical day is about Rs 234. That value looks like an extra zero. But many of the other 168 flagged rows are simply big spends on large campaigns. Campaign 25 runs at a much higher daily budget than the small campaigns. So the next step is to check the outliers **within each campaign**, not across the whole file.
+
+### Example 2: Delivery delays with two rules
+
+We now compare two rules on `delay_minutes` for delivered orders. A negative delay means the order arrived early.
+
+```python
+import pandas as pd
+
+d = load("food_delivery", "deliveries").drop_duplicates(subset=["delivery_id"])
+dl = d[d.delivery_status == "Delivered"].dropna(subset=["delay_minutes"])
+x = dl.delay_minutes
+
+z = (x - x.mean()) / x.std()
+q1, q3 = x.quantile(0.25), x.quantile(0.75)
+iqr = q3 - q1
+print("delay IQR:", iqr, "fences:", q1 - 1.5 * iqr, q3 + 1.5 * iqr)
+print("IQR flags:", int(((x < q1 - 1.5 * iqr) | (x > q3 + 1.5 * iqr)).sum()))
+print("z > 3 flags:", int((z.abs() > 3).sum()))
+```
+
+**Output:**
+
+```text
+delay IQR: 11.0 fences: -19.5 24.5
+IQR flags: 298
+z > 3 flags: 108
+```
+
+The two rules disagree a lot here. The IQR rule flags 298 orders and the z rule flags 108. The delay column is skewed to the right, with a long tail of very late orders. The IQR fence sits at 24.5 minutes, so every order more than 24.5 minutes late is flagged. The z rule uses the mean and SD, which the late tail pulls up. Its cut-off is about 30 minutes late (mean 2.8 plus 3 SDs of 9.1), so it flags far fewer orders. Neither answer is wrong. The point is to say which rule you used and why.
+
+### Example 3: How much do outliers move the average?
+
+We compare the mean of the ad spend with and without the flagged rows. This is the business question: what does the average look like if the extreme rows are removed?
+
+```python
+print("mean all:", round(ad.spend.mean(), 2), "mean without:", round(ad.spend[~flag].mean(), 2))
+print("median:", ad.spend.median())
+```
+
+**Output:**
+
+```text
+mean all: 152.21 mean without: 70.69 median: 55.09
+```
+
+The flagged rows push the mean up from about Rs 71 to Rs 152. The median stays at about Rs 55. If a report says "average daily spend is Rs 152", a reader will be misled. The honest answer is to report the median with the reason, or report both means with a note.
+
+### Example 4: Finding extremes in SQL
+
+SQLite has no built-in percentile function. In practice, you compute the fence in Python or in a spreadsheet, then use it in a `WHERE` clause. The fence from the deliveries data is 78.5 minutes for `actual_minutes`. Here is the count of delivered orders above that fence. We use `SELECT DISTINCT *` first to remove the duplicate rows.
+
+<SqlPlayground dataset="food_delivery" query={`SELECT COUNT(*) AS slow_orders
+FROM (SELECT DISTINCT * FROM deliveries) AS d
+WHERE d.delivery_status = 'Delivered'
+  AND d.actual_minutes > 78.5;`} title="Delivered orders above the upper fence" />
+
+**Output:**
+
+| slow_orders |
+|---|
+| 210 |
+
+The count matches the Python result of 210 orders above the fence. Keep the fence number in a note, so the next analyst can reproduce it.
+
+## Common mistakes
+
+- **Deleting every outlier automatically.** The rule finds unusual values. Many are real. Investigate before you remove.
+- **Using the z rule on tiny or skewed samples.** With few rows, or with a long tail, the SD is unstable and the rule can miss real outliers. Use the IQR rule in those cases.
+- **Computing the IQR before cleaning text numbers.** Pandas sorts text as strings, so `"99"` can come after `"1000"` and the quartiles are wrong. Convert the column to numbers first.
+- **Forgetting that festive spikes are real.** A Diwali or IPL spike will be flagged. Check the calendar before you call it an error.
+- **Applying the fence to categorical codes.** A column of codes like 1, 2, 3 or product IDs has no meaningful spread. Quartiles on codes do not mean anything.
+
+## Practice questions
+
+<PracticeSet topic="outliers" module="statistics" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Q1 is 20 and Q3 is 35. What is the IQR?", options: ["15", "55", "27.5", "10"], answer: 0, explanation: "IQR = Q3 - Q1 = 35 - 20 = 15." },
+  { q: "Using the same quartiles (Q1 = 20, Q3 = 35), what is the upper fence?", options: ["50", "57.5", "42.5", "35"], answer: 1, explanation: "Upper fence = Q3 + 1.5 x IQR = 35 + 1.5 x 15 = 35 + 22.5 = 57.5." },
+  { q: "Which statistic is most robust to a single extreme value?", options: ["The mean", "The median", "The range", "The standard deviation"], answer: 1, explanation: "The median is the middle value, so one huge value does not move it. The mean, range and SD all change a lot." },
+  { q: "A data-entry clerk typed 100 times the real amount. What is the right first step?", options: ["Keep it, because all data is real", "Check the source, correct it if you can prove the error, and then decide", "Delete the whole month", "Replace it with the average"], answer: 1, explanation: "Verify the value against the source first. Correct it when the error is proven, and only remove it when the source is unclear." },
+  { q: "Why can the z-score rule fail when a very large outlier is present?", options: ["It only works on text values", "The outlier inflates the mean and SD, which hides the outlier", "It ignores the sign of the value", "It uses the median"], answer: 1, explanation: "A big outlier pushes up the SD, so its own z-score looks smaller. The IQR rule avoids this because quartiles are not moved much by extremes." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers ask about outliers to test judgement. They want a clear rule for finding them, a reason for the choice of rule and a practical decision about keeping or removing values, with no automatic deletion.
+</InterviewAlert>
+
+<InterviewQ q="How do you find outliers in a dataset?">
+I start with a box plot or a quick summary of quartiles. Then I apply the 1.5 x IQR fence, flagging values below Q1 minus 1.5 IQR or above Q3 plus 1.5 IQR. For roughly normal data I also check the z-score, but I prefer the IQR when the data is skewed or contains extreme values.
+</InterviewQ>
+
+<InterviewQ q="What do you do once you find outliers?">
+First I work out whether each one is an error, a real extreme or a different group. Errors I fix or remove, with a note. Real extremes I keep, and I report the result both with and without them. I never delete rows just because they are inconvenient.
+</InterviewQ>
+
+<InterviewQ q="IQR or z-score: which is better?">
+It depends on the shape of the data. The z-score is simple and works well for roughly normal data without big outliers. The IQR works better for skewed data, because quartiles are not pulled by extreme values. In practice I check both and explain any gap between them.
+</InterviewQ>
+
+<InterviewQ q="Give an example where you would keep an outlier.">
+A festival sales spike, for example during Diwali, is an outlier on a normal week. But it is a real event that the business wants to understand. If I removed it, the forecast would miss the seasonal pattern. So I keep it, mark it as a seasonal event and maybe model it separately.
+</InterviewQ>
+
+## Key takeaways
+
+- The IQR is Q3 minus Q1. It measures the spread of the middle 50% and is robust to extreme values.
+- The 1.5 x IQR fences flag values below Q1 minus 1.5 IQR or above Q3 plus 1.5 IQR.
+- The z-score rule can miss outliers because the outliers inflate the mean and SD.
+- Clean text numbers into real numbers before you compute quartiles, and remove duplicate rows first.
+- Decide each outlier as an error, a real extreme or a different group, and act on that. Never delete automatically.
+
+## Further reading
+
+<FurtherReading ids={["pandas-docs", "khan-stats"]} />

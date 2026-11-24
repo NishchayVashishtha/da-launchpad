@@ -1,0 +1,258 @@
+---
+title: "Hypothesis testing and p-values"
+description: "A step-by-step way to decide if a difference is real or just luck."
+module: statistics
+order: 11
+estimatedMinutes: 50
+objectives:
+  - "Write a null hypothesis (H0) and an alternative hypothesis (H1)"
+  - "Compute a z statistic for one mean and for one proportion"
+  - "Read a p-value correctly, and avoid the common wrong readings"
+  - "Choose alpha and decide between one-tailed and two-tailed tests"
+  - "Separate statistical significance from practical significance"
+tags: ["statistics", "hypothesis-testing", "p-value"]
+---
+
+## Learning objectives
+
+- Write a null hypothesis (H0) and an alternative hypothesis (H1) for a business question.
+- Compute a z statistic for one mean and for one proportion.
+- Explain what a p-value means in plain words, and what it does not mean.
+- Choose alpha (the risk you accept) and a one-tailed or two-tailed test before you look at the data.
+- Tell the difference between a result that is statistically significant and one that matters in practice.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Every week a business asks a yes or no question. Did the new app screen make checkouts faster? Are late deliveries rising in Pune? Did the Diwali offer really lift sales, or did it just look good? A hypothesis test is the tool that turns a messy number into a careful answer. Managers at Indian fintech and food delivery companies often ask for "the p-value" in their reviews. If you can explain what it means, and what it does not mean, you will look sharp in the room and avoid bad decisions.
+</RealWorld>
+
+## Concept
+
+### The courtroom idea
+
+A court starts with the idea that the accused is innocent. The prosecution must bring evidence strong enough to rule out innocence beyond reasonable doubt. If the evidence is weak, the court does not say the person is proven innocent. It only says the case is not proven.
+
+Hypothesis testing works the same way:
+
+- The **null hypothesis (H0)** is the "innocent" idea. It usually says there is no effect or no difference. Example: "Average delivery time is 40 minutes."
+- The **alternative hypothesis (H1)** is what you want to show. Example: "Average delivery time is not 40 minutes."
+- You look at the data. If the data would be very unlikely under H0, you **reject H0**. If not, you **fail to reject H0**.
+
+Notice the wording. A weak case is "not proven", not "proven innocent". In the same way, "fail to reject H0" does not mean H0 is true. It only means the data were not strong enough to rule it out.
+
+### The five steps
+
+1. **State H0 and H1** before you look at the numbers. Keep the claim simple and measurable.
+2. **Pick alpha**, the risk level you accept. The usual choice is 0.05 (5 percent).
+3. **Compute a test statistic**, a single number that measures how far the data are from H0.
+4. **Find the p-value**, the chance of a result this extreme if H0 were true.
+5. **Decide and explain.** Compare the p-value with alpha. Then write the result as a business sentence, not only "p = 0.03".
+
+### What a p-value means
+
+The **p-value** is the probability of seeing results at least as extreme as yours, if H0 were true.
+
+Use a simple picture. Suppose H0 says a coin is fair. You toss it 100 times and get 90 heads. A fair coin would almost never give 90 heads, so the p-value is tiny. That tiny number is evidence against the fair-coin idea.
+
+A p-value is **not**:
+
+- The probability that H0 is true. A p-value of 0.03 does not mean a 3 percent chance H0 is true.
+- The size of the effect. A tiny p-value can come with a tiny, useless effect (more on this below).
+- The chance that your result is a fluke. It assumes H0 is true and asks how surprising your data would be.
+
+### The z statistic for one mean
+
+When you know the population spread, or your sample is big (more than about 30 rows), the z statistic measures the gap between your sample mean and the H0 value in units of standard error.
+
+<FormulaCard title="z statistic for one mean">
+`z = (sample mean - mu0) / (s / sqrt(n))`, where `mu0` is the H0 value, `s` is the sample standard deviation, and `n` is the number of rows.
+</FormulaCard>
+
+The bottom part, `s / sqrt(n)`, is the **standard error**. It is how much the sample mean would bounce around from sample to sample. A z of 2 means the sample mean sits two standard errors away from the H0 value.
+
+### Converting z to a p-value
+
+For a two-sided test, the p-value is the area in both tails of the normal curve beyond the absolute value of z. Python's `math` module gives this directly:
+
+<FormulaCard title="Two-sided p-value from z">
+`p = math.erfc(abs(z) / math.sqrt(2))`. This needs only the standard library, so it works in any Python setup.
+</FormulaCard>
+
+A quick guide to the cutoffs: a z of 1.96 gives a two-sided p-value of about 0.05, and a z of 2.58 gives about 0.01.
+
+### The z statistic for one proportion
+
+For a yes or no measure, such as "was the order late?", use the proportion version. Here the standard error uses the H0 rate, because the test assumes that rate is true.
+
+<FormulaCard title="z statistic for one proportion">
+`z = (p-hat - p0) / sqrt(p0 * (1 - p0) / n)`, where `p-hat` is the observed rate and `p0` is the H0 rate.
+</FormulaCard>
+
+### One-tailed or two-tailed?
+
+- A **two-tailed** test asks "is it different, in either direction?" This is the safe default.
+- A **one-tailed** test asks "is it higher" or "is it lower" only, and you must decide this before you look at the data.
+
+Switching to a one-tailed test after you see the direction is cheating. It cuts the p-value in half, but it is not honest. Use two-tailed unless you have a strong reason written down in advance.
+
+### Alpha and the decision
+
+Alpha is the false alarm rate you accept. With alpha = 0.05, you accept a 5 percent chance of rejecting H0 when it is actually true. For a two-sided test at 0.05, the cutoff is z = 1.96 in either direction.
+
+- If p is less than alpha, **reject H0**. The result is statistically significant.
+- If p is more than or equal to alpha, **fail to reject H0**. The data are not strong enough to rule out H0.
+
+### Statistical versus practical significance
+
+With a big sample, even a tiny gap can give a tiny p-value. Significance tells you the gap is probably not zero. It does not tell you the gap matters. Always report the size of the effect next to the p-value. Ask "is this gap big enough to act on?"
+
+## Worked examples
+
+### Example 1: Are deliveries really taking 40 minutes?
+
+The app promises 40 minutes on average. We test the delivered orders in the `deliveries` table. H0: the mean is 40. H1: the mean is not 40. We drop cancelled rows and duplicate rows first.
+
+```python
+import math
+d = load("food_delivery", "deliveries").drop_duplicates()
+d = d[d.delivery_status == "Delivered"].dropna(subset=["actual_minutes"])
+x = d.actual_minutes
+n, mean, sd = len(x), x.mean(), x.std()
+z = (mean - 40) / (sd / math.sqrt(n))
+```
+
+**Output:**
+
+| Quantity | Value |
+|---|---|
+| Delivered orders (n) | 14,355 |
+| Sample mean (minutes) | 44.88 |
+| Sample SD (minutes) | 13.17 |
+| Standard error | 0.110 |
+| z statistic | 44.36 |
+| Two-sided p-value | effectively 0 |
+
+The gap is about 4.9 minutes, and the z is about 44 standard errors. The p-value is so small that it shows as 0. The promise of 40 minutes is not being met on average.
+
+### Example 2: The same gap with only 30 orders
+
+Now suppose a pilot only looked at 30 delivered orders. We take the first 30 rows when sorted by `delivery_id`, so the example is repeatable.
+
+```python
+s30 = d.sort_values("delivery_id").head(30).actual_minutes
+z30 = (s30.mean() - 40) / (s30.std() / math.sqrt(len(s30)))
+p30 = math.erfc(abs(z30) / math.sqrt(2))
+```
+
+**Output:**
+
+| Quantity | Value |
+|---|---|
+| Sample mean (minutes) | 42.03 |
+| Sample SD (minutes) | 11.47 |
+| z statistic | 0.97 |
+| Two-sided p-value | 0.332 |
+
+The sample mean is still above 40, but the p-value is 0.33. The data do not rule out 40 minutes. The same kind of gap gives a very different answer because n changed. Small samples are noisy, so one lucky or unlucky sample can mislead you. For 30 rows, lesson 12 shows the t-test, which is the more careful tool.
+
+### Example 3: One proportion, late rate against a 20 percent target
+
+Ops wants the late rate (delay more than 10 minutes) to be at most 20 percent. H0: the late rate is 20 percent. We test with the proportion formula.
+
+```python
+late = (d.delay_minutes > 10).astype(int)
+n = len(late)
+p0 = 0.20
+z = (late.mean() - p0) / math.sqrt(p0 * (1 - p0) / n)
+```
+
+**Output:**
+
+| Quantity | Value |
+|---|---|
+| Observed late rate | 18.08% |
+| H0 rate | 20% |
+| z statistic | -5.74 |
+| Two-sided p-value | about 0.00000001 |
+
+The observed rate is below 20 percent. The z is negative because the observed rate is below the target. The p-value is tiny, so the data strongly show the rate is not 20 percent. Good news for Ops, but the test alone does not say how far below. Read the rate itself as well.
+
+### Example 4: Significant but small
+
+Suppose the target was 44.5 minutes, and the team is said to be "slightly slow". Using the same 14,355 delivered orders:
+
+```python
+mu0 = 44.5
+z = (mean - mu0) / (sd / math.sqrt(n))
+```
+
+**Output:**
+
+| Quantity | Value |
+|---|---|
+| Gap from H0 (minutes) | 0.38 |
+| z statistic | 3.42 |
+| Two-sided p-value | 0.0006 |
+
+The result is statistically significant at alpha 0.05. But the gap is only about 23 seconds. A customer will not notice it. This is the trap of big samples. Report both the p-value and the gap, and ask whether the gap is worth acting on.
+
+## Common mistakes
+
+- **Reading p = 0.03 as "a 3 percent chance H0 is true".** The p-value is computed assuming H0 is true. It does not give the probability of H0.
+- **Saying "p above 0.05 proves there is no effect".** A high p-value means the evidence is weak. It may be a small sample, not a zero effect. Write "fail to reject", not "accept H0".
+- **Trying many tests until one is significant (p-hacking).** If you test 20 metrics at alpha 0.05, about one will look significant by chance alone. Pick the main metric in advance, or correct for many tests.
+- **Switching to a one-tailed test after seeing the direction.** That cuts the p-value in half without a fair reason. Decide the tail before you look.
+- **Ignoring the size of the effect.** A significant gap can still be tiny. Always report the gap next to the p-value.
+
+<CommonMistake>
+A junior analyst reports "the new checkout is significant, p = 0.001" and stops there. The manager asks how much faster it is. The answer is 3 seconds on a 900 second flow. Always give the size of the effect, the spread, and the business meaning, along with the p-value.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="hypothesis" module="statistics" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "A product team says: 'The new banner raises clicks, so H0 is that clicks stay the same.' Which statement is the null hypothesis?", options: ["Clicks go up with the new banner", "Clicks stay the same with the new banner", "The banner was designed in Pune", "The p-value is below 0.05"], answer: 1, explanation: "H0 is the 'no effect' or 'no difference' idea. The alternative, H1, is the change the team hopes to show." },
+  { q: "A test gives p = 0.02 with alpha = 0.05. What is the right conclusion?", options: ["Reject H0, the result is statistically significant", "There is a 2 percent chance that H0 is true", "Accept H0, the banner does nothing", "The effect must be large"], answer: 0, explanation: "p is less than alpha, so we reject H0. The p-value does not give the chance H0 is true, and it does not show the size of the effect." },
+  { q: "The p-value for a test is 0.04 and alpha is 0.05. Which decision is correct?", options: ["Fail to reject H0", "Set alpha to 0.04", "Reject H0", "The test is invalid"], answer: 2, explanation: "0.04 is below 0.05, so we reject H0. Writing alpha after seeing the p-value is a form of cheating, so choose alpha first." },
+  { q: "A test gives p = 0.30. Which sentence is the most careful conclusion?", options: ["The change has no effect", "H0 is proven true", "The sample is too big", "We fail to reject H0; the data do not show a clear effect"], answer: 3, explanation: "A high p-value means the evidence is weak. It does not prove there is no effect, so write 'fail to reject', not 'accept'." },
+  { q: "With 500,000 rows, a tiny gap of 0.1 percent is significant at p = 0.001. What should you say to the manager?", options: ["Ignore the p-value and the gap", "Use a one-tailed test to make it stronger", "The gap is statistically significant but may be too small to matter; check the size of the effect", "The gap is important and we should scale it"], answer: 2, explanation: "Big samples make tiny gaps significant. Statistical significance does not prove practical importance, so report the size and judge it in business terms." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers test whether you can explain a p-value without the jargon. They listen for three things: you name H0 and H1 clearly, you do not say the p-value is the chance H0 is true, and you mention the size of the effect along with significance.
+</InterviewAlert>
+
+<InterviewQ q="Explain a p-value to a manager who has never studied statistics.">
+A p-value tells us how surprising our data would be if nothing had really changed. If the number is very small, like 0.01, a result this strong would be rare under the no-change idea, so we take it as real. It is not the chance that we are wrong, and it does not say how big the change is. I always pair it with the size of the change, so the manager knows if it matters for the business.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between the null and the alternative hypothesis?">
+The null hypothesis (H0) is the default claim, usually that there is no effect or no difference. The alternative (H1) is what we want to show, such as that the average differs from a target. We set both before looking at the data. The test never proves H1 directly. It only checks whether the data are strong enough to reject H0.
+</InterviewQ>
+
+<InterviewQ q="What does alpha mean in a hypothesis test?">
+Alpha is the false alarm rate we accept. With alpha = 0.05, we accept a 5 percent chance of rejecting a true null. We choose alpha before the test, usually based on the cost of a wrong call. A stricter alpha, such as 0.01, means we need stronger evidence to reject H0.
+</InterviewQ>
+
+<InterviewQ q="The p-value is 0.001, but the effect is tiny. What do you do?">
+I report both facts. The result is statistically significant, which means the effect is probably not zero. But the size of the effect is small, so the business value may be low. I would check the cost of acting on it, the confidence interval for the gap, and whether the metric is the right one. Significance alone should never drive the decision.
+</InterviewQ>
+
+## Key takeaways
+
+- H0 is the "no effect" claim. H1 is what you want to show. Write both before you look at the data.
+- The p-value is the chance of a result this extreme if H0 were true. It is not the chance that H0 is true.
+- Compare p with alpha, set in advance. Reject H0 when p is below alpha, and write "fail to reject" otherwise.
+- With a big sample, tiny gaps become significant. Always report the size of the effect next to the p-value.
+- Choose a two-sided test unless you decided a one-sided test before seeing the data.
+
+## Further reading
+
+<FurtherReading ids={["khan-stats"]} />

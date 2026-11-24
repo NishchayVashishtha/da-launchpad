@@ -1,0 +1,295 @@
+---
+title: "Chi-square test and comparing proportions"
+description: "Test whether two categories are linked, and compare conversion rates."
+module: statistics
+order: 13
+estimatedMinutes: 50
+objectives:
+  - "Build a contingency table from raw counts"
+  - "Compute expected counts and the chi-square statistic"
+  - "Use degrees of freedom and critical values to decide"
+  - "Run a two-proportion z-test and see that it matches chi-square for a 2 x 2 table"
+tags: ["statistics", "chi-square", "proportions"]
+---
+
+## Learning objectives
+
+- Build a contingency table from raw counts.
+- Compute the expected count for each cell.
+- Compute the chi-square statistic and read it with degrees of freedom.
+- Run a two-proportion z-test to compare two conversion rates.
+- Explain why a chi-square result shows a link, not a cause.
+
+## Why this matters for a Data Analyst job
+
+Most business questions about categories are counts. Did more Android users buy than iOS users? Did the new checkout convert more people than the old one? Did rain change how many orders get cancelled? A chi-square test answers "is this pattern real, or is it just noise?" for counts like these. Analysts use it in A/B test reports, churn studies and survey analysis every week.
+
+<RealWorld>
+A product manager says: "Cancellations look higher in rainy weather. Is that real?" You do not need a fancy model. You build a 2 x 2 table of weather by status, run a chi-square test, and report the p-value with the two cancellation rates. That is a one-hour job that a stakeholder trusts.
+</RealWorld>
+
+## Concept
+
+### The big idea in one picture
+
+Imagine you ask 1,000 users their platform (Android or iOS) and whether they bought. If platform had no effect on buying, you would expect each platform to show the same buy rate. Chi-square measures how far the real counts sit from that "no link" picture. Big gaps give a big chi-square. A big chi-square that is rare under "no link" gives a small p-value.
+
+### Step 1: the contingency table
+
+A contingency table counts how many rows fall in each combination of two categories. Here is a small one from the subscription app, with one row per user who started a trial:
+
+| platform | paid | not paid | row total |
+|---|---|---|---|
+| Android | 612 | 1361 | 1973 |
+| Web | 199 | 303 | 502 |
+| iOS | 382 | 451 | 833 |
+| column total | 1193 | 2115 | 3308 |
+
+The grand total is 3,308 trials. Keep this in mind, because the expected counts use it.
+
+### Step 2: the expected count
+
+The expected count for a cell is what you would see if the two categories had no link:
+
+`expected = row total x column total / grand total`
+
+For Android and paid: 1973 x 1193 / 3308 = 711.54. The real count is 612, so Android paid a little less than "no link" would predict.
+
+<FormulaCard title="Chi-square statistic">
+For every cell, compute `(observed - expected)` squared, divided by `expected`. Add all these numbers up:
+
+`chi2 = sum of (O - E) squared / E`
+
+Degrees of freedom for a table with `r` rows and `c` columns:
+
+`df = (r - 1) x (c - 1)`
+
+A 2 x 2 table has df = 1. A 3 x 2 table has df = 2.
+</FormulaCard>
+
+### Step 3: the critical value
+
+A bigger chi-square means a bigger gap from "no link". To decide, compare your chi-square with a critical value for your df at the 5 percent level:
+
+| df | Critical value at 5% |
+|---|---|
+| 1 | 3.84 |
+| 2 | 5.99 |
+| 3 | 7.81 |
+| 4 | 9.49 |
+| 6 | 12.59 |
+
+If your chi-square is above the critical value, the link is significant at 5 percent. For df = 1 you can also get the p-value directly: `p = erfc(sqrt(chi2 / 2))`. Excel and most tools print the p-value for you.
+
+### Step 4: when chi-square is allowed
+
+Chi-square needs two things:
+
+- **Counts, not percentages.** The test uses the sample size. A table of percentages throws that away.
+- **Enough expected counts.** A common rule says every expected count should be at least 5. If a cell is tiny, the result is not reliable. Group small categories, or use a different test.
+
+Also, each row should come from a different person or event. If the same user appears many times, the rows are not independent, and the test is too optimistic.
+
+### The two-proportion z-test
+
+When you only compare two groups on a yes or no outcome, you can use a z-test instead. Let `p1` and `p2` be the two rates, and `n1` and `n2` the group sizes. Pool the rate:
+
+`p_pooled = (x1 + x2) / (n1 + n2)`
+
+<FormulaCard title="Two-proportion z-test">
+`z = (p2 - p1) / sqrt(p_pooled x (1 - p_pooled) x (1/n1 + 1/n2))`
+
+Reject "no difference" at 5 percent when the z value is bigger than 1.96 in size.
+
+For a 2 x 2 table, `z squared` equals the chi-square statistic. They are the same test written two ways.
+</FormulaCard>
+
+### Link is not cause
+
+Chi-square says two categories are linked. It does not say one causes the other. Android users buying less might be because of their city mix, their age, or the campaign they came from. Chi-square also does not tell you how strong the link is. Look at the rates and the size of the gap for that.
+
+<Tip>
+Always report three things together: the two rates (for example 4.06 percent and 9.26 percent), the sample sizes, and the p-value. A p-value alone hides the size of the effect.
+</Tip>
+
+## Worked examples
+
+### Example 1: platform and paid, from raw tables in SQL
+
+We want one row per trial user, with their platform. The `users` table has 8 exact duplicate rows, so a plain join would count some trials twice. We first keep one row per user, then join.
+
+<SqlPlayground dataset="subscription" query={`WITH u AS (
+  SELECT DISTINCT user_id, platform FROM users
+)
+SELECT u.platform,
+       COUNT(*) AS trials,
+       SUM(CASE WHEN s.paid_start_date IS NOT NULL THEN 1 ELSE 0 END) AS paid,
+       ROUND(100.0 * SUM(CASE WHEN s.paid_start_date IS NOT NULL THEN 1 ELSE 0 END) / COUNT(*), 2) AS paid_pct
+FROM subscriptions AS s
+INNER JOIN u ON u.user_id = s.user_id
+WHERE s.trial_start_date IS NOT NULL
+GROUP BY u.platform
+ORDER BY u.platform;`} title="Trial to paid by platform" />
+
+**Output:**
+
+| platform | trials | paid | paid_pct |
+|---|---|---|---|
+| Android | 1973 | 612 | 31.02 |
+| Web | 502 | 199 | 39.64 |
+| iOS | 833 | 382 | 45.86 |
+
+The three trial counts add up to 3,308, which is every trial in the table. If you joined the raw `users` table with its duplicates, the Android count would be 1977 and the iOS count 834. That is 5 extra trials from duplicate users, and it would bend the test.
+
+Rates look different: iOS paid at 45.86 percent and Android at 31.02 percent. Is that gap real? Chi-square decides.
+
+### Example 2: the full chi-square by hand with numpy
+
+This is the platform table with 3 rows and 2 columns, so df = (3 - 1) x (2 - 1) = 2.
+
+```python
+import numpy as np
+
+# observed counts: rows = Android, Web, iOS; columns = not paid, paid
+obs = np.array([[1361, 612],
+                [303, 199],
+                [451, 382]], dtype=float)
+
+row = obs.sum(axis=1, keepdims=True)
+col = obs.sum(axis=0, keepdims=True)
+exp = row @ col / obs.sum()
+
+print(np.round(exp, 2))
+chi2 = ((obs - exp) ** 2 / exp).sum()
+print(round(chi2, 2))
+```
+
+Output:
+
+```
+[[1261.46  711.54]
+ [ 320.96  181.04]
+ [ 532.59  300.41]]
+59.22
+```
+
+The chi-square is 59.22 with df = 2. The critical value at 5 percent is 5.99, and 59.22 is far above it. The platform and paid status are linked. iOS and Web users pay at a higher rate than Android users. The test does not say why, so the next step is to look at what differs between platforms.
+
+### Example 3: a 2 x 2 table for Heavy Rain and Clear weather
+
+In the food delivery data, we compare cancelled and delivered orders in two weather types. We keep one row per delivery, because 66 delivery ids appear twice with different values.
+
+| weather | Cancelled | Delivered | cancel rate |
+|---|---|---|---|
+| Clear | 419 | 9890 | 4.06% |
+| Heavy Rain | 64 | 627 | 9.26% |
+
+Expected counts for the Heavy Rain and cancelled cell: row total 691 x column total 483 / grand total 11000 = 30.34. The real count is 64, more than double.
+
+The chi-square is 41.67 with df = 1. The critical value is 3.84, so the result is significant. The z-test gives `z = 6.46`, and `6.46 x 6.46 = 41.7`, the same as chi-square (small differences come from rounding). Heavy rain cancels about 2.3 times as often in this data.
+
+### Example 4: the A/B test, chi-square equals z squared
+
+The growth team tested a new checkout. After removing duplicates and users who saw both versions, there are 11,990 users: 6,016 in control and 5,974 in treatment.
+
+| variant | converted | not converted | conversion rate |
+|---|---|---|---|
+| control | 636 | 5380 | 10.57% |
+| treatment | 700 | 5274 | 11.72% |
+
+```python
+import math
+import numpy as np
+
+obs = np.array([[5380, 636],
+                [5274, 700]], dtype=float)
+exp = obs.sum(axis=1, keepdims=True) @ obs.sum(axis=0, keepdims=True) / obs.sum()
+chi2 = ((obs - exp) ** 2 / exp).sum()
+
+p1, p2 = 636 / 6016, 700 / 5974
+pp = (636 + 700) / (6016 + 5974)
+z = (p2 - p1) / math.sqrt(pp * (1 - pp) * (1 / 6016 + 1 / 5974))
+
+print(round(chi2, 3), round(z, 3), round(z * z, 3))
+p_value = math.erfc(math.sqrt(chi2 / 2))
+print(round(p_value, 3))
+```
+
+Output:
+
+```
+3.973 1.993 3.973
+0.046
+```
+
+Chi-square is 3.973, z is 1.993, and z squared is 3.973. The p-value is 0.046, which is below 0.05. The lift is about 1.15 percentage points. The result is significant, but only just. A careful analyst would also check the confidence interval and the sample ratio before shipping.
+
+## Common mistakes
+
+<CommonMistake>
+**Running chi-square on percentages.** A table with rates like 10.57 and 11.72 has no sample size inside it. Always pass the counts. Use the rates only in your report.
+</CommonMistake>
+
+<CommonMistake>
+**Ignoring tiny expected counts.** If an expected cell is below 5, the chi-square value is not reliable. Merge small categories (for example "Other" platforms) or use a smaller, clearer grouping.
+</CommonMistake>
+
+<CommonMistake>
+**Reading chi-square as causation.** A significant link between platform and paid status does not mean the app on iOS makes people pay more. Platform users may differ in income or campaign source.
+</CommonMistake>
+
+<CommonMistake>
+**Skipping the cleaning.** Duplicate rows and users who saw both A/B variants change the counts. Remove them before you build the table, as shown in Example 4.
+</CommonMistake>
+
+<CommonMistake>
+**Using the wrong degrees of freedom.** For a 3 x 4 table, df is 2 x 3 = 6, not 12. Using the wrong df gives the wrong critical value.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="chisquare" module="statistics" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "A table has 3 rows and 4 columns. What are the degrees of freedom for a chi-square test?", options: ["12", "7", "6", "3"], answer: 2, explanation: "df = (rows - 1) x (columns - 1) = 2 x 3 = 6." },
+  { q: "What is the expected count for a cell?", options: ["The observed count plus 5", "Row total x column total / grand total", "Row total / column total", "The average of the whole table"], answer: 1, explanation: "Expected counts assume the two categories are not linked, so they follow the row and column totals." },
+  { q: "A 2 x 2 table has chi-square 3.97. What is the matching z value for the two-proportion test?", options: ["3.97", "1.99", "0.50", "1.96"], answer: 1, explanation: "For a 2 x 2 table, chi-square equals z squared, so z is the square root of 3.97, about 1.99." },
+  { q: "Which situation makes chi-square unreliable?", options: ["A table with 10,000 rows", "Two categories with counts of 2 and 3 in one cell", "A table of counts with 2 rows", "Data with a clear date column"], answer: 1, explanation: "Small expected counts (below 5) make the chi-square approximation weak." },
+  { q: "A chi-square test says platform and paid are linked. What can you safely say?", options: ["The app on iOS causes more payments", "The two are linked in this data; the test does not show why", "Android users never pay", "The test proves a cause"], answer: 1, explanation: "Chi-square shows a link, not a cause. Other factors may explain the pattern." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers often ask when to use chi-square and what the expected counts mean. Say "counts of two categories", name the df formula, and mention the expected count rule of 5. A strong answer also says that a significant result is still only a link.
+</InterviewAlert>
+
+<InterviewQ q="When would you use a chi-square test instead of a t-test?">
+Use chi-square when both variables are categories, for example platform and paid status. Use a t-test when you compare an average number, such as minutes per delivery, between two groups. For a yes or no outcome in two groups, a two-proportion z-test is the simplest choice, and for a 2 x 2 table it gives the same answer as chi-square.
+</InterviewQ>
+
+<InterviewQ q="What are expected counts, and why do they matter?">
+The expected count is the number we would see if the two categories were not linked. It is the row total times the column total, divided by the grand total. Chi-square compares the real counts with these expected counts. If expected counts are very small, the test is not reliable, so I merge categories first.
+</InterviewQ>
+
+<InterviewQ q="Your A/B test shows a p-value of 0.046 on conversion. What do you check before you call it a win?">
+I check that the data is clean (no duplicate rows, no users in both variants), that the sample sizes match the plan, and the size of the lift with its confidence interval. A p-value just under 0.05 is a weak result, so I also look at whether the lift is worth the cost of the change.
+</InterviewQ>
+
+<InterviewQ q="Does a significant chi-square mean one category causes the other?">
+No. Chi-square tests for a link in the data. Causes need a controlled experiment or careful study design. I would say the two are linked and then look at other factors, such as city mix or campaign source, before making a causal claim.
+</InterviewQ>
+
+## Key takeaways
+
+- A contingency table holds counts for two categories. Always keep the counts, not percentages.
+- Expected count = row total x column total / grand total. Chi-square adds up `(O - E) squared / E` over all cells.
+- Degrees of freedom = (rows - 1) x (columns - 1). The 5 percent critical values are 3.84 (df 1) and 5.99 (df 2).
+- For a 2 x 2 table, chi-square equals the z value squared from the two-proportion test.
+- A significant chi-square shows a link, not a cause. Report the rates and sample sizes next to the p-value.
+
+## Further reading
+
+<FurtherReading ids={["khan-stats"]} />

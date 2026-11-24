@@ -1,0 +1,274 @@
+[
+  {
+    "id": "stat-mcq-15-1",
+    "module": "statistics",
+    "topic": "abdesign",
+    "section": "A/B testing, part 1: design and sample size",
+    "difficulty": "easy",
+    "question": "Which hypothesis is the best one to write before an A/B test?",
+    "options": [
+      "The banner will help the business somehow",
+      "Users like the new design better",
+      "A free shipping banner at checkout raises the share of users who buy by at least 1 percentage point",
+      "We should try more banners and see what happens"
+    ],
+    "answerIndex": 2,
+    "explanation": "A good hypothesis names the change, the metric and the size of the effect, so it can be checked. The other options are vague and cannot be proved wrong.",
+    "shortcut": "Specific, measurable, can be wrong."
+  },
+  {
+    "id": "stat-mcq-15-2",
+    "module": "statistics",
+    "topic": "abdesign",
+    "section": "A/B testing, part 1: design and sample size",
+    "difficulty": "easy",
+    "question": "What is a guardrail metric in an A/B test?",
+    "options": [
+      "A metric that must not get worse while the primary metric moves",
+      "The one metric the decision is based on",
+      "The average of all metrics in the test",
+      "A metric used only to pick the sample size"
+    ],
+    "answerIndex": 0,
+    "explanation": "A guardrail protects the business from a hidden harm, such as lower order value or more refunds. The primary metric is the one that decides the test.",
+    "shortcut": "Guardrail = must not get worse."
+  },
+  {
+    "id": "stat-mcq-15-3",
+    "module": "statistics",
+    "topic": "abdesign",
+    "section": "A/B testing, part 1: design and sample size",
+    "difficulty": "medium",
+    "question": "For randomisation in a product checkout test, which unit is the best choice?",
+    "options": [
+      "Each page view",
+      "Each session",
+      "Each city",
+      "Each user"
+    ],
+    "answerIndex": 3,
+    "explanation": "Randomising by user keeps the same person in the same arm on every visit. Splitting by session or page view lets one user see both versions, which is contamination.",
+    "shortcut": "Split users, not visits."
+  },
+  {
+    "id": "stat-mcq-15-4",
+    "module": "statistics",
+    "topic": "abdesign",
+    "section": "A/B testing, part 1: design and sample size",
+    "difficulty": "medium",
+    "question": "A team plans a test for a 2 percentage point lift. They now want to detect a 1 point lift with the same alpha and power. Roughly how does the sample size per arm change?",
+    "options": [
+      "It stays about the same",
+      "It doubles",
+      "It halves",
+      "It becomes four times bigger"
+    ],
+    "answerIndex": 3,
+    "explanation": "The MDE is squared in the sample size formula. Halving the lift makes the sample four times bigger, not two times.",
+    "shortcut": "Halve MDE, four times n."
+  },
+  {
+    "id": "stat-mcq-15-5",
+    "module": "statistics",
+    "topic": "abdesign",
+    "section": "A/B testing, part 1: design and sample size",
+    "difficulty": "medium",
+    "question": "What does minimum detectable effect (MDE) mean in a test plan?",
+    "options": [
+      "The lift that was observed in the last test",
+      "The smallest true lift the test is designed to find",
+      "The largest lift the budget can pay for",
+      "The p-value needed before the team can ship"
+    ],
+    "answerIndex": 1,
+    "explanation": "The MDE is set before the test. It is the smallest true lift you want to be able to detect with your chosen alpha and power. It is not a result, and it is not a cost limit.",
+    "shortcut": "MDE is a plan, not a result."
+  },
+  {
+    "id": "stat-mcq-15-6",
+    "module": "statistics",
+    "topic": "abdesign",
+    "section": "A/B testing, part 1: design and sample size",
+    "difficulty": "hard",
+    "question": "The planned split is 50/50. The counts are 6,000 users in control and 5,000 in treatment. What is the most likely issue?",
+    "options": [
+      "A normal random variation that needs no action",
+      "A good sign that the banner is working",
+      "A sample ratio mismatch, which points to a problem in assignment or logging",
+      "A sign that the test is too short"
+    ],
+    "answerIndex": 2,
+    "explanation": "A gap this big is far beyond normal noise for a 50/50 split. It usually means assignment, logging or a filter is broken, and the results cannot be trusted until the cause is found.",
+    "shortcut": "Planned 50/50 but uneven counts = SRM."
+  },
+  {
+    "id": "stat-mcq-15-7",
+    "module": "statistics",
+    "topic": "abdesign",
+    "section": "A/B testing, part 1: design and sample size",
+    "difficulty": "medium",
+    "question": "A test needs 14,000 users in total and gets 500 users a day. Which duration is the best plan?",
+    "options": [
+      "1 day, since 500 users a day is enough",
+      "28 days, which is exactly 4 weeks",
+      "About 4 weeks, rounded to 3 weeks",
+      "5 full weeks (35 days), since 28 days is only 4 weeks"
+    ],
+    "answerIndex": 3,
+    "explanation": "14,000 divided by 500 gives 28 days. Plans should use full weeks to cover weekday and weekend behaviour, so the plan is 35 days, which is 5 full weeks, to be safe with the sample.",
+    "shortcut": "Days needed, then round up to full weeks."
+  },
+  {
+    "id": "stat-mcq-15-8",
+    "module": "statistics",
+    "topic": "abdesign",
+    "section": "A/B testing, part 1: design and sample size",
+    "difficulty": "hard",
+    "question": "After a banner goes live, the lift is large in week 1 and small in week 3. What is the most likely cause?",
+    "options": [
+      "A novelty effect, where users react to something new and the effect fades",
+      "The banner stopped working on day 15",
+      "Random assignment was broken from the start",
+      "The sample size was too large"
+    ],
+    "answerIndex": 0,
+    "explanation": "A large early effect that fades is a classic novelty effect. Running the test for full weeks, and looking at the trend, helps show whether the lift lasts.",
+    "shortcut": "Early spike that fades = novelty."
+  },
+  {
+    "id": "stat-mcq-16-1",
+    "module": "statistics",
+    "topic": "abanalysis",
+    "section": "A/B testing, part 2: analysis, interpretation and pitfalls",
+    "difficulty": "easy",
+    "question": "Conversion goes from 10 percent to 11 percent. What are the absolute and relative lifts?",
+    "options": [
+      "+1 pp absolute and +1 percent relative",
+      "+10 pp absolute and +1 percent relative",
+      "+0.1 pp absolute and +10 percent relative",
+      "+1 pp absolute and +10 percent relative"
+    ],
+    "answerIndex": 3,
+    "explanation": "The gap is 1 percentage point. Divided by the control rate of 10 percent, the relative lift is 10 percent. Mixing these two up is a common mistake in reports.",
+    "shortcut": "Gap in pp; gap divided by control for relative."
+  },
+  {
+    "id": "stat-mcq-16-2",
+    "module": "statistics",
+    "topic": "abanalysis",
+    "section": "A/B testing, part 2: analysis, interpretation and pitfalls",
+    "difficulty": "medium",
+    "question": "The 95 percent confidence interval for the lift is -0.3 pp to +2.1 pp. Which statement is correct?",
+    "options": [
+      "The lift is definitely positive",
+      "The test failed and must be stopped",
+      "The data does not rule out zero, so the result is not clear",
+      "The true lift is exactly +0.9 pp"
+    ],
+    "answerIndex": 2,
+    "explanation": "The interval includes zero, so no effect is still plausible. The midpoint is only the best guess and the range is wide, so the result is not clear.",
+    "shortcut": "CI includes zero = not clear."
+  },
+  {
+    "id": "stat-mcq-16-3",
+    "module": "statistics",
+    "topic": "abanalysis",
+    "section": "A/B testing, part 2: analysis, interpretation and pitfalls",
+    "difficulty": "medium",
+    "question": "Conversion rose in the treatment, but revenue per user fell. What should the analyst do?",
+    "options": [
+      "Ship, because conversion is the primary metric",
+      "Remove the revenue metric from the report",
+      "Report the guardrail drop as a warning and discuss the trade-off",
+      "Run the same test again without any changes"
+    ],
+    "answerIndex": 2,
+    "explanation": "A guardrail that gets worse is a warning sign. The analyst reports it clearly, and the business decides whether the trade-off is acceptable. Hiding the metric or shipping on conversion alone is not a good analysis.",
+    "shortcut": "Guardrail down = warn, not ship."
+  },
+  {
+    "id": "stat-mcq-16-4",
+    "module": "statistics",
+    "topic": "abanalysis",
+    "section": "A/B testing, part 2: analysis, interpretation and pitfalls",
+    "difficulty": "hard",
+    "question": "A team says the banner works on mobile, not on desktop. The split by device was not in the test plan. How should the result be described?",
+    "options": [
+      "A proven win, so ship to mobile only",
+      "A clue for a new, planned test, not a decision by itself",
+      "Proof that desktop users dislike the banner",
+      "A reason to drop the whole test"
+    ],
+    "answerIndex": 1,
+    "explanation": "Segments found after the test are exploratory. Each split is another test, so a split can look like a win by chance. The right use is to plan a new test on the segment.",
+    "shortcut": "Unplanned segment = clue, not proof."
+  },
+  {
+    "id": "stat-mcq-16-5",
+    "module": "statistics",
+    "topic": "abanalysis",
+    "section": "A/B testing, part 2: analysis, interpretation and pitfalls",
+    "difficulty": "medium",
+    "question": "Before analysing an A/B test, which cleaning step is needed for users who appear in both arms?",
+    "options": [
+      "Keep them, because they add more data",
+      "Keep only the first row for each user",
+      "Remove all their rows, because their assignment is unclear",
+      "Count them twice, once in each arm"
+    ],
+    "answerIndex": 2,
+    "explanation": "A user in both arms has no clear result, so their rows cannot tell you what the banner did. Removing them is the standard fix, and the count removed should be reported.",
+    "shortcut": "Both arms = remove all rows."
+  },
+  {
+    "id": "stat-mcq-16-6",
+    "module": "statistics",
+    "topic": "abanalysis",
+    "section": "A/B testing, part 2: analysis, interpretation and pitfalls",
+    "difficulty": "hard",
+    "question": "A p-value of 0.03 is reported for a lift. Which statement is the most accurate?",
+    "options": [
+      "There is a 97 percent chance the change works",
+      "If the change did nothing, a gap this big would appear about 3 percent of the time",
+      "The lift is 3 percent",
+      "The test has a 3 percent chance of being wrong about the result"
+    ],
+    "answerIndex": 1,
+    "explanation": "A p-value is the chance of a gap this big, if the change really had no effect. It is not the probability the change works, and it does not give the size of the lift.",
+    "shortcut": "p = surprise if no effect, not chance of success."
+  },
+  {
+    "id": "stat-mcq-16-7",
+    "module": "statistics",
+    "topic": "abanalysis",
+    "section": "A/B testing, part 2: analysis, interpretation and pitfalls",
+    "difficulty": "medium",
+    "question": "The lift is statistically significant, but the interval shows a gain of only 0.02 pp at the low end. What is the best next step?",
+    "options": [
+      "Ship it, since significance means it is worth shipping",
+      "Check whether the lift is big enough to pay for its costs, and consider a further test",
+      "Ignore the interval and quote only the p-value",
+      "Delete the test data"
+    ],
+    "answerIndex": 1,
+    "explanation": "Significance says the lift is probably not zero, not that it matters. A tiny lift can be significant with a big sample and still be too small to pay for its costs. The interval and the business cost decide, and a further test may be needed.",
+    "shortcut": "Significant is not the same as worth it."
+  },
+  {
+    "id": "stat-mcq-16-8",
+    "module": "statistics",
+    "topic": "abanalysis",
+    "section": "A/B testing, part 2: analysis, interpretation and pitfalls",
+    "difficulty": "hard",
+    "question": "The overall test shows a lift, but within each device type the arm with the higher overall rate is the lower one. What is this called?",
+    "options": [
+      "Simpson's paradox",
+      "Central limit effect",
+      "Type I error",
+      "Regression to the mean"
+    ],
+    "answerIndex": 0,
+    "explanation": "Simpson's paradox happens when the overall comparison reverses inside the groups, usually because the groups are mixed unevenly across arms. Checking the mix of users by segment helps find it.",
+    "shortcut": "Overall and group results reverse = Simpson."
+  }
+]

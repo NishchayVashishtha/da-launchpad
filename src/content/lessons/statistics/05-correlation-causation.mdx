@@ -1,0 +1,303 @@
+---
+title: "Correlation vs causation"
+description: "Measure how two columns move together, and learn why that is not proof of cause."
+module: statistics
+order: 5
+estimatedMinutes: 45
+objectives:
+  - "Compute Pearson and Spearman correlation"
+  - "Read r from -1 to 1 and describe its strength"
+  - "Explain what a confounder is"
+  - "Spot spurious and Simpson-style patterns"
+tags: ["statistics", "correlation", "causation"]
+---
+
+## Learning objectives
+
+- Explain what correlation measures: how two columns move together.
+- Compute Pearson r with pandas and read its sign and size.
+- Compute a rank-based (Spearman) correlation and say when it is better.
+- Explain why correlation does not prove cause.
+- Name a confounder and check for one by splitting the data into groups.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+A product manager asks, "Do late deliveries make customers angry?" You find a strong link between delay and rating. The next question is harder: "So should we spend money to cut delay?" Your answer depends on whether delay causes the low rating or whether something else causes both. Analysts who know the difference save their company from expensive wrong bets. This lesson gives you the tools to measure the link and the habits to question it.
+</RealWorld>
+
+## Concept
+
+### The ice cream and drowning story
+
+In summer, ice cream sales go up. In summer, the number of people who drown in pools also goes up. If you plot the two numbers day by day, you see a clear upward pattern. Does ice cream cause drowning? No. Heat is the hidden third thing. Hot days push up both numbers.
+
+This is the central idea of this lesson. Two columns can move together for many reasons, and only one of them is a direct cause.
+
+### What correlation measures
+
+**Covariance** asks: when one value is above its average, is the other value also above its average? If yes for most rows, the two columns move together. The number is hard to read because it depends on units. So we scale it.
+
+**Pearson correlation r** is the scaled version. It always sits between -1 and 1.
+
+<FormulaCard title="Pearson r">
+`r = covariance(x, y) / (sd(x) x sd(y))`
+
+Read it as: how much the two columns move together, divided by how much each one moves on its own.
+</FormulaCard>
+
+- `r` close to **+1**: when x goes up, y goes up in a straight line.
+- `r` close to **-1**: when x goes up, y goes down in a straight line.
+- `r` close to **0**: no straight-line link.
+
+Rules of thumb for strength (these depend on your field):
+
+| Size of r | Strength |
+|---|---|
+| below 0.3 | weak |
+| 0.3 to 0.7 | moderate |
+| above 0.7 | strong |
+
+The sign only tells the direction. The size tells the strength.
+
+### Pearson versus Spearman
+
+Pearson uses the actual values. So it is sensitive to outliers and works best when the link is a straight line.
+
+**Spearman correlation** first replaces each value with its rank (1st, 2nd, 3rd...). Then it runs Pearson on the ranks. Spearman answers: "when x goes up, does y go up too, in any shape?" It is robust to outliers, because a huge value only becomes the top rank.
+
+| Use this | When |
+|---|---|
+| Pearson r | the link looks like a straight line, and values are roughly normal |
+| Spearman | the link rises steadily but curves, or the data has big outliers or skew |
+
+<Tip>
+In pandas, `df[['a','b']].corr()` gives Pearson. Some tutorials show `.corr(method='spearman')`. That call needs the scipy library. A safe way with pandas alone is to rank first: `df[['a','b']].rank().corr()`. You get the same Spearman value.
+</Tip>
+
+### What r does not tell you
+
+- **r is not cause.** A strong r says the columns move together. It does not say which one drives the other, or whether either one drives the other.
+- **r = 0 is not "no relation".** A perfect U-shape can have r near 0 and still be a very strong link. Always plot the data.
+- **One outlier can create or destroy r.** Pearson r uses every point. A single far-away point can pull the line. Check the scatter plot.
+- **r^2 is the shared share.** If r = 0.5, then r^2 = 0.25. About 25% of the variation in one column is linked to the other. Say "shared variation", not "accuracy".
+- **Coded categories are not numbers.** If city codes are 1, 2, 3, the correlation with sales means nothing.
+
+### Why correlation is not cause
+
+Four common reasons a strong r can mislead you:
+
+1. **Confounder.** A third variable drives both columns. Heat drives ice cream and drowning. Bad weather can drive both late deliveries and low ratings.
+2. **Reverse causality.** The arrow may point the other way. Sick customers may cancel more, and cancellations may come before complaints.
+3. **Coincidence.** Two columns that both trend up over time will look correlated even when nothing links them. This is called a spurious correlation.
+4. **Selection bias.** The rows you have may not be a fair sample. For example, only customers who rated an order are in the ratings table.
+
+A confounder is a hidden third variable that moves with both columns. It is the most common reason a link looks real when it is not.
+
+<Warning>
+Do not write "X causes Y" in a report based only on r. Write "X and Y are strongly linked. We need a test (for example an A/B test) before we claim cause."
+</Warning>
+
+### How to show cause
+
+The best way is an **experiment**. You split people or orders at random into a control group and a treatment group. Random split breaks the link between the confounder and the change you make. The A/B testing lessons (15 and 16) show how this works.
+
+Without an experiment, you can still check for confounders. Split the data into groups by the suspected third variable and compute r inside each group. If the link stays about the same in each group, the third variable is not explaining it. If the link vanishes, the third variable may be the real driver.
+
+### Simpson's paradox in one line
+
+Simpson's paradox happens when a link appears in every group but disappears, or flips, when you combine the groups. It usually happens when group sizes are very different. Always check the link inside the groups that matter before you trust a single overall number.
+
+## Worked examples
+
+### Example 1: distance and delivery time
+
+The food delivery data has one row per delivery. We keep only delivered orders (cancelled orders have no minutes) and remove duplicate `delivery_id` rows.
+
+```python
+import pandas as pd
+
+d = pd.read_csv("food_delivery/deliveries.csv").drop_duplicates(subset=["delivery_id"])
+dv = d.dropna(subset=["actual_minutes"])
+
+print(round(dv["distance_km"].corr(dv["actual_minutes"]), 2))
+```
+
+**Output:**
+
+```
+0.7
+```
+
+An r of 0.70 is a strong positive link. Longer trips take more minutes. This fits common sense, so it is a good sanity check of the data.
+
+### Example 2: manager ratings and self ratings
+
+HR wants to know if managers and employees agree. We check two columns from the performance reviews.
+
+```python
+h = pd.read_csv("hr/performance_reviews.csv").drop_duplicates(subset=["review_id"])
+
+print(round(h["manager_rating"].corr(h["self_rating"]), 2))
+print(round(h["avg_monthly_overtime_hours"].corr(h["goals_met_pct"]), 3))
+```
+
+**Output:**
+
+```
+0.78
+-0.004
+```
+
+Managers and employees mostly agree: r = 0.78 is strong. The second check is the claim "overtime pays off". Overtime and goal achievement have an r of -0.004. That is essentially zero. The data does not support the claim that more overtime means more goals.
+
+Notice that a zero r does not prove overtime is useless in every case. It only says there is no straight-line link in this data.
+
+### Example 3: Pearson versus Spearman on a skewed pair
+
+Distance has a long tail: a few trips are very long. Delivery fee rises with distance but not in a perfectly straight line. We compare both methods.
+
+```python
+dv[["distance_km", "delivery_fee"]].corr()                 # Pearson
+dv[["distance_km", "delivery_fee"]].rank().corr()          # Spearman (rank first)
+```
+
+**Output:**
+
+| Method | r |
+|---|---|
+| Pearson | 0.40 |
+| Spearman (ranks) | 0.51 |
+
+Spearman is higher. The fee tends to rise steadily with distance, but the rise is not a straight line, and the long trips pull Pearson down. When the two methods disagree this much, report both, or explain the shape with a plot.
+
+### Example 4: a confounder check by weather
+
+Weather may drive both delays and cancellations. Before we blame distance or the app for delays, we split the data by weather and check the link inside each group.
+
+```python
+dv.groupby("weather").agg(
+    n=("delivery_id", "size"),
+    mean_min=("actual_minutes", "mean"),
+    late=("delay_minutes", lambda s: (s > 10).mean()),
+).round(3)
+
+for w, g in dv.groupby("weather"):
+    print(w, round(g["distance_km"].corr(g["actual_minutes"]), 2))
+```
+
+**Output:**
+
+| weather | n | mean_min | late |
+|---|---|---|---|
+| Clear | 9890 | 44.03 | 0.150 |
+| Cloudy | 2521 | 43.70 | 0.145 |
+| Heavy Rain | 627 | 53.90 | 0.530 |
+| Rain | 1252 | 49.47 | 0.318 |
+
+| Weather | r (distance vs minutes) |
+|---|---|
+| Clear | 0.71 |
+| Cloudy | 0.70 |
+| Heavy Rain | 0.73 |
+| Rain | 0.72 |
+
+Weather changes the **level** a lot. Heavy rain adds about 10 minutes on average, and 53% of heavy rain orders are late, against 15% on clear days. But the **link** between distance and minutes stays about 0.70 in every group. So weather does not explain the distance link. It explains the level of delay.
+
+Now the same check for ratings. Late orders should get worse ratings. Is that still true on clear days, where weather is not a problem?
+
+```python
+r = pd.read_csv("food_delivery/ratings.csv").drop_duplicates(subset=["rating_id"])
+m = dv.merge(r[["delivery_id", "delivery_rating"]], on="delivery_id")
+
+print(round(m["delay_minutes"].corr(m["delivery_rating"]), 2))
+clear = m[m["weather"] == "Clear"]
+print(round(clear["delay_minutes"].corr(clear["delivery_rating"]), 2))
+```
+
+**Output:**
+
+```
+-0.7
+-0.68
+```
+
+The link is strong and negative for all rated orders (r = -0.70), and almost the same on clear days (r = -0.68). Weather is not the hidden driver. The delay link looks real. An experiment (for example a trial with a faster partner group) would still be needed before you say that cutting delay will raise ratings.
+
+<Tip>
+A quick confounder test: pick the suspected third variable, split the data by its values, and recompute r in each group. If r keeps its sign and size, the third variable is unlikely to explain the link.
+</Tip>
+
+## Common mistakes
+
+<CommonMistake>
+Saying "r = 0.7, so X causes Y". A strong r shows a link, not a cause. Name the confounder you checked and say what test would prove cause.
+</CommonMistake>
+
+<CommonMistake>
+Reading r near 0 as "no relationship at all". A curved link can have r near 0. Plot the data first.
+</CommonMistake>
+
+<CommonMistake>
+Correlating categories that are stored as numbers, such as store codes 1 to 5 or ratings stored as text. The number has no order or distance, so r is not meaningful.
+</CommonMistake>
+
+<CommonMistake>
+Ignoring outliers. One bad row, such as an order value 100 times too large, can change r by a lot. Check a scatter plot and the outliers before you trust the number.
+</CommonMistake>
+
+<CommonMistake>
+Correlating two columns that both grow over time, such as total users and total revenue. Both trend up, so r is high even if the months are unrelated. Use changes or per-month values instead.
+</CommonMistake>
+
+<CommonMistake>
+Joining tables with duplicate keys before you compute r. Repeated rows give some orders extra weight. Remove duplicates first, then join.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="correlation" module="statistics" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "A correlation of r = -0.9 between two columns means:", options: ["They are unrelated", "A strong link where one tends to fall as the other rises", "A weak positive link", "The average of the two columns is -0.9"], answer: 1, explanation: "The size 0.9 is very strong and the minus sign says the direction is negative." },
+  { q: "r = 0.6. What is the share of shared variation, r squared?", options: ["0.6", "0.36", "0.12", "0.8"], answer: 1, explanation: "r squared is 0.6 times 0.6, which is 0.36, or about 36% of the variation." },
+  { q: "Heat drives both ice cream sales and pool accidents. What is heat in this story?", options: ["A cause of ice cream sales only", "A confounder", "A duplicate row", "A missing value"], answer: 1, explanation: "A confounder is a hidden third variable that moves with both columns and can create a link between them." },
+  { q: "Your data has a few extreme trip distances and a curved but steadily rising link to minutes. Which measure fits best?", options: ["Spearman rank correlation", "Pearson r only", "The mean of distance", "The count of rows"], answer: 0, explanation: "Spearman works on ranks, so it handles outliers and steady curved rises better than Pearson." },
+  { q: "To show that a change causes a result, which approach is strongest?", options: ["A higher correlation coefficient", "A randomized experiment such as an A/B test", "A bigger sample of the same data", "A scatter plot with a trend line"], answer: 1, explanation: "Random assignment breaks the link to confounders, so a difference between groups can be read as a cause." },
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers test whether you can say "correlation is not cause" without sounding vague. The best answers name a real confounder, explain how to check it, and state what experiment would settle the question.
+</InterviewAlert>
+
+<InterviewQ q="What is the difference between correlation and causation? Give an example.">
+Correlation means two columns move together. Causation means one column changes the other. Ice cream sales and pool accidents both rise in summer, so they are correlated. Heat is the cause of both, not ice cream. In a job I would say the link is real, then ask what third variable could drive both, and test it.
+</InterviewQ>
+
+<InterviewQ q="How would you establish that a change causes a result?">
+The strongest method is a randomized experiment. I split users at random into control and treatment, change one thing for treatment, and compare the outcome with a significance test. If an experiment is not possible, I use careful checks: I split the data by likely confounders, look at the link inside each group, and compare similar cases. I still say "associated" unless the evidence is strong.
+</InterviewQ>
+
+<InterviewQ q="When would you use Spearman correlation instead of Pearson?">
+I use Spearman when the link rises steadily but not in a straight line, or when the data has big outliers or a long tail. Spearman ranks the values first, so one huge value counts only as the top rank. Pearson is better for a straight-line link with roughly normal values.
+</InterviewQ>
+
+<InterviewQ q="What is a confounder? How do you check for one?">
+A confounder is a third variable that affects both of the columns I am comparing, so it can create a link that is not direct. To check, I split the data by the suspected variable, such as weather or city, and recompute the correlation inside each group. If the link stays about the same in every group, the confounder is not the main reason. If the link disappears, the confounder explains it.
+</InterviewQ>
+
+## Key takeaways
+
+- Pearson r runs from -1 to 1. The sign gives direction and the size gives strength.
+- Spearman r works on ranks. Use it for steady curved links and data with outliers.
+- A strong r is a link, not a cause. Check for confounders before you claim cause.
+- r = 0 only means no straight-line link. Always plot the data.
+- Only an experiment, or careful checks inside groups, can move you toward cause.
+
+## Further reading
+
+<FurtherReading ids={["khan-stats", "pandas-docs"]} />

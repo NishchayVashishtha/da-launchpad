@@ -1,0 +1,260 @@
+[
+  {
+    "id": "statistics-regression-001",
+    "module": "statistics",
+    "topic": "regression",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "Operations wants to know how many extra minutes each km adds to a delivery. Fit a straight line of `actual_minutes` (y) on `distance_km` (x) and assign the slope, rounded to 2 decimals, to `result`. Drop duplicate rows and rows with a missing `actual_minutes` first.",
+    "dataset": "food_delivery",
+    "hint": "np.polyfit(x, y, 1) returns the slope first and the intercept second.",
+    "solutionCode": "import numpy as np\nd = load(\"food_delivery\", \"deliveries\").drop_duplicates()\nd = d.dropna(subset=[\"actual_minutes\", \"distance_km\"])\nb, a = np.polyfit(d[\"distance_km\"], d[\"actual_minutes\"], 1)\nresult = round(float(b), 2)",
+    "expectedOutput": {
+      "value": 4.39
+    },
+    "orderMatters": false,
+    "explanation": "We drop the 54 exact duplicate rows and the cancelled orders, which have no `actual_minutes`. np.polyfit with degree 1 returns the best-fit slope and intercept, and the slope is the extra minutes per extra km.",
+    "commonMistake": "Using `np.polyfit(d[\"actual_minutes\"], d[\"distance_km\"], 1)`, which swaps x and y. The answer becomes about 0.15 instead of 4.39, so the wrong story (distance per minute) gets told.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "regression",
+      "slope",
+      "numpy"
+    ]
+  },
+  {
+    "id": "statistics-regression-002",
+    "module": "statistics",
+    "topic": "regression",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "Ops also needs the starting time of a delivery before any distance is added. Fit the same line as the last question and assign the intercept, rounded to 2 decimals, to `result`.",
+    "dataset": "food_delivery",
+    "hint": "np.polyfit returns two numbers: slope first, intercept second. Take the second one.",
+    "solutionCode": "import numpy as np\nd = load(\"food_delivery\", \"deliveries\").drop_duplicates()\nd = d.dropna(subset=[\"actual_minutes\", \"distance_km\"])\nb, a = np.polyfit(d[\"distance_km\"], d[\"actual_minutes\"], 1)\nresult = round(float(a), 2)",
+    "expectedOutput": {
+      "value": 26.8
+    },
+    "orderMatters": false,
+    "explanation": "The intercept is the predicted minutes when distance is 0 km, so it is the base time before travel. The same polyfit call gives both numbers, and we keep the second one here.",
+    "commonMistake": "Reading the slope (the first value) as the intercept. The answer 4.39 is the wrong number and it hides the fixed time of about 27 minutes.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "regression",
+      "intercept",
+      "numpy"
+    ]
+  },
+  {
+    "id": "statistics-regression-003",
+    "module": "statistics",
+    "topic": "regression",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "A product manager asks how much of the change in delivery time is explained by distance. Compute R-squared for `actual_minutes` on `distance_km` (the square of the correlation) and assign it, rounded to 2 decimals, to `result`.",
+    "dataset": "food_delivery",
+    "hint": "Use Series.corr() between the two columns, then square the result.",
+    "solutionCode": "d = load(\"food_delivery\", \"deliveries\").drop_duplicates()\nd = d.dropna(subset=[\"actual_minutes\", \"distance_km\"])\nr = d[\"distance_km\"].corr(d[\"actual_minutes\"])\nresult = round(float(r ** 2), 2)",
+    "expectedOutput": {
+      "value": 0.49
+    },
+    "orderMatters": false,
+    "explanation": "The correlation r measures how tightly the points follow a line, from -1 to 1. Squaring it gives R-squared, the share of the spread in minutes that distance explains. About half of the spread is explained, so other things like traffic and prep time matter a lot.",
+    "commonMistake": "Reporting the raw correlation 0.70 as R-squared. That overstates the fit, because R-squared is the square of r.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "regression",
+      "r-squared",
+      "correlation"
+    ]
+  },
+  {
+    "id": "statistics-regression-004",
+    "module": "statistics",
+    "topic": "regression",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "A customer is 8 km away. Use the fitted line to predict the delivery minutes for 8 km, and assign the value rounded to 1 decimal to `result`.",
+    "dataset": "food_delivery",
+    "hint": "Plug x = 8 into y = intercept + slope * x. Use the two numbers that polyfit returns.",
+    "solutionCode": "import numpy as np\nd = load(\"food_delivery\", \"deliveries\").drop_duplicates()\nd = d.dropna(subset=[\"actual_minutes\", \"distance_km\"])\nb, a = np.polyfit(d[\"distance_km\"], d[\"actual_minutes\"], 1)\nresult = round(float(a + b * 8), 1)",
+    "expectedOutput": {
+      "value": 61.9
+    },
+    "orderMatters": false,
+    "explanation": "A prediction is just the line evaluated at a new x. The point 8 km sits inside the data range (0.6 to 14 km), so the estimate is reasonable. We round to 1 decimal because minutes do not need more precision.",
+    "commonMistake": "Using only the slope (4.39 * 8 = 35.1) and forgetting the intercept. The answer is about 26.8 minutes too low.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "regression",
+      "prediction"
+    ]
+  },
+  {
+    "id": "statistics-regression-005",
+    "module": "statistics",
+    "topic": "regression",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Does the distance effect change with the weather? For each `weather` value, fit minutes on distance and return a table with columns `weather` and `slope` (2 decimals), sorted by `weather`.",
+    "dataset": "food_delivery",
+    "hint": "Loop over d.groupby('weather'), run np.polyfit on each group, and collect the rows in a list before building a DataFrame.",
+    "solutionCode": "import numpy as np\nd = load(\"food_delivery\", \"deliveries\").drop_duplicates()\nd = d.dropna(subset=[\"actual_minutes\", \"distance_km\"])\nrows = []\nfor w, g in d.groupby(\"weather\"):\n    b, a = np.polyfit(g[\"distance_km\"], g[\"actual_minutes\"], 1)\n    rows.append({\"weather\": w, \"slope\": round(float(b), 2)})\nresult = pd.DataFrame(rows).sort_values(\"weather\").reset_index(drop=True)",
+    "expectedOutput": {
+      "columns": [
+        "weather",
+        "slope"
+      ],
+      "rows": [
+        [
+          "Clear",
+          4.39
+        ],
+        [
+          "Cloudy",
+          4.32
+        ],
+        [
+          "Heavy Rain",
+          4.38
+        ],
+        [
+          "Rain",
+          4.35
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Grouping by weather gives one fit per group. All four slopes land close to 4.4 minutes per km, so rain does not make each km slower. Rain moves the whole line up, which shows in the intercept, not the slope.",
+    "commonMistake": "Fitting one line on all rows and reporting the same slope for every weather. That hides the group differences, and the test of whether weather changes the distance effect is never run.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 6,
+    "tags": [
+      "regression",
+      "groupby",
+      "weather"
+    ]
+  },
+  {
+    "id": "statistics-regression-006",
+    "module": "statistics",
+    "topic": "regression",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "An HR team wants to know how much goal achievement moves with the manager's rating. Fit `goals_met_pct` (y) on `manager_rating` (x) using the performance reviews, dropping duplicates and missing values, and assign the slope rounded to 2 decimals to `result`.",
+    "dataset": "hr",
+    "hint": "Drop duplicate rows first, then drop rows where either column is missing, then use np.polyfit.",
+    "solutionCode": "import numpy as np\np = load(\"hr\", \"performance_reviews\").drop_duplicates()\np = p.dropna(subset=[\"manager_rating\", \"goals_met_pct\"])\nb, a = np.polyfit(p[\"manager_rating\"], p[\"goals_met_pct\"], 1)\nresult = round(float(b), 2)",
+    "expectedOutput": {
+      "value": 9.18
+    },
+    "orderMatters": false,
+    "explanation": "The reviews table has 10 exact duplicate rows, and we remove them so each review counts once. The slope says that each rating step is linked with about 9 more points of goals met. This is a link, not proof that a better rating causes better goals.",
+    "commonMistake": "Skipping the duplicate removal. The slope changes only a little, but the sample size is inflated and any p-value or confidence interval you add later is too narrow.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "regression",
+      "hr",
+      "slope"
+    ]
+  },
+  {
+    "id": "statistics-regression-007",
+    "module": "statistics",
+    "topic": "regression",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "Ops wants to find the most unlucky delivery. Fit the line, compute each order's residual (actual minutes minus predicted minutes), and assign the largest positive residual, rounded to 2 decimals, to `result`.",
+    "dataset": "food_delivery",
+    "hint": "Add a predicted column with intercept + slope * distance, subtract it from actual_minutes, then use idxmax on the residual column.",
+    "solutionCode": "import numpy as np\nd = load(\"food_delivery\", \"deliveries\").drop_duplicates()\nd = d.dropna(subset=[\"actual_minutes\", \"distance_km\"])\nb, a = np.polyfit(d[\"distance_km\"], d[\"actual_minutes\"], 1)\nd = d.assign(predicted=a + b * d[\"distance_km\"])\nd = d.assign(residual=d[\"actual_minutes\"] - d[\"predicted\"])\nresult = round(float(d.loc[d[\"residual\"].idxmax(), \"residual\"]), 2)",
+    "expectedOutput": {
+      "value": 45.79
+    },
+    "orderMatters": false,
+    "explanation": "A residual is how far a real point sits above or below the line. The largest positive residual is an order that took far longer than its distance predicts. Such points are worth a manual check, because they can be data errors or real incidents.",
+    "commonMistake": "Sorting by actual_minutes alone and picking the longest delivery. A 14 km order can be normal, while a 2.6 km order with 84 minutes is the real outlier.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 8,
+    "tags": [
+      "regression",
+      "residuals",
+      "outliers"
+    ]
+  },
+  {
+    "id": "statistics-regression-008",
+    "module": "statistics",
+    "topic": "regression",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "Your finance partner wants R-squared built from its raw parts. Using the same fitted line, compute SS_res (sum of squared residuals) and SS_tot (sum of squared gaps from the mean), then assign 1 - SS_res / SS_tot, rounded to 4 decimals, to `result`.",
+    "dataset": "food_delivery",
+    "hint": "SS_res is the sum of (actual - predicted) squared. SS_tot is the sum of (actual - mean) squared. Use .sum() on each.",
+    "solutionCode": "import numpy as np\nd = load(\"food_delivery\", \"deliveries\").drop_duplicates()\nd = d.dropna(subset=[\"actual_minutes\", \"distance_km\"])\nb, a = np.polyfit(d[\"distance_km\"], d[\"actual_minutes\"], 1)\nx = d[\"distance_km\"]\ny = d[\"actual_minutes\"]\npred = a + b * x\nss_res = ((y - pred) ** 2).sum()\nss_tot = ((y - y.mean()) ** 2).sum()\nresult = round(float(1 - ss_res / ss_tot), 4)",
+    "expectedOutput": {
+      "value": 0.4901
+    },
+    "orderMatters": false,
+    "explanation": "SS_res is the error left after the line, and SS_tot is the error if you predicted the mean every time. Their ratio tells how much error the line removes. This gives the same answer as squaring r in the R-squared question, which is a good check on your code.",
+    "commonMistake": "Dividing SS_res by the count of rows instead of SS_tot. That gives a mean squared error, not R-squared, and the number can fall below 0 or stay far from 0.49.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 8,
+    "tags": [
+      "regression",
+      "r-squared"
+    ]
+  },
+  {
+    "id": "statistics-regression-009",
+    "module": "statistics",
+    "topic": "regression",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "A pricing sheet uses the rule y = 10 + 3x, where x is the number of items and y is the bill in rupees. What is the bill for 7 items? Give the answer as a number.",
+    "dataset": "none",
+    "hint": "Put x = 7 into the rule and do the multiplication before the addition.",
+    "solution": "**Step 1:** Put x = 7 into the rule.\n\ny = 10 + 3 * 7\n\n**Step 2:** Multiply first, then add.\n\ny = 10 + 21 = 31\n\nThe answer is **31**.",
+    "orderMatters": false,
+    "explanation": "A linear rule is written as intercept plus slope times x. Here the intercept 10 is the fixed charge, and the slope 3 is the rupees added per item. Multiplying first keeps the order of operations correct.",
+    "commonMistake": "Computing (10 + 3) * 7 = 91 by adding first. The fixed charge is added once, not multiplied by 7.",
+    "interviewFrequency": "low",
+    "estimatedMinutes": 2,
+    "tags": [
+      "regression",
+      "linear-equation"
+    ],
+    "expectedOutput": {
+      "value": 31
+    }
+  },
+  {
+    "id": "statistics-regression-010",
+    "module": "statistics",
+    "topic": "regression",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "In a study, the correlation between ad spend (x) and sales (y) is r = 0.6. The standard deviation of x is 5 and the standard deviation of y is 10. What is the slope of the best-fit line of y on x? Give the number.",
+    "dataset": "none",
+    "hint": "Use slope = r * (sd of y) / (sd of x). Put the numbers in and divide last.",
+    "solution": "**Formula:** slope = r * (sy / sx)\n\n**Step 1:** Put the numbers in.\n\nslope = 0.6 * (10 / 5)\n\n**Step 2:** Divide, then multiply.\n\nslope = 0.6 * 2 = 1.2\n\nFor each extra unit of ad spend, sales rise by about 1.2 units.",
+    "orderMatters": false,
+    "explanation": "The slope of the best-fit line is the correlation scaled by the ratio of the two spreads. A strong correlation with a large y spread gives a steep line. Here r = 0.6 and the sales spread is twice the spend spread, so the slope is 1.2.",
+    "commonMistake": "Using slope = r, which gives 0.6. That is only true when both standard deviations are equal, which they are not here.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "regression",
+      "correlation",
+      "slope"
+    ],
+    "expectedOutput": {
+      "value": 1.2
+    }
+  }
+]

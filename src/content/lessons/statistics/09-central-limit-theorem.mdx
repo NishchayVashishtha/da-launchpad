@@ -1,0 +1,244 @@
+---
+title: "The central limit theorem and standard error"
+description: "Why sample averages behave nicely even when the data does not."
+module: statistics
+order: 9
+estimatedMinutes: 45
+objectives:
+  - "Define the sampling distribution of a mean"
+  - "Compute the standard error of a mean and of a proportion"
+  - "State the central limit theorem and say when it is safe to use"
+  - "Tell apart the standard deviation (SD) and the standard error (SE)"
+tags: ["statistics", "clt", "standard-error"]
+---
+
+## Learning objectives
+
+- Define the sampling distribution of a mean.
+- Compute the standard error (SE) of a mean and of a proportion.
+- State the central limit theorem (CLT) in plain words.
+- Explain when the CLT is safe to use, and when it needs a bigger sample.
+- Tell apart the standard deviation (SD) from the standard error.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+A product analyst at a fictional Hyderabad food app reports that "average delivery time is 44.9 minutes." Her manager asks, "How sure are we about that number?" The standard error answers that question. Analysts who can give a number and its error bar are trusted more in reviews and in interviews.
+</RealWorld>
+
+## Concept
+
+### One day is noisy, many days are steady
+
+Think about the delivery time on one day. It jumps around with traffic, rain and the kitchen queue. Now take the average of 1,000 days. That average barely moves from one month to the next. The big swings of single days cancel out when you average them.
+
+This is the core idea of this lesson. An average from a sample is noisy too, but less noisy than one row. The question is how much less.
+
+### The sampling distribution of the mean
+
+Suppose you take a sample of orders, compute its mean, and write it down. Then you take another sample and do the same. Each sample gives a slightly different mean. If you repeat this many times, the means form their own distribution. That distribution is the **sampling distribution of the mean**.
+
+It has two key facts:
+
+- Its centre is the true population mean, written as mu.
+- Its spread is the **standard error**, which is the SD of the sample means.
+
+### Standard error (SE) for a mean
+
+The formula is:
+
+<FormulaCard title="Standard error of a mean">
+`SE = sigma / sqrt(n)`
+
+Here `sigma` is the population SD of the data (in practice, the sample SD `s`), and `n` is the sample size. The square root is the key part: the error shrinks with the square root of n, not with n itself.
+</FormulaCard>
+
+Two useful results come straight from this formula:
+
+- Make n four times bigger, and the SE is halved.
+- Make n one hundred times bigger, and the SE is one tenth of its old value.
+
+### SD versus SE
+
+These two words are easy to mix up. They answer different questions.
+
+| Measure | What it describes | Example |
+|---|---|---|
+| Standard deviation (SD) | How spread out the individual values are | Single deliveries range from 10 to 90 minutes |
+| Standard error (SE) | How precise the sample mean is as an estimate | The average of 100 deliveries is within about 2 minutes of the true average |
+
+The SD stays about the same as you collect more data. The SE falls as you collect more data. A common interview trap is to report the SD when someone asks how precise the average is.
+
+### The central limit theorem (CLT)
+
+The CLT is one of the most useful ideas in statistics. In plain words:
+
+> When you average many independent observations, the sample mean is approximately normally distributed, even when the raw data is not normal.
+
+So the **distribution of the sample mean** becomes bell shaped. The raw data does not. Order values, delivery times and salaries are often skewed, but their sample means are close to a bell curve once n is large enough.
+
+<Tip>
+A rule of thumb: n of 30 or more is often enough for mild skew. Heavy skew, such as order values with a few very large orders, needs a much bigger n. Check the data first, then decide.
+</Tip>
+
+The CLT does not make the data normal. A histogram of single orders will still be lopsided. Only the histogram of sample means looks like a bell.
+
+### SE for a proportion
+
+A conversion rate is a mean of 0s and 1s. A visitor either converts (1) or does not (0). So the same idea applies, with a special variance:
+
+<FormulaCard title="Standard error of a proportion">
+`SE = sqrt(p * (1 - p) / n)`
+
+Here `p` is the observed proportion (for example, 0.10 for 10 percent conversion), and `n` is the number of visitors. The term `p * (1 - p)` is the variance of a 0 or 1 outcome.
+</FormulaCard>
+
+### Independence matters
+
+The formulas assume that each row is a new, independent observation. If the same customer places 50 orders, those rows are not independent. They are more alike than random rows, so the SE from the formula is too small. Remove duplicates and think about who each row belongs to before you use the formula.
+
+<Warning>
+Never trust an SE that was computed on rows that repeat the same customer or the same device many times. The number looks precise, but it is not.
+</Warning>
+
+## Worked examples
+
+### Example 1: SE of average delivery time
+
+The food delivery dataset has one row per order. Cancelled orders have no `actual_minutes`, so we drop them first.
+
+```python
+import math
+
+df = load("food_delivery", "deliveries")
+x = df["actual_minutes"].dropna()
+n = len(x)
+sd = x.std()
+print(n, round(x.mean(), 2), round(sd, 2), round(sd / math.sqrt(n), 4))
+```
+
+**Output:**
+
+| n | mean (min) | SD (min) | SE (min) |
+|---|---|---|---|
+| 14407 | 44.87 | 13.16 | 0.1096 |
+
+The SD is 13.16 minutes. That is the spread of single orders. The SE is 0.11 minutes. That is how precise the average is across 14,407 orders.
+
+Now take a much smaller sample of 100 orders. The SE is `13.16 / sqrt(100)`, which is 1.32 minutes. The same SD gives a much larger SE because n is smaller.
+
+### Example 2: a simulation of sample means
+
+We want to see the CLT in action. A random simulation would work, but it gives a different answer each run. So we use fixed blocks of rows from the file. Each block of 50 consecutive `distance_km` values is one sample.
+
+```python
+import numpy as np
+
+df = load("food_delivery", "deliveries")
+dist = df["distance_km"].dropna().to_numpy()[:15000]
+block_means = dist.reshape(300, 50).mean(axis=1)
+theory_se = dist.std() / np.sqrt(50)
+print(round(dist.mean(), 3), round(block_means.mean(), 3))
+print(round(block_means.std(), 3), round(theory_se, 3))
+```
+
+**Output:**
+
+| Quantity | Value (km) |
+|---|---|
+| Population mean of distance | 4.126 |
+| Mean of the 300 block means | 4.126 |
+| SD of the 300 block means (observed SE) | 0.315 |
+| Theory: population SD / sqrt(50) | 0.297 |
+
+The average of the block means matches the population mean. The spread of the block means (0.315) is close to the formula (0.297). The ratio is 1.06, which is close enough to call the formula a good guide here.
+
+Now try blocks of 5 instead of 50. The theory says the SE should be about 0.94 km, and the observed SD of 300 block means is 0.93 km. Smaller samples give more wobble, and the formula predicts that wobble well.
+
+### Example 3: a skewed variable and the CLT
+
+Order values are heavily skewed. A few very large orders pull the average up. We clean the `total_amount` text column first (remove the rupee sign and commas), then cut the values into blocks of size k.
+
+```python
+import pandas as pd
+
+o = load("ecommerce", "orders")
+amt = pd.to_numeric(o["total_amount"].astype(str).str.replace(r"[₹,\s]", "", regex=True), errors="coerce").dropna().to_numpy()
+for k in [5, 30, 200]:
+    m = amt[: (len(amt) // k) * k].reshape(-1, k).mean(axis=1)
+    print(k, len(m), round(m.mean(), 1), round(m.std(), 1), round(pd.Series(m).skew(), 2))
+```
+
+**Output:**
+
+| Block size k | Number of blocks | Mean of means (INR) | SD of means (INR) | Skew of the means |
+|---|---|---|---|---|
+| 5 | 2020 | 5419.9 | 6045.9 | 18.57 |
+| 30 | 336 | 5422.1 | 2461.2 | 7.76 |
+| 200 | 50 | 5425.2 | 799.0 | 2.83 |
+
+The skew of the single orders is about 42. The skew of the block means falls as k grows, from 18.6 to 2.8. The means get closer to a bell shape. But at k = 30 the means are still clearly lopsided. For this kind of data, 30 is not enough. Check the shape of your data before you lean on the CLT.
+
+### Example 4: SE of a conversion rate
+
+A landing page has a 10 percent conversion rate, measured on 400 visitors.
+
+```text
+SE = sqrt(0.10 x 0.90 / 400)
+   = sqrt(0.00025)
+   = 0.015
+```
+
+The SE is 1.5 percentage points. So the 10 percent figure could easily be off by a percentage point or two from the true rate.
+
+## Common mistakes
+
+- **Mixing up SE and SD.** The SD describes single rows. The SE describes the average. Say which one you mean in every report.
+- **Thinking the CLT makes the data normal.** It only makes the sample mean close to normal. The raw data keeps its shape.
+- **Using the CLT with a tiny n on heavy skew.** With n = 5 and a few huge orders, the mean is still very lopsided, as Example 3 shows.
+- **Expecting the SE to fall in a straight line.** Doubling n does not halve the SE. It cuts it by about 29 percent.
+- **Ignoring dependence.** Many orders from one customer are not independent. The SE from the plain formula is too small.
+
+## Practice questions
+
+<PracticeSet topic="clt" module="statistics" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "A sample has an SD of 12 and n = 36. What is the standard error of the mean?", options: ["0.33", "2", "3", "12"], answer: 1, explanation: "SE = SD / sqrt(n) = 12 / sqrt(36) = 12 / 6 = 2." },
+  { q: "You make the sample four times bigger. What happens to the standard error?", options: ["It doubles", "It is halved", "It is cut to a quarter", "It stays the same"], answer: 1, explanation: "The SE depends on the square root of n. The square root of 4 is 2, so the SE is halved." },
+  { q: "Which statement matches the central limit theorem?", options: ["Raw data becomes normal once n is large", "The distribution of sample means is close to normal for a large enough n, whatever the raw shape", "Every sample has exactly the population mean", "Large samples have no outliers"], answer: 1, explanation: "The CLT is about the sample mean. Its distribution becomes bell shaped as n grows, even if the raw data is skewed." },
+  { q: "A test has p = 0.3 and n = 100. What is the SE of the proportion?", options: ["0.03", "0.0458", "0.21", "0.30"], answer: 1, explanation: "SE = sqrt(0.3 x 0.7 / 100) = sqrt(0.0021), which is about 0.0458." },
+  { q: "Which dataset is most likely to need a much bigger sample before its mean looks normal?", options: ["Heights of adult men in one city", "Order values with a few very large orders", "Exam scores out of 100 for a class", "Number of trains that leave a station each day"], answer: 1, explanation: "Heavy skew from a few very large values needs a larger n before the sample mean looks bell shaped." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Almost every analytics interview asks some form of "How precise is your number?" A clear answer uses the SE, and says why it is smaller than the SD.
+</InterviewAlert>
+
+<InterviewQ q="Explain the central limit theorem to a non-technical manager.">
+Take many samples of the same size and compute the average of each one. Plot those averages. The plot looks like a bell curve, even if each single value is lopsided. This means we can use bell curve tools to say how far the average is likely to be from the truth. The CLT is the reason many standard tests work on real business data.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between the standard deviation and the standard error?">
+The SD describes how spread out single values are, such as individual delivery times. The SE describes how precise the sample mean is. The SE equals the SD divided by the square root of n, so it gets smaller as the sample grows. The SD does not shrink with more data.
+</InterviewQ>
+
+<InterviewQ q="Why do A/B tests rely on the central limit theorem?">
+A/B tests compare two averages or two conversion rates. Each average or rate is built from many users, so its sampling distribution is close to normal. That lets us compute an SE and a z score for the difference. Without the CLT we would need a different test for every data shape. Checks for duplicate users and enough sample size keep the CLT assumptions valid.
+</InterviewQ>
+
+## Key takeaways
+
+- The **sampling distribution** of the mean is the spread of averages you would get from repeated samples.
+- **SE = SD / sqrt(n)** for a mean. Quadruple n to halve the SE.
+- For a proportion, **SE = sqrt(p(1 - p) / n)**.
+- The **CLT** says sample means are close to normal for a large enough n, even when raw data is skewed. It does not make the raw data normal.
+- The SD describes single values. The SE describes the precision of the average. Report the right one.
+
+## Further reading
+
+<FurtherReading ids={["khan-stats", "numpy-docs"]} />

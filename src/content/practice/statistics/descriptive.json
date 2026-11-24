@@ -1,0 +1,264 @@
+[
+  {
+    "id": "statistics-descriptive-001",
+    "module": "statistics",
+    "topic": "descriptive",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "An ops lead wants the average delivery time for real deliveries. Return one number: the mean `actual_minutes` of rows where `delivery_status` is `Delivered`, rounded to 2 decimals.",
+    "dataset": "food_delivery",
+    "hint": "Filter to the Delivered rows first. Cancelled orders have no delivery time.",
+    "solutionCode": "df = load(\"food_delivery\", \"deliveries\")\ndelivered = df[df[\"delivery_status\"] == \"Delivered\"]\nresult = round(delivered[\"actual_minutes\"].mean(), 2)",
+    "expectedOutput": {
+      "value": 44.87
+    },
+    "orderMatters": false,
+    "explanation": "Cancelled orders have an empty `actual_minutes`. The filter keeps only delivered rows, so the mean describes real deliveries. `.mean()` skips empty cells on its own, and `round(..., 2)` gives a tidy answer.",
+    "commonMistake": "Filling the empty cancelled rows with 0 before taking the mean. Those 713 zeros pull the average down to about 42.8 minutes, which is wrong.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "mean",
+      "descriptive"
+    ]
+  },
+  {
+    "id": "statistics-descriptive-002",
+    "module": "statistics",
+    "topic": "descriptive",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "Same delivered orders as before. Return the median `actual_minutes`, rounded to 2 decimals.",
+    "dataset": "food_delivery",
+    "hint": "The median is the middle value after sorting. pandas has a method for it.",
+    "solutionCode": "df = load(\"food_delivery\", \"deliveries\")\ndelivered = df[df[\"delivery_status\"] == \"Delivered\"]\nresult = round(delivered[\"actual_minutes\"].median(), 2)",
+    "expectedOutput": {
+      "value": 44
+    },
+    "orderMatters": false,
+    "explanation": "`.median()` sorts the delivery times and takes the middle one. With an even count it averages the two middle values. The median is the typical delivery time that is not moved by a few very slow orders.",
+    "commonMistake": "Reporting the mean (44.87) and calling it the median. The two numbers are close here, so the mistake is easy to miss.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "median",
+      "descriptive"
+    ]
+  },
+  {
+    "id": "statistics-descriptive-003",
+    "module": "statistics",
+    "topic": "descriptive",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "Same delivered orders. Return the sample standard deviation of `actual_minutes`, rounded to 2 decimals.",
+    "dataset": "food_delivery",
+    "hint": "pandas `.std()` uses the sample formula (divide by n minus 1) by default.",
+    "solutionCode": "df = load(\"food_delivery\", \"deliveries\")\ndelivered = df[df[\"delivery_status\"] == \"Delivered\"]\nresult = round(delivered[\"actual_minutes\"].std(), 2)",
+    "expectedOutput": {
+      "value": 13.16
+    },
+    "orderMatters": false,
+    "explanation": "The standard deviation measures how far delivery times usually sit from the mean. pandas `.std()` divides by n minus 1, which is the sample formula. That is the right default when the orders are a sample of all deliveries.",
+    "commonMistake": "Using `np.std(...)`, which divides by n. On 14,407 rows the gap is tiny, but on a 5-value list it is large (1.41 against 1.58). Learners who check on a small list see the gap and get confused.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "standard-deviation",
+      "descriptive"
+    ]
+  },
+  {
+    "id": "statistics-descriptive-004",
+    "module": "statistics",
+    "topic": "descriptive",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "The SLA team wants the 90th percentile delivery time: 9 out of 10 orders are done within this many minutes. Return the 90th percentile of `actual_minutes` for delivered orders, rounded to 2 decimals.",
+    "dataset": "food_delivery",
+    "hint": "Use `quantile` with 0.9. Do not use the maximum.",
+    "solutionCode": "df = load(\"food_delivery\", \"deliveries\")\ndelivered = df[df[\"delivery_status\"] == \"Delivered\"]\nresult = round(delivered[\"actual_minutes\"].quantile(0.9), 2)",
+    "expectedOutput": {
+      "value": 62
+    },
+    "orderMatters": false,
+    "explanation": "`quantile(0.9)` finds the time that 90 percent of deliveries beat. Unlike the maximum, it ignores the few extreme outliers, so it is the number an SLA usually uses.",
+    "commonMistake": "Using `max()` as the 90th percentile. The maximum is the single slowest order (108 minutes), so it says almost nothing about a typical bad day.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "percentile",
+      "sla",
+      "descriptive"
+    ]
+  },
+  {
+    "id": "statistics-descriptive-005",
+    "module": "statistics",
+    "topic": "descriptive",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "HR wants a quick summary of `goals_met_pct` across all rows of `performance_reviews`. Return a dict with keys `mean` and `median`, each rounded to 2 decimals.",
+    "dataset": "hr",
+    "hint": "Compute the two centre measures on the same column. Put them in a dict.",
+    "solutionCode": "df = load(\"hr\", \"performance_reviews\")\nresult = {\n    \"mean\": round(df[\"goals_met_pct\"].mean(), 2),\n    \"median\": round(df[\"goals_met_pct\"].median(), 2),\n}",
+    "expectedOutput": {
+      "value": {
+        "mean": 71.69,
+        "median": 72
+      }
+    },
+    "orderMatters": false,
+    "explanation": "The mean adds all values and divides by the count. The median is the middle value after sorting. Showing both lets HR see whether a few very high or very low scores are moving the average.",
+    "commonMistake": "Reporting only the mean. Here the two numbers are close, but the habit of reporting one number hides any skew in the data that a second number would reveal.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "mean",
+      "median",
+      "hr"
+    ]
+  },
+  {
+    "id": "statistics-descriptive-006",
+    "module": "statistics",
+    "topic": "descriptive",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Ops wants to know how weather affects delivery time. For delivered orders, return a table with columns `weather` and `mean_minutes` (mean `actual_minutes`, rounded to 2 decimals). Sort by `mean_minutes` from highest to lowest.",
+    "dataset": "food_delivery",
+    "hint": "Group by weather, take the mean, then sort in descending order.",
+    "solutionCode": "df = load(\"food_delivery\", \"deliveries\")\ndelivered = df[df[\"delivery_status\"] == \"Delivered\"]\ntable = delivered.groupby(\"weather\", as_index=False)[\"actual_minutes\"].mean()\ntable[\"mean_minutes\"] = table[\"actual_minutes\"].round(2)\nresult = table[[\"weather\", \"mean_minutes\"]].sort_values(\"mean_minutes\", ascending=False).reset_index(drop=True)",
+    "expectedOutput": {
+      "columns": [
+        "weather",
+        "mean_minutes"
+      ],
+      "rows": [
+        [
+          "Heavy Rain",
+          53.89
+        ],
+        [
+          "Rain",
+          49.42
+        ],
+        [
+          "Clear",
+          44.02
+        ],
+        [
+          "Cloudy",
+          43.71
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "`groupby` splits the rows by weather and takes the mean of each group. The result is sorted so the slowest weather comes first. Heavy Rain is the slowest, which matches the story that bad weather adds time.",
+    "commonMistake": "Sorting ascending, which puts the fastest weather first and reverses the story. Another common slip is taking the mean before filtering out cancelled orders.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "groupby",
+      "mean",
+      "descriptive"
+    ]
+  },
+  {
+    "id": "statistics-descriptive-007",
+    "module": "statistics",
+    "topic": "descriptive",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "A shop sold these quantities of tea packets over 5 days: 12, 15, 18, 22 and 28. What is the mean number sold per day? Enter a number.",
+    "dataset": "none",
+    "hint": "Add all five values, then divide by how many values there are.",
+    "solution": "Add the values: 12 + 15 + 18 + 22 + 28 = 95.\n\nThere are 5 values, so the mean is 95 / 5 = **19** packets per day.",
+    "orderMatters": false,
+    "explanation": "The mean is the total divided by the count. Here the total is 95 across 5 days, so the average day sells 19 packets.",
+    "commonMistake": "Dividing the total by 4, the number of gaps between the days, instead of by 5, the number of days.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 2,
+    "tags": [
+      "mean",
+      "descriptive"
+    ],
+    "expectedOutput": {
+      "value": 19
+    }
+  },
+  {
+    "id": "statistics-descriptive-008",
+    "module": "statistics",
+    "topic": "descriptive",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "Five stores reported these daily footfall counts (in hundreds): 4, 8, 6, 5 and 7. Treat them as a sample and find the sample standard deviation. Round to 2 decimals.",
+    "dataset": "none",
+    "hint": "Find the mean first. Then square each distance from it, add them up and divide by n minus 1 before taking the square root.",
+    "solution": "1. Mean: (4 + 8 + 6 + 5 + 7) / 5 = 30 / 5 = 6.\n2. Distances from 6: -2, 2, 0, -1, 1.\n3. Squared: 4, 4, 0, 1, 1. Sum = 10.\n4. Sample variance: 10 / (5 - 1) = 2.5.\n5. Sample standard deviation: the square root of 2.5 = **1.58**.\n\nIf you divide by 5 instead, you get 2 and a standard deviation of 1.41. That is the population formula.",
+    "orderMatters": false,
+    "explanation": "The sample standard deviation divides the sum of squared distances by n minus 1. Dividing by n minus 1 makes the estimate of spread a little bigger, which is correct when the data is only a sample.",
+    "commonMistake": "Dividing by n (5) instead of n minus 1 (4). The answer becomes 1.41, which looks plausible but is the population value.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "standard-deviation",
+      "variance",
+      "descriptive"
+    ],
+    "expectedOutput": {
+      "value": 1.58
+    }
+  },
+  {
+    "id": "statistics-descriptive-009",
+    "module": "statistics",
+    "topic": "descriptive",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "In Pune, 80 orders took 35 minutes on average. In Surat, 20 orders took 55 minutes on average. What is the average delivery time across all 100 orders, in minutes? Enter a number.",
+    "dataset": "none",
+    "hint": "Work out the total minutes for each city first. Do not just average the two city averages.",
+    "solution": "Total minutes in Pune: 80 x 35 = 2,800.\nTotal minutes in Surat: 20 x 55 = 1,100.\nAll minutes: 2,800 + 1,100 = 3,900.\nAll orders: 80 + 20 = 100.\n\nWeighted mean: 3,900 / 100 = **39** minutes.\n\nThe simple average of 35 and 55 (which is 45) ignores that Pune has four times as many orders.",
+    "orderMatters": false,
+    "explanation": "When groups have different sizes, the overall mean is a weighted mean. Add up all the minutes first, then divide by all the orders. Pune has more orders, so it pulls the overall average toward 35.",
+    "commonMistake": "Averaging the two city averages (35 and 55) to get 45. That gives Surat the same weight as Pune even though Pune has four times the orders.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "weighted-mean",
+      "descriptive"
+    ],
+    "expectedOutput": {
+      "value": 39
+    }
+  },
+  {
+    "id": "statistics-descriptive-010",
+    "module": "statistics",
+    "topic": "descriptive",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "Ops wants to know whether delivery times are more erratic in heavy rain. For delivered orders, compute the coefficient of variation (standard deviation divided by mean, times 100) of `actual_minutes` for `Heavy Rain` and for `Clear`. Return a dict with those two keys, each rounded to 2 decimals.",
+    "dataset": "food_delivery",
+    "hint": "Compare relative spread, not the raw standard deviation. Use `.std()` and `.mean()` on each weather group.",
+    "solutionCode": "df = load(\"food_delivery\", \"deliveries\")\ndelivered = df[df[\"delivery_status\"] == \"Delivered\"]\nresult = {}\nfor weather in [\"Heavy Rain\", \"Clear\"]:\n    times = delivered.loc[delivered[\"weather\"] == weather, \"actual_minutes\"]\n    result[weather] = round(times.std() / times.mean() * 100, 2)",
+    "expectedOutput": {
+      "value": {
+        "Heavy Rain": 23.55,
+        "Clear": 29.45
+      }
+    },
+    "orderMatters": false,
+    "explanation": "The coefficient of variation divides the spread by the mean, so it is a percentage and can be compared across groups with different averages. Heavy Rain has a higher mean, but its relative spread is lower, so its times are not more erratic in relative terms.",
+    "commonMistake": "Comparing the raw standard deviations only. Heavy Rain has a similar SD to Clear, but a much higher mean, so the relative spread looks different once you divide.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 6,
+    "tags": [
+      "coefficient-of-variation",
+      "groupby",
+      "descriptive"
+    ]
+  }
+]

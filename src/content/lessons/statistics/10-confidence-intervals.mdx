@@ -1,0 +1,227 @@
+---
+title: "Confidence intervals"
+description: "Give a range, not a single guess, and say what 95% really means."
+module: statistics
+order: 10
+estimatedMinutes: 45
+objectives:
+  - "Build a 95% confidence interval (CI) for a mean"
+  - "Build a 95% CI for a proportion"
+  - "Read a CI correctly, without over-claiming"
+  - "Explain how the sample size and the SD change the width of a CI"
+  - "Report a CI in plain business language"
+tags: ["statistics", "confidence-interval"]
+---
+
+## Learning objectives
+
+- Build a 95% confidence interval for a mean and for a proportion.
+- Read the meaning of "95% confidence" correctly.
+- Explain how sample size, SD and confidence level change the width.
+- Use a sample size formula to plan a study with a target margin of error.
+- Write a CI as a sentence a non-analyst can act on.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+A growth lead at a fictional Bengaluru fintech asks, "Did the new onboarding flow lift sign-ups?" A single number like "11.7 percent" invites the wrong decision. A CI such as "between 10.9 and 12.5 percent" shows how much the team can trust the number. Stakeholders trust analysts who give ranges.
+</RealWorld>
+
+## Concept
+
+### A range, not a single guess
+
+Imagine you tell a friend, "I will reach your place at 8:00." Then you say, "I will reach between 7:50 and 8:10." The second statement is more honest. It tells your friend how sure you are. A confidence interval does the same job for a statistic.
+
+A **confidence interval** is a range built from the sample. It is the estimate plus or minus a margin of error:
+
+<FormulaCard title="95% CI for a mean">
+`CI = mean +/- 1.96 x SE`, where `SE = sample SD / sqrt(n)`
+
+The number 1.96 is the z value for 95 percent confidence. It comes from the bell curve. Use it when n is large, which is the usual case for business data.
+</FormulaCard>
+
+<FormulaCard title="95% CI for a proportion">
+`CI = p +/- 1.96 x sqrt(p * (1 - p) / n)`
+
+Here `p` is the observed rate, for example 0.10 for 10 percent conversion.
+</FormulaCard>
+
+When n is small (under about 30), analysts use the t value instead of 1.96. The next lessons cover that. For this lesson, assume n is large.
+
+### What "95% confidence" really means
+
+This is the most misunderstood idea in statistics. Read it carefully.
+
+- **Correct reading:** if we repeated the study many times and built a CI each time, about 95 percent of those intervals would contain the true value.
+- **Incorrect reading:** "There is a 95 percent chance that the true value is inside this interval." The true value is fixed. It is either inside or outside. The 95 percent describes the method, not this one interval.
+
+In a business report, a short version is fine: "We are 95 percent confident that the true conversion rate is between 9.8 and 11.4 percent."
+
+### What makes the interval narrow or wide
+
+The margin is `1.96 x SE`. So the width depends on three things:
+
+| Change | Effect on the width | Why |
+|---|---|---|
+| More data (bigger n) | Narrower | SE falls with the square root of n |
+| More spread in the data (bigger SD) | Wider | More noise means a less precise average |
+| Higher confidence (99 instead of 95) | Wider | A bigger z value (2.58 instead of 1.96) |
+
+Quadruple n and the width is halved. This is the same rule as the standard error in the previous lesson.
+
+### Planning the sample size
+
+Before a test, a team often asks, "How many users do we need so the margin is at most 2 points?" For a proportion, the worst case is p = 0.5, because it gives the largest spread. Solve the margin formula for n:
+
+<FormulaCard title="Sample size for a proportion">
+`n = (1.96 / margin)^2 x 0.25`
+
+Round up to a whole number. For a margin of 0.02 (2 percentage points), that gives n = 2,401 users.
+</FormulaCard>
+
+### Overlapping intervals
+
+If two CIs overlap, the difference may or may not be real. Overlap is a quick warning sign, not a test. Two intervals can overlap and the difference can still be significant, because the test uses the SE of the difference. The formal test comes later in this module.
+
+<Warning>
+Do not say "the intervals overlap, so there is no difference" in a meeting without a proper test. That is one of the most common mistakes in A/B test reviews.
+</Warning>
+
+## Worked examples
+
+### Example 1: CI for average delivery time
+
+We take the completed deliveries from the food delivery dataset and compute the mean and the 95 percent CI.
+
+```python
+import math
+
+df = load("food_delivery", "deliveries")
+x = df["actual_minutes"].dropna()
+se = x.std() / math.sqrt(len(x))
+print(round(x.mean(), 2), round(x.mean() - 1.96 * se, 2), round(x.mean() + 1.96 * se, 2))
+```
+
+**Output:**
+
+| Mean (min) | Lower bound | Upper bound | Margin |
+|---|---|---|---|
+| 44.87 | 44.66 | 45.09 | 0.21 |
+
+Report it as: "Average delivery time is 44.9 minutes (95 percent CI 44.7 to 45.1)." The interval is very narrow because 14,407 orders is a lot of data.
+
+### Example 2: CI for a conversion rate in an A/B test
+
+The marketing A/B test has two arms. We clean it first: drop exact duplicate rows, then remove users who appear in both arms. Then we compute the CI for each arm.
+
+```python
+import math
+
+df = load("marketing", "ab_test_results").drop_duplicates()
+both = df.groupby("user_id")["variant"].nunique()
+df = df[~df.user_id.isin(both[both > 1].index)]
+for arm in ["control", "treatment"]:
+    x = df[df["variant"] == arm]["converted"].astype(float)
+    p = x.mean()
+    se = math.sqrt(p * (1 - p) / len(x))
+    print(arm, len(x), round(p, 4), round(p - 1.96 * se, 4), round(p + 1.96 * se, 4))
+```
+
+**Output:**
+
+| Arm | Users | Conversion | 95% CI lower | 95% CI upper |
+|---|---|---|---|---|
+| control | 6016 | 10.57% | 9.79% | 11.35% |
+| treatment | 5974 | 11.72% | 10.90% | 12.53% |
+
+Both intervals are about 1.6 points wide. They overlap between 10.90 and 11.35 percent. This tells us the treatment looks better, but the data is not yet strong enough to call it a clear win. The A/B analysis lesson gives the proper test of the difference.
+
+### Example 3: how the sample size changes the width
+
+We take the first 100 completed deliveries, then the first 1,000, in file order. Same formula, different n.
+
+```python
+import math
+
+x = load("food_delivery", "deliveries")["actual_minutes"].dropna().to_numpy()
+for k in [100, 1000]:
+    s = x[:k]
+    se = s.std(ddof=1) / math.sqrt(k)
+    lo, hi = s.mean() - 1.96 * se, s.mean() + 1.96 * se
+    print(k, round(s.mean(), 2), round(lo, 2), round(hi, 2), round(hi - lo, 2))
+```
+
+**Output:**
+
+| n | Mean (min) | Lower | Upper | Width |
+|---|---|---|---|---|
+| 100 | 45.74 | 42.80 | 48.68 | 5.88 |
+| 1000 | 46.21 | 45.38 | 47.04 | 1.66 |
+
+Ten times more data cut the width by about 3.5 times. The formula predicts about 3.2 times (the square root of 10), and the small gap comes from the sample SDs being a little different. The point to remember: more data helps, but each extra gain costs more.
+
+### Example 4: planning a survey
+
+The product team wants a conversion estimate within plus or minus 2 percentage points, at 95 percent confidence. They have no idea of the true rate, so they use p = 0.5.
+
+```text
+n = (1.96 / 0.02)^2 x 0.25
+  = 98^2 x 0.25
+  = 9604 x 0.25
+  = 2401
+```
+
+They need at least 2,401 users. If they expect a lower rate, the answer can be smaller, but p = 0.5 is the safe choice.
+
+## Common mistakes
+
+- **Reading the 95 percent as the chance that this interval holds the truth.** The 95 percent describes the method over many repeats.
+- **Using z = 1.96 for a very small sample.** With only a few observations, use the t value covered in the next lessons.
+- **Forgetting to clean the data before computing p-hat.** Duplicate rows and users in both arms change the rate and the n.
+- **Building a CI for the data instead of the mean.** The CI tells you about the average, not about where most individual values sit. Those are different ranges.
+- **Reporting a CI without units or context.** "Between 9.8 and 11.4" means nothing until you add "percent conversion for the control arm."
+
+## Practice questions
+
+<PracticeSet topic="ci" module="statistics" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Which sentence best describes a 95% confidence interval?", options: ["There is a 95% chance the true value is inside this interval", "If we repeated the study many times, about 95% of the intervals would contain the true value", "95% of the data points lie inside the interval", "The sample mean is 95% accurate"], answer: 1, explanation: "The 95% describes the method across many repeats. It does not give a probability for one fixed interval." },
+  { q: "You collect four times as much data, with the same SD. What happens to the width of the 95% CI?", options: ["It doubles", "It is halved", "It is cut to a quarter", "It stays the same"], answer: 1, explanation: "The width depends on the square root of n. Four times the data halves the margin and the width." },
+  { q: "Which z value is used for a 95% CI with a large sample?", options: ["1.64", "1.96", "2.58", "3.00"], answer: 1, explanation: "1.96 is the z value that leaves 2.5 percent in each tail, giving 95 percent in the middle. 1.64 is for 90 percent and 2.58 is for 99 percent." },
+  { q: "A sample has a mean of 50 and a standard error of 2. What is the margin of error for a 95% CI?", options: ["1", "2", "3.92", "100"], answer: 2, explanation: "The margin is 1.96 times the SE, which is 1.96 x 2 = 3.92." },
+  { q: "Which change makes a 95% CI wider, with everything else the same?", options: ["A bigger sample", "A smaller SD", "A 90% confidence level instead of 95%", "A 99% confidence level instead of 95%"], answer: 3, explanation: "A 99% CI uses z = 2.58, which is bigger than 1.96, so the interval is wider. A bigger sample, a smaller SD and a lower confidence level all make the interval narrower." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers often ask you to explain a CI in simple words. Say what the method does, and avoid the "95 percent chance inside this interval" trap.
+</InterviewAlert>
+
+<InterviewQ q="Explain a 95% confidence interval to a product manager.">
+We take a sample and build a range around the average. If we ran the same study many times, about 95 out of 100 ranges built this way would contain the true average. The range shows how precise our estimate is. A narrow range means we can make a decision with more confidence.
+</InterviewQ>
+
+<InterviewQ q="What changes the width of a confidence interval?">
+Three things. A bigger sample makes it narrower, because the SE falls with the square root of n. A bigger spread in the data makes it wider. A higher confidence level, such as 99 percent instead of 95 percent, makes it wider too.
+</InterviewQ>
+
+<InterviewQ q="Two confidence intervals overlap. Does that mean there is no difference?">
+Not necessarily. Overlap is a rough check only. The right test looks at the difference between the two groups and its own standard error. Two intervals can overlap and the difference can still be statistically significant.
+</InterviewQ>
+
+## Key takeaways
+
+- A **95% CI** is the estimate plus or minus 1.96 standard errors (for large samples).
+- The **correct reading** is about repeated studies, not the chance that one interval holds the truth.
+- The width falls with the **square root of n**, and rises with the SD and the confidence level.
+- Clean the data first. Duplicate rows and contaminated users change both the rate and the n.
+- Report a CI as a sentence with units, for example "between 10.9 and 12.5 percent."
+
+## Further reading
+
+<FurtherReading ids={["khan-stats"]} />

@@ -1,0 +1,232 @@
+---
+title: "Sampling and sampling bias"
+description: "How to pick a fair sample and how samples go wrong."
+module: statistics
+order: 8
+estimatedMinutes: 40
+objectives:
+  - "Separate the population from the sample"
+  - "Describe simple random, systematic, stratified and cluster sampling"
+  - "Spot selection, survivorship and non-response bias"
+  - "Compare a sample with the population using pandas"
+tags: ["statistics", "sampling", "bias"]
+---
+
+## Learning objectives
+
+- Separate the population, the sample, a parameter and a statistic.
+- Describe simple random, systematic, stratified, cluster and convenience sampling, and say when each is used.
+- Spot selection, survivorship and non-response bias in a real survey or dataset.
+- Compare a sample with the full population in pandas.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Most analyst work uses a sample, even when people do not call it that. A product team may read 500 survey replies. A fraud team may review 200 flagged cases. If the sample is biased, every chart and every decision built on it is biased too. Analysts who can ask "how was this data collected?" are trusted with bigger questions.
+</RealWorld>
+
+## Concept
+
+### Tasting the dal
+
+Think of a big pot of dal. To judge the taste, you do not eat the whole pot. You stir it well and take one spoon. If the dal is well stirred, one spoon tells you a lot. If the dal has settled, with all the lentils at the bottom, your spoon will mislead you, however carefully you taste it.
+
+Sampling works the same way. A sample is a small part of a group that we use to learn about the whole. The method of picking the spoon decides whether the sample is fair.
+
+### The words you need
+
+- **Population**: the full group you want to learn about. For example, all 12 lakh users of an app.
+- **Sample**: the part you actually observe.
+- **Sampling frame**: the list you pick from. If the list misses some users, those users have no chance of being picked.
+- **Parameter**: a fixed value about the population, such as the true average delivery time. It is usually unknown.
+- **Statistic**: a value computed from the sample, such as the sample average. We use statistics to estimate parameters.
+
+### Ways to pick a sample
+
+| Method | How it works | Use it when | Example |
+|---|---|---|---|
+| Simple random | Every unit has the same chance to be picked | The population list is complete and simple | Pick 500 delivered orders by lottery |
+| Systematic | Pick every k-th unit after a random start | The list is ordered and has no hidden pattern | Every 20th order in a sorted list |
+| Stratified | Split the population into groups, then sample each group | You need each group in the right share | 10% of orders from each city |
+| Cluster | Pick whole groups at random, then take all or some units inside | A full list is hard to get, but groups are easy to visit | Pick 20 delivery hubs, survey all their riders |
+| Convenience | Take whoever is easy to reach | Almost never, for a formal result | Ask your college friends |
+
+**Stratified** and **cluster** sampling sound alike, but they differ. Stratified takes a little from every group. Cluster takes whole groups and skips the rest. A stratified sample keeps the city mix. A cluster sample is cheaper to collect, but it can be less precise.
+
+### Sampling error and bias are not the same
+
+Two words cause confusion here.
+
+- **Sampling error** is the random gap between the sample result and the true value. It is caused by chance. It shrinks as the sample grows.
+- **Bias** is a steady push away from the truth. It comes from how the sample was picked or how people answered. It does not shrink as the sample grows.
+
+<Warning>
+A bigger sample cures sampling error. It does not cure bias. If the app only shows a survey to happy users, one million replies will still describe happy users.
+</Warning>
+
+### The four bias types to know
+
+- **Selection bias**: the way units enter the sample favours some of them. Example: a survey only shown to users who finished checkout.
+- **Survivorship bias**: you only see the units that survived some process. Example: studying only the startups that are still alive, so the failures never show up.
+- **Non-response bias**: the people who do not answer differ from the people who do. Example: a feedback form with a 10% reply rate, where the 90% silent users are happier.
+- **Voluntary response bias**: people choose to respond, and strong feelings drive that choice. Example: a rating prompt where only very angry or very happy users tap the stars.
+
+In the food delivery data, ratings exist for only about 60% of delivered orders. Customers choose whether to rate. We check how that choice links to delay in the worked examples.
+
+### Pandas tools for sampling
+
+```python
+import pandas as pd
+
+d = pd.read_csv("public/data/csv/food_delivery/deliveries.csv").drop_duplicates(subset="delivery_id")
+dl = d[d["delivery_status"] == "Delivered"]
+
+sample = dl.sample(n=500, random_state=42)           # simple random sample
+strat = dl.groupby("city").sample(frac=0.1, random_state=7)  # 10% from each city
+```
+
+`random_state` fixes the seed, so you get the same sample every run. Without it, your result can change each time. That makes your work hard to check.
+
+<Tip>
+Write down the sampling frame and the method before you look at any number. If you cannot say who could have been picked, you cannot say who the sample describes.
+</Tip>
+
+<FormulaCard title="Sampling fraction and the standard error preview">
+
+Sampling fraction = sample size / population size, for example 600 / 1,200,000 = 0.05%.
+
+Standard error of a sample mean = `s / sqrt(n)`, where `s` is the standard deviation and `n` is the sample size. The next lessons use this. For now, note that quadrupling `n` only halves the error.
+
+</FormulaCard>
+
+## Worked examples
+
+### Example 1: a random sample of 500 orders
+
+Population: 14,290 delivered orders, after removing duplicate `delivery_id` rows. The true mean `actual_minutes` is 44.88 minutes, with a standard deviation of 13.17.
+
+```python
+import pandas as pd
+
+d = pd.read_csv("public/data/csv/food_delivery/deliveries.csv").drop_duplicates(subset="delivery_id")
+dl = d[d["delivery_status"] == "Delivered"]
+print("population mean", round(dl["actual_minutes"].mean(), 2))
+
+sample = dl.sample(n=500, random_state=42)
+print("sample mean", round(sample["actual_minutes"].mean(), 2))
+```
+
+Output:
+
+```text
+population mean 44.88
+sample mean 45.53
+```
+
+The sample mean is 0.65 minutes above the truth. That gap is sampling error. It is small, and a sample of 500 out of 14,290 is enough for a rough view. The standard error for this sample is about 13.17 / sqrt(500), which is 0.59 minutes, so a gap of 0.65 is about what chance alone can cause.
+
+### Example 2: stratified versus simple random
+
+A simple random sample of 1,000 orders can miss the city mix by chance. A stratified 10% sample forces each city to keep its share.
+
+| City | Population share | Simple random (1,000 orders) | Stratified (10% per city) |
+|---|---|---|---|
+| Mumbai | 17.1% | 16.5% | 244 orders, about 10% of 2,445 |
+| Jaipur | 4.7% | 6.0% | 67 orders, about 10% of 668 |
+| Lucknow | 4.2% | 4.2% | 60 orders, about 10% of 604 |
+| Ahmedabad | 5.8% | 5.4% | 83 orders, about 10% of 828 |
+
+The simple random sample is close, but Jaipur is 1.3 points too high. The stratified sample keeps every city at about its share of the population. Stratification is most useful when a small group would otherwise get too few rows to study.
+
+### Example 3: who rates the order?
+
+Ratings exist for 60.39% of delivered orders. That sounds like a good coverage, but the question is who rates.
+
+```python
+import pandas as pd
+
+d = pd.read_csv("public/data/csv/food_delivery/deliveries.csv").drop_duplicates(subset="delivery_id")
+dl = d[d["delivery_status"] == "Delivered"].copy()
+ratings = pd.read_csv("public/data/csv/food_delivery/ratings.csv")
+
+rated = dl["delivery_id"].isin(ratings["delivery_id"])
+print("rated share", round(100 * rated.mean(), 2))
+print("mean delay, rated", round(dl.loc[rated, "delay_minutes"].mean(), 2))
+print("mean delay, unrated", round(dl.loc[~rated, "delay_minutes"].mean(), 2))
+```
+
+Output:
+
+```text
+rated share 60.39
+mean delay, rated 3.78
+mean delay, unrated 1.35
+```
+
+Rated orders were, on average, more delayed. Customers who had a bad experience are more likely to leave a rating. So the rating table over-represents late deliveries. Any average rating you compute from it would look worse than the real customer experience. This is voluntary response bias, and it does not go away with more ratings.
+
+### Example 4: samples wobble
+
+Take five simple random samples of 500 delivered orders, with five different seeds (1 to 5). Each one is a fair sample, but the means differ.
+
+```text
+seed 1: 44.20
+seed 2: 45.47
+seed 3: 44.32
+seed 4: 45.13
+seed 5: 45.20
+```
+
+The true mean is 44.88. The five estimates range from 44.20 to 45.47. None of them is exactly right, and that is normal. If you report one sample as "the answer", you have ignored the wobble. Good analysts report a range, or a confidence interval, which the later lessons cover.
+
+## Common mistakes
+
+- **Convenience sample treated as representative.** Surveying friends and calling the result "our users". Result: you describe your friends, not the user base.
+- **Ignoring non-response.** Reporting the answers you got, without asking how many people did not answer. Result: an average that looks precise but may be wrong.
+- **Sampling after the wrong filter.** Removing cancelled orders after sampling, so the sample includes rows that should not be counted. Result: a sample that does not match the population you meant.
+- **Forgetting `random_state`.** Running a random sample that cannot be repeated. Result: a number you can never reproduce in a review.
+- **"A bigger sample fixes bias."** Thinking that more replies will fix a biased process. Result: a very precise, very wrong number.
+
+## Practice questions
+
+<PracticeSet topic="sampling" module="statistics" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "A bank wants every city to appear in its survey in the same share as the population. Which method fits best?", options: ["Simple random sample", "Stratified sample", "Convenience sample", "Survivorship sample"], answer: 1, explanation: "A stratified sample samples each city on its own, so each city keeps its share of the total." },
+  { q: "A study only looks at startups that are still operating, and ignores the ones that shut down. Which bias is this?", options: ["Survivorship bias", "Sampling error", "Non-response bias", "Random bias"], answer: 0, explanation: "Survivorship bias happens when only the survivors are studied. The failures are missing, so the results look too good." },
+  { q: "Only very unhappy and very happy customers tap the star rating in an app. What is this called?", options: ["Stratified sampling", "Voluntary response bias", "Sampling error", "Census"], answer: 1, explanation: "People choose whether to respond, and strong feelings drive the choice. This biases the average rating." },
+  { q: "You increase your sample from 500 to 5,000 people, but the survey still asks only app users who finished checkout. What happens to the bias?", options: ["It disappears", "It shrinks by a factor of 10", "It stays the same", "It grows"], answer: 2, explanation: "A bigger sample reduces sampling error, but bias comes from how people were chosen. The bias stays the same." },
+  { q: "What is a census?", options: ["A sample of exactly 1,000 units", "A survey of the whole population", "A random sample from a stratified frame", "A sample taken by phone"], answer: 1, explanation: "A census counts every unit in the population. There is no sampling error, but it is costly and slow for large groups." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers want to hear how you pick a sample before they hear numbers. A strong answer names the population, the sampling frame and the method, then names the bias risk. Mention non-response every time.
+</InterviewAlert>
+
+<InterviewQ q="How would you choose a sample for a survey of 10 lakh users?">
+First I would define the population and check the sampling frame. Is every user on the list, including inactive ones? Then I would pick a method. If the user base has clear groups, such as cities or user tiers, I would use stratified sampling, so each group keeps its share. I would size the sample for the margin of error I need, and send the survey to the sampled users. Last, I would track the response rate and compare respondents with the full base on key fields, such as city and plan, to check for non-response bias.
+</InterviewQ>
+
+<InterviewQ q="Give an example of selection bias from a business dataset.">
+Suppose a checkout team asks only users who completed a purchase to rate the checkout. The sample leaves out everyone who gave up in the middle. The result looks better than it should, because the users with the worst experience never saw the survey. The fix is to ask a random group of users who started checkout, including those who dropped out.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between stratified and cluster sampling?">
+Stratified sampling splits the population into groups and samples from each group, so every group appears in the sample. Cluster sampling picks whole groups at random, such as a few delivery hubs, and includes all or some units inside the chosen groups. Stratified gives better precision when groups differ a lot. Cluster is cheaper when the population is spread out and a full list is hard to build.
+</InterviewQ>
+
+## Key takeaways
+
+- The population is the whole group. The sample is the part you observe. A statistic from the sample estimates a parameter of the population.
+- Simple random, systematic, stratified and cluster sampling are fair methods. Convenience sampling is not.
+- Sampling error shrinks with more data. Bias does not. Fix the process first.
+- Selection, survivorship, non-response and voluntary response bias come from who gets in and who answers.
+- Use `random_state` in pandas, and write down your sampling frame before you read any number.
+
+## Further reading
+
+<FurtherReading ids={["khan-stats", "pandas-docs"]} />

@@ -1,0 +1,252 @@
+---
+title: "t-tests: comparing means"
+description: "One-sample, two-sample (Welch) and paired t-tests with numpy and pandas."
+module: statistics
+order: 12
+estimatedMinutes: 55
+objectives:
+  - "Choose between a one-sample, a Welch two-sample and a paired t-test"
+  - "Compute a t statistic for two groups with the Welch formula"
+  - "Read the degrees of freedom and decide using a critical value"
+  - "Run the same test in pandas and report the mean difference with a confidence interval"
+  - "Explain why a t-test fits better than a z-test for small samples"
+tags: ["statistics", "t-test", "welch", "paired-test"]
+---
+
+## Learning objectives
+
+- Choose the right t-test: one-sample, Welch two-sample, or paired.
+- Compute a t statistic for two groups using the Welch formula.
+- Read the degrees of freedom (df) and compare the t value with a critical value.
+- Run the same tests with pandas and report the result as a business sentence.
+- Know the assumptions, and what to do when they are doubtful.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Most business comparisons are about means. Do rainy-day orders take longer? Do self ratings run higher than manager ratings? Does the new onboarding flow save time? Each question compares an average between two groups. The t-test is the standard tool for this, and it appears in almost every analytics review and in many interviews. Analysts who only report averages often make the wrong call, because a gap of a few minutes can be noise when the groups are small and noisy.
+</RealWorld>
+
+## Concept
+
+### The idea in one picture
+
+Are Rain-day deliveries slower, or did we just draw unlucky orders this month? A difference in averages is only the first step. The t-test asks: is the gap big compared with the noise in the data?
+
+The t statistic is a signal-to-noise ratio:
+
+- **Signal** = the difference between the two means.
+- **Noise** = the standard error of that difference, which depends on the spread and the sample sizes.
+
+A large t means the signal stands out from the noise.
+
+### Why t and not z?
+
+In lesson 11 we used z when we knew the spread of the population or had a big sample. In real work we rarely know the true spread. We estimate it from the sample, and that adds uncertainty. The t distribution allows for this. It has heavier tails than the normal curve, so it needs a bigger t before we call a result significant.
+
+As the sample grows, the t distribution gets closer to the normal curve. Around 100 rows per group, the difference is tiny. The degrees of freedom (df) control this closeness. Bigger df means closer to normal.
+
+Critical values for a two-sided test at alpha 0.05:
+
+| df | Critical t |
+|---|---|
+| 10 | 2.23 |
+| 20 | 2.09 |
+| 30 | 2.04 |
+| 60 | 2.00 |
+| Large (normal) | 1.96 |
+
+If the absolute value of your t is bigger than the critical value for your df, reject H0.
+
+### The three types of t-test
+
+- **One-sample t-test.** Compare one sample mean with a target value. Example: is the average delivery time 40 minutes? This is the same idea as lesson 11, but with the sample SD.
+- **Two-sample (Welch) t-test.** Compare the means of two separate groups. Example: Rain versus Clear orders. "Welch" means we do not assume the two groups have equal spread. This is the safe default.
+- **Paired t-test.** Compare two measures taken on the same unit. Example: the self rating and the manager rating for the same employee. You take the difference for each unit and test whether the mean difference is zero.
+
+<FormulaCard title="Welch t for two independent groups">
+`t = (mean1 - mean2) / sqrt(s1^2 / n1 + s2^2 / n2)`, where `s1` and `s2` are the sample SDs and `n1`, `n2` the sizes. Each group keeps its own variance.
+</FormulaCard>
+
+<FormulaCard title="Paired t">
+Take `d = x_after - x_before` for each pair. Then `t = mean(d) / (SD(d) / sqrt(n))`. This is the one-sample t applied to the differences.
+</FormulaCard>
+
+### Degrees of freedom for Welch
+
+Welch's df is usually not a whole number. It comes from the Welch-Satterthwaite formula. When the two groups are large and similar in spread, the df is large. When one group is small or very spread out, the df drops. Use the formula to get the exact df, then compare with the critical value.
+
+### Reading p-values without scipy
+
+Exact t p-values need a special table or a statistics library. This course uses only pandas, numpy and the Python standard library, so we use two shortcuts:
+
+- If the df is above about 100, the normal approximation is close enough. Use `math.erfc` as in lesson 11.
+- If the df is smaller, compare your t with the critical value in the table above.
+
+When a t value is very large, such as 13 or 18, the p-value is so small that the answer is clearly "p is far below 0.001" whatever the exact method.
+
+### Effect size: how big is the gap?
+
+A p-value says whether a gap is likely real. The **effect size** says how big it is. For two means, the simplest effect size is the mean difference. A common scaled version is Cohen's d, which divides the difference by the pooled SD. A d of about 0.2 is small, 0.5 medium and 0.8 large. Always report the mean difference first, because it is in business units such as minutes or rupees.
+
+### Assumptions
+
+- **Independence.** Each row is a separate unit. Repeated rows from one rider or one restaurant break this.
+- **Roughly normal data, or a big sample.** With n above about 30 per group, the test is usually fine even if the data are a little skewed.
+- **No extreme outliers.** One 100x value can move a mean a lot. Check the data first, as in lesson 4.
+
+## Worked examples
+
+### Example 1: Rain versus Clear deliveries (Welch)
+
+We compare delivered orders on Rain days with Clear days. We drop cancelled rows and duplicates.
+
+```python
+import math
+d = load("food_delivery", "deliveries").drop_duplicates()
+d = d[d.delivery_status == "Delivered"].dropna(subset=["actual_minutes"])
+a = d[d.weather == "Rain"].actual_minutes
+b = d[d.weather == "Clear"].actual_minutes
+diff = a.mean() - b.mean()
+se = math.sqrt(a.var() / len(a) + b.var() / len(b))
+t = diff / se
+```
+
+**Output:**
+
+| Quantity | Rain | Clear |
+|---|---|---|
+| Orders (n) | 1,259 | 9,933 |
+| Mean minutes | 49.45 | 44.02 |
+| SD minutes | 13.12 | 12.97 |
+
+| Result | Value |
+|---|---|
+| Difference (Rain minus Clear) | 5.43 minutes |
+| Standard error of the difference | 0.392 |
+| Welch t | 13.85 |
+| Welch df | 1,585.8 |
+| 95% CI for the difference | 4.66 to 6.20 minutes |
+
+The t is 13.85 and the df is about 1,586, so the critical value is about 1.96. The t is far above it, and the p-value is far below 0.001. The 95 percent interval says the true extra time from rain is between about 4.7 and 6.2 minutes. Rain really does slow deliveries.
+
+### Example 2: Self rating versus manager rating (paired)
+
+HR asks if employees rate themselves higher than their managers do. Each review has both ratings, so we use a paired test. We drop duplicate rows and rows with a missing rating.
+
+```python
+import math
+r = load("hr", "performance_reviews").drop_duplicates()
+r = r.dropna(subset=["self_rating", "manager_rating"])
+diff = r.self_rating - r.manager_rating
+mean_diff = diff.mean()
+se = diff.std() / math.sqrt(len(diff))
+t = mean_diff / se
+```
+
+**Output:**
+
+| Quantity | Value |
+|---|---|
+| Reviews (n) | 4,779 |
+| Mean self rating | 3.65 |
+| Mean manager rating | 3.21 |
+| Mean difference (self minus manager) | 0.4434 |
+| Standard error of the difference | 0.0102 |
+| Paired t | 43.58 |
+
+Self ratings are about 0.44 points higher on the same scale. The t of 43.58 is huge, so the gap is not noise. The paired test is correct because the two numbers belong to the same person. An independent test would ignore that link and would be much less sharp.
+
+### Example 3: A small sample and the critical value
+
+Suppose we only had 12 Heavy Rain orders and 12 Clear orders. This is the first 12 of each, sorted by `delivery_id`, so the example can be repeated.
+
+```python
+a = d[d.weather == "Heavy Rain"].sort_values("delivery_id").head(12).actual_minutes
+b = d[d.weather == "Clear"].sort_values("delivery_id").head(12).actual_minutes
+se = math.sqrt(a.var() / len(a) + b.var() / len(b))
+t = (a.mean() - b.mean()) / se
+```
+
+**Output:**
+
+| Quantity | Heavy Rain (12) | Clear (12) |
+|---|---|---|
+| Mean minutes | 62.33 | 39.67 |
+| SD minutes | 7.94 | 11.54 |
+
+| Result | Value |
+|---|---|
+| Welch t | 5.61 |
+| Welch df | 19.5 |
+| Critical t at df 20 (two-sided, 0.05) | 2.09 |
+
+The t of 5.61 is far above 2.09, so we reject H0. But notice the df. With only 12 rows per group, the critical value is much bigger than 1.96. A test on 12 rows needs a bigger signal. Also, this sample happens to show a bigger gap than the full data (about 9.9 minutes on all orders), so small samples can exaggerate effects.
+
+### Example 4: Reporting the result
+
+A good report puts the gap, the range and the test together:
+
+> Rain adds about 5.4 minutes to a delivery (95% CI 4.7 to 6.2 minutes; Welch t = 13.85, p far below 0.001). Heavy Rain adds more, about 9.9 minutes compared with Clear.
+
+Notice the order: the business number first, then the uncertainty, then the test. Managers can act on the first part, and the rest supports it.
+
+## Common mistakes
+
+- **Using an independent test on paired data.** If the same employee gives two ratings, the two columns are linked. Use the paired test on the differences.
+- **Assuming equal variance without checking.** The pooled-variance t-test can mislead when one group is much more spread out. Welch is the safer default.
+- **Running many pairwise t-tests.** Comparing five weather types with ten t-tests inflates the false alarm rate. Use one overall test, or correct for the number of comparisons.
+- **Ignoring the effect size.** A t of 20 on a gap of 0.1 minutes is still a tiny gap. Report the mean difference and the CI.
+- **Treating the p-value as the chance the effect is real.** The p-value assumes H0 is true. It is not a probability that the effect exists.
+
+<CommonMistake>
+An analyst compares two weeks of Rain orders with two weeks of Clear orders using a pooled t-test. The Rain group has far more spread because of storms. The pooled test gives a t that is too big, and the report claims a stronger effect than the data show. Welch's test would have given a fair answer.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="ttest" module="statistics" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "The same 10 riders are timed before and after a training course. Which t-test fits best?", options: ["Welch two-sample", "One-sample z-test", "Paired t-test", "Chi-square test"], answer: 2, explanation: "Each rider has a before and an after value, so the two sets are linked. A paired test works on each rider's difference." },
+  { q: "Why is Welch's test the usual default for two groups?", options: ["It always gives a bigger t", "It works only for big samples", "It needs no degrees of freedom", "It does not assume the two groups have equal spread"], answer: 3, explanation: "Welch keeps a separate variance for each group. This is safer when the groups differ in spread or size." },
+  { q: "What do degrees of freedom control in a t-test?", options: ["How close the t distribution is to the normal curve", "The mean of the data", "The alpha level", "The number of duplicate rows"], answer: 0, explanation: "Bigger df makes the t distribution look more like the normal curve. Small df means heavier tails and a larger critical value." },
+  { q: "A t of 3.1 has 15 df. Which decision is correct at alpha 0.05, two-sided? (The critical value for df 15 is about 2.13.)", options: ["Fail to reject H0, since 3.1 is less than 2.13", "Reject H0, since 3.1 is greater than 2.13 in absolute value", "Reject H0 because t is always significant", "Accept H0 because df is small"], answer: 1, explanation: "The absolute t of 3.1 beats the critical value of about 2.13, so we reject H0. Compare the t with the critical value for the right df." },
+  { q: "Which assumption is most often broken by repeated rows from one rider or one restaurant?", options: ["Alpha being 0.05", "Equal variance", "Normality", "Independence"], answer: 3, explanation: "Repeated rows from the same source are not independent. Their values are linked, so the standard error is too small and the t is too big." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers ask about t-tests to check that you pick the right test for the data. They listen for three things: you choose paired when the pairs are linked, you use Welch by default, and you report the mean difference with an interval, not only a p-value.
+</InterviewAlert>
+
+<InterviewQ q="When would you use a t-test instead of a z-test?">
+I use a t-test when I estimate the spread from the sample, which is almost always. The t distribution has heavier tails, so it gives a fair answer for small samples. For large samples the two give nearly the same result, so the choice matters most for small groups. I also choose between one-sample, Welch and paired based on how the data were collected.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between a paired and an independent t-test?">
+A paired test is for two measures on the same unit, such as before and after for one rider. I take the difference per unit and test if the mean is zero. An independent test is for two separate groups, such as Rain and Clear orders. Using the wrong one changes the standard error, and that can make a real effect look like noise, or noise look real.
+</InterviewQ>
+
+<InterviewQ q="What are the assumptions of a t-test, and what if the data are not normal?">
+The main assumptions are independent rows, roughly normal data or a reasonably large sample, and no extreme outliers. If the sample is large, the test is robust to mild skew. If the data are very skewed or small, I check the outliers first, and I may use a non-parametric test such as the Mann-Whitney test, which compares ranks instead of means. I would still report the mean difference and explain the choice.
+</InterviewQ>
+
+<InterviewQ q="Why should you report a confidence interval, not only the p-value?">
+The p-value says if the gap is likely not zero. The interval says how big the gap probably is. A manager can act on "rain adds 4.7 to 6.2 minutes" far more easily than on "p less than 0.001". The interval also shows the uncertainty, so the decision can weigh the cost of being wrong.
+</InterviewQ>
+
+## Key takeaways
+
+- The t statistic is the mean gap divided by its standard error. A bigger absolute t means a clearer signal.
+- Use a one-sample t for a target, Welch for two independent groups, and paired for linked measures.
+- Welch does not assume equal spread, so it is the safe default for two groups.
+- Small df means a bigger critical value. Compare t with the critical value for your df.
+- Report the mean difference and its interval first, then the test result.
+
+## Further reading
+
+<FurtherReading ids={["khan-stats", "numpy-docs"]} />

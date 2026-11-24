@@ -1,0 +1,230 @@
+[
+  {
+    "id": "statistics-clt-001",
+    "module": "statistics",
+    "topic": "clt",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "The operations head at a fictional Pune food delivery app asks how precise the average delivery time is. Using the rows that have an `actual_minutes` value (completed deliveries), compute the standard error of the mean `actual_minutes`. Use the sample SD (pandas default). Return one number rounded to 4 decimals.",
+    "dataset": "food_delivery",
+    "hint": "Standard error = sample SD divided by the square root of n. Cancelled orders have no `actual_minutes`, so drop them first.",
+    "solutionCode": "import math\n\ndf = load(\"food_delivery\", \"deliveries\")\nx = df[\"actual_minutes\"].dropna()\nresult = round(x.std() / math.sqrt(len(x)), 4)",
+    "expectedOutput": {
+      "value": 0.1096
+    },
+    "orderMatters": false,
+    "explanation": "Cancelled orders have a blank `actual_minutes`, so `dropna()` keeps only completed deliveries. The standard error is the sample SD divided by the square root of the number of orders. With about 14,000 orders the SE is small, so the average is precise.",
+    "commonMistake": "Dividing the SD by n instead of its square root. That gives a value near 0.0009, which makes the average look far more precise than it is.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "clt",
+      "standard-error"
+    ]
+  },
+  {
+    "id": "statistics-clt-002",
+    "module": "statistics",
+    "topic": "clt",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "An HR analyst at a fictional Bengaluru software firm wants to know how precisely the average goals-met percentage is estimated from performance reviews. Remove duplicate review rows first. Then compute the standard error of the mean `goals_met_pct`, using the sample SD. Return the value rounded to 4 decimals.",
+    "dataset": "hr",
+    "hint": "Call `drop_duplicates()` before you count. Then use the same formula as the SE of a mean: SD divided by the square root of n.",
+    "solutionCode": "import math\n\ndf = load(\"hr\", \"performance_reviews\").drop_duplicates()\nx = df[\"goals_met_pct\"].dropna()\nresult = round(x.std() / math.sqrt(len(x)), 4)",
+    "expectedOutput": {
+      "value": 0.1732
+    },
+    "orderMatters": false,
+    "explanation": "Exact duplicate review rows would count the same review twice and make n too big. After removing them, the standard error is the sample SD divided by the square root of n. The answer shows how much the average goals-met percentage could move from sample to sample.",
+    "commonMistake": "Skipping `drop_duplicates()`. The count n is then slightly too high, so the standard error looks a little too small.",
+    "interviewFrequency": "low",
+    "estimatedMinutes": 4,
+    "tags": [
+      "clt",
+      "standard-error",
+      "duplicates"
+    ]
+  },
+  {
+    "id": "statistics-clt-003",
+    "module": "statistics",
+    "topic": "clt",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "A planning team wants to see how much a sample mean wobbles. Take the first 15,000 non-blank `distance_km` values in file order and cut them into 300 blocks of 50 values each. Do not sample at random. Compute the mean of each block, then return the standard deviation of those 300 block means (`np.std`, default settings), rounded to 3 decimals.",
+    "dataset": "food_delivery",
+    "hint": "Use `to_numpy()` and `reshape(300, 50)`. Then take the mean along axis 1.",
+    "solutionCode": "import numpy as np\n\ndf = load(\"food_delivery\", \"deliveries\")\nvals = df[\"distance_km\"].dropna().to_numpy()[:15000]\nblock_means = vals.reshape(300, 50).mean(axis=1)\nresult = round(float(np.std(block_means)), 3)",
+    "expectedOutput": {
+      "value": 0.315
+    },
+    "orderMatters": false,
+    "explanation": "Each block of 50 values gives one sample mean, so 300 blocks give 300 means. The spread of those means is the empirical standard error for samples of size 50. Using fixed blocks keeps the answer the same every time the question runs.",
+    "commonMistake": "Reporting the SD of the raw distances (about 2.1 km). That describes one order, not the spread of averages of 50 orders, so it is far too large.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 6,
+    "tags": [
+      "clt",
+      "sampling-distribution"
+    ]
+  },
+  {
+    "id": "statistics-clt-004",
+    "module": "statistics",
+    "topic": "clt",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Using the same 300 blocks of 50 distance values from the previous question, compare the observed spread of block means with the theory. Compute the theoretical standard error as the SD of the 15,000 values divided by the square root of 50 (both SDs with `np.std`). Return the ratio of the observed SD of the block means to the theoretical SE, rounded to 3 decimals.",
+    "dataset": "food_delivery",
+    "hint": "Compute `observed = np.std(block_means)` and `theory = np.std(vals) / np.sqrt(50)`. Then divide one by the other.",
+    "solutionCode": "import numpy as np\n\ndf = load(\"food_delivery\", \"deliveries\")\nvals = df[\"distance_km\"].dropna().to_numpy()[:15000]\nblock_means = vals.reshape(300, 50).mean(axis=1)\nobserved = np.std(block_means)\ntheory = np.std(vals) / np.sqrt(50)\nresult = round(float(observed / theory), 3)",
+    "expectedOutput": {
+      "value": 1.06
+    },
+    "orderMatters": false,
+    "explanation": "The theory says the SD of sample means equals the population SD divided by the square root of n. A ratio close to 1 means the simulated spread matches the formula. A ratio far from 1 would mean the data breaks the assumptions, such as strong dependence between rows.",
+    "commonMistake": "Dividing by 50 instead of its square root. The theory then predicts a spread about seven times too small, and the check looks like a failure when it is only a formula slip.",
+    "interviewFrequency": "low",
+    "estimatedMinutes": 6,
+    "tags": [
+      "clt",
+      "standard-error"
+    ]
+  },
+  {
+    "id": "statistics-clt-005",
+    "module": "statistics",
+    "topic": "clt",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "A growth team reviews a fictional app's A/B test on the control arm. Clean the data first: drop exact duplicate rows, then remove every user who appears in both variants. For the control arm, compute the conversion rate p (the mean of `converted`) and the standard error of p using sqrt(p(1-p)/n). Return the standard error rounded to 5 decimals.",
+    "dataset": "marketing",
+    "hint": "Filter with `variant == 'control'` after cleaning. A proportion's SE uses `p * (1 - p) / n` under the square root.",
+    "solutionCode": "import math\n\ndf = load(\"marketing\", \"ab_test_results\").drop_duplicates()\nboth = df.groupby(\"user_id\")[\"variant\"].nunique()\ndf = df[~df.user_id.isin(both[both > 1].index)]\nc = df[df[\"variant\"] == \"control\"][\"converted\"].astype(float)\np = c.mean()\nresult = round(math.sqrt(p * (1 - p) / len(c)), 5)",
+    "expectedOutput": {
+      "value": 0.00396
+    },
+    "orderMatters": false,
+    "explanation": "Users who appear in both arms are removed because their assignment is unclear. Duplicate rows are removed so the same person is not counted twice. The SE of a proportion uses the same idea as the SE of a mean, with p(1 - p) as the variance of a 0 or 1 outcome.",
+    "commonMistake": "Skipping the cleaning. The duplicate and contaminated rows change n and p, so the standard error is computed on the wrong group.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 6,
+    "tags": [
+      "clt",
+      "proportion",
+      "ab-test"
+    ]
+  },
+  {
+    "id": "statistics-clt-006",
+    "module": "statistics",
+    "topic": "clt",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "The operations head wants the average delivery time measured with a standard error of 0.5 minutes or less. Using the sample SD of `actual_minutes` for completed deliveries, find the smallest whole number of orders n so that SD divided by the square root of n is at most 0.5. Return n as an integer.",
+    "dataset": "food_delivery",
+    "hint": "Square both sides of SD / sqrt(n) <= 0.5 to get n >= (SD / 0.5)^2. Then round up with `math.ceil`.",
+    "solutionCode": "import math\n\ndf = load(\"food_delivery\", \"deliveries\")\nx = df[\"actual_minutes\"].dropna()\nsd = x.std()\nresult = math.ceil((sd / 0.5) ** 2)",
+    "expectedOutput": {
+      "value": 693
+    },
+    "orderMatters": false,
+    "explanation": "Solving SD / sqrt(n) <= 0.5 for n gives n >= (SD / 0.5) squared. The `math.ceil` rounds up, because a fraction of an order is not possible and rounding down would miss the target. This is the way to plan how many observations a study needs.",
+    "commonMistake": "Rounding the answer down with `int()`. The standard error then comes out just above 0.5, so the target is missed.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 6,
+    "tags": [
+      "clt",
+      "sample-size"
+    ]
+  },
+  {
+    "id": "statistics-clt-007",
+    "module": "statistics",
+    "topic": "clt",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "The population SD of waiting times at a fictional Chennai bank branch is 20 minutes (sigma = 20). A random sample of 100 customers is taken. What is the standard error of the sample mean? Answer with one number.",
+    "dataset": "none",
+    "hint": "Standard error = sigma divided by the square root of n.",
+    "solution": "**Model answer:** SE = sigma / sqrt(n) = 20 / sqrt(100) = 20 / 10 = **2 minutes**.",
+    "explanation": "The SE is the SD divided by the square root of the sample size. The square root of 100 is 10, so the SE is 2.",
+    "commonMistake": "Dividing by 100 instead of its square root, which gives 0.2 and understates the wobble of the average by a factor of 10.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "clt",
+      "standard-error"
+    ],
+    "expectedOutput": {
+      "value": 2
+    }
+  },
+  {
+    "id": "statistics-clt-008",
+    "module": "statistics",
+    "topic": "clt",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "A product team wants to cut the standard error of their average session time in half. By what multiple must they increase the sample size n? Answer with one number.",
+    "dataset": "none",
+    "hint": "SE is proportional to 1 / sqrt(n). Which factor k makes sqrt(k) equal to 2?",
+    "solution": "**Model answer:** SE is sigma / sqrt(n). Halving the SE means sqrt(k) = 2, so k = 4. They need **4 times** the sample size. Doubling n only cuts the SE by about 29 percent, since 1 / sqrt(2) is about 0.71.",
+    "explanation": "Because SE depends on the square root of n, you must multiply n by the square of the wanted gain. Halving the SE needs four times the data. This is why big gains in precision get expensive.",
+    "commonMistake": "Answering 2 because 'half the error needs double the data'. Doubling n gives an SE of about 0.71 times the old one, not one half.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "clt",
+      "sample-size"
+    ],
+    "expectedOutput": {
+      "value": 4
+    }
+  },
+  {
+    "id": "statistics-clt-009",
+    "module": "statistics",
+    "topic": "clt",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "A survey of 400 app users finds that 20 percent (p = 0.2) use a new feature. What is the standard error of this proportion? Round to 4 decimals and answer with one number.",
+    "dataset": "none",
+    "hint": "For a proportion, SE = sqrt(p * (1 - p) / n).",
+    "solution": "**Model answer:** SE = sqrt(0.2 x 0.8 / 400) = sqrt(0.16 / 400) = sqrt(0.0004) = **0.02** (2 percentage points).",
+    "explanation": "A proportion is a mean of 0 and 1 values, so its variance is p(1 - p). Divide that by n, take the square root, and you get the SE. Here it is 0.02, which means the estimate could move about 2 percentage points.",
+    "commonMistake": "Using p instead of p(1 - p) under the square root. That gives sqrt(0.2 / 400) = 0.022, which is wrong and overstates the SE.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "clt",
+      "proportion"
+    ],
+    "expectedOutput": {
+      "value": 0.02
+    }
+  },
+  {
+    "id": "statistics-clt-010",
+    "module": "statistics",
+    "topic": "clt",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "The SD of order values at a fictional Delhi grocery chain is 15 rupees. The analyst wants the standard error of the sample mean to be 1 rupee. What sample size n is needed? Answer with one whole number.",
+    "dataset": "none",
+    "hint": "Set 15 / sqrt(n) = 1 and solve for n.",
+    "solution": "**Model answer:** sqrt(n) = sigma / SE = 15 / 1 = 15, so n = 15 squared = **225** orders.",
+    "explanation": "Turn the SE formula around. Square the ratio of SD to target SE to get the sample size. A 1 rupee target needs 225 orders when the SD is 15 rupees.",
+    "commonMistake": "Using n = 15 because the SD and the target are both written in rupees. The units match, but n is the square of the ratio, not the ratio itself.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "clt",
+      "sample-size"
+    ],
+    "expectedOutput": {
+      "value": 225
+    }
+  }
+]
