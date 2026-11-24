@@ -101,7 +101,11 @@ They are NOT yet checked in a browser.
    - Clarified question prompt: "assume each group has at least one member".
    - Regenerated all 320 aptitude questions (`scripts/generate_aptitude.py`).
    - Ran blind MCQ check (`node scripts/mcq-blind.mjs prep aptitude-logical 1` -> independent blind solver -> `compare`): **60 answered, 0 disagree** (100% pass).
-4. **Light dedupe of the interview banks:** interview-powerbi-030 vs 031 and interview-sql-050 vs 071 look like near-duplicates. Statistics-2 partly overlaps statistics.json.
+4. **[DONE] Light dedupe of the interview banks:**
+   - Replaced `interview-powerbi-031` with dedicated question on `RELATED` vs `RELATEDTABLE` in DAX (scalar navigation many-to-one vs table navigation one-to-many).
+   - Replaced `interview-sql-071` with Top-3 highest-spending customer ranking per city using `ROW_NUMBER() OVER (PARTITION BY ...)` with clean data handling (`UPPER(TRIM(city))`) tested against `ecommerce.sqlite`.
+   - Verified `statistics-2.json` vs `statistics.json`: 0 duplicate questions, clean progression from foundational descriptive/probability concepts (25 Qs) to advanced A/B testing/regression concepts (35 Qs).
+   - All 4 gates green (audit 475 questions, check:mdx 179 files, validate 491 solutions, build 215 pages).
 5. **Reviewer pass** (`.briefs/reviewer.md`, FIX mode, Haiku) on the interview banks + Phase 5 content, plus a blind check on any new MCQs.
 6. **Browser smoke test** of the tool pages and the Python runner in Pyodide (pandas version may differ from the local pandas 3). Use a Sonnet agent.
 7. **Phase 6:**

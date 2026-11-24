@@ -2,17 +2,16 @@
   {
     "id": "interview-powerbi-031",
     "category": "power-bi",
-    "question": "What is the difference between SUM and SUMX in DAX?",
-    "whatInterviewerIsTesting": "Whether the candidate knows that SUMX is a row iterator and when a per-row calculation is needed.",
-    "modelAnswer": "**SUM** adds up one column as it is. It takes a column and returns the total of the visible rows. **SUMX** is an iterator. It walks a table row by row, evaluates an expression on each row, and then adds the results. I use SUMX when each row needs its own maths. For example, an order sheet for a grocery chain in Pune has Quantity and Unit_Price columns:\n\n```dax\nSales Amount =\nSUMX ( Orders, Orders[Quantity] * Orders[Unit_Price] )\n```\n\nSUM cannot multiply two columns row by row, so SUMX is the right tool here. SUMX is slower on very large tables, so for a plain column total I would still use SUM.",
+    "question": "What is the difference between RELATED and RELATEDTABLE in DAX, and when would you use each?",
+    "whatInterviewerIsTesting": "Understanding how DAX navigates one-to-many and many-to-one relationships across row contexts.",
+    "modelAnswer": "**RELATED** fetches a single scalar value from the 'one' side of a one-to-many relationship into the 'many' side. It requires a row context, such as inside a calculated column on a fact table or within a row iterator like `SUMX`.\n\n```dax\n-- Example: Pull customer city into Orders calculated column\nCustomer City = RELATED(Customers[City])\n\n-- Or inside an iterator measure:\nTotal Cost = SUMX(Orders, Orders[Quantity] * RELATED(Products[UnitCost]))\n```\n\n**RELATEDTABLE** fetches a table containing all matching rows from the 'many' side of a relationship into the 'one' side. Because it returns a table, it is typically wrapped in a table function or iterator like `COUNTROWS` or `SUMX`.\n\n```dax\n-- Example: Count orders for each customer on the Customers table\nOrder Count = COUNTROWS(RELATEDTABLE(Orders))\n```\n\nIn short: `RELATED` walks from many to one to return a single value; `RELATEDTABLE` walks from one to many to return a table of related rows.",
     "followUps": [
-      "Can SUMX work on a table that is not a fact table?",
-      "How would you write a plain total of the Quantity column?"
+      "Can RELATED work without an active relationship between the two tables?",
+      "Why does RELATED return an error if you try to call it on the 'one' side pointing to the 'many' side?"
     ],
     "commonMistakes": [
-      "Using SUM on an expression that needs row-level maths.",
-      "Using SUMX for every total, even when SUM gives the same answer.",
-      "Passing a column to SUMX instead of a table as the first argument."
+      "Using RELATED to reach a table on the many side of a relationship, which fails because multiple rows exist.",
+      "Attempting to use RELATED in a measure without an iterator like SUMX providing a row context."
     ],
     "difficulty": "medium"
   },

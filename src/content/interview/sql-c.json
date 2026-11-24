@@ -2,18 +2,19 @@
   {
     "id": "interview-sql-071",
     "category": "sql",
-    "question": "How do you calculate each category's share of total revenue in one SQL query?",
-    "whatInterviewerIsTesting": "Percent of total using a window function over an aggregate.",
-    "modelAnswer": "Group the revenue by category, then divide each group's sum by the grand total. In SQLite you can get the grand total in the same query with `SUM(SUM(x)) OVER ()`. In this ecommerce data, category text has mixed case and extra spaces, so I clean it with `LOWER(TRIM())` before grouping. Electronics is about 52 percent of delivered revenue in this sample.\n\n```sql\nSELECT LOWER(TRIM(p.category)) AS category,\n       ROUND(SUM(oi.line_total), 0) AS revenue,\n       ROUND(100.0 * SUM(oi.line_total) / SUM(SUM(oi.line_total)) OVER (), 2) AS pct_of_total\nFROM order_items oi\nJOIN products p ON p.product_id = oi.product_id\nJOIN orders o ON o.order_id = oi.order_id\nWHERE o.order_status = 'Delivered'\nGROUP BY LOWER(TRIM(p.category))\nORDER BY revenue DESC;\n```\n\nI would also multiply by `100.0` first so the division does not drop the decimals.",
+    "question": "How do you find the top 3 highest-spending customers in each city using a SQL window function?",
+    "whatInterviewerIsTesting": "Top-N per group using ROW_NUMBER() in a CTE, handling data cleaning (trimming/casing), and explaining why window functions cannot be placed directly in a WHERE clause.",
+    "modelAnswer": "To find the top 3 customers per city, aggregate total spend per customer first, rank customers within each city using `ROW_NUMBER() OVER (PARTITION BY city ORDER BY total_spend DESC)`, and filter for `rn <= 3`.\n\nBecause SQL evaluates `WHERE` before window functions, the ranking must be computed in a CTE or subquery. In real-world data like our ecommerce dataset, city names often have mixed case or leading whitespace, so wrapping them in `UPPER(TRIM(city))` prevents duplicate city groupings.\n\n```sql\nWITH customer_spend AS (\n  SELECT c.customer_id,\n         UPPER(TRIM(c.city)) AS city,\n         ROUND(SUM(o.total_amount), 2) AS total_spend\n  FROM customers c\n  JOIN orders o ON c.customer_id = o.customer_id\n  WHERE o.order_status = 'Delivered'\n    AND c.city IS NOT NULL\n  GROUP BY c.customer_id, UPPER(TRIM(c.city))\n),\nranked AS (\n  SELECT customer_id, city, total_spend,\n         ROW_NUMBER() OVER (\n           PARTITION BY city\n           ORDER BY total_spend DESC\n         ) AS rn\n  FROM customer_spend\n)\nSELECT city, rn AS rank, customer_id, total_spend\nFROM ranked\nWHERE rn <= 3\nORDER BY city, rn;\n```\n\nI choose `ROW_NUMBER()` if exactly 3 rows per city are needed. If ties for 3rd place must be included, `DENSE_RANK()` would be used instead.",
     "followUps": [
-      "How would you do the same without a window function?",
-      "Why does the filter on delivered orders change the percentages?"
+      "Why does writing `WHERE ROW_NUMBER() OVER (...) <= 3` produce a syntax error in the same SELECT query?",
+      "How would the results differ between ROW_NUMBER(), RANK(), and DENSE_RANK() if two customers tied for second place?"
     ],
     "commonMistakes": [
-      "Dividing two integer sums and getting 0 or 1 instead of a percentage.",
-      "Forgetting to clean category text, so Fashion and fashion show up as two rows."
+      "Placing a window function directly in the WHERE clause instead of using a CTE or subquery.",
+      "Using `LIMIT 3` with `GROUP BY city`, which limits the entire result set to 3 rows rather than returning 3 rows per city.",
+      "Forgetting to clean whitespace or case in city names before partitioning."
     ],
-    "difficulty": "easy"
+    "difficulty": "medium"
   },
   {
     "id": "interview-sql-072",
