@@ -62,18 +62,49 @@ Check each item with `ls`, audit and validate:
 - No scipy, sklearn or matplotlib in the harness.
 - Outline numbers are often wrong. Writers must recompute.
 
-## Known issues / next actions, in order
-1. ~~Build broken~~ FIXED. Old note: `src/content/lessons/excel/06-sumifs-countifs-averageifs.mdx:61` has a bare formula containing `"<="` outside a code block. Wrap Excel formulas in backticks or fenced code. Grep all excel and power-bi lessons for bare `<` in prose, then run `npx astro build` until it passes.
-2. Finish or verify the SQL wave (above), then run the Haiku reviewer (`.briefs/reviewer.md`, FIX mode) on the SQL module. Make sure it enriches the thin explanations, commonMistakes and hints flagged by `lint:quality`, especially in the SQL 01–12 practice files.
-3. **Fintech data signal is weak:** only 19 fraud-flagged transactions, and the outage windows hold only 25 transactions. Strengthen it in `scripts/generate_data/gen_fintech.py` (Haiku), regenerate, re-run `npm run validate`, and fix or re-fill any changed fintech expectedOutputs. Do this before Project 5.
-4. **Retail data:** East-region stores have NO targets (the brief meant "misses its targets"). Optionally change that.
-5. **SQL screening tests:** Haiku assembles 10 tests × 5 questions (45 minutes each, mixed difficulty) in `src/content/tests/` from the existing SQL practice ids, plus the timed test UI at /tools/sql-tests/ (Sonnet).
-6. Then Phases 4–7 per master_prompt §9:
-   - Phase 4: Python (120+ questions, Pyodide; questions assign `result`) and Statistics (100+ MCQs).
-   - Phase 5: Business cases (25) and the Interview hub (banks, aptitude 300+ via Haiku with careful checking, mock mode).
-   - Phase 6: Projects (8), job toolkit (resume builder, tracker), cheat sheets, glossary 300+ and flashcards 500+ (Haiku).
-   - Phase 7: polish, Lighthouse, README, final counts report.
-   - Tool pages go at /tools/<name>/ and get registered in `src/data/tools.json` with `enabled: true`.
+## Totals so far (from reports/counts.json)
+| Module | Lessons | Practice | Other |
+|---|---|---|---|
+| Start Here | 6 | 30 | plan.json |
+| Excel | 16 | 58 | 6 workbooks |
+| SQL | 42 | 209 | 10 screening tests |
+| Power BI | 19 | 83 | |
+| Python | 20 | 130 | 8 notebooks, EDA checklist |
+| Statistics | 17 | 170 | 136 MCQs |
+| Interview | 0 (outlined) | 0 (outlined) | 475 bank items, 320 aptitude MCQs |
+| Business | 0 (outlined) | 0 (outlined) | 25 cases outlined |
+
+Tool pages are built and registered in tools.json:
+- /interview/banks/
+- /tools/aptitude/
+- /tools/mcq/
+- /tools/sql-tests/
+- /tools/mock-interview/
+
+They are NOT yet checked in a browser.
+
+## NEXT SESSION: do these in order
+1. **Interview hub writers (Haiku):** use `.work/writer-brief.md` and `.work/outlines/interview/_plan.md`.
+   - Tasks L1–L5: 8 lessons + 41 practice, ids `interview-pr-*`.
+   - Tasks C1–C2: 10 mock cases in `src/content/cases/mock-case-NN-*.mdx`, type "mock-case".
+   - The banks (B1–B12b) are DONE; skip them.
+2. **Business writers (Haiku):** use `.work/writer-brief.md` and `.work/outlines/business/_plan.md` (9 tasks: lessons + 25 cases from `cases.md`; facts are in `_facts.md`).
+   - First verify that the schema accepts `module: business` (`npx astro sync`).
+   - Decide on adding a DPDP Act link to links.json for lesson 13.
+3. **Fix the aptitude syllogism template** in `scripts/generate_aptitude.py`. The blind check showed apt-logical-052 (wrong key), 055, 056 and 059 are ambiguous under existential import. Make conclusions unambiguous (or state "assume all groups are non-empty") and regenerate. Then re-run the blind check: `node scripts/mcq-blind.mjs prep aptitude-logical 1`, have a Haiku answer it, then `compare`.
+4. **Light dedupe of the interview banks:** interview-powerbi-030 vs 031 and interview-sql-050 vs 071 look like near-duplicates. Statistics-2 partly overlaps statistics.json.
+5. **Reviewer pass** (`.briefs/reviewer.md`, FIX mode, Haiku) on the interview banks + Phase 5 content, plus a blind check on any new MCQs.
+6. **Browser smoke test** of the tool pages and the Python runner in Pyodide (pandas version may differ from the local pandas 3). Use a Sonnet agent.
+7. **Phase 6:**
+   - Projects (8): Sonnet outlines, then Haiku writers.
+   - Job toolkit: resume builder + tracker UI (Sonnet).
+   - Cheat sheets, glossary 300+ and flashcards 500+: Haiku, derived from existing lessons; dedupe by script.
+8. **Phase 7:** polish, Lighthouse, README, final counts report.
+9. **Optional:** retail East-region targets (see the old note below).
+
+## Known issues / older notes
+- Retail: East-region stores have NO targets (the brief meant "misses its targets"). Optional fix.
+- Salary lesson (interview 07) needs a "numbers are approximate; check current postings" disclaimer (flagged in its outline).
 
 ## Notes for authors
 - The validator reuses one DB per dataset for the whole run. DDL questions must `DROP ... IF EXISTS` and use unique `_q` table names.
@@ -83,7 +114,7 @@ Check each item with `ls`, audit and validate:
 - Parallel agents collided in a shared /tmp dir. Tell each agent to use its own scratch dir (e.g. /tmp/<task-slug>/).
 
 ## Git
-Phase 1 is committed. Everything after it is committed as "WIP: Module 0, Excel, Power BI, SQL partial" (the build is not yet green; see item 1).
+Everything is committed on master and the build is green. Outlines and briefs in `.work/` are tracked; `.work/verify` and `.work/enrich` are not.
 
 ## Working approach for next phases (user-agreed)
 - **The orchestrator stays in charge.** The main session plans and dispatches and reads only short verdicts. It never touches content directly.
