@@ -1,0 +1,13 @@
+---
+import Base from '../../layouts/Base.astro';
+import MockInterview from '../../components/react/MockInterview';
+import { getInterviewItems } from '../../lib/banks';
+const items = await getInterviewItems();
+---
+<Base title="Mock interview" description="Practise answering out loud against a timer, rate yourself and track your progress.">
+  <div style="max-width:56rem;margin:0 auto">
+    <h1 style="margin-top:0">Mock interview</h1>
+    <p class="muted">Practise answering out loud against a timer, rate yourself and track your progress.</p>
+    <MockInterview client:load items={items} />
+  </div>
+</Base>

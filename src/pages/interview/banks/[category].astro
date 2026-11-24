@@ -1,0 +1,19 @@
+---
+import Base from '../../../layouts/Base.astro';
+import InterviewBank from '../../../components/react/InterviewBank';
+import { getInterviewItems, catLabel } from '../../../lib/banks';
+import { url } from '../../../lib/url';
+export async function getStaticPaths() {
+  const items = await getInterviewItems();
+  return [...new Set(items.map((i) => i.category))].map((c) => ({ params: { category: c }, props: { items: items.filter((i) => i.category === c) } }));
+}
+const { category } = Astro.params;
+const { items } = Astro.props;
+---
+<Base title={`${catLabel(category!)} interview questions`} description={`${items.length} ${category} interview questions with model answers.`}>
+  <div style="max-width:56rem;margin:0 auto">
+    <nav aria-label="Breadcrumb" class="muted" style="font-size:.85rem"><a href={url('/')}>Home</a> / <a href={url('/interview/')}>Interview Prep</a> / <a href={url('/interview/banks/')}>Question banks</a> / {catLabel(category!)}</nav>
+    <h1>{catLabel(category!)} interview questions</h1>
+    <InterviewBank client:load items={items} category={category} />
+  </div>
+</Base>

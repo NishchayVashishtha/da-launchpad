@@ -1,0 +1,122 @@
+[
+  {
+    "id": "sql-test-01",
+    "title": "SQL Screening Test 1 — Fintech focus",
+    "durationMinutes": 45,
+    "questionIds": [
+      "sql-aggregates-003",
+      "sql-basics-004",
+      "sql-case-when-004",
+      "sql-cleaning-005",
+      "sql-ctes-005"
+    ]
+  },
+  {
+    "id": "sql-test-02",
+    "title": "SQL Screening Test 2 — Fintech focus",
+    "durationMinutes": 45,
+    "questionIds": [
+      "sql-ctes-002",
+      "sql-dates-004",
+      "sql-ddl-dml-004",
+      "sql-case-when-006",
+      "sql-cleaning-002"
+    ]
+  },
+  {
+    "id": "sql-test-03",
+    "title": "SQL Screening Test 3 — Fintech focus",
+    "durationMinutes": 45,
+    "questionIds": [
+      "sql-dedup-001",
+      "sql-group-by-004",
+      "sql-having-004",
+      "sql-dates-006",
+      "sql-ddl-dml-005"
+    ]
+  },
+  {
+    "id": "sql-test-04",
+    "title": "SQL Screening Test 4 — Mixed",
+    "durationMinutes": 45,
+    "questionIds": [
+      "sql-group-by-006",
+      "sql-having-001",
+      "sql-joins-advanced-002",
+      "sql-pattern-ab-test-003",
+      "sql-pattern-cohort-002"
+    ]
+  },
+  {
+    "id": "sql-test-05",
+    "title": "SQL Screening Test 5 — Mixed",
+    "durationMinutes": 45,
+    "questionIds": [
+      "sql-joins-basic-001",
+      "sql-nulls-007",
+      "sql-pattern-ab-test-001",
+      "sql-pattern-cohort-003",
+      "sql-pattern-median-003"
+    ]
+  },
+  {
+    "id": "sql-test-06",
+    "title": "SQL Screening Test 6 — Mixed",
+    "durationMinutes": 45,
+    "questionIds": [
+      "sql-optimization-003",
+      "sql-order-limit-distinct-002",
+      "sql-pattern-ab-test-002",
+      "sql-pattern-cohort-001",
+      "sql-pattern-mixed-003"
+    ]
+  },
+  {
+    "id": "sql-test-07",
+    "title": "SQL Screening Test 7 — Mixed",
+    "durationMinutes": 45,
+    "questionIds": [
+      "sql-pattern-duplicates-003",
+      "sql-pattern-funnel-001",
+      "sql-pattern-median-001",
+      "sql-pattern-missing-004",
+      "sql-pattern-mixed-004"
+    ]
+  },
+  {
+    "id": "sql-test-08",
+    "title": "SQL Screening Test 8 — Mixed",
+    "durationMinutes": 45,
+    "questionIds": [
+      "sql-pattern-mixed-006",
+      "sql-pattern-mom-001",
+      "sql-pattern-nth-highest-002",
+      "sql-pattern-percent-total-003",
+      "sql-select-003"
+    ]
+  },
+  {
+    "id": "sql-test-09",
+    "title": "SQL Screening Test 9 — Interview patterns",
+    "durationMinutes": 45,
+    "questionIds": [
+      "sql-pattern-running-total-003",
+      "sql-pattern-sessions-001",
+      "sql-pattern-streaks-002",
+      "sql-pattern-top-n-003",
+      "sql-pivot-001"
+    ]
+  },
+  {
+    "id": "sql-test-10",
+    "title": "SQL Screening Test 10 — Interview patterns",
+    "durationMinutes": 45,
+    "questionIds": [
+      "sql-pattern-cohort-004",
+      "sql-pattern-duplicates-001",
+      "sql-pattern-funnel-002",
+      "sql-pivot-003",
+      "sql-set-operations-004"
+    ]
+  }
+]

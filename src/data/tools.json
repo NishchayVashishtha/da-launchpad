@@ -1,1 +1,7 @@
-[]
+[
+  { "id": "sql-tests", "title": "SQL tests", "href": "/tools/sql-tests/", "description": "Timed SQL tests with review.", "enabled": true },
+  { "id": "aptitude", "title": "Aptitude practice", "href": "/tools/aptitude/", "description": "Timed quant, logic, data and verbal MCQs.", "enabled": true },
+  { "id": "mcq", "title": "Statistics MCQs", "href": "/tools/mcq/", "description": "Timed statistics multiple-choice practice.", "enabled": true },
+  { "id": "mock-interview", "title": "Mock interview", "href": "/tools/mock-interview/", "description": "Timed questions, self-rating and score history.", "enabled": true },
+  { "id": "interview-banks", "title": "Interview question banks", "href": "/interview/banks/", "description": "Browse questions with model answers.", "enabled": true }
+]

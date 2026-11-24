@@ -1,0 +1,1022 @@
+[
+  {
+    "id": "apt-logical-001",
+    "module": "interview",
+    "topic": "series-letters",
+    "section": "Logical reasoning",
+    "difficulty": "easy",
+    "question": "Which letter comes next in the series: H, J, L, N, P, ?",
+    "options": [
+      "R",
+      "P",
+      "T",
+      "U"
+    ],
+    "answerIndex": 0,
+    "explanation": "Positions (A = 1): 8, 10, 12, 14, 16. Gaps so far: 2, 2, 2, 2. The next gap is 2, so the next position is 18, which is R.",
+    "shortcut": "Convert letters to positions (A = 1) and look at the gaps."
+  },
+  {
+    "id": "apt-logical-002",
+    "module": "interview",
+    "topic": "series-letters",
+    "section": "Logical reasoning",
+    "difficulty": "medium",
+    "question": "Which letter comes next in the series: H, J, K, M, N, ?",
+    "options": [
+      "N",
+      "P",
+      "O",
+      "Q"
+    ],
+    "answerIndex": 1,
+    "explanation": "Positions (A = 1): 8, 10, 11, 13, 14. Gaps so far: 2, 1, 2, 1. The next gap is 2, so the next position is 16, which is P.",
+    "shortcut": "Convert letters to positions (A = 1) and look at the gaps."
+  },
+  {
+    "id": "apt-logical-003",
+    "module": "interview",
+    "topic": "series-letters",
+    "section": "Logical reasoning",
+    "difficulty": "hard",
+    "question": "Which letter comes next in the series: E, G, J, N, S, ?",
+    "options": [
+      "W",
+      "X",
+      "Y",
+      "Z"
+    ],
+    "answerIndex": 2,
+    "explanation": "Positions (A = 1): 5, 7, 10, 14, 19. Gaps so far: 2, 3, 4, 5. The next gap is 6, so the next position is 25, which is Y.",
+    "shortcut": "Convert letters to positions (A = 1) and look at the gaps."
+  },
+  {
+    "id": "apt-logical-004",
+    "module": "interview",
+    "topic": "series-letters",
+    "section": "Logical reasoning",
+    "difficulty": "easy",
+    "question": "Which letter comes next in the series: L, N, P, R, T, ?",
+    "options": [
+      "T",
+      "W",
+      "Y",
+      "V"
+    ],
+    "answerIndex": 3,
+    "explanation": "Positions (A = 1): 12, 14, 16, 18, 20. Gaps so far: 2, 2, 2, 2. The next gap is 2, so the next position is 22, which is V.",
+    "shortcut": "Convert letters to positions (A = 1) and look at the gaps."
+  },
+  {
+    "id": "apt-logical-005",
+    "module": "interview",
+    "topic": "series-letters",
+    "section": "Logical reasoning",
+    "difficulty": "medium",
+    "question": "Which letter comes next in the series: E, G, J, L, O, ?",
+    "options": [
+      "Q",
+      "S",
+      "O",
+      "T"
+    ],
+    "answerIndex": 0,
+    "explanation": "Positions (A = 1): 5, 7, 10, 12, 15. Gaps so far: 2, 3, 2, 3. The next gap is 2, so the next position is 17, which is Q.",
+    "shortcut": "Convert letters to positions (A = 1) and look at the gaps."
+  },
+  {
+    "id": "apt-logical-006",
+    "module": "interview",
+    "topic": "series-letters",
+    "section": "Logical reasoning",
+    "difficulty": "hard",
+    "question": "Which letter comes next in the series: B, D, G, K, P, ?",
+    "options": [
+      "Y",
+      "V",
+      "T",
+      "X"
+    ],
+    "answerIndex": 1,
+    "explanation": "Positions (A = 1): 2, 4, 7, 11, 16. Gaps so far: 2, 3, 4, 5. The next gap is 6, so the next position is 22, which is V.",
+    "shortcut": "Convert letters to positions (A = 1) and look at the gaps."
+  },
+  {
+    "id": "apt-logical-007",
+    "module": "interview",
+    "topic": "series-letters",
+    "section": "Logical reasoning",
+    "difficulty": "easy",
+    "question": "Which letter comes next in the series: H, I, J, K, L, ?",
+    "options": [
+      "L",
+      "O",
+      "M",
+      "K"
+    ],
+    "answerIndex": 2,
+    "explanation": "Positions (A = 1): 8, 9, 10, 11, 12. Gaps so far: 1, 1, 1, 1. The next gap is 1, so the next position is 13, which is M.",
+    "shortcut": "Convert letters to positions (A = 1) and look at the gaps."
+  },
+  {
+    "id": "apt-logical-008",
+    "module": "interview",
+    "topic": "series-letters",
+    "section": "Logical reasoning",
+    "difficulty": "medium",
+    "question": "Which letter comes next in the series: H, J, M, O, R, ?",
+    "options": [
+      "U",
+      "W",
+      "R",
+      "T"
+    ],
+    "answerIndex": 3,
+    "explanation": "Positions (A = 1): 8, 10, 13, 15, 18. Gaps so far: 2, 3, 2, 3. The next gap is 2, so the next position is 20, which is T.",
+    "shortcut": "Convert letters to positions (A = 1) and look at the gaps."
+  },
+  {
+    "id": "apt-logical-009",
+    "module": "interview",
+    "topic": "series-numbers",
+    "section": "Logical reasoning",
+    "difficulty": "easy",
+    "question": "Which number comes next in the series: 3, 12, 39, 120, 363, ?",
+    "options": [
+      "1092",
+      "483",
+      "1093",
+      "1095"
+    ],
+    "answerIndex": 0,
+    "explanation": "Each term is the previous term × 3 + 3. Next: 363 × 3 + 3 = 1092.",
+    "shortcut": "Test the rule on the first two terms before you use it."
+  },
+  {
+    "id": "apt-logical-010",
+    "module": "interview",
+    "topic": "series-numbers",
+    "section": "Logical reasoning",
+    "difficulty": "medium",
+    "question": "Which number comes next in the series: 4, 12, 28, 60, 124, ?",
+    "options": [
+      "128",
+      "252",
+      "248",
+      "254"
+    ],
+    "answerIndex": 1,
+    "explanation": "Each term is the previous term × 2 + 4. Next: 124 × 2 + 4 = 252.",
+    "shortcut": "Test the rule on the first two terms before you use it."
+  },
+  {
+    "id": "apt-logical-011",
+    "module": "interview",
+    "topic": "series-numbers",
+    "section": "Logical reasoning",
+    "difficulty": "hard",
+    "question": "Which number comes next in the series: 5, 17, 53, 161, 485, ?",
+    "options": [
+      "646",
+      "1460",
+      "1457",
+      "1458"
+    ],
+    "answerIndex": 2,
+    "explanation": "Each term is the previous term × 3 + 2. Next: 485 × 3 + 2 = 1457.",
+    "shortcut": "Test the rule on the first two terms before you use it."
+  },
+  {
+    "id": "apt-logical-012",
+    "module": "interview",
+    "topic": "series-numbers",
+    "section": "Logical reasoning",
+    "difficulty": "easy",
+    "question": "Which number comes next in the series: 1, 8, 16, 23, 46, ?",
+    "options": [
+      "54",
+      "106",
+      "92",
+      "53"
+    ],
+    "answerIndex": 3,
+    "explanation": "The rule alternates: add 7, then multiply by 2. Last step was ×2, so the next step is +7: 46 + 7 = 53.",
+    "shortcut": "Look at the first two steps. If they differ, the rule alternates."
+  },
+  {
+    "id": "apt-logical-013",
+    "module": "interview",
+    "topic": "series-numbers",
+    "section": "Logical reasoning",
+    "difficulty": "medium",
+    "question": "Which number comes next in the series: 5, 9, 18, 22, 44, ?",
+    "options": [
+      "48",
+      "49",
+      "88",
+      "52"
+    ],
+    "answerIndex": 0,
+    "explanation": "The rule alternates: add 4, then multiply by 2. Last step was ×2, so the next step is +4: 44 + 4 = 48.",
+    "shortcut": "Look at the first two steps. If they differ, the rule alternates."
+  },
+  {
+    "id": "apt-logical-014",
+    "module": "interview",
+    "topic": "series-numbers",
+    "section": "Logical reasoning",
+    "difficulty": "hard",
+    "question": "Which number comes next in the series: 1, 6, 12, 17, 34, ?",
+    "options": [
+      "40",
+      "39",
+      "68",
+      "44"
+    ],
+    "answerIndex": 1,
+    "explanation": "The rule alternates: add 5, then multiply by 2. Last step was ×2, so the next step is +5: 34 + 5 = 39.",
+    "shortcut": "Look at the first two steps. If they differ, the rule alternates."
+  },
+  {
+    "id": "apt-logical-015",
+    "module": "interview",
+    "topic": "series-numbers",
+    "section": "Logical reasoning",
+    "difficulty": "easy",
+    "question": "Which number comes next in the series: 2, 11, 22, 31, 62, ?",
+    "options": [
+      "80",
+      "142",
+      "71",
+      "72"
+    ],
+    "answerIndex": 2,
+    "explanation": "The rule alternates: add 9, then multiply by 2. Last step was ×2, so the next step is +9: 62 + 9 = 71.",
+    "shortcut": "Look at the first two steps. If they differ, the rule alternates."
+  },
+  {
+    "id": "apt-logical-016",
+    "module": "interview",
+    "topic": "coding-decoding",
+    "section": "Logical reasoning",
+    "difficulty": "easy",
+    "question": "In a code, each letter is written as its position in the alphabet (A = 1, B = 2, ..., Z = 26), with hyphens between numbers. What is the code for LEAF?",
+    "options": [
+      "13-6-2-7",
+      "6-1-5-12",
+      "11-4-0-5",
+      "12-5-1-6"
+    ],
+    "answerIndex": 3,
+    "explanation": "Positions of LEAF: L = 12, E = 5, A = 1, F = 6. Code: 12-5-1-6.",
+    "shortcut": "Write the position of each letter, then join with hyphens."
+  },
+  {
+    "id": "apt-logical-017",
+    "module": "interview",
+    "topic": "coding-decoding",
+    "section": "Logical reasoning",
+    "difficulty": "medium",
+    "question": "In a code, each letter is moved 2 place(s) forward in the alphabet (A becomes C). How is the word PLANT written in this code?",
+    "options": [
+      "RNCPV",
+      "SODQW",
+      "QMBOU",
+      "NJYLR"
+    ],
+    "answerIndex": 0,
+    "explanation": "Move each letter 2 steps forward: P → R, L → N, A → C, N → P, T → V. Result: RNCPV.",
+    "shortcut": "Shifting forward means adding to the letter's position. Wrap Z to A."
+  },
+  {
+    "id": "apt-logical-018",
+    "module": "interview",
+    "topic": "coding-decoding",
+    "section": "Logical reasoning",
+    "difficulty": "hard",
+    "question": "In a code, every letter is replaced by its opposite letter (A ↔ Z, B ↔ Y, C ↔ X, and so on). How is SUGAR written in this code?",
+    "options": [
+      "RTFZQ",
+      "HFTZI",
+      "SUGAR",
+      "IZTFH"
+    ],
+    "answerIndex": 1,
+    "explanation": "Opposite of a letter = 25 − its position (A = 0). S → H, U → F, G → T, A → Z, R → I. Result: HFTZI.",
+    "shortcut": "A is the first letter, so its opposite is Z. The two ends always swap."
+  },
+  {
+    "id": "apt-logical-019",
+    "module": "interview",
+    "topic": "coding-decoding",
+    "section": "Logical reasoning",
+    "difficulty": "easy",
+    "question": "In a code, each letter is written as its position in the alphabet (A = 1, B = 2, ..., Z = 26), with hyphens between numbers. What is the code for RIVER?",
+    "options": [
+      "17-8-21-4-17",
+      "18-5-22-9-18",
+      "18-9-22-5-18",
+      "19-10-23-6-19"
+    ],
+    "answerIndex": 2,
+    "explanation": "Positions of RIVER: R = 18, I = 9, V = 22, E = 5, R = 18. Code: 18-9-22-5-18.",
+    "shortcut": "Write the position of each letter, then join with hyphens."
+  },
+  {
+    "id": "apt-logical-020",
+    "module": "interview",
+    "topic": "coding-decoding",
+    "section": "Logical reasoning",
+    "difficulty": "medium",
+    "question": "In a code, the word is first written backwards, and then each letter is moved 3 place(s) forward. How is TREE written?",
+    "options": [
+      "WUHH",
+      "EERT",
+      "QOBB",
+      "HHUW"
+    ],
+    "answerIndex": 3,
+    "explanation": "Reverse TREE to get EERT. Shift each letter 3 forward: HHUW.",
+    "shortcut": "Do the steps in the order the question gives them."
+  },
+  {
+    "id": "apt-logical-021",
+    "module": "interview",
+    "topic": "coding-decoding",
+    "section": "Logical reasoning",
+    "difficulty": "hard",
+    "question": "In a code, the word is first written backwards, and then each letter is moved 3 place(s) forward. How is CHAI written?",
+    "options": [
+      "LDKF",
+      "FKDL",
+      "IAHC",
+      "FXEZ"
+    ],
+    "answerIndex": 0,
+    "explanation": "Reverse CHAI to get IAHC. Shift each letter 3 forward: LDKF.",
+    "shortcut": "Do the steps in the order the question gives them."
+  },
+  {
+    "id": "apt-logical-022",
+    "module": "interview",
+    "topic": "coding-decoding",
+    "section": "Logical reasoning",
+    "difficulty": "easy",
+    "question": "In a code, every letter is replaced by its opposite letter (A ↔ Z, B ↔ Y, C ↔ X, and so on). How is PEAR written in this code?",
+    "options": [
+      "ODZQ",
+      "KVZI",
+      "PEAR",
+      "IZVK"
+    ],
+    "answerIndex": 1,
+    "explanation": "Opposite of a letter = 25 − its position (A = 0). P → K, E → V, A → Z, R → I. Result: KVZI.",
+    "shortcut": "A is the first letter, so its opposite is Z. The two ends always swap."
+  },
+  {
+    "id": "apt-logical-023",
+    "module": "interview",
+    "topic": "coding-decoding",
+    "section": "Logical reasoning",
+    "difficulty": "medium",
+    "question": "In a code, each letter is moved 2 place(s) forward in the alphabet (A becomes C). How is the word CHAI written in this code?",
+    "options": [
+      "FKDL",
+      "KCJE",
+      "EJCK",
+      "DIBJ"
+    ],
+    "answerIndex": 2,
+    "explanation": "Move each letter 2 steps forward: C → E, H → J, A → C, I → K. Result: EJCK.",
+    "shortcut": "Shifting forward means adding to the letter's position. Wrap Z to A."
+  },
+  {
+    "id": "apt-logical-024",
+    "module": "interview",
+    "topic": "coding-decoding",
+    "section": "Logical reasoning",
+    "difficulty": "hard",
+    "question": "In a code, the word is first written backwards, and then each letter is moved 3 place(s) forward. How is RIVER written?",
+    "options": [
+      "OFSBO",
+      "REVIR",
+      "ULYHU",
+      "UHYLU"
+    ],
+    "answerIndex": 3,
+    "explanation": "Reverse RIVER to get REVIR. Shift each letter 3 forward: UHYLU.",
+    "shortcut": "Do the steps in the order the question gives them."
+  },
+  {
+    "id": "apt-logical-025",
+    "module": "interview",
+    "topic": "coding-decoding",
+    "section": "Logical reasoning",
+    "difficulty": "easy",
+    "question": "In a code, each letter is moved 4 place(s) forward in the alphabet (A becomes E). How is the word TRAIN written in this code?",
+    "options": [
+      "XVEMR",
+      "WUDLQ",
+      "PNWEJ",
+      "RMEVX"
+    ],
+    "answerIndex": 0,
+    "explanation": "Move each letter 4 steps forward: T → X, R → V, A → E, I → M, N → R. Result: XVEMR.",
+    "shortcut": "Shifting forward means adding to the letter's position. Wrap Z to A."
+  },
+  {
+    "id": "apt-logical-026",
+    "module": "interview",
+    "topic": "coding-decoding",
+    "section": "Logical reasoning",
+    "difficulty": "medium",
+    "question": "In a code, each letter is written as its position in the alphabet (A = 1, B = 2, ..., Z = 26), with hyphens between numbers. What is the code for PEAR?",
+    "options": [
+      "17-6-2-19",
+      "16-5-1-18",
+      "18-1-5-16",
+      "40"
+    ],
+    "answerIndex": 1,
+    "explanation": "Positions of PEAR: P = 16, E = 5, A = 1, R = 18. Code: 16-5-1-18.",
+    "shortcut": "Write the position of each letter, then join with hyphens."
+  },
+  {
+    "id": "apt-logical-027",
+    "module": "interview",
+    "topic": "coding-decoding",
+    "section": "Logical reasoning",
+    "difficulty": "hard",
+    "question": "In a code, every letter is replaced by its opposite letter (A ↔ Z, B ↔ Y, C ↔ X, and so on). How is TRAIN written in this code?",
+    "options": [
+      "MRZIG",
+      "TRAIN",
+      "GIZRM",
+      "SQZHM"
+    ],
+    "answerIndex": 2,
+    "explanation": "Opposite of a letter = 25 − its position (A = 0). T → G, R → I, A → Z, I → R, N → M. Result: GIZRM.",
+    "shortcut": "A is the first letter, so its opposite is Z. The two ends always swap."
+  },
+  {
+    "id": "apt-logical-028",
+    "module": "interview",
+    "topic": "blood-relations",
+    "section": "Logical reasoning",
+    "difficulty": "easy",
+    "question": "Ravi is the father of Priya. Priya is the father of Kiran. How is Ravi related to Kiran?",
+    "options": [
+      "uncle",
+      "mother",
+      "son",
+      "grandfather"
+    ],
+    "answerIndex": 3,
+    "explanation": "Trace the chain: Ravi is Priya's father, and Priya is Kiran's father. Combining the two links gives Ravi as Kiran's grandfather.",
+    "shortcut": "Draw the chain on paper. Track the gender of the person you are describing."
+  },
+  {
+    "id": "apt-logical-029",
+    "module": "interview",
+    "topic": "blood-relations",
+    "section": "Logical reasoning",
+    "difficulty": "medium",
+    "question": "Rohan is the mother of Imran. Imran is the brother of Vikram. How is Rohan related to Vikram?",
+    "options": [
+      "mother",
+      "daughter-in-law",
+      "grandmother",
+      "daughter"
+    ],
+    "answerIndex": 0,
+    "explanation": "Trace the chain: Rohan is Imran's mother, and Imran is Vikram's brother. Combining the two links gives Rohan as Vikram's mother.",
+    "shortcut": "Draw the chain on paper. Track the gender of the person you are describing."
+  },
+  {
+    "id": "apt-logical-030",
+    "module": "interview",
+    "topic": "blood-relations",
+    "section": "Logical reasoning",
+    "difficulty": "hard",
+    "question": "Tara is the sister of Suresh. Suresh is the sister of Kiran. How is Tara related to Kiran?",
+    "options": [
+      "grandson",
+      "sister",
+      "brother",
+      "nephew"
+    ],
+    "answerIndex": 1,
+    "explanation": "Trace the chain: Tara is Suresh's sister, and Suresh is Kiran's sister. Combining the two links gives Tara as Kiran's sister.",
+    "shortcut": "Draw the chain on paper. Track the gender of the person you are describing."
+  },
+  {
+    "id": "apt-logical-031",
+    "module": "interview",
+    "topic": "blood-relations",
+    "section": "Logical reasoning",
+    "difficulty": "easy",
+    "question": "Priya is the sister of Nisha. Nisha is the daughter of Deepak. How is Priya related to Deepak?",
+    "options": [
+      "grandmother",
+      "granddaughter",
+      "daughter",
+      "son-in-law"
+    ],
+    "answerIndex": 2,
+    "explanation": "Trace the chain: Priya is Nisha's sister, and Nisha is Deepak's daughter. Combining the two links gives Priya as Deepak's daughter.",
+    "shortcut": "Draw the chain on paper. Track the gender of the person you are describing."
+  },
+  {
+    "id": "apt-logical-032",
+    "module": "interview",
+    "topic": "blood-relations",
+    "section": "Logical reasoning",
+    "difficulty": "medium",
+    "question": "Manoj is the son of Tara. Tara is the brother of Farhan. How is Manoj related to Farhan?",
+    "options": [
+      "husband",
+      "uncle",
+      "daughter-in-law",
+      "nephew"
+    ],
+    "answerIndex": 3,
+    "explanation": "Trace the chain: Manoj is Tara's son, and Tara is Farhan's brother. Combining the two links gives Manoj as Farhan's nephew.",
+    "shortcut": "Draw the chain on paper. Track the gender of the person you are describing."
+  },
+  {
+    "id": "apt-logical-033",
+    "module": "interview",
+    "topic": "blood-relations",
+    "section": "Logical reasoning",
+    "difficulty": "hard",
+    "question": "Gita is the sister of Asha. Asha is the son of Nisha. How is Gita related to Nisha?",
+    "options": [
+      "daughter",
+      "grandfather",
+      "grandmother",
+      "wife"
+    ],
+    "answerIndex": 0,
+    "explanation": "Trace the chain: Gita is Asha's sister, and Asha is Nisha's son. Combining the two links gives Gita as Nisha's daughter.",
+    "shortcut": "Draw the chain on paper. Track the gender of the person you are describing."
+  },
+  {
+    "id": "apt-logical-034",
+    "module": "interview",
+    "topic": "blood-relations",
+    "section": "Logical reasoning",
+    "difficulty": "easy",
+    "question": "Priya is the mother of Sanjay. Sanjay is the sister of Divya. How is Priya related to Divya?",
+    "options": [
+      "aunt",
+      "mother",
+      "grandmother",
+      "sister"
+    ],
+    "answerIndex": 1,
+    "explanation": "Trace the chain: Priya is Sanjay's mother, and Sanjay is Divya's sister. Combining the two links gives Priya as Divya's mother.",
+    "shortcut": "Draw the chain on paper. Track the gender of the person you are describing."
+  },
+  {
+    "id": "apt-logical-035",
+    "module": "interview",
+    "topic": "blood-relations",
+    "section": "Logical reasoning",
+    "difficulty": "medium",
+    "question": "Anita is the mother of Priya. Priya is the brother of Tara. How is Anita related to Tara?",
+    "options": [
+      "grandfather",
+      "granddaughter",
+      "mother",
+      "husband"
+    ],
+    "answerIndex": 2,
+    "explanation": "Trace the chain: Anita is Priya's mother, and Priya is Tara's brother. Combining the two links gives Anita as Tara's mother.",
+    "shortcut": "Draw the chain on paper. Track the gender of the person you are describing."
+  },
+  {
+    "id": "apt-logical-036",
+    "module": "interview",
+    "topic": "blood-relations",
+    "section": "Logical reasoning",
+    "difficulty": "hard",
+    "question": "Gita is the wife of Imran. Imran is the son of Harish. How is Gita related to Harish?",
+    "options": [
+      "aunt",
+      "daughter",
+      "granddaughter",
+      "daughter-in-law"
+    ],
+    "answerIndex": 3,
+    "explanation": "Trace the chain: Gita is Imran's wife, and Imran is Harish's son. Combining the two links gives Gita as Harish's daughter-in-law.",
+    "shortcut": "Draw the chain on paper. Track the gender of the person you are describing."
+  },
+  {
+    "id": "apt-logical-037",
+    "module": "interview",
+    "topic": "blood-relations",
+    "section": "Logical reasoning",
+    "difficulty": "easy",
+    "question": "Imran is the daughter of Farhan. Farhan is the mother of Meera. How is Imran related to Meera?",
+    "options": [
+      "sister",
+      "son-in-law",
+      "aunt",
+      "daughter-in-law"
+    ],
+    "answerIndex": 0,
+    "explanation": "Trace the chain: Imran is Farhan's daughter, and Farhan is Meera's mother. Combining the two links gives Imran as Meera's sister.",
+    "shortcut": "Draw the chain on paper. Track the gender of the person you are describing."
+  },
+  {
+    "id": "apt-logical-038",
+    "module": "interview",
+    "topic": "blood-relations",
+    "section": "Logical reasoning",
+    "difficulty": "medium",
+    "question": "Ravi is the daughter of Kiran. Kiran is the brother of Suresh. How is Ravi related to Suresh?",
+    "options": [
+      "uncle",
+      "niece",
+      "husband",
+      "son"
+    ],
+    "answerIndex": 1,
+    "explanation": "Trace the chain: Ravi is Kiran's daughter, and Kiran is Suresh's brother. Combining the two links gives Ravi as Suresh's niece.",
+    "shortcut": "Draw the chain on paper. Track the gender of the person you are describing."
+  },
+  {
+    "id": "apt-logical-039",
+    "module": "interview",
+    "topic": "blood-relations",
+    "section": "Logical reasoning",
+    "difficulty": "hard",
+    "question": "Deepak is the brother of Harish. Harish is the sister of Ritu. How is Deepak related to Ritu?",
+    "options": [
+      "daughter-in-law",
+      "daughter",
+      "brother",
+      "sister"
+    ],
+    "answerIndex": 2,
+    "explanation": "Trace the chain: Deepak is Harish's brother, and Harish is Ritu's sister. Combining the two links gives Deepak as Ritu's brother.",
+    "shortcut": "Draw the chain on paper. Track the gender of the person you are describing."
+  },
+  {
+    "id": "apt-logical-040",
+    "module": "interview",
+    "topic": "seating-order",
+    "section": "Logical reasoning",
+    "difficulty": "easy",
+    "question": "4 friends sit in one row, all facing the same way. Seen from the front, the row runs left to right. Clues: Arjun sits somewhere to the left of Manoj. Rohan does not sit next to Manoj. Rohan sits somewhere to the left of Manoj. Arjun sits somewhere to the left of Asha. Arjun sits immediately to the left of Rohan. Who sits second from the left?",
+    "options": [
+      "Asha",
+      "Arjun",
+      "Manoj",
+      "Rohan"
+    ],
+    "answerIndex": 3,
+    "explanation": "The only seating order from the left is Arjun, Rohan, Asha, Manoj. Rohan is second from the left.",
+    "shortcut": "Start with the clue that fixes a person's position, such as an end or an immediate neighbour."
+  },
+  {
+    "id": "apt-logical-041",
+    "module": "interview",
+    "topic": "seating-order",
+    "section": "Logical reasoning",
+    "difficulty": "medium",
+    "question": "5 friends sit in one row, all facing the same way. Seen from the front, the row runs left to right. Clues: Imran does not sit next to Rohan. Lakshmi sits somewhere to the left of Rohan. Rohan does not sit next to Tara. Tara does not sit next to Gita. Lakshmi sits next to Tara. Rohan sits somewhere to the left of Gita. Imran sits somewhere to the left of Tara. Who sits immediately to the right of Rohan?",
+    "options": [
+      "Gita",
+      "Lakshmi",
+      "Tara",
+      "Imran"
+    ],
+    "answerIndex": 0,
+    "explanation": "The only seating order from the left is Imran, Tara, Lakshmi, Rohan, Gita. Gita sits just to the right of Rohan.",
+    "shortcut": "Start with the clue that fixes a person's position, such as an end or an immediate neighbour."
+  },
+  {
+    "id": "apt-logical-042",
+    "module": "interview",
+    "topic": "seating-order",
+    "section": "Logical reasoning",
+    "difficulty": "hard",
+    "question": "6 friends sit in one row, all facing the same way. Seen from the front, the row runs left to right. Clues: Anita sits somewhere to the left of Meera. Anita sits next to Imran. Anita sits somewhere to the left of Kiran. Gita sits next to Imran. Gita does not sit next to Meera. Arjun sits next to Anita. Arjun sits next to Kiran. How many people sit to the left of Anita?",
+    "options": [
+      "5",
+      "2",
+      "4",
+      "1"
+    ],
+    "answerIndex": 1,
+    "explanation": "The only seating order from the left is Gita, Imran, Anita, Arjun, Kiran, Meera. 2 people sit to the left of Anita.",
+    "shortcut": "Start with the clue that fixes a person's position, such as an end or an immediate neighbour."
+  },
+  {
+    "id": "apt-logical-043",
+    "module": "interview",
+    "topic": "seating-order",
+    "section": "Logical reasoning",
+    "difficulty": "easy",
+    "question": "4 friends sit in one row, all facing the same way. Seen from the front, the row runs left to right. Clues: Nisha does not sit next to Kavya. Priya sits immediately to the left of Nisha. Tara does not sit next to Priya. Kavya sits immediately to the left of Priya. Kavya sits next to Tara. Who sits second from the left?",
+    "options": [
+      "Priya",
+      "Tara",
+      "Kavya",
+      "Nisha"
+    ],
+    "answerIndex": 2,
+    "explanation": "The only seating order from the left is Tara, Kavya, Priya, Nisha. Kavya is second from the left.",
+    "shortcut": "Start with the clue that fixes a person's position, such as an end or an immediate neighbour."
+  },
+  {
+    "id": "apt-logical-044",
+    "module": "interview",
+    "topic": "seating-order",
+    "section": "Logical reasoning",
+    "difficulty": "medium",
+    "question": "5 friends sit in one row, all facing the same way. Seen from the front, the row runs left to right. Clues: Sanjay sits next to Priya. Vikram sits next to Meera. Vikram sits immediately to the left of Priya. Ravi sits somewhere to the left of Meera. Who sits immediately to the right of Meera?",
+    "options": [
+      "Ravi",
+      "Priya",
+      "Sanjay",
+      "Vikram"
+    ],
+    "answerIndex": 3,
+    "explanation": "The only seating order from the left is Ravi, Meera, Vikram, Priya, Sanjay. Vikram sits just to the right of Meera.",
+    "shortcut": "Start with the clue that fixes a person's position, such as an end or an immediate neighbour."
+  },
+  {
+    "id": "apt-logical-045",
+    "module": "interview",
+    "topic": "seating-order",
+    "section": "Logical reasoning",
+    "difficulty": "hard",
+    "question": "6 friends sit in one row, all facing the same way. Seen from the front, the row runs left to right. Clues: Ritu sits somewhere to the left of Lakshmi. Manoj sits next to Meera. Meera sits next to Ravi. Lakshmi sits somewhere to the left of Meera. Manoj sits at one of the two ends. Lakshmi sits next to Ravi. Lakshmi sits next to Ritu. How many people sit to the left of Ritu?",
+    "options": [
+      "1",
+      "0",
+      "4",
+      "3"
+    ],
+    "answerIndex": 0,
+    "explanation": "The only seating order from the left is Nisha, Ritu, Lakshmi, Ravi, Meera, Manoj. 1 person sit to the left of Ritu.",
+    "shortcut": "Start with the clue that fixes a person's position, such as an end or an immediate neighbour."
+  },
+  {
+    "id": "apt-logical-046",
+    "module": "interview",
+    "topic": "seating-order",
+    "section": "Logical reasoning",
+    "difficulty": "easy",
+    "question": "4 friends sit in one row, all facing the same way. Seen from the front, the row runs left to right. Clues: Imran sits immediately to the left of Farhan. Meera does not sit next to Imran. Farhan does not sit next to Sanjay. Imran sits somewhere to the left of Meera. Sanjay sits somewhere to the left of Imran. Who sits second from the left?",
+    "options": [
+      "Meera",
+      "Imran",
+      "Farhan",
+      "Sanjay"
+    ],
+    "answerIndex": 1,
+    "explanation": "The only seating order from the left is Sanjay, Imran, Farhan, Meera. Imran is second from the left.",
+    "shortcut": "Start with the clue that fixes a person's position, such as an end or an immediate neighbour."
+  },
+  {
+    "id": "apt-logical-047",
+    "module": "interview",
+    "topic": "seating-order",
+    "section": "Logical reasoning",
+    "difficulty": "medium",
+    "question": "5 friends sit in one row, all facing the same way. Seen from the front, the row runs left to right. Clues: Divya does not sit next to Imran. Arjun sits somewhere to the left of Imran. Arjun sits next to Manoj. Divya does not sit next to Farhan. Farhan sits somewhere to the left of Imran. Farhan does not sit next to Manoj. How many people sit to the left of Divya?",
+    "options": [
+      "1",
+      "2",
+      "0",
+      "3"
+    ],
+    "answerIndex": 2,
+    "explanation": "The only seating order from the left is Divya, Manoj, Arjun, Farhan, Imran. 0 people sit to the left of Divya.",
+    "shortcut": "Start with the clue that fixes a person's position, such as an end or an immediate neighbour."
+  },
+  {
+    "id": "apt-logical-048",
+    "module": "interview",
+    "topic": "seating-order",
+    "section": "Logical reasoning",
+    "difficulty": "hard",
+    "question": "6 friends sit in one row, all facing the same way. Seen from the front, the row runs left to right. Clues: Deepak sits somewhere to the left of Gita. Divya sits next to Manoj. Kavya sits immediately to the left of Deepak. Gita sits next to Tara. Kavya sits at one of the two ends. Gita sits next to Divya. Gita sits somewhere to the left of Divya. Who sits immediately to the right of Deepak?",
+    "options": [
+      "Kavya",
+      "Manoj",
+      "Divya",
+      "Tara"
+    ],
+    "answerIndex": 3,
+    "explanation": "The only seating order from the left is Kavya, Deepak, Tara, Gita, Divya, Manoj. Tara sits just to the right of Deepak.",
+    "shortcut": "Start with the clue that fixes a person's position, such as an end or an immediate neighbour."
+  },
+  {
+    "id": "apt-logical-049",
+    "module": "interview",
+    "topic": "seating-order",
+    "section": "Logical reasoning",
+    "difficulty": "easy",
+    "question": "4 friends sit in one row, all facing the same way. Seen from the front, the row runs left to right. Clues: Farhan does not sit next to Anita. Anita sits somewhere to the left of Farhan. Ritu does not sit next to Ravi. Ravi sits immediately to the left of Anita. How many people sit to the left of Farhan?",
+    "options": [
+      "3",
+      "5",
+      "6",
+      "4"
+    ],
+    "answerIndex": 0,
+    "explanation": "The only seating order from the left is Ravi, Anita, Ritu, Farhan. 3 people sit to the left of Farhan.",
+    "shortcut": "Start with the clue that fixes a person's position, such as an end or an immediate neighbour."
+  },
+  {
+    "id": "apt-logical-050",
+    "module": "interview",
+    "topic": "seating-order",
+    "section": "Logical reasoning",
+    "difficulty": "medium",
+    "question": "5 friends sit in one row, all facing the same way. Seen from the front, the row runs left to right. Clues: Suresh sits immediately to the left of Rohan. Arjun sits somewhere to the left of Suresh. Sanjay does not sit next to Rohan. Arjun sits next to Suresh. Rohan sits somewhere to the left of Manoj. Sanjay does not sit next to Manoj. Who sits immediately to the right of Sanjay?",
+    "options": [
+      "Suresh",
+      "Arjun",
+      "Rohan",
+      "Manoj"
+    ],
+    "answerIndex": 1,
+    "explanation": "The only seating order from the left is Sanjay, Arjun, Suresh, Rohan, Manoj. Arjun sits just to the right of Sanjay.",
+    "shortcut": "Start with the clue that fixes a person's position, such as an end or an immediate neighbour."
+  },
+  {
+    "id": "apt-logical-051",
+    "module": "interview",
+    "topic": "seating-order",
+    "section": "Logical reasoning",
+    "difficulty": "hard",
+    "question": "6 friends sit in one row, all facing the same way. Seen from the front, the row runs left to right. Clues: Tara sits immediately to the left of Priya. Priya sits somewhere to the left of Vikram. Vikram does not sit next to Sanjay. Vikram sits somewhere to the left of Sanjay. Sanjay sits next to Sneha. Rohan sits somewhere to the left of Sneha. Rohan sits immediately to the left of Sneha. Who sits sixth from the left?",
+    "options": [
+      "Rohan",
+      "Tara",
+      "Sanjay",
+      "Sneha"
+    ],
+    "answerIndex": 2,
+    "explanation": "The only seating order from the left is Tara, Priya, Vikram, Rohan, Sneha, Sanjay. Sanjay is sixth from the left.",
+    "shortcut": "Start with the clue that fixes a person's position, such as an end or an immediate neighbour."
+  },
+  {
+    "id": "apt-logical-052",
+    "module": "interview",
+    "topic": "syllogisms",
+    "section": "Logical reasoning",
+    "difficulty": "easy",
+    "question": "Assume these two statements are true, even if they seem unlikely: All doctors are students. All cricketers are doctors. Which conclusion must also be true?",
+    "options": [
+      "Some cricketers are students.",
+      "Some doctors are students.",
+      "No cricketers are doctors.",
+      "All cricketers are students."
+    ],
+    "answerIndex": 3,
+    "explanation": "Both statements together force 'All cricketers are students.' in every case that fits them. Each wrong option is false in at least one case that still fits both statements, so it cannot be forced.",
+    "shortcut": "Draw overlapping circles for each statement. Check the conclusion against every possible overlap."
+  },
+  {
+    "id": "apt-logical-053",
+    "module": "interview",
+    "topic": "syllogisms",
+    "section": "Logical reasoning",
+    "difficulty": "medium",
+    "question": "Assume these two statements are true, even if they seem unlikely: Some trucks are fruits. Some cricketers are fruits. Which conclusion must also be true?",
+    "options": [
+      "Some fruits are cricketers.",
+      "No fruits are cricketers.",
+      "All cricketers are trucks.",
+      "Some trucks are cricketers."
+    ],
+    "answerIndex": 0,
+    "explanation": "Both statements together force 'Some fruits are cricketers.' in every case that fits them. Each wrong option is false in at least one case that still fits both statements, so it cannot be forced.",
+    "shortcut": "Draw overlapping circles for each statement. Check the conclusion against every possible overlap."
+  },
+  {
+    "id": "apt-logical-054",
+    "module": "interview",
+    "topic": "syllogisms",
+    "section": "Logical reasoning",
+    "difficulty": "hard",
+    "question": "Assume these two statements are true, even if they seem unlikely: Some bankers are not poets. Some bankers are trucks. Which conclusion must also be true?",
+    "options": [
+      "All trucks are poets.",
+      "Some trucks are bankers.",
+      "No bankers are trucks.",
+      "All poets are trucks."
+    ],
+    "answerIndex": 1,
+    "explanation": "Both statements together force 'Some trucks are bankers.' in every case that fits them. Each wrong option is false in at least one case that still fits both statements, so it cannot be forced.",
+    "shortcut": "Draw overlapping circles for each statement. Check the conclusion against every possible overlap."
+  },
+  {
+    "id": "apt-logical-055",
+    "module": "interview",
+    "topic": "syllogisms",
+    "section": "Logical reasoning",
+    "difficulty": "easy",
+    "question": "Assume these two statements are true, even if they seem unlikely: All poets are students. All students are sweets. Which conclusion must also be true?",
+    "options": [
+      "Some poets are students.",
+      "Some poets are not sweets.",
+      "All poets are sweets.",
+      "Some students are poets."
+    ],
+    "answerIndex": 2,
+    "explanation": "Both statements together force 'All poets are sweets.' in every case that fits them. Each wrong option is false in at least one case that still fits both statements, so it cannot be forced.",
+    "shortcut": "Draw overlapping circles for each statement. Check the conclusion against every possible overlap."
+  },
+  {
+    "id": "apt-logical-056",
+    "module": "interview",
+    "topic": "syllogisms",
+    "section": "Logical reasoning",
+    "difficulty": "medium",
+    "question": "Assume these two statements are true, even if they seem unlikely: All cricketers are fruits. No dosas are fruits. Which conclusion must also be true?",
+    "options": [
+      "All dosas are cricketers.",
+      "Some dosas are not cricketers.",
+      "All fruits are dosas.",
+      "No dosas are cricketers."
+    ],
+    "answerIndex": 3,
+    "explanation": "Both statements together force 'No dosas are cricketers.' in every case that fits them. Each wrong option is false in at least one case that still fits both statements, so it cannot be forced.",
+    "shortcut": "Draw overlapping circles for each statement. Check the conclusion against every possible overlap."
+  },
+  {
+    "id": "apt-logical-057",
+    "module": "interview",
+    "topic": "syllogisms",
+    "section": "Logical reasoning",
+    "difficulty": "hard",
+    "question": "Assume these two statements are true, even if they seem unlikely: Some cricketers are not spices. No doctors are spices. Which conclusion must also be true?",
+    "options": [
+      "No spices are doctors.",
+      "Some spices are doctors.",
+      "Some doctors are spices.",
+      "Some cricketers are not doctors."
+    ],
+    "answerIndex": 0,
+    "explanation": "Both statements together force 'No spices are doctors.' in every case that fits them. Each wrong option is false in at least one case that still fits both statements, so it cannot be forced.",
+    "shortcut": "Draw overlapping circles for each statement. Check the conclusion against every possible overlap."
+  },
+  {
+    "id": "apt-logical-058",
+    "module": "interview",
+    "topic": "syllogisms",
+    "section": "Logical reasoning",
+    "difficulty": "easy",
+    "question": "Assume these two statements are true, even if they seem unlikely: Some bankers are spices. All bankers are tigers. Which conclusion must also be true?",
+    "options": [
+      "Some bankers are not tigers.",
+      "Some spices are tigers.",
+      "All tigers are bankers.",
+      "All tigers are spices."
+    ],
+    "answerIndex": 1,
+    "explanation": "Both statements together force 'Some spices are tigers.' in every case that fits them. Each wrong option is false in at least one case that still fits both statements, so it cannot be forced.",
+    "shortcut": "Draw overlapping circles for each statement. Check the conclusion against every possible overlap."
+  },
+  {
+    "id": "apt-logical-059",
+    "module": "interview",
+    "topic": "syllogisms",
+    "section": "Logical reasoning",
+    "difficulty": "medium",
+    "question": "Assume these two statements are true, even if they seem unlikely: No bikes are spices. No sweets are bikes. Which conclusion must also be true?",
+    "options": [
+      "No spices are sweets.",
+      "Some spices are bikes.",
+      "No spices are bikes.",
+      "Some spices are not bikes."
+    ],
+    "answerIndex": 2,
+    "explanation": "Both statements together force 'No spices are bikes.' in every case that fits them. Each wrong option is false in at least one case that still fits both statements, so it cannot be forced.",
+    "shortcut": "Draw overlapping circles for each statement. Check the conclusion against every possible overlap."
+  },
+  {
+    "id": "apt-logical-060",
+    "module": "interview",
+    "topic": "syllogisms",
+    "section": "Logical reasoning",
+    "difficulty": "hard",
+    "question": "Assume these two statements are true, even if they seem unlikely: Some poets are bikes. No bikes are trucks. Which conclusion must also be true?",
+    "options": [
+      "No poets are bikes.",
+      "Some poets are trucks.",
+      "All poets are bikes.",
+      "No trucks are bikes."
+    ],
+    "answerIndex": 3,
+    "explanation": "Both statements together force 'No trucks are bikes.' in every case that fits them. Each wrong option is false in at least one case that still fits both statements, so it cannot be forced.",
+    "shortcut": "Draw overlapping circles for each statement. Check the conclusion against every possible overlap."
+  }
+]

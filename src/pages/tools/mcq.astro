@@ -1,0 +1,13 @@
+---
+import Base from '../../layouts/Base.astro';
+import McqTest from '../../components/react/McqTest';
+import { getMcqItems } from '../../lib/banks';
+const items = await getMcqItems('statistics');
+---
+<Base title="Statistics MCQ practice" description="Timed multiple-choice practice for statistics, with explanations and shortcuts.">
+  <div style="max-width:56rem;margin:0 auto">
+    <h1 style="margin-top:0">Statistics MCQ practice</h1>
+    <p class="muted">Timed multiple-choice practice for statistics, with explanations and shortcuts.</p>
+    <McqTest client:load items={items} kind="mcq-statistics" title="Statistics MCQ" groupBy="topic" />
+  </div>
+</Base>

@@ -1,0 +1,342 @@
+[
+  {
+    "id": "apt-verbal-001",
+    "module": "interview",
+    "topic": "synonyms",
+    "section": "Verbal ability",
+    "difficulty": "easy",
+    "question": "Which word is closest in meaning to FRUGAL?",
+    "options": [
+      "Thrifty",
+      "Generous",
+      "Lazy",
+      "Hungry"
+    ],
+    "answerIndex": 0,
+    "explanation": "Frugal and thrifty both mean careful with money. Generous is the opposite.",
+    "shortcut": "Frugal: spends little. Thrifty: spends little."
+  },
+  {
+    "id": "apt-verbal-002",
+    "module": "interview",
+    "topic": "synonyms",
+    "section": "Verbal ability",
+    "difficulty": "easy",
+    "question": "Which word is closest in meaning to CANDID?",
+    "options": [
+      "Hidden",
+      "Frank",
+      "Confused",
+      "Secretive"
+    ],
+    "answerIndex": 1,
+    "explanation": "Candid means open and honest in speech. Frank is the closest word.",
+    "shortcut": "Candid and frank both mean open."
+  },
+  {
+    "id": "apt-verbal-003",
+    "module": "interview",
+    "topic": "synonyms",
+    "section": "Verbal ability",
+    "difficulty": "easy",
+    "question": "Which word is closest in meaning to DILIGENT?",
+    "options": [
+      "Careless",
+      "Rude",
+      "Hard-working",
+      "Cheerful"
+    ],
+    "answerIndex": 2,
+    "explanation": "A diligent person works with care and effort.",
+    "shortcut": "Diligent = hard-working."
+  },
+  {
+    "id": "apt-verbal-004",
+    "module": "interview",
+    "topic": "synonyms",
+    "section": "Verbal ability",
+    "difficulty": "easy",
+    "question": "Which word is closest in meaning to BENEVOLENT?",
+    "options": [
+      "Lazy",
+      "Greedy",
+      "Angry",
+      "Kind"
+    ],
+    "answerIndex": 3,
+    "explanation": "Benevolent means well-meaning and kind. Kind is the closest word.",
+    "shortcut": "Benevolent sounds like 'benefit to others'."
+  },
+  {
+    "id": "apt-verbal-005",
+    "module": "interview",
+    "topic": "synonyms",
+    "section": "Verbal ability",
+    "difficulty": "medium",
+    "question": "Which word is closest in meaning to SCARCE?",
+    "options": [
+      "Rare",
+      "Cheap",
+      "Plentiful",
+      "Colourful"
+    ],
+    "answerIndex": 0,
+    "explanation": "Scarce means not easy to find. Rare is the closest word.",
+    "shortcut": "Scarce = few in number."
+  },
+  {
+    "id": "apt-verbal-006",
+    "module": "interview",
+    "topic": "synonyms",
+    "section": "Verbal ability",
+    "difficulty": "medium",
+    "question": "Which word is closest in meaning to RELUCTANT?",
+    "options": [
+      "Eager",
+      "Unwilling",
+      "Quick",
+      "Proud"
+    ],
+    "answerIndex": 1,
+    "explanation": "Reluctant means not wanting to do something.",
+    "shortcut": "Reluctant = not keen."
+  },
+  {
+    "id": "apt-verbal-007",
+    "module": "interview",
+    "topic": "synonyms",
+    "section": "Verbal ability",
+    "difficulty": "medium",
+    "question": "Which word is closest in meaning to VERBOSE?",
+    "options": [
+      "Silent",
+      "Tall",
+      "Wordy",
+      "Brief"
+    ],
+    "answerIndex": 2,
+    "explanation": "Verbose means using more words than needed.",
+    "shortcut": "Verbose = too many words."
+  },
+  {
+    "id": "apt-verbal-008",
+    "module": "interview",
+    "topic": "synonyms",
+    "section": "Verbal ability",
+    "difficulty": "medium",
+    "question": "Which word is closest in meaning to PRUDENT?",
+    "options": [
+      "Famous",
+      "Reckless",
+      "Playful",
+      "Wise"
+    ],
+    "answerIndex": 3,
+    "explanation": "Prudent means careful and sensible about the future.",
+    "shortcut": "Prudent = careful planning."
+  },
+  {
+    "id": "apt-verbal-009",
+    "module": "interview",
+    "topic": "antonyms",
+    "section": "Verbal ability",
+    "difficulty": "easy",
+    "question": "Which word is most nearly the opposite of ANCIENT?",
+    "options": [
+      "Modern",
+      "Old",
+      "Famous",
+      "Ruined"
+    ],
+    "answerIndex": 0,
+    "explanation": "Ancient means from a very long time ago. Modern is its opposite.",
+    "shortcut": "Ancient vs modern."
+  },
+  {
+    "id": "apt-verbal-010",
+    "module": "interview",
+    "topic": "antonyms",
+    "section": "Verbal ability",
+    "difficulty": "easy",
+    "question": "Which word is most nearly the opposite of EXPAND?",
+    "options": [
+      "Grow",
+      "Shrink",
+      "Extend",
+      "Stretch"
+    ],
+    "answerIndex": 1,
+    "explanation": "Expand means to become larger. Shrink means to become smaller.",
+    "shortcut": "Expand: get bigger. Shrink: get smaller."
+  },
+  {
+    "id": "apt-verbal-011",
+    "module": "interview",
+    "topic": "antonyms",
+    "section": "Verbal ability",
+    "difficulty": "easy",
+    "question": "Which word is most nearly the opposite of ARROGANT?",
+    "options": [
+      "Loud",
+      "Proud",
+      "Humble",
+      "Bold"
+    ],
+    "answerIndex": 2,
+    "explanation": "Arrogant means thinking one is better than others. Humble is the opposite.",
+    "shortcut": "Arrogant vs humble."
+  },
+  {
+    "id": "apt-verbal-012",
+    "module": "interview",
+    "topic": "antonyms",
+    "section": "Verbal ability",
+    "difficulty": "medium",
+    "question": "Which word is most nearly the opposite of ABUNDANT?",
+    "options": [
+      "Rich",
+      "Full",
+      "Plenty",
+      "Scarce"
+    ],
+    "answerIndex": 3,
+    "explanation": "Abundant means present in large amounts. Scarce means very little.",
+    "shortcut": "Abundant vs scarce."
+  },
+  {
+    "id": "apt-verbal-013",
+    "module": "interview",
+    "topic": "antonyms",
+    "section": "Verbal ability",
+    "difficulty": "medium",
+    "question": "Which word is most nearly the opposite of OPTIMIST?",
+    "options": [
+      "Pessimist",
+      "Critic",
+      "Realist",
+      "Dreamer"
+    ],
+    "answerIndex": 0,
+    "explanation": "An optimist expects good outcomes. A pessimist expects bad ones.",
+    "shortcut": "Optimist vs pessimist."
+  },
+  {
+    "id": "apt-verbal-014",
+    "module": "interview",
+    "topic": "antonyms",
+    "section": "Verbal ability",
+    "difficulty": "medium",
+    "question": "Which word is most nearly the opposite of TRANSPARENT?",
+    "options": [
+      "Clear",
+      "Opaque",
+      "Bright",
+      "Glassy"
+    ],
+    "answerIndex": 1,
+    "explanation": "Transparent lets light pass through. Opaque does not.",
+    "shortcut": "Opaque = not see-through."
+  },
+  {
+    "id": "apt-verbal-015",
+    "module": "interview",
+    "topic": "grammar",
+    "section": "Verbal ability",
+    "difficulty": "medium",
+    "question": "Choose the correct sentence.",
+    "options": [
+      "She is gone to Pune.",
+      "She has went to Pune.",
+      "She has gone to Pune.",
+      "She have gone to Pune."
+    ],
+    "answerIndex": 2,
+    "explanation": "The past participle after 'has' is 'gone'. 'Went' cannot follow 'has'.",
+    "shortcut": "Has + past participle (gone, done, seen)."
+  },
+  {
+    "id": "apt-verbal-016",
+    "module": "interview",
+    "topic": "grammar",
+    "section": "Verbal ability",
+    "difficulty": "medium",
+    "question": "Choose the correct verb: Each of the candidates ___ asked to bring a laptop.",
+    "options": [
+      "have been",
+      "are",
+      "were",
+      "was"
+    ],
+    "answerIndex": 3,
+    "explanation": "'Each' is singular, so the verb is singular: 'was asked'.",
+    "shortcut": "Each, every, neither take a singular verb."
+  },
+  {
+    "id": "apt-verbal-017",
+    "module": "interview",
+    "topic": "grammar",
+    "section": "Verbal ability",
+    "difficulty": "medium",
+    "question": "Choose the correct preposition: I am looking forward ___ meeting you.",
+    "options": [
+      "to",
+      "for",
+      "at",
+      "on"
+    ],
+    "answerIndex": 0,
+    "explanation": "'Look forward to' is followed by a noun or -ing form, so 'to' is correct.",
+    "shortcut": "Look forward TO doing something."
+  },
+  {
+    "id": "apt-verbal-018",
+    "module": "interview",
+    "topic": "grammar",
+    "section": "Verbal ability",
+    "difficulty": "medium",
+    "question": "Choose the correct spelling.",
+    "options": [
+      "Acomodation",
+      "Accommodation",
+      "Acommodation",
+      "Accomodation"
+    ],
+    "answerIndex": 1,
+    "explanation": "Accommodation has two c's and two m's.",
+    "shortcut": "Double c, double m."
+  },
+  {
+    "id": "apt-verbal-019",
+    "module": "interview",
+    "topic": "grammar",
+    "section": "Verbal ability",
+    "difficulty": "medium",
+    "question": "Choose the correct verb: The report, along with the charts, ___ on your desk.",
+    "options": [
+      "were",
+      "are",
+      "is",
+      "have"
+    ],
+    "answerIndex": 2,
+    "explanation": "The subject is 'the report'. The phrase 'along with the charts' does not change the verb.",
+    "shortcut": "Ignore phrases that begin with 'along with' or 'together with'."
+  },
+  {
+    "id": "apt-verbal-020",
+    "module": "interview",
+    "topic": "idioms",
+    "section": "Verbal ability",
+    "difficulty": "hard",
+    "question": "What does the idiom 'to break the ice' mean?",
+    "options": [
+      "To break something fragile",
+      "To end a friendship",
+      "To feel very cold",
+      "To start a friendly conversation"
+    ],
+    "answerIndex": 3,
+    "explanation": "The idiom means to make people feel comfortable when they first meet.",
+    "shortcut": "Break the ice = start talking."
+  }
+]

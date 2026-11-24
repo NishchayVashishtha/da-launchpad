@@ -1,0 +1,1022 @@
+[
+  {
+    "id": "apt-data-interpretation-001",
+    "module": "interview",
+    "topic": "average",
+    "section": "Data interpretation",
+    "difficulty": "easy",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Brindavan Tech | 755 | 536 | 836 |\n| Godavari Motors | 401 | 804 | 440 |\n| Chilika Textiles | 183 | 694 | 762 |\n| Narmada Foods | 626 | 881 | 539 |\n\nWhat was the average annual revenue of Narmada Foods over FY23 to FY25? Round to one decimal place.",
+    "options": [
+      "₹682 lakh",
+      "₹2046 lakh",
+      "₹626 lakh",
+      "₹709 lakh"
+    ],
+    "answerIndex": 0,
+    "explanation": "Total of Narmada Foods = 626 + 881 + 539 = 2046. Average = 2046 ÷ 3 = 682 lakh.",
+    "shortcut": "Average over three years = total ÷ 3, not the total itself."
+  },
+  {
+    "id": "apt-data-interpretation-002",
+    "module": "interview",
+    "topic": "average",
+    "section": "Data interpretation",
+    "difficulty": "easy",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Sahyadri Steel | 508 | 727 | 283 |\n| Brindavan Tech | 815 | 816 | 583 |\n| Vaidehi Agro | 469 | 859 | 545 |\n| Narmada Foods | 410 | 281 | 639 |\n\nWhat was the average annual revenue of Narmada Foods over FY23 to FY25? Round to one decimal place.",
+    "options": [
+      "₹1330 lakh",
+      "₹443.3 lakh",
+      "₹410 lakh",
+      "₹506 lakh"
+    ],
+    "answerIndex": 1,
+    "explanation": "Total of Narmada Foods = 410 + 281 + 639 = 1330. Average = 1330 ÷ 3 = 443.3 lakh.",
+    "shortcut": "Average over three years = total ÷ 3, not the total itself."
+  },
+  {
+    "id": "apt-data-interpretation-003",
+    "module": "interview",
+    "topic": "average",
+    "section": "Data interpretation",
+    "difficulty": "easy",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Vaidehi Agro | 795 | 798 | 437 |\n| Brindavan Tech | 358 | 311 | 357 |\n| Narmada Foods | 81 | 322 | 565 |\n| Tungabhadra Logistics | 410 | 558 | 176 |\n\nWhat was the average annual revenue of Brindavan Tech over FY23 to FY25? Round to one decimal place.",
+    "options": [
+      "₹358 lakh",
+      "₹676.7 lakh",
+      "₹342 lakh",
+      "₹1026 lakh"
+    ],
+    "answerIndex": 2,
+    "explanation": "Total of Brindavan Tech = 358 + 311 + 357 = 1026. Average = 1026 ÷ 3 = 342 lakh.",
+    "shortcut": "Average over three years = total ÷ 3, not the total itself."
+  },
+  {
+    "id": "apt-data-interpretation-004",
+    "module": "interview",
+    "topic": "average",
+    "section": "Data interpretation",
+    "difficulty": "easy",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Sahyadri Steel | 131 | 766 | 596 |\n| Narmada Foods | 329 | 266 | 432 |\n| Godavari Motors | 531 | 92 | 136 |\n| Meghna Pharma | 415 | 137 | 576 |\n\nWhat was the average annual revenue of Meghna Pharma over FY23 to FY25? Round to one decimal place.",
+    "options": [
+      "₹497.7 lakh",
+      "₹576 lakh",
+      "₹415 lakh",
+      "₹376 lakh"
+    ],
+    "answerIndex": 3,
+    "explanation": "Total of Meghna Pharma = 415 + 137 + 576 = 1128. Average = 1128 ÷ 3 = 376 lakh.",
+    "shortcut": "Average over three years = total ÷ 3, not the total itself."
+  },
+  {
+    "id": "apt-data-interpretation-005",
+    "module": "interview",
+    "topic": "average",
+    "section": "Data interpretation",
+    "difficulty": "easy",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Meghna Pharma | 429 | 785 | 312 |\n| Narmada Foods | 141 | 130 | 224 |\n| Chilika Textiles | 254 | 545 | 231 |\n\nWhat was the average annual revenue of Meghna Pharma over FY23 to FY25? Round to one decimal place.",
+    "options": [
+      "₹508.7 lakh",
+      "₹429 lakh",
+      "₹165 lakh",
+      "₹1526 lakh"
+    ],
+    "answerIndex": 0,
+    "explanation": "Total of Meghna Pharma = 429 + 785 + 312 = 1526. Average = 1526 ÷ 3 = 508.7 lakh.",
+    "shortcut": "Average over three years = total ÷ 3, not the total itself."
+  },
+  {
+    "id": "apt-data-interpretation-006",
+    "module": "interview",
+    "topic": "average",
+    "section": "Data interpretation",
+    "difficulty": "easy",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Sahyadri Steel | 375 | 196 | 128 |\n| Tungabhadra Logistics | 655 | 260 | 760 |\n| Meghna Pharma | 897 | 706 | 218 |\n| Chilika Textiles | 636 | 356 | 397 |\n\nWhat was the average annual revenue of Meghna Pharma over FY23 to FY25? Round to one decimal place.",
+    "options": [
+      "₹897 lakh",
+      "₹607 lakh",
+      "₹1821 lakh",
+      "₹233 lakh"
+    ],
+    "answerIndex": 1,
+    "explanation": "Total of Meghna Pharma = 897 + 706 + 218 = 1821. Average = 1821 ÷ 3 = 607 lakh.",
+    "shortcut": "Average over three years = total ÷ 3, not the total itself."
+  },
+  {
+    "id": "apt-data-interpretation-007",
+    "module": "interview",
+    "topic": "average",
+    "section": "Data interpretation",
+    "difficulty": "easy",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Sahyadri Steel | 188 | 500 | 150 |\n| Chilika Textiles | 294 | 872 | 796 |\n| Meghna Pharma | 606 | 337 | 369 |\n\nWhat was the average annual revenue of Chilika Textiles over FY23 to FY25? Round to one decimal place.",
+    "options": [
+      "₹796 lakh",
+      "₹279.3 lakh",
+      "₹654 lakh",
+      "₹1962 lakh"
+    ],
+    "answerIndex": 2,
+    "explanation": "Total of Chilika Textiles = 294 + 872 + 796 = 1962. Average = 1962 ÷ 3 = 654 lakh.",
+    "shortcut": "Average over three years = total ÷ 3, not the total itself."
+  },
+  {
+    "id": "apt-data-interpretation-008",
+    "module": "interview",
+    "topic": "average",
+    "section": "Data interpretation",
+    "difficulty": "easy",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Meghna Pharma | 584 | 575 | 332 |\n| Chilika Textiles | 314 | 470 | 474 |\n| Tungabhadra Logistics | 190 | 718 | 846 |\n\nWhat was the average annual revenue of Meghna Pharma over FY23 to FY25? Round to one decimal place.",
+    "options": [
+      "₹584 lakh",
+      "₹1491 lakh",
+      "₹419.3 lakh",
+      "₹497 lakh"
+    ],
+    "answerIndex": 3,
+    "explanation": "Total of Meghna Pharma = 584 + 575 + 332 = 1491. Average = 1491 ÷ 3 = 497 lakh.",
+    "shortcut": "Average over three years = total ÷ 3, not the total itself."
+  },
+  {
+    "id": "apt-data-interpretation-009",
+    "module": "interview",
+    "topic": "average",
+    "section": "Data interpretation",
+    "difficulty": "easy",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Sahyadri Steel | 535 | 501 | 765 |\n| Brindavan Tech | 729 | 849 | 175 |\n| Tungabhadra Logistics | 337 | 541 | 594 |\n\nWhat was the average annual revenue of Brindavan Tech over FY23 to FY25? Round to one decimal place.",
+    "options": [
+      "₹584.3 lakh",
+      "₹600.3 lakh",
+      "₹1753 lakh",
+      "₹849 lakh"
+    ],
+    "answerIndex": 0,
+    "explanation": "Total of Brindavan Tech = 729 + 849 + 175 = 1753. Average = 1753 ÷ 3 = 584.3 lakh.",
+    "shortcut": "Average over three years = total ÷ 3, not the total itself."
+  },
+  {
+    "id": "apt-data-interpretation-010",
+    "module": "interview",
+    "topic": "average",
+    "section": "Data interpretation",
+    "difficulty": "easy",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Godavari Motors | 501 | 329 | 623 |\n| Sahyadri Steel | 311 | 389 | 320 |\n| Brindavan Tech | 491 | 714 | 840 |\n| Meghna Pharma | 253 | 638 | 517 |\n\nWhat was the average annual revenue of Meghna Pharma over FY23 to FY25? Round to one decimal place.",
+    "options": [
+      "₹517 lakh",
+      "₹469.3 lakh",
+      "₹638 lakh",
+      "₹484.3 lakh"
+    ],
+    "answerIndex": 1,
+    "explanation": "Total of Meghna Pharma = 253 + 638 + 517 = 1408. Average = 1408 ÷ 3 = 469.3 lakh.",
+    "shortcut": "Average over three years = total ÷ 3, not the total itself."
+  },
+  {
+    "id": "apt-data-interpretation-011",
+    "module": "interview",
+    "topic": "average",
+    "section": "Data interpretation",
+    "difficulty": "easy",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Sahyadri Steel | 817 | 184 | 507 |\n| Chilika Textiles | 707 | 825 | 480 |\n| Meghna Pharma | 666 | 868 | 590 |\n\nWhat was the average annual revenue of Chilika Textiles over FY23 to FY25? Round to one decimal place.",
+    "options": [
+      "₹707 lakh",
+      "₹2012 lakh",
+      "₹670.7 lakh",
+      "₹502.7 lakh"
+    ],
+    "answerIndex": 2,
+    "explanation": "Total of Chilika Textiles = 707 + 825 + 480 = 2012. Average = 2012 ÷ 3 = 670.7 lakh.",
+    "shortcut": "Average over three years = total ÷ 3, not the total itself."
+  },
+  {
+    "id": "apt-data-interpretation-012",
+    "module": "interview",
+    "topic": "average",
+    "section": "Data interpretation",
+    "difficulty": "easy",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Brindavan Tech | 707 | 854 | 466 |\n| Meghna Pharma | 552 | 543 | 305 |\n| Godavari Motors | 530 | 638 | 708 |\n\nWhat was the average annual revenue of Brindavan Tech over FY23 to FY25? Round to one decimal place.",
+    "options": [
+      "₹466.7 lakh",
+      "₹707 lakh",
+      "₹2027 lakh",
+      "₹675.7 lakh"
+    ],
+    "answerIndex": 3,
+    "explanation": "Total of Brindavan Tech = 707 + 854 + 466 = 2027. Average = 2027 ÷ 3 = 675.7 lakh.",
+    "shortcut": "Average over three years = total ÷ 3, not the total itself."
+  },
+  {
+    "id": "apt-data-interpretation-013",
+    "module": "interview",
+    "topic": "average",
+    "section": "Data interpretation",
+    "difficulty": "easy",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Vaidehi Agro | 141 | 523 | 827 |\n| Chilika Textiles | 225 | 774 | 811 |\n| Godavari Motors | 359 | 132 | 457 |\n| Meghna Pharma | 352 | 394 | 490 |\n\nWhat was the average annual revenue of Chilika Textiles over FY23 to FY25? Round to one decimal place.",
+    "options": [
+      "₹603.3 lakh",
+      "₹774 lakh",
+      "₹811 lakh",
+      "₹497 lakh"
+    ],
+    "answerIndex": 0,
+    "explanation": "Total of Chilika Textiles = 225 + 774 + 811 = 1810. Average = 1810 ÷ 3 = 603.3 lakh.",
+    "shortcut": "Average over three years = total ÷ 3, not the total itself."
+  },
+  {
+    "id": "apt-data-interpretation-014",
+    "module": "interview",
+    "topic": "average",
+    "section": "Data interpretation",
+    "difficulty": "easy",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Brindavan Tech | 787 | 642 | 810 |\n| Narmada Foods | 346 | 250 | 389 |\n| Chilika Textiles | 111 | 249 | 560 |\n| Godavari Motors | 153 | 872 | 877 |\n\nWhat was the average annual revenue of Narmada Foods over FY23 to FY25? Round to one decimal place.",
+    "options": [
+      "₹985 lakh",
+      "₹328.3 lakh",
+      "₹389 lakh",
+      "₹346 lakh"
+    ],
+    "answerIndex": 1,
+    "explanation": "Total of Narmada Foods = 346 + 250 + 389 = 985. Average = 985 ÷ 3 = 328.3 lakh.",
+    "shortcut": "Average over three years = total ÷ 3, not the total itself."
+  },
+  {
+    "id": "apt-data-interpretation-015",
+    "module": "interview",
+    "topic": "average",
+    "section": "Data interpretation",
+    "difficulty": "easy",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Sahyadri Steel | 497 | 435 | 499 |\n| Chilika Textiles | 777 | 553 | 492 |\n| Tungabhadra Logistics | 170 | 361 | 281 |\n\nWhat was the average annual revenue of Tungabhadra Logistics over FY23 to FY25? Round to one decimal place.",
+    "options": [
+      "₹812 lakh",
+      "₹361 lakh",
+      "₹270.7 lakh",
+      "₹477 lakh"
+    ],
+    "answerIndex": 2,
+    "explanation": "Total of Tungabhadra Logistics = 170 + 361 + 281 = 812. Average = 812 ÷ 3 = 270.7 lakh.",
+    "shortcut": "Average over three years = total ÷ 3, not the total itself."
+  },
+  {
+    "id": "apt-data-interpretation-016",
+    "module": "interview",
+    "topic": "growth",
+    "section": "Data interpretation",
+    "difficulty": "medium",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Meghna Pharma | 872 | 818 | 532 |\n| Tungabhadra Logistics | 520 | 471 | 85 |\n| Narmada Foods | 720 | 404 | 515 |\n\nWhat is the percent growth in revenue of Narmada Foods from FY24 to FY25? Round to one decimal place.",
+    "options": [
+      "127.5%",
+      "-27.5%",
+      "₹111 lakh",
+      "27.5%"
+    ],
+    "answerIndex": 3,
+    "explanation": "Growth = (new − old) ÷ old × 100 = (515 − 404) ÷ 404 × 100 = 27.5%.",
+    "shortcut": "Always divide by the old value (the base year), not the new one."
+  },
+  {
+    "id": "apt-data-interpretation-017",
+    "module": "interview",
+    "topic": "growth",
+    "section": "Data interpretation",
+    "difficulty": "medium",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Sahyadri Steel | 511 | 380 | 122 |\n| Meghna Pharma | 879 | 159 | 118 |\n| Narmada Foods | 719 | 358 | 249 |\n| Brindavan Tech | 628 | 244 | 569 |\n\nWhat is the percent growth in revenue of Brindavan Tech from FY24 to FY25? Round to one decimal place.",
+    "options": [
+      "133.2%",
+      "₹325 lakh",
+      "57.1%",
+      "-133.2%"
+    ],
+    "answerIndex": 0,
+    "explanation": "Growth = (new − old) ÷ old × 100 = (569 − 244) ÷ 244 × 100 = 133.2%.",
+    "shortcut": "Always divide by the old value (the base year), not the new one."
+  },
+  {
+    "id": "apt-data-interpretation-018",
+    "module": "interview",
+    "topic": "growth",
+    "section": "Data interpretation",
+    "difficulty": "medium",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Meghna Pharma | 155 | 748 | 717 |\n| Chilika Textiles | 432 | 770 | 553 |\n| Sahyadri Steel | 775 | 672 | 218 |\n\nWhat is the percent growth in revenue of Chilika Textiles from FY23 to FY25? Round to one decimal place.",
+    "options": [
+      "128%",
+      "28%",
+      "-28%",
+      "21.9%"
+    ],
+    "answerIndex": 1,
+    "explanation": "Growth = (new − old) ÷ old × 100 = (553 − 432) ÷ 432 × 100 = 28%.",
+    "shortcut": "Always divide by the old value (the base year), not the new one."
+  },
+  {
+    "id": "apt-data-interpretation-019",
+    "module": "interview",
+    "topic": "growth",
+    "section": "Data interpretation",
+    "difficulty": "medium",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Tungabhadra Logistics | 721 | 402 | 220 |\n| Chilika Textiles | 715 | 145 | 172 |\n| Godavari Motors | 117 | 581 | 262 |\n\nWhat is the percent growth in revenue of Chilika Textiles from FY24 to FY25? Round to one decimal place.",
+    "options": [
+      "15.7%",
+      "-18.6%",
+      "18.6%",
+      "118.6%"
+    ],
+    "answerIndex": 2,
+    "explanation": "Growth = (new − old) ÷ old × 100 = (172 − 145) ÷ 145 × 100 = 18.6%.",
+    "shortcut": "Always divide by the old value (the base year), not the new one."
+  },
+  {
+    "id": "apt-data-interpretation-020",
+    "module": "interview",
+    "topic": "growth",
+    "section": "Data interpretation",
+    "difficulty": "medium",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Narmada Foods | 813 | 152 | 759 |\n| Vaidehi Agro | 859 | 132 | 304 |\n| Brindavan Tech | 106 | 734 | 743 |\n| Godavari Motors | 806 | 570 | 780 |\n\nWhat is the percent growth in revenue of Narmada Foods from FY24 to FY25? Round to one decimal place.",
+    "options": [
+      "80%",
+      "-399.3%",
+      "₹607 lakh",
+      "399.3%"
+    ],
+    "answerIndex": 3,
+    "explanation": "Growth = (new − old) ÷ old × 100 = (759 − 152) ÷ 152 × 100 = 399.3%.",
+    "shortcut": "Always divide by the old value (the base year), not the new one."
+  },
+  {
+    "id": "apt-data-interpretation-021",
+    "module": "interview",
+    "topic": "growth",
+    "section": "Data interpretation",
+    "difficulty": "medium",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Tungabhadra Logistics | 233 | 740 | 405 |\n| Godavari Motors | 149 | 829 | 767 |\n| Brindavan Tech | 667 | 393 | 748 |\n| Chilika Textiles | 482 | 228 | 113 |\n\nWhat is the percent growth in revenue of Godavari Motors from FY23 to FY25? Round to one decimal place.",
+    "options": [
+      "414.8%",
+      "₹618 lakh",
+      "-414.8%",
+      "514.8%"
+    ],
+    "answerIndex": 0,
+    "explanation": "Growth = (new − old) ÷ old × 100 = (767 − 149) ÷ 149 × 100 = 414.8%.",
+    "shortcut": "Always divide by the old value (the base year), not the new one."
+  },
+  {
+    "id": "apt-data-interpretation-022",
+    "module": "interview",
+    "topic": "growth",
+    "section": "Data interpretation",
+    "difficulty": "medium",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Meghna Pharma | 631 | 658 | 848 |\n| Tungabhadra Logistics | 465 | 432 | 863 |\n| Vaidehi Agro | 290 | 520 | 547 |\n| Narmada Foods | 655 | 813 | 702 |\n\nWhat is the percent growth in revenue of Meghna Pharma from FY23 to FY25? Round to one decimal place.",
+    "options": [
+      "134.4%",
+      "34.4%",
+      "₹217 lakh",
+      "25.6%"
+    ],
+    "answerIndex": 1,
+    "explanation": "Growth = (new − old) ÷ old × 100 = (848 − 631) ÷ 631 × 100 = 34.4%.",
+    "shortcut": "Always divide by the old value (the base year), not the new one."
+  },
+  {
+    "id": "apt-data-interpretation-023",
+    "module": "interview",
+    "topic": "growth",
+    "section": "Data interpretation",
+    "difficulty": "medium",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Chilika Textiles | 870 | 268 | 309 |\n| Tungabhadra Logistics | 231 | 814 | 95 |\n| Godavari Motors | 814 | 799 | 238 |\n| Narmada Foods | 210 | 705 | 800 |\n\nWhat is the percent growth in revenue of Narmada Foods from FY24 to FY25? Round to one decimal place.",
+    "options": [
+      "-13.5%",
+      "113.5%",
+      "13.5%",
+      "11.9%"
+    ],
+    "answerIndex": 2,
+    "explanation": "Growth = (new − old) ÷ old × 100 = (800 − 705) ÷ 705 × 100 = 13.5%.",
+    "shortcut": "Always divide by the old value (the base year), not the new one."
+  },
+  {
+    "id": "apt-data-interpretation-024",
+    "module": "interview",
+    "topic": "growth",
+    "section": "Data interpretation",
+    "difficulty": "medium",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Tungabhadra Logistics | 95 | 407 | 736 |\n| Sahyadri Steel | 512 | 156 | 795 |\n| Meghna Pharma | 668 | 210 | 437 |\n\nWhat is the percent growth in revenue of Sahyadri Steel from FY24 to FY25? Round to one decimal place.",
+    "options": [
+      "-409.6%",
+      "509.6%",
+      "₹639 lakh",
+      "409.6%"
+    ],
+    "answerIndex": 3,
+    "explanation": "Growth = (new − old) ÷ old × 100 = (795 − 156) ÷ 156 × 100 = 409.6%.",
+    "shortcut": "Always divide by the old value (the base year), not the new one."
+  },
+  {
+    "id": "apt-data-interpretation-025",
+    "module": "interview",
+    "topic": "growth",
+    "section": "Data interpretation",
+    "difficulty": "medium",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Godavari Motors | 436 | 224 | 813 |\n| Tungabhadra Logistics | 759 | 879 | 363 |\n| Brindavan Tech | 762 | 466 | 211 |\n| Chilika Textiles | 91 | 318 | 884 |\n\nWhat is the percent growth in revenue of Chilika Textiles from FY23 to FY24? Round to one decimal place.",
+    "options": [
+      "249.5%",
+      "₹227 lakh",
+      "349.5%",
+      "71.4%"
+    ],
+    "answerIndex": 0,
+    "explanation": "Growth = (new − old) ÷ old × 100 = (318 − 91) ÷ 91 × 100 = 249.5%.",
+    "shortcut": "Always divide by the old value (the base year), not the new one."
+  },
+  {
+    "id": "apt-data-interpretation-026",
+    "module": "interview",
+    "topic": "growth",
+    "section": "Data interpretation",
+    "difficulty": "medium",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Vaidehi Agro | 214 | 858 | 539 |\n| Meghna Pharma | 806 | 230 | 545 |\n| Chilika Textiles | 185 | 330 | 821 |\n\nWhat is the percent growth in revenue of Chilika Textiles from FY24 to FY25? Round to one decimal place.",
+    "options": [
+      "59.8%",
+      "148.8%",
+      "-148.8%",
+      "₹491 lakh"
+    ],
+    "answerIndex": 1,
+    "explanation": "Growth = (new − old) ÷ old × 100 = (821 − 330) ÷ 330 × 100 = 148.8%.",
+    "shortcut": "Always divide by the old value (the base year), not the new one."
+  },
+  {
+    "id": "apt-data-interpretation-027",
+    "module": "interview",
+    "topic": "growth",
+    "section": "Data interpretation",
+    "difficulty": "medium",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Vaidehi Agro | 566 | 654 | 846 |\n| Meghna Pharma | 100 | 342 | 747 |\n| Narmada Foods | 506 | 85 | 359 |\n\nWhat is the percent growth in revenue of Meghna Pharma from FY23 to FY25? Round to one decimal place.",
+    "options": [
+      "-647%",
+      "₹647 lakh",
+      "647%",
+      "747%"
+    ],
+    "answerIndex": 2,
+    "explanation": "Growth = (new − old) ÷ old × 100 = (747 − 100) ÷ 100 × 100 = 647%.",
+    "shortcut": "Always divide by the old value (the base year), not the new one."
+  },
+  {
+    "id": "apt-data-interpretation-028",
+    "module": "interview",
+    "topic": "growth",
+    "section": "Data interpretation",
+    "difficulty": "medium",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Godavari Motors | 201 | 198 | 621 |\n| Vaidehi Agro | 784 | 864 | 607 |\n| Brindavan Tech | 353 | 452 | 895 |\n\nWhat is the percent growth in revenue of Brindavan Tech from FY23 to FY24? Round to one decimal place.",
+    "options": [
+      "-28%",
+      "₹99 lakh",
+      "21.9%",
+      "28%"
+    ],
+    "answerIndex": 3,
+    "explanation": "Growth = (new − old) ÷ old × 100 = (452 − 353) ÷ 353 × 100 = 28%.",
+    "shortcut": "Always divide by the old value (the base year), not the new one."
+  },
+  {
+    "id": "apt-data-interpretation-029",
+    "module": "interview",
+    "topic": "growth",
+    "section": "Data interpretation",
+    "difficulty": "medium",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Meghna Pharma | 497 | 799 | 646 |\n| Vaidehi Agro | 674 | 311 | 481 |\n| Chilika Textiles | 461 | 642 | 118 |\n| Godavari Motors | 554 | 688 | 668 |\n\nWhat is the percent growth in revenue of Meghna Pharma from FY23 to FY25? Round to one decimal place.",
+    "options": [
+      "30%",
+      "130%",
+      "-30%",
+      "₹149 lakh"
+    ],
+    "answerIndex": 0,
+    "explanation": "Growth = (new − old) ÷ old × 100 = (646 − 497) ÷ 497 × 100 = 30%.",
+    "shortcut": "Always divide by the old value (the base year), not the new one."
+  },
+  {
+    "id": "apt-data-interpretation-030",
+    "module": "interview",
+    "topic": "growth",
+    "section": "Data interpretation",
+    "difficulty": "medium",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Tungabhadra Logistics | 526 | 795 | 297 |\n| Sahyadri Steel | 182 | 173 | 735 |\n| Godavari Motors | 602 | 332 | 180 |\n\nWhat is the percent growth in revenue of Sahyadri Steel from FY24 to FY25? Round to one decimal place.",
+    "options": [
+      "₹562 lakh",
+      "324.9%",
+      "-324.9%",
+      "76.5%"
+    ],
+    "answerIndex": 1,
+    "explanation": "Growth = (new − old) ÷ old × 100 = (735 − 173) ÷ 173 × 100 = 324.9%.",
+    "shortcut": "Always divide by the old value (the base year), not the new one."
+  },
+  {
+    "id": "apt-data-interpretation-031",
+    "module": "interview",
+    "topic": "share",
+    "section": "Data interpretation",
+    "difficulty": "medium",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Vaidehi Agro | 404 | 110 | 351 |\n| Narmada Foods | 685 | 682 | 682 |\n| Meghna Pharma | 734 | 465 | 89 |\n\nWhat share of the total revenue of all companies in FY23 came from Meghna Pharma? Round to one decimal place.",
+    "options": [
+      "67.4%",
+      "22.2%",
+      "40.3%",
+      "248.4%"
+    ],
+    "answerIndex": 2,
+    "explanation": "Total in FY23 = 1823. Share = 734 ÷ 1823 × 100 = 40.3%.",
+    "shortcut": "Share = part ÷ whole × 100. The whole includes every company in the table."
+  },
+  {
+    "id": "apt-data-interpretation-032",
+    "module": "interview",
+    "topic": "share",
+    "section": "Data interpretation",
+    "difficulty": "medium",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Sahyadri Steel | 602 | 826 | 735 |\n| Chilika Textiles | 537 | 423 | 410 |\n| Vaidehi Agro | 549 | 782 | 718 |\n\nWhat share of the total revenue of all companies in FY24 came from Sahyadri Steel? Round to one decimal place.",
+    "options": [
+      "20.8%",
+      "0.4%",
+      "245.9%",
+      "40.7%"
+    ],
+    "answerIndex": 3,
+    "explanation": "Total in FY24 = 2031. Share = 826 ÷ 2031 × 100 = 40.7%.",
+    "shortcut": "Share = part ÷ whole × 100. The whole includes every company in the table."
+  },
+  {
+    "id": "apt-data-interpretation-033",
+    "module": "interview",
+    "topic": "share",
+    "section": "Data interpretation",
+    "difficulty": "medium",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Godavari Motors | 385 | 527 | 711 |\n| Chilika Textiles | 315 | 224 | 233 |\n| Vaidehi Agro | 366 | 486 | 526 |\n\nWhat share of the total revenue of all companies in FY24 came from Chilika Textiles? Round to one decimal place.",
+    "options": [
+      "18.1%",
+      "42.6%",
+      "0.2%",
+      "22.1%"
+    ],
+    "answerIndex": 0,
+    "explanation": "Total in FY24 = 1237. Share = 224 ÷ 1237 × 100 = 18.1%.",
+    "shortcut": "Share = part ÷ whole × 100. The whole includes every company in the table."
+  },
+  {
+    "id": "apt-data-interpretation-034",
+    "module": "interview",
+    "topic": "share",
+    "section": "Data interpretation",
+    "difficulty": "medium",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Narmada Foods | 882 | 127 | 819 |\n| Meghna Pharma | 257 | 491 | 366 |\n| Brindavan Tech | 708 | 807 | 848 |\n\nWhat share of the total revenue of all companies in FY23 came from Meghna Pharma? Round to one decimal place.",
+    "options": [
+      "718.7%",
+      "13.9%",
+      "47.8%",
+      "16.2%"
+    ],
+    "answerIndex": 1,
+    "explanation": "Total in FY23 = 1847. Share = 257 ÷ 1847 × 100 = 13.9%.",
+    "shortcut": "Share = part ÷ whole × 100. The whole includes every company in the table."
+  },
+  {
+    "id": "apt-data-interpretation-035",
+    "module": "interview",
+    "topic": "share",
+    "section": "Data interpretation",
+    "difficulty": "medium",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Vaidehi Agro | 496 | 595 | 414 |\n| Chilika Textiles | 805 | 294 | 85 |\n| Brindavan Tech | 828 | 143 | 324 |\n\nWhat share of the total revenue of all companies in FY25 came from Vaidehi Agro? Round to one decimal place.",
+    "options": [
+      "10.3%",
+      "101.2%",
+      "50.3%",
+      "0.5%"
+    ],
+    "answerIndex": 2,
+    "explanation": "Total in FY25 = 823. Share = 414 ÷ 823 × 100 = 50.3%.",
+    "shortcut": "Share = part ÷ whole × 100. The whole includes every company in the table."
+  },
+  {
+    "id": "apt-data-interpretation-036",
+    "module": "interview",
+    "topic": "share",
+    "section": "Data interpretation",
+    "difficulty": "medium",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Godavari Motors | 864 | 653 | 823 |\n| Tungabhadra Logistics | 395 | 574 | 700 |\n| Brindavan Tech | 238 | 611 | 109 |\n| Narmada Foods | 532 | 221 | 568 |\n\nWhat share of the total revenue of all companies in FY24 came from Godavari Motors? Round to one decimal place.",
+    "options": [
+      "27.9%",
+      "315.3%",
+      "46.4%",
+      "31.7%"
+    ],
+    "answerIndex": 3,
+    "explanation": "Total in FY24 = 2059. Share = 653 ÷ 2059 × 100 = 31.7%.",
+    "shortcut": "Share = part ÷ whole × 100. The whole includes every company in the table."
+  },
+  {
+    "id": "apt-data-interpretation-037",
+    "module": "interview",
+    "topic": "share",
+    "section": "Data interpretation",
+    "difficulty": "medium",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Godavari Motors | 443 | 672 | 379 |\n| Meghna Pharma | 355 | 591 | 488 |\n| Narmada Foods | 544 | 782 | 176 |\n| Sahyadri Steel | 766 | 661 | 296 |\n\nWhat share of the total revenue of all companies in FY23 came from Godavari Motors? Round to one decimal place.",
+    "options": [
+      "21%",
+      "26.6%",
+      "0.2%",
+      "475.8%"
+    ],
+    "answerIndex": 0,
+    "explanation": "Total in FY23 = 2108. Share = 443 ÷ 2108 × 100 = 21%.",
+    "shortcut": "Share = part ÷ whole × 100. The whole includes every company in the table."
+  },
+  {
+    "id": "apt-data-interpretation-038",
+    "module": "interview",
+    "topic": "share",
+    "section": "Data interpretation",
+    "difficulty": "medium",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Meghna Pharma | 458 | 750 | 473 |\n| Sahyadri Steel | 562 | 346 | 832 |\n| Vaidehi Agro | 437 | 533 | 711 |\n\nWhat share of the total revenue of all companies in FY25 came from Vaidehi Agro? Round to one decimal place.",
+    "options": [
+      "0.4%",
+      "35.3%",
+      "54.5%",
+      "283.5%"
+    ],
+    "answerIndex": 1,
+    "explanation": "Total in FY25 = 2016. Share = 711 ÷ 2016 × 100 = 35.3%.",
+    "shortcut": "Share = part ÷ whole × 100. The whole includes every company in the table."
+  },
+  {
+    "id": "apt-data-interpretation-039",
+    "module": "interview",
+    "topic": "share",
+    "section": "Data interpretation",
+    "difficulty": "medium",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Godavari Motors | 444 | 351 | 689 |\n| Tungabhadra Logistics | 580 | 598 | 671 |\n| Vaidehi Agro | 665 | 300 | 323 |\n| Brindavan Tech | 807 | 342 | 116 |\n\nWhat share of the total revenue of all companies in FY25 came from Brindavan Tech? Round to one decimal place.",
+    "options": [
+      "38.3%",
+      "6.9%",
+      "6.4%",
+      "1550.9%"
+    ],
+    "answerIndex": 2,
+    "explanation": "Total in FY25 = 1799. Share = 116 ÷ 1799 × 100 = 6.4%.",
+    "shortcut": "Share = part ÷ whole × 100. The whole includes every company in the table."
+  },
+  {
+    "id": "apt-data-interpretation-040",
+    "module": "interview",
+    "topic": "share",
+    "section": "Data interpretation",
+    "difficulty": "medium",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Vaidehi Agro | 579 | 256 | 314 |\n| Narmada Foods | 181 | 674 | 336 |\n| Godavari Motors | 636 | 589 | 485 |\n| Brindavan Tech | 810 | 694 | 490 |\n\nWhat share of the total revenue of all companies in FY24 came from Narmada Foods? Round to one decimal place.",
+    "options": [
+      "43.8%",
+      "11.6%",
+      "0.3%",
+      "30.5%"
+    ],
+    "answerIndex": 3,
+    "explanation": "Total in FY24 = 2213. Share = 674 ÷ 2213 × 100 = 30.5%.",
+    "shortcut": "Share = part ÷ whole × 100. The whole includes every company in the table."
+  },
+  {
+    "id": "apt-data-interpretation-041",
+    "module": "interview",
+    "topic": "share",
+    "section": "Data interpretation",
+    "difficulty": "medium",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Narmada Foods | 449 | 843 | 727 |\n| Vaidehi Agro | 173 | 176 | 787 |\n| Brindavan Tech | 183 | 431 | 673 |\n| Sahyadri Steel | 672 | 278 | 129 |\n\nWhat share of the total revenue of all companies in FY23 came from Sahyadri Steel? Round to one decimal place.",
+    "options": [
+      "45.5%",
+      "0.5%",
+      "83.5%",
+      "219.8%"
+    ],
+    "answerIndex": 0,
+    "explanation": "Total in FY23 = 1477. Share = 672 ÷ 1477 × 100 = 45.5%.",
+    "shortcut": "Share = part ÷ whole × 100. The whole includes every company in the table."
+  },
+  {
+    "id": "apt-data-interpretation-042",
+    "module": "interview",
+    "topic": "share",
+    "section": "Data interpretation",
+    "difficulty": "medium",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Vaidehi Agro | 426 | 121 | 305 |\n| Narmada Foods | 422 | 814 | 822 |\n| Sahyadri Steel | 519 | 728 | 396 |\n\nWhat share of the total revenue of all companies in FY23 came from Vaidehi Agro? Round to one decimal place.",
+    "options": [
+      "320.9%",
+      "31.2%",
+      "45.3%",
+      "0.3%"
+    ],
+    "answerIndex": 1,
+    "explanation": "Total in FY23 = 1367. Share = 426 ÷ 1367 × 100 = 31.2%.",
+    "shortcut": "Share = part ÷ whole × 100. The whole includes every company in the table."
+  },
+  {
+    "id": "apt-data-interpretation-043",
+    "module": "interview",
+    "topic": "share",
+    "section": "Data interpretation",
+    "difficulty": "medium",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Tungabhadra Logistics | 827 | 382 | 174 |\n| Meghna Pharma | 357 | 109 | 477 |\n| Narmada Foods | 508 | 488 | 374 |\n\nWhat share of the total revenue of all companies in FY23 came from Narmada Foods? Round to one decimal place.",
+    "options": [
+      "42.9%",
+      "333.1%",
+      "30%",
+      "48.9%"
+    ],
+    "answerIndex": 2,
+    "explanation": "Total in FY23 = 1692. Share = 508 ÷ 1692 × 100 = 30%.",
+    "shortcut": "Share = part ÷ whole × 100. The whole includes every company in the table."
+  },
+  {
+    "id": "apt-data-interpretation-044",
+    "module": "interview",
+    "topic": "share",
+    "section": "Data interpretation",
+    "difficulty": "medium",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Tungabhadra Logistics | 327 | 531 | 243 |\n| Meghna Pharma | 768 | 826 | 552 |\n| Sahyadri Steel | 89 | 212 | 451 |\n| Brindavan Tech | 790 | 871 | 744 |\n\nWhat share of the total revenue of all companies in FY25 came from Brindavan Tech? Round to one decimal place.",
+    "options": [
+      "0.4%",
+      "267.5%",
+      "12.2%",
+      "37.4%"
+    ],
+    "answerIndex": 3,
+    "explanation": "Total in FY25 = 1990. Share = 744 ÷ 1990 × 100 = 37.4%.",
+    "shortcut": "Share = part ÷ whole × 100. The whole includes every company in the table."
+  },
+  {
+    "id": "apt-data-interpretation-045",
+    "module": "interview",
+    "topic": "share",
+    "section": "Data interpretation",
+    "difficulty": "medium",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Tungabhadra Logistics | 665 | 264 | 311 |\n| Meghna Pharma | 889 | 870 | 670 |\n| Narmada Foods | 898 | 81 | 750 |\n| Vaidehi Agro | 208 | 502 | 769 |\n\nWhat share of the total revenue of all companies in FY23 came from Meghna Pharma? Round to one decimal place.",
+    "options": [
+      "33.4%",
+      "0.3%",
+      "50.2%",
+      "299.2%"
+    ],
+    "answerIndex": 0,
+    "explanation": "Total in FY23 = 2660. Share = 889 ÷ 2660 × 100 = 33.4%.",
+    "shortcut": "Share = part ÷ whole × 100. The whole includes every company in the table."
+  },
+  {
+    "id": "apt-data-interpretation-046",
+    "module": "interview",
+    "topic": "ratio",
+    "section": "Data interpretation",
+    "difficulty": "hard",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Brindavan Tech | 151 | 554 | 190 |\n| Godavari Motors | 199 | 825 | 601 |\n| Sahyadri Steel | 385 | 475 | 302 |\n| Tungabhadra Logistics | 742 | 376 | 93 |\n\nWhat is the ratio of the FY23 revenue of Brindavan Tech to that of Tungabhadra Logistics? Give the answer in simplest form.",
+    "options": [
+      "742:151",
+      "151:742",
+      "151:893",
+      "277:188"
+    ],
+    "answerIndex": 1,
+    "explanation": "Brindavan Tech : Tungabhadra Logistics = 151 : 742. Divide both by their HCF 1: 151:742.",
+    "shortcut": "Ratios are ordered: the first name goes first. Always reduce by the HCF."
+  },
+  {
+    "id": "apt-data-interpretation-047",
+    "module": "interview",
+    "topic": "ratio",
+    "section": "Data interpretation",
+    "difficulty": "hard",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Brindavan Tech | 116 | 169 | 307 |\n| Narmada Foods | 859 | 686 | 150 |\n| Sahyadri Steel | 113 | 224 | 594 |\n\nWhat is the ratio of the FY25 revenue of Sahyadri Steel to that of Brindavan Tech? Give the answer in simplest form.",
+    "options": [
+      "307:594",
+      "594:901",
+      "594:307",
+      "113:116"
+    ],
+    "answerIndex": 2,
+    "explanation": "Sahyadri Steel : Brindavan Tech = 594 : 307. Divide both by their HCF 1: 594:307.",
+    "shortcut": "Ratios are ordered: the first name goes first. Always reduce by the HCF."
+  },
+  {
+    "id": "apt-data-interpretation-048",
+    "module": "interview",
+    "topic": "ratio",
+    "section": "Data interpretation",
+    "difficulty": "hard",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Narmada Foods | 641 | 520 | 434 |\n| Chilika Textiles | 816 | 163 | 375 |\n| Meghna Pharma | 711 | 85 | 485 |\n\nWhat is the ratio of the FY24 revenue of Narmada Foods to that of Chilika Textiles? Give the answer in simplest form.",
+    "options": [
+      "520:683",
+      "163:520",
+      "434:375",
+      "520:163"
+    ],
+    "answerIndex": 3,
+    "explanation": "Narmada Foods : Chilika Textiles = 520 : 163. Divide both by their HCF 1: 520:163.",
+    "shortcut": "Ratios are ordered: the first name goes first. Always reduce by the HCF."
+  },
+  {
+    "id": "apt-data-interpretation-049",
+    "module": "interview",
+    "topic": "ratio",
+    "section": "Data interpretation",
+    "difficulty": "hard",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Godavari Motors | 86 | 727 | 636 |\n| Sahyadri Steel | 590 | 500 | 574 |\n| Meghna Pharma | 283 | 849 | 842 |\n\nWhat is the ratio of the FY23 revenue of Sahyadri Steel to that of Meghna Pharma? Give the answer in simplest form.",
+    "options": [
+      "590:283",
+      "590:873",
+      "500:849",
+      "283:590"
+    ],
+    "answerIndex": 0,
+    "explanation": "Sahyadri Steel : Meghna Pharma = 590 : 283. Divide both by their HCF 1: 590:283.",
+    "shortcut": "Ratios are ordered: the first name goes first. Always reduce by the HCF."
+  },
+  {
+    "id": "apt-data-interpretation-050",
+    "module": "interview",
+    "topic": "ratio",
+    "section": "Data interpretation",
+    "difficulty": "hard",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Chilika Textiles | 142 | 447 | 178 |\n| Sahyadri Steel | 112 | 152 | 582 |\n| Tungabhadra Logistics | 783 | 837 | 93 |\n| Meghna Pharma | 519 | 438 | 582 |\n\nWhat is the ratio of the FY25 revenue of Sahyadri Steel to that of Tungabhadra Logistics? Give the answer in simplest form.",
+    "options": [
+      "112:783",
+      "194:31",
+      "582:93",
+      "31:194"
+    ],
+    "answerIndex": 1,
+    "explanation": "Sahyadri Steel : Tungabhadra Logistics = 582 : 93. Divide both by their HCF 3: 194:31.",
+    "shortcut": "Ratios are ordered: the first name goes first. Always reduce by the HCF."
+  },
+  {
+    "id": "apt-data-interpretation-051",
+    "module": "interview",
+    "topic": "ratio",
+    "section": "Data interpretation",
+    "difficulty": "hard",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Sahyadri Steel | 161 | 355 | 283 |\n| Brindavan Tech | 687 | 429 | 201 |\n| Tungabhadra Logistics | 459 | 541 | 228 |\n| Narmada Foods | 237 | 225 | 183 |\n\nWhat is the ratio of the FY24 revenue of Brindavan Tech to that of Narmada Foods? Give the answer in simplest form.",
+    "options": [
+      "429:225",
+      "75:143",
+      "143:75",
+      "143:218"
+    ],
+    "answerIndex": 2,
+    "explanation": "Brindavan Tech : Narmada Foods = 429 : 225. Divide both by their HCF 3: 143:75.",
+    "shortcut": "Ratios are ordered: the first name goes first. Always reduce by the HCF."
+  },
+  {
+    "id": "apt-data-interpretation-052",
+    "module": "interview",
+    "topic": "ratio",
+    "section": "Data interpretation",
+    "difficulty": "hard",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Brindavan Tech | 569 | 739 | 700 |\n| Godavari Motors | 893 | 344 | 779 |\n| Meghna Pharma | 755 | 179 | 196 |\n| Chilika Textiles | 312 | 229 | 457 |\n\nWhat is the ratio of the FY25 revenue of Godavari Motors to that of Brindavan Tech? Give the answer in simplest form.",
+    "options": [
+      "700:779",
+      "893:569",
+      "779:1479",
+      "779:700"
+    ],
+    "answerIndex": 3,
+    "explanation": "Godavari Motors : Brindavan Tech = 779 : 700. Divide both by their HCF 1: 779:700.",
+    "shortcut": "Ratios are ordered: the first name goes first. Always reduce by the HCF."
+  },
+  {
+    "id": "apt-data-interpretation-053",
+    "module": "interview",
+    "topic": "ratio",
+    "section": "Data interpretation",
+    "difficulty": "hard",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Brindavan Tech | 240 | 612 | 342 |\n| Godavari Motors | 765 | 501 | 580 |\n| Sahyadri Steel | 570 | 661 | 455 |\n\nWhat is the ratio of the FY24 revenue of Brindavan Tech to that of Godavari Motors? Give the answer in simplest form.",
+    "options": [
+      "204:167",
+      "612:501",
+      "167:204",
+      "204:371"
+    ],
+    "answerIndex": 0,
+    "explanation": "Brindavan Tech : Godavari Motors = 612 : 501. Divide both by their HCF 3: 204:167.",
+    "shortcut": "Ratios are ordered: the first name goes first. Always reduce by the HCF."
+  },
+  {
+    "id": "apt-data-interpretation-054",
+    "module": "interview",
+    "topic": "ratio",
+    "section": "Data interpretation",
+    "difficulty": "hard",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Brindavan Tech | 175 | 763 | 684 |\n| Tungabhadra Logistics | 180 | 550 | 178 |\n| Meghna Pharma | 415 | 85 | 403 |\n\nWhat is the ratio of the FY24 revenue of Meghna Pharma to that of Brindavan Tech? Give the answer in simplest form.",
+    "options": [
+      "403:684",
+      "85:763",
+      "85:848",
+      "763:85"
+    ],
+    "answerIndex": 1,
+    "explanation": "Meghna Pharma : Brindavan Tech = 85 : 763. Divide both by their HCF 1: 85:763.",
+    "shortcut": "Ratios are ordered: the first name goes first. Always reduce by the HCF."
+  },
+  {
+    "id": "apt-data-interpretation-055",
+    "module": "interview",
+    "topic": "ratio",
+    "section": "Data interpretation",
+    "difficulty": "hard",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Godavari Motors | 443 | 525 | 154 |\n| Meghna Pharma | 290 | 470 | 352 |\n| Tungabhadra Logistics | 846 | 703 | 217 |\n| Chilika Textiles | 385 | 648 | 626 |\n\nWhat is the ratio of the FY23 revenue of Tungabhadra Logistics to that of Chilika Textiles? Give the answer in simplest form.",
+    "options": [
+      "385:846",
+      "846:1231",
+      "846:385",
+      "703:648"
+    ],
+    "answerIndex": 2,
+    "explanation": "Tungabhadra Logistics : Chilika Textiles = 846 : 385. Divide both by their HCF 1: 846:385.",
+    "shortcut": "Ratios are ordered: the first name goes first. Always reduce by the HCF."
+  },
+  {
+    "id": "apt-data-interpretation-056",
+    "module": "interview",
+    "topic": "ratio",
+    "section": "Data interpretation",
+    "difficulty": "hard",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Meghna Pharma | 182 | 598 | 866 |\n| Brindavan Tech | 622 | 643 | 634 |\n| Godavari Motors | 823 | 219 | 152 |\n\nWhat is the ratio of the FY23 revenue of Godavari Motors to that of Brindavan Tech? Give the answer in simplest form.",
+    "options": [
+      "823:1445",
+      "219:643",
+      "622:823",
+      "823:622"
+    ],
+    "answerIndex": 3,
+    "explanation": "Godavari Motors : Brindavan Tech = 823 : 622. Divide both by their HCF 1: 823:622.",
+    "shortcut": "Ratios are ordered: the first name goes first. Always reduce by the HCF."
+  },
+  {
+    "id": "apt-data-interpretation-057",
+    "module": "interview",
+    "topic": "ratio",
+    "section": "Data interpretation",
+    "difficulty": "hard",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Meghna Pharma | 688 | 876 | 170 |\n| Brindavan Tech | 484 | 601 | 458 |\n| Godavari Motors | 227 | 682 | 767 |\n\nWhat is the ratio of the FY25 revenue of Godavari Motors to that of Brindavan Tech? Give the answer in simplest form.",
+    "options": [
+      "767:458",
+      "767:1225",
+      "458:767",
+      "227:484"
+    ],
+    "answerIndex": 0,
+    "explanation": "Godavari Motors : Brindavan Tech = 767 : 458. Divide both by their HCF 1: 767:458.",
+    "shortcut": "Ratios are ordered: the first name goes first. Always reduce by the HCF."
+  },
+  {
+    "id": "apt-data-interpretation-058",
+    "module": "interview",
+    "topic": "ratio",
+    "section": "Data interpretation",
+    "difficulty": "hard",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Narmada Foods | 760 | 322 | 890 |\n| Tungabhadra Logistics | 398 | 241 | 830 |\n| Meghna Pharma | 412 | 644 | 276 |\n\nWhat is the ratio of the FY23 revenue of Meghna Pharma to that of Tungabhadra Logistics? Give the answer in simplest form.",
+    "options": [
+      "644:241",
+      "206:199",
+      "412:398",
+      "199:206"
+    ],
+    "answerIndex": 1,
+    "explanation": "Meghna Pharma : Tungabhadra Logistics = 412 : 398. Divide both by their HCF 2: 206:199.",
+    "shortcut": "Ratios are ordered: the first name goes first. Always reduce by the HCF."
+  },
+  {
+    "id": "apt-data-interpretation-059",
+    "module": "interview",
+    "topic": "ratio",
+    "section": "Data interpretation",
+    "difficulty": "hard",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Godavari Motors | 400 | 231 | 256 |\n| Sahyadri Steel | 579 | 135 | 677 |\n| Narmada Foods | 80 | 197 | 423 |\n\nWhat is the ratio of the FY25 revenue of Godavari Motors to that of Narmada Foods? Give the answer in simplest form.",
+    "options": [
+      "256:679",
+      "423:256",
+      "256:423",
+      "5:1"
+    ],
+    "answerIndex": 2,
+    "explanation": "Godavari Motors : Narmada Foods = 256 : 423. Divide both by their HCF 1: 256:423.",
+    "shortcut": "Ratios are ordered: the first name goes first. Always reduce by the HCF."
+  },
+  {
+    "id": "apt-data-interpretation-060",
+    "module": "interview",
+    "topic": "ratio",
+    "section": "Data interpretation",
+    "difficulty": "hard",
+    "question": "The table shows revenue of Indian companies in ₹ lakh.\n\n| Company (revenue in ₹ lakh) | FY23 | FY24 | FY25 |\n|---|---|---|---|\n| Vaidehi Agro | 859 | 370 | 671 |\n| Chilika Textiles | 135 | 874 | 91 |\n| Brindavan Tech | 702 | 817 | 569 |\n\nWhat is the ratio of the FY25 revenue of Vaidehi Agro to that of Chilika Textiles? Give the answer in simplest form.",
+    "options": [
+      "671:762",
+      "859:135",
+      "91:671",
+      "671:91"
+    ],
+    "answerIndex": 3,
+    "explanation": "Vaidehi Agro : Chilika Textiles = 671 : 91. Divide both by their HCF 1: 671:91.",
+    "shortcut": "Ratios are ordered: the first name goes first. Always reduce by the HCF."
+  }
+]

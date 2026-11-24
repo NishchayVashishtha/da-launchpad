@@ -40,6 +40,16 @@ const cases = mod.slug === 'business' ? (await getCollection('cases')).filter((p
       <h2>Case studies</h2>
       <ul style="list-style:none;padding:0;display:grid;gap:.6rem">{cases.map((p) => <li><a class="card" style="display:block;text-decoration:none;color:var(--text)" href={url(`/business/cases/${p.id}/`)}><strong>{p.data.title}</strong> <span class={`chip chip-${p.data.difficulty}`}>{p.data.difficulty}</span> <span class="chip">{p.data.industry}</span></a></li>)}</ul>
     </>}
+    {mod.slug === 'interview' && <>
+      <h2>Interview tools</h2>
+      <ul>
+        <li><a href={url('/interview/banks/')}>Question banks</a> with model answers</li>
+        <li><a href={url('/tools/mock-interview/')}>Mock interview</a> with timer and self-rating</li>
+        <li><a href={url('/tools/aptitude/')}>Aptitude practice</a></li>
+        <li><a href={url('/tools/sql-tests/')}>Timed SQL tests</a></li>
+      </ul>
+    </>}
+    {mod.slug === 'statistics' && <p class="card"><a href={url('/tools/mcq/')}>Take a timed statistics MCQ test</a> to check your understanding.</p>}
     {practice.length > 0 && <>
       <h2>Practice in this module</h2>
       <p>{practice.length} questions: {count('easy')} easy, {count('medium')} medium, {count('hard')} hard.</p>

@@ -1,0 +1,19 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import SqlTests from '../../components/react/SqlTests';
+const practice = new Map((await getCollection('practice')).map((e) => [e.data.id, e.data]));
+const tests = (await getCollection('tests')).map((e) => e.data).filter((t) => !t.id.startsWith('sample-')).map((t) => ({
+  id: t.id, title: t.title, durationMinutes: t.durationMinutes,
+  questions: t.questionIds.map((id) => practice.get(id)).filter((q): q is NonNullable<typeof q> => !!q && q.language === 'sql' && !!q.solutionSql).map((q) => ({
+    id: q.id, module: q.module, topic: q.topic, difficulty: q.difficulty, question: q.question, dataset: q.dataset, hint: q.hint,
+    solutionSql: q.solutionSql!, expectedOutput: q.expectedOutput, orderMatters: q.orderMatters, explanation: q.explanation })),
+})).filter((t) => t.questions.length > 0);
+---
+<Base title="SQL tests" description="Timed SQL tests. One question per screen, then a full review with solutions.">
+  <div style="max-width:56rem;margin:0 auto">
+    <h1 style="margin-top:0">SQL tests</h1>
+    <p class="muted">Timed SQL tests. One question per screen, then a full review with solutions.</p>
+    <SqlTests client:load tests={tests} />
+  </div>
+</Base>

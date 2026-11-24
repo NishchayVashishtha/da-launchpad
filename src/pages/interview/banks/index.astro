@@ -1,0 +1,18 @@
+---
+import Base from '../../../layouts/Base.astro';
+import InterviewBank from '../../../components/react/InterviewBank';
+import { getInterviewItems, catLabel } from '../../../lib/banks';
+import { url } from '../../../lib/url';
+const items = await getInterviewItems();
+const cats = [...new Set(items.map((i) => i.category))].sort();
+---
+<Base title="Interview question banks" description="Interview questions by category with model answers, follow-ups and common mistakes.">
+  <div style="max-width:56rem;margin:0 auto">
+    <nav aria-label="Breadcrumb" class="muted" style="font-size:.85rem"><a href={url('/')}>Home</a> / <a href={url('/interview/')}>Interview Prep</a> / Question banks</nav>
+    <h1>Interview question banks</h1>
+    <p class="muted">Read the question, try to answer it aloud, then open the model answer. Tick "Practised" to track progress.</p>
+    {cats.length > 0 && <ul style="list-style:none;padding:0;display:flex;flex-wrap:wrap;gap:.5rem">{cats.map((c) => <li><a class="chip" href={url(`/interview/banks/${c}/`)}>{catLabel(c)} ({items.filter((i) => i.category === c).length})</a></li>)}</ul>}
+    <p><a href={url('/tools/mock-interview/')}>Try a timed mock interview</a></p>
+    <InterviewBank client:load items={items} />
+  </div>
+</Base>
