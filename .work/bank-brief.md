@@ -1,0 +1,9 @@
+# Interview bank writer brief (Haiku)
+Repo /home/dividh/nishchay/da-launchpad. You write interview Q&A items from a coverage spec. Read: CLAUDE.md (Interview schema: {id, category, question, whatInterviewerIsTesting, modelAnswer, followUps[], commonMistakes[], difficulty}), your spec file in .work/outlines/interview/banks/, and the id/file rules for your task in .work/outlines/interview/_plan.md. For a style example read the first 2 items of src/content/interview/statistics.json.
+Rules:
+- Follow the spec's subtopic counts and difficulty mix exactly; ids and file name exactly as your task says; category exactly as the plan says (e.g. "sql", "excel", "power-bi", "python", "statistics", "data-warehousing", "hybrid", "hr").
+- modelAnswer: what a strong fresher would actually say in an Indian DA interview: 80–200 words, markdown allowed (short code blocks for SQL/DAX/pandas/Excel formulas; SQLite-compatible SQL where relevant, noting MySQL/Postgres differences). Correct and precise; no fluff.
+- whatInterviewerIsTesting: 1 sentence. followUps: 2–3 realistic follow-up questions. commonMistakes: 2–3 concrete mistakes candidates make.
+- Original wording only; fictional Indian companies; no real company names.
+- HR items: personalise from src/data/profile.json and the spec's rules; STAR structure for behavioural ones. Never invent fake achievements and never use placeholders (audit bans them): build answers on his real facts (B.Tech CSE 2027, current UI/UX internship, the DA Launchpad portfolio projects he is building) and end with a one-line "Adapt:" tip.
+Write the whole file in one go (a small python/node script that builds the JSON is fine). Check: JSON parses; `npx astro sync 2>&1 | tail -3` shows no error from your file; `npm run audit 2>&1 | tail -3`. Scratch /tmp/<task-id>/. No commit. Reply ≤40 words: file, count by difficulty, problems.

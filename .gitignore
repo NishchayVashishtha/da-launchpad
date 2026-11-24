@@ -7,4 +7,7 @@ dist
 __pycache__
 *.pyc
 reports
-.work/
+.work/verify/
+.work/enrich/
+.work/refill-files.txt
+.work/fintech-*

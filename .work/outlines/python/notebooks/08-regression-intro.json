@@ -1,0 +1,75 @@
+{
+  "filename": "08-regression-intro",
+  "title": "Regression intro: delivery distance and time",
+  "dataset": "food_delivery",
+  "cells": [
+    {
+      "type": "markdown",
+      "source": "# Regression intro: delivery distance and time\n\nThis notebook fits a straight line to delivery distance and minutes. You will read the slope, predict a value, measure R-squared, and check the residuals. The sklearn version is shown as a comment so the notebook runs with numpy and pandas only.\n\nPut the CSV files for this dataset in a folder named `food_delivery` next to this notebook. The site zip has one folder per dataset. Run the cells from top to bottom."
+    },
+    {
+      "type": "code",
+      "source": "import numpy as np\nimport pandas as pd\n\nraw = pd.read_csv(\"food_delivery/deliveries.csv\")\nd = raw.drop_duplicates(subset=\"delivery_id\")\nd = d[d[\"delivery_status\"] == \"Delivered\"].dropna(subset=[\"distance_km\", \"actual_minutes\"]).copy()\nprint(\"delivered rows used:\", len(d))\nd[[\"distance_km\", \"actual_minutes\"]].describe().round(2)"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 1: Look at the scatter\n\nBefore a line, plot the points. Is the pattern roughly a straight band? Do you see a few far-off points?"
+    },
+    {
+      "type": "code",
+      "source": "import matplotlib.pyplot as plt\n\nfig, ax = plt.subplots(figsize=(7, 4))\nax.scatter(d[\"distance_km\"], d[\"actual_minutes\"], s=4, alpha=0.3)\nax.set_xlabel(\"Distance (km)\")\nax.set_ylabel(\"Actual minutes\")\nax.set_title(\"Delivery time against distance\")\nplt.tight_layout()\nplt.show()"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 2: Fit the line\n\n`np.polyfit(x, y, 1)` returns the slope first, then the intercept. The slope is the extra minutes for each extra km."
+    },
+    {
+      "type": "code",
+      "source": "x = d[\"distance_km\"].to_numpy()\ny = d[\"actual_minutes\"].to_numpy()\nslope, intercept = np.polyfit(x, y, 1)\nprint(\"slope (minutes per km):\", round(slope, 2))\nprint(\"intercept (minutes at 0 km):\", round(intercept, 2))"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 3: Predict\n\nUse the line to predict minutes for a new distance. Stay inside the range of the data (about 0.6 to 14 km here)."
+    },
+    {
+      "type": "code",
+      "source": "for km in [2, 5, 8]:\n    print(f\"{km} km -> predicted {round(intercept + slope * km, 1)} minutes\")"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 4: Correlation and R-squared\n\nWith one x column, R-squared is the correlation squared. It is the share of the spread in minutes that the line explains."
+    },
+    {
+      "type": "code",
+      "source": "r = np.corrcoef(x, y)[0, 1]\nprint(\"correlation:\", round(r, 3))\nprint(\"R-squared:\", round(r ** 2, 3))"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 5: Residuals\n\nA residual is actual minus predicted. Residuals should look like a random cloud around zero. A curve or a fan shape means the straight line is not a good model."
+    },
+    {
+      "type": "code",
+      "source": "pred = intercept + slope * x\nresid = y - pred\nfig, ax = plt.subplots(figsize=(7, 4))\nax.scatter(pred, resid, s=4, alpha=0.3)\nax.axhline(0, color=\"black\", linewidth=1)\nax.set_xlabel(\"Predicted minutes\")\nax.set_ylabel(\"Residual (actual minus predicted)\")\nax.set_title(\"Residual plot\")\nplt.tight_layout()\nplt.show()\nprint(\"largest residual (minutes):\", round(resid.max(), 1))"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 6: Effect of far trips\n\nRefit without trips over 10 km. Compare the slopes. A big change means a few points are pulling the line."
+    },
+    {
+      "type": "code",
+      "source": "keep = d[\"distance_km\"] <= 10\nslope_trim, _ = np.polyfit(d.loc[keep, \"distance_km\"], d.loc[keep, \"actual_minutes\"], 1)\nprint(\"trips removed:\", int((~keep).sum()))\nprint(\"slope with all rows:\", round(slope, 2), \"| slope without far trips:\", round(slope_trim, 2))"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 7: The same model with scikit-learn (optional)\n\nIf scikit-learn is installed, the same fit takes a few lines. Uncomment them to try."
+    },
+    {
+      "type": "code",
+      "source": "# from sklearn.linear_model import LinearRegression\n# model = LinearRegression().fit(d[[\"distance_km\"]], d[\"actual_minutes\"])\n# print(\"slope:\", round(model.coef_[0], 2), \"intercept:\", round(model.intercept_, 2))"
+    },
+    {
+      "type": "markdown",
+      "source": "## Findings template\n\n- The slope says how many minutes each extra km adds. Write the number and its unit.\n- R-squared says how much of the spread the line explains. Write what it does not explain (traffic, weather, the restaurant).\n- Caveat: the line shows a link, not a cause. Do not claim that distance causes delay without a test."
+    }
+  ]
+}

@@ -1,0 +1,59 @@
+{
+  "filename": "05-subscription-funnel-retention",
+  "title": "Subscription funnel and cohort retention",
+  "dataset": "subscription",
+  "cells": [
+    {
+      "type": "markdown",
+      "source": "# Subscription funnel and cohort retention\n\nThis notebook measures the trial-to-paid conversion by platform and acquisition source. Then it builds a monthly cohort table: of the users who signed up in a month, how many were active 0, 1, 2 and 3 months later?\n\nPut the CSV files for this dataset in a folder named `subscription` next to this notebook. The site zip has one folder per dataset. Run the cells from top to bottom."
+    },
+    {
+      "type": "code",
+      "source": "import pandas as pd\n\nusers = pd.read_csv(\"subscription/users.csv\").drop_duplicates(subset=\"user_id\").copy()\nsubs = pd.read_csv(\"subscription/subscriptions.csv\").drop_duplicates(subset=\"subscription_id\").copy()\nevents = pd.read_csv(\"subscription/events.csv\").drop_duplicates(subset=\"event_id\").copy()\nprint(\"users:\", len(users), \"| subscriptions:\", len(subs), \"| events:\", len(events))\n\ndef parse_date(s):\n    iso = pd.to_datetime(s, format=\"%Y-%m-%d\", errors=\"coerce\")\n    dmy = pd.to_datetime(s, format=\"%d-%m-%Y\", errors=\"coerce\")\n    return iso.combine_first(dmy)\n\ndef parse_time(s):\n    iso = pd.to_datetime(s, format=\"%Y-%m-%d %H:%M:%S\", errors=\"coerce\")\n    dmy = pd.to_datetime(s, format=\"%d-%m-%Y %H:%M:%S\", errors=\"coerce\")\n    return iso.combine_first(dmy)"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 1: Trial to paid, by platform\n\nA user is in the funnel if they started a trial. They count as paid if `paid_start_date` is filled in."
+    },
+    {
+      "type": "code",
+      "source": "m = subs.merge(users[[\"user_id\", \"platform\"]], on=\"user_id\", how=\"inner\")\nm[\"paid\"] = m[\"paid_start_date\"].notna()\nby_platform = m.groupby(\"platform\").agg(trial_users=(\"user_id\", \"size\"), paid_users=(\"paid\", \"sum\"))\nby_platform[\"conversion_pct\"] = (by_platform[\"paid_users\"] / by_platform[\"trial_users\"] * 100).round(1)\nby_platform.sort_values(\"conversion_pct\", ascending=False)"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 2: Trial to paid, by acquisition source\n\nSource shows which campaigns bring users who pay. Check the row count, then compare."
+    },
+    {
+      "type": "code",
+      "source": "m = subs.merge(users[[\"user_id\", \"acquisition_source\"]], on=\"user_id\", how=\"inner\")\nprint(\"joined rows:\", len(m), \"| subscriptions:\", len(subs))\nm[\"paid\"] = m[\"paid_start_date\"].notna()\nby_source = m.groupby(\"acquisition_source\").agg(trial_users=(\"user_id\", \"size\"), paid_users=(\"paid\", \"sum\"))\nby_source[\"conversion_pct\"] = (by_source[\"paid_users\"] / by_source[\"trial_users\"] * 100).round(1)\nby_source.sort_values(\"conversion_pct\", ascending=False)"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 3: Signup cohorts\n\nGroup users by the month they signed up. Parse the signup date first, because some rows use `DD-MM-YYYY`."
+    },
+    {
+      "type": "code",
+      "source": "users[\"signup_dt\"] = parse_date(users[\"signup_date\"])\nusers[\"cohort\"] = users[\"signup_dt\"].dt.to_period(\"M\")\nprint(\"unparsed signup dates:\", users[\"signup_dt\"].isna().sum())\ncohort_size = users.groupby(\"cohort\").size().rename(\"cohort_users\")\ncohort_size.tail(6)"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 4: Activity by month\n\nA user is active in a month if they have any event that month. Keep one row per user and month, so heavy users do not count twice."
+    },
+    {
+      "type": "code",
+      "source": "events[\"event_dt\"] = parse_time(events[\"event_time\"])\nevents[\"event_month\"] = events[\"event_dt\"].dt.to_period(\"M\")\nactive = events[[\"user_id\", \"event_month\"]].dropna().drop_duplicates()\nactive = active.merge(users[[\"user_id\", \"cohort\"]], on=\"user_id\", how=\"inner\")\nactive[\"offset\"] = (active[\"event_month\"].dt.year - active[\"cohort\"].dt.year) * 12 + (active[\"event_month\"].dt.month - active[\"cohort\"].dt.month)\nprint(active[[\"user_id\", \"cohort\", \"event_month\", \"offset\"]].head())"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 5: Monthly cohort retention table\n\nFor each cohort, the share of its users who were active 0, 1, 2 and 3 months after signup. Month 0 is the signup month. A good table falls slowly from left to right."
+    },
+    {
+      "type": "code",
+      "source": "counts = active[active[\"offset\"].between(0, 3)].groupby([\"cohort\", \"offset\"])[\"user_id\"].nunique().unstack(\"offset\")\nretention = counts.div(cohort_size, axis=0).mul(100).round(1)\nretention = retention.dropna(how=\"all\")\nretention.tail(12)"
+    },
+    {
+      "type": "markdown",
+      "source": "## Findings template\n\n- Which platform and which source convert best? Give the rate and the number of trial users.\n- Which cohort month falls fastest after month 0? Check that the cohort is not too small.\n- Caveat: a user with no events in a month may still be a paying customer. Say that in your summary."
+    }
+  ]
+}
