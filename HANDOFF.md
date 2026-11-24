@@ -142,7 +142,20 @@ They are NOT yet checked in a browser.
    - **Final Collections & Build Verification**:
      - `reports/counts.json` verified: 143 lessons (142 published), 856 practice questions, 491 runnable solutions passing 100%, 475 interview Q&As, 320 aptitude MCQs, 137 stats MCQs, 11 SQL tests, 35 cases, 8 projects, 520 flashcards, and 320 glossary terms.
      - Production build verified: 227 pages built, 192 indexed in Pagefind, 356 precached in service worker. All 4 quality gates green.
-9. **Optional:** retail East-region targets (see the old note below).
+9. **[DONE] Repository Setup, GitHub Push & Live Deployment:**
+   - **GitHub Repository**: Created and pushed to https://github.com/NishchayVashishtha/da-launchpad (master branch tracking origin/master).
+   - **Live Deployment**: Deployed and fully functional on GitHub Pages at https://nishchayvashishtha.github.io/da-launchpad/.
+   - **CI/CD Workflow**: Updated .github/workflows/deploy.yml with Node.js v22 to meet Astro v5 requirements, automated artifact upload, and GitHub Pages deployment.
+   - **Dedicated Route Architecture**: Authored dedicated src/pages/projects/index.astro, excluded projects, job-search, and cheat-sheets from generic [module]/index.astro route matching so proper rich landing pages render without empty lesson fallback.
+   - **Sub-Path URL Routing**: Handled sub-path links using src/lib/url.ts across cheat sheets, projects, and interactive tools.
+   - **Dark/Light Mode Contrast**: Enhanced FlashcardPlayer and cheat-sheet badge contrast in both dark and light modes.
+   - **End-to-End Verification**: Tested on live URL with browser subagents:
+     - Dashboard: 'Start plan today' activates Week 1 · Day 1 and updates tasks.
+     - Projects: All 8 portfolio projects display title, tags, hours, and build guide links.
+     - Job Search: ATS Resume Builder, Application Tracker with CSV export, outreach templates, and 90-day plan.
+     - Cheat Sheets: All 9 sheets render with category badges and jump navigation.
+     - Flashcards: 520 flashcards with keyboard shortcuts and spaced repetition flipping.
+10. **Optional:** retail East-region targets (see the old note below).
 
 ## Known issues / older notes
 - Retail: East-region stores have NO targets (the brief meant "misses its targets"). Optional fix.
