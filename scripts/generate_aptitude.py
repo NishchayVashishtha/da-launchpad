@@ -896,19 +896,35 @@ def p_syllogism(rng, lvl):
     stmts = [(f, x, y) for f in forms for x in range(3) for y in range(3) if x != y]
     p1, p2 = rng.sample(stmts, 2)
     R({p1[1], p1[2], p2[1], p2[2]} == {0, 1, 2})
-    models = [m for m in range(256) if all(_syl_holds(f, x, y, m) for f, x, y in (p1, p2))]
+
+    # Existential import: each category has at least one member
+    def _nonempty_model(m):
+        regs = [r for r in range(8) if (m >> r) & 1]
+        return any(r & 1 for r in regs) and any(r & 2 for r in regs) and any(r & 4 for r in regs)
+
+    models = [m for m in range(256) if _nonempty_model(m) and all(_syl_holds(f, x, y, m) for f, x, y in (p1, p2))]
     R(models)
-    every = [(f, x, y) for f in ("all", "no", "some", "somenot") for x in range(3) for y in range(3) if x != y]
-    premises = {p1, p2}
-    entailed = [c for c in every if c not in premises and all(_syl_holds(*c, m) for m in models)]
-    others = [c for c in every if c not in premises and c not in entailed]
+
+    # The conclusion must bridge the two end terms through the middle term
+    mid = ({p1[1], p1[2]} & {p2[1], p2[2]}).pop()
+    end1 = ({p1[1], p1[2]} - {mid}).pop()
+    end2 = ({p2[1], p2[2]} - {mid}).pop()
+
+    candidates = [(f, x, y) for f in ("all", "no", "some", "somenot") for (x, y) in ((end1, end2), (end2, end1))]
+    entailed = [c for c in candidates if all(_syl_holds(*c, m) for m in models)]
+    others = [c for c in candidates if not all(_syl_holds(*c, m) for m in models)]
     R(entailed and len(others) >= 3)
-    correct = rng.choice(entailed)
+
+    # Prefer universal statements ('all', 'no') when entailed, otherwise particular ('some', 'somenot')
+    universals = [c for c in entailed if c[0] in ("all", "no")]
+    correct = rng.choice(universals) if universals else rng.choice(entailed)
+    distractors = rng.sample(others, 3)
+
     return {
-        "q": (f"Assume these two statements are true, even if they seem unlikely: {_syl_sent(*p1, terms)} "
-              f"{_syl_sent(*p2, terms)} Which conclusion must also be true?"),
+        "q": (f"Assume these two statements are true, even if they seem unlikely, and assume each group has at least one member: "
+              f"{_syl_sent(*p1, terms)} {_syl_sent(*p2, terms)} Which conclusion must also be true?"),
         "correct": _syl_sent(*correct, terms),
-        "dist": [_syl_sent(*c, terms) for c in others],
+        "dist": [_syl_sent(*c, terms) for c in distractors],
         "why": (f"Both statements together force '{_syl_sent(*correct, terms)}' in every case that fits them. "
                 "Each wrong option is false in at least one case that still fits both statements, so it cannot be forced."),
         "tip": "Draw overlapping circles for each statement. Check the conclusion against every possible overlap.",

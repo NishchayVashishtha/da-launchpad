@@ -94,7 +94,13 @@ They are NOT yet checked in a browser.
    - 25 written case studies in `src/content/cases/*.mdx`: 10 Fintech (F1-F10), 7 Healthcare (H1-H7), 8 Consulting (C1-C8), all with the 7 standard H2s.
    - Added official DPDP Act link to `src/data/links.json`.
    - All 4 gates green (check:mdx 179 files, validate 491 runnable passed, audit passed, build 215 pages + 184 indexed).
-3. **Fix the aptitude syllogism template** in `scripts/generate_aptitude.py`. The blind check showed apt-logical-052 (wrong key), 055, 056 and 059 are ambiguous under existential import. Make conclusions unambiguous (or state "assume all groups are non-empty") and regenerate. Then re-run the blind check: `node scripts/mcq-blind.mjs prep aptitude-logical 1`, have a Haiku answer it, then `compare`.
+3. **[DONE] Fix the aptitude syllogism template** in `scripts/generate_aptitude.py`:
+   - Updated `p_syllogism` to enforce non-empty models (existential import: each term has $\ge 1$ element).
+   - Constrained conclusion candidates and distractors strictly to end terms (`end1` and `end2`), eliminating trivial single-premise conversions.
+   - Guaranteed distractors are false in at least one valid model.
+   - Clarified question prompt: "assume each group has at least one member".
+   - Regenerated all 320 aptitude questions (`scripts/generate_aptitude.py`).
+   - Ran blind MCQ check (`node scripts/mcq-blind.mjs prep aptitude-logical 1` -> independent blind solver -> `compare`): **60 answered, 0 disagree** (100% pass).
 4. **Light dedupe of the interview banks:** interview-powerbi-030 vs 031 and interview-sql-050 vs 071 look like near-duplicates. Statistics-2 partly overlaps statistics.json.
 5. **Reviewer pass** (`.briefs/reviewer.md`, FIX mode, Haiku) on the interview banks + Phase 5 content, plus a blind check on any new MCQs.
 6. **Browser smoke test** of the tool pages and the Python runner in Pyodide (pandas version may differ from the local pandas 3). Use a Sonnet agent.

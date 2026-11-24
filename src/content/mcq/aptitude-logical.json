@@ -872,11 +872,11 @@
     "topic": "syllogisms",
     "section": "Logical reasoning",
     "difficulty": "easy",
-    "question": "Assume these two statements are true, even if they seem unlikely: All doctors are students. All cricketers are doctors. Which conclusion must also be true?",
+    "question": "Assume these two statements are true, even if they seem unlikely, and assume each group has at least one member: All doctors are students. All cricketers are doctors. Which conclusion must also be true?",
     "options": [
-      "Some cricketers are students.",
-      "Some doctors are students.",
-      "No cricketers are doctors.",
+      "All students are cricketers.",
+      "No cricketers are students.",
+      "Some students are not cricketers.",
       "All cricketers are students."
     ],
     "answerIndex": 3,
@@ -889,15 +889,15 @@
     "topic": "syllogisms",
     "section": "Logical reasoning",
     "difficulty": "medium",
-    "question": "Assume these two statements are true, even if they seem unlikely: Some trucks are fruits. Some cricketers are fruits. Which conclusion must also be true?",
+    "question": "Assume these two statements are true, even if they seem unlikely, and assume each group has at least one member: No bikes are students. Some fruits are students. Which conclusion must also be true?",
     "options": [
-      "Some fruits are cricketers.",
-      "No fruits are cricketers.",
-      "All cricketers are trucks.",
-      "Some trucks are cricketers."
+      "Some fruits are not bikes.",
+      "No bikes are fruits.",
+      "All fruits are bikes.",
+      "Some bikes are not fruits."
     ],
     "answerIndex": 0,
-    "explanation": "Both statements together force 'Some fruits are cricketers.' in every case that fits them. Each wrong option is false in at least one case that still fits both statements, so it cannot be forced.",
+    "explanation": "Both statements together force 'Some fruits are not bikes.' in every case that fits them. Each wrong option is false in at least one case that still fits both statements, so it cannot be forced.",
     "shortcut": "Draw overlapping circles for each statement. Check the conclusion against every possible overlap."
   },
   {
@@ -906,15 +906,15 @@
     "topic": "syllogisms",
     "section": "Logical reasoning",
     "difficulty": "hard",
-    "question": "Assume these two statements are true, even if they seem unlikely: Some bankers are not poets. Some bankers are trucks. Which conclusion must also be true?",
+    "question": "Assume these two statements are true, even if they seem unlikely, and assume each group has at least one member: All bankers are spices. No bikes are bankers. Which conclusion must also be true?",
     "options": [
-      "All trucks are poets.",
-      "Some trucks are bankers.",
-      "No bankers are trucks.",
-      "All poets are trucks."
+      "No bikes are spices.",
+      "Some spices are not bikes.",
+      "All spices are bikes.",
+      "All bikes are spices."
     ],
     "answerIndex": 1,
-    "explanation": "Both statements together force 'Some trucks are bankers.' in every case that fits them. Each wrong option is false in at least one case that still fits both statements, so it cannot be forced.",
+    "explanation": "Both statements together force 'Some spices are not bikes.' in every case that fits them. Each wrong option is false in at least one case that still fits both statements, so it cannot be forced.",
     "shortcut": "Draw overlapping circles for each statement. Check the conclusion against every possible overlap."
   },
   {
@@ -923,15 +923,15 @@
     "topic": "syllogisms",
     "section": "Logical reasoning",
     "difficulty": "easy",
-    "question": "Assume these two statements are true, even if they seem unlikely: All poets are students. All students are sweets. Which conclusion must also be true?",
+    "question": "Assume these two statements are true, even if they seem unlikely, and assume each group has at least one member: All poets are fruits. Some poets are sweets. Which conclusion must also be true?",
     "options": [
-      "Some poets are students.",
-      "Some poets are not sweets.",
-      "All poets are sweets.",
-      "Some students are poets."
+      "Some sweets are not fruits.",
+      "No fruits are sweets.",
+      "Some sweets are fruits.",
+      "Some fruits are not sweets."
     ],
     "answerIndex": 2,
-    "explanation": "Both statements together force 'All poets are sweets.' in every case that fits them. Each wrong option is false in at least one case that still fits both statements, so it cannot be forced.",
+    "explanation": "Both statements together force 'Some sweets are fruits.' in every case that fits them. Each wrong option is false in at least one case that still fits both statements, so it cannot be forced.",
     "shortcut": "Draw overlapping circles for each statement. Check the conclusion against every possible overlap."
   },
   {
@@ -940,15 +940,15 @@
     "topic": "syllogisms",
     "section": "Logical reasoning",
     "difficulty": "medium",
-    "question": "Assume these two statements are true, even if they seem unlikely: All cricketers are fruits. No dosas are fruits. Which conclusion must also be true?",
+    "question": "Assume these two statements are true, even if they seem unlikely, and assume each group has at least one member: All dosas are fruits. All doctors are dosas. Which conclusion must also be true?",
     "options": [
-      "All dosas are cricketers.",
-      "Some dosas are not cricketers.",
-      "All fruits are dosas.",
-      "No dosas are cricketers."
+      "Some fruits are not doctors.",
+      "No fruits are doctors.",
+      "No doctors are fruits.",
+      "All doctors are fruits."
     ],
     "answerIndex": 3,
-    "explanation": "Both statements together force 'No dosas are cricketers.' in every case that fits them. Each wrong option is false in at least one case that still fits both statements, so it cannot be forced.",
+    "explanation": "Both statements together force 'All doctors are fruits.' in every case that fits them. Each wrong option is false in at least one case that still fits both statements, so it cannot be forced.",
     "shortcut": "Draw overlapping circles for each statement. Check the conclusion against every possible overlap."
   },
   {
@@ -957,15 +957,15 @@
     "topic": "syllogisms",
     "section": "Logical reasoning",
     "difficulty": "hard",
-    "question": "Assume these two statements are true, even if they seem unlikely: Some cricketers are not spices. No doctors are spices. Which conclusion must also be true?",
+    "question": "Assume these two statements are true, even if they seem unlikely, and assume each group has at least one member: No trucks are spices. Some spices are dosas. Which conclusion must also be true?",
     "options": [
-      "No spices are doctors.",
-      "Some spices are doctors.",
-      "Some doctors are spices.",
-      "Some cricketers are not doctors."
+      "Some dosas are not trucks.",
+      "Some trucks are dosas.",
+      "All trucks are dosas.",
+      "No dosas are trucks."
     ],
     "answerIndex": 0,
-    "explanation": "Both statements together force 'No spices are doctors.' in every case that fits them. Each wrong option is false in at least one case that still fits both statements, so it cannot be forced.",
+    "explanation": "Both statements together force 'Some dosas are not trucks.' in every case that fits them. Each wrong option is false in at least one case that still fits both statements, so it cannot be forced.",
     "shortcut": "Draw overlapping circles for each statement. Check the conclusion against every possible overlap."
   },
   {
@@ -974,15 +974,15 @@
     "topic": "syllogisms",
     "section": "Logical reasoning",
     "difficulty": "easy",
-    "question": "Assume these two statements are true, even if they seem unlikely: Some bankers are spices. All bankers are tigers. Which conclusion must also be true?",
+    "question": "Assume these two statements are true, even if they seem unlikely, and assume each group has at least one member: All bankers are fruits. All fruits are doctors. Which conclusion must also be true?",
     "options": [
-      "Some bankers are not tigers.",
-      "Some spices are tigers.",
-      "All tigers are bankers.",
-      "All tigers are spices."
+      "No doctors are bankers.",
+      "All bankers are doctors.",
+      "Some doctors are not bankers.",
+      "All doctors are bankers."
     ],
     "answerIndex": 1,
-    "explanation": "Both statements together force 'Some spices are tigers.' in every case that fits them. Each wrong option is false in at least one case that still fits both statements, so it cannot be forced.",
+    "explanation": "Both statements together force 'All bankers are doctors.' in every case that fits them. Each wrong option is false in at least one case that still fits both statements, so it cannot be forced.",
     "shortcut": "Draw overlapping circles for each statement. Check the conclusion against every possible overlap."
   },
   {
@@ -991,15 +991,15 @@
     "topic": "syllogisms",
     "section": "Logical reasoning",
     "difficulty": "medium",
-    "question": "Assume these two statements are true, even if they seem unlikely: No bikes are spices. No sweets are bikes. Which conclusion must also be true?",
+    "question": "Assume these two statements are true, even if they seem unlikely, and assume each group has at least one member: Some dosas are bikes. No bikes are students. Which conclusion must also be true?",
     "options": [
-      "No spices are sweets.",
-      "Some spices are bikes.",
-      "No spices are bikes.",
-      "Some spices are not bikes."
+      "All dosas are students.",
+      "No dosas are students.",
+      "Some dosas are not students.",
+      "Some students are dosas."
     ],
     "answerIndex": 2,
-    "explanation": "Both statements together force 'No spices are bikes.' in every case that fits them. Each wrong option is false in at least one case that still fits both statements, so it cannot be forced.",
+    "explanation": "Both statements together force 'Some dosas are not students.' in every case that fits them. Each wrong option is false in at least one case that still fits both statements, so it cannot be forced.",
     "shortcut": "Draw overlapping circles for each statement. Check the conclusion against every possible overlap."
   },
   {
@@ -1008,15 +1008,15 @@
     "topic": "syllogisms",
     "section": "Logical reasoning",
     "difficulty": "hard",
-    "question": "Assume these two statements are true, even if they seem unlikely: Some poets are bikes. No bikes are trucks. Which conclusion must also be true?",
+    "question": "Assume these two statements are true, even if they seem unlikely, and assume each group has at least one member: All tigers are sweets. Some tigers are doctors. Which conclusion must also be true?",
     "options": [
-      "No poets are bikes.",
-      "Some poets are trucks.",
-      "All poets are bikes.",
-      "No trucks are bikes."
+      "No sweets are doctors.",
+      "Some doctors are not sweets.",
+      "No doctors are sweets.",
+      "Some sweets are doctors."
     ],
     "answerIndex": 3,
-    "explanation": "Both statements together force 'No trucks are bikes.' in every case that fits them. Each wrong option is false in at least one case that still fits both statements, so it cannot be forced.",
+    "explanation": "Both statements together force 'Some sweets are doctors.' in every case that fits them. Each wrong option is false in at least one case that still fits both statements, so it cannot be forced.",
     "shortcut": "Draw overlapping circles for each statement. Check the conclusion against every possible overlap."
   }
 ]
