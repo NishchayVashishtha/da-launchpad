@@ -110,28 +110,52 @@
       ],
       "rows": [
         [
-          "Grocery",
-          3
-        ],
-        [
-          "Telecom",
-          3
-        ],
-        [
           "Entertainment",
-          2
+          18
         ],
         [
-          "Utilities",
-          2
+          "Travel",
+          16
         ],
         [
           "Food & Beverage",
-          1
+          12
+        ],
+        [
+          "Grocery",
+          11
+        ],
+        [
+          "Utilities",
+          11
+        ],
+        [
+          "Telecom",
+          10
+        ],
+        [
+          "Fashion",
+          9
+        ],
+        [
+          "Electronics",
+          7
+        ],
+        [
+          "Healthcare",
+          5
+        ],
+        [
+          "Education",
+          4
+        ],
+        [
+          "Fuel",
+          4
         ],
         [
           "Pharmacy",
-          1
+          3
         ]
       ]
     },

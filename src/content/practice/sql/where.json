@@ -1,272 +1,272 @@
 [
- {
-  "id": "sql-where-001",
-  "module": "sql",
-  "topic": "where",
-  "difficulty": "easy",
-  "language": "sql",
-  "question": "The city team wants a quick headcount of customers in Pune, one of the key markets. How many customers have the city spelled exactly 'Pune'? Return one column `pune_customers`.",
-  "dataset": "ecommerce",
-  "hint": "Compare the city column with a single equals sign.",
-  "solutionSql": "SELECT COUNT(*) AS pune_customers FROM customers WHERE city = 'Pune'",
-  "orderMatters": false,
-  "explanation": "The = operator compares text exactly. In SQLite the match is case sensitive, so 'pune' or 'Pune ' with a trailing space is not counted. COUNT(*) returns one number. Cleaning messy text is covered in the strings lesson.",
-  "commonMistake": "Expecting city = 'PUNE' to match all 221 Pune rows is wrong, because only the rows with that exact spelling match.",
-  "interviewFrequency": "high",
-  "estimatedMinutes": 3,
-  "tags": [
-   "where",
-   "sql"
-  ],
-  "expectedOutput": {
-   "columns": [
-    "pune_customers"
-   ],
-   "rows": [
-    [
-     221
+  {
+    "id": "sql-where-001",
+    "module": "sql",
+    "topic": "where",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "The city team wants a quick headcount of customers in Pune, one of the key markets. How many customers have the city spelled exactly 'Pune'? Return one column `pune_customers`.",
+    "dataset": "ecommerce",
+    "hint": "Compare the city column with a single equals sign.",
+    "solutionSql": "SELECT COUNT(*) AS pune_customers FROM customers WHERE city = 'Pune'",
+    "expectedOutput": {
+      "columns": [
+        "pune_customers"
+      ],
+      "rows": [
+        [
+          221
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "The = operator compares text exactly. In SQLite the match is case sensitive, so 'pune' or 'Pune ' with a trailing space is not counted. COUNT(*) returns one number. Cleaning messy text is covered in the strings lesson.",
+    "commonMistake": "Expecting city = 'PUNE' to match all 221 Pune rows is wrong, because only the rows with that exact spelling match.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "where",
+      "sql"
     ]
-   ]
-  }
- },
- {
-  "id": "sql-where-002",
-  "module": "sql",
-  "topic": "where",
-  "difficulty": "easy",
-  "language": "sql",
-  "question": "The risk team wants to see how many large payments failed, to review their fraud rules. How many FAILED transactions have an amount above 5000? Return one column `failed_big`.",
-  "dataset": "fintech",
-  "hint": "Both the status and the amount must match, so join the checks with AND.",
-  "solutionSql": "SELECT COUNT(*) AS failed_big FROM transactions WHERE status = 'FAILED' AND amount > 5000",
-  "orderMatters": false,
-  "explanation": "AND means both conditions must be true before a row is counted. Here a row needs the FAILED status and an amount above 5000. COUNT(*) then counts only the rows that pass both checks.",
-  "commonMistake": "Writing status = FAILED without quotes makes SQL read FAILED as a column name, so the query fails with a 'no such column' error.",
-  "interviewFrequency": "high",
-  "estimatedMinutes": 3,
-  "tags": [
-   "where",
-   "sql"
-  ],
-  "expectedOutput": {
-   "columns": [
-    "failed_big"
-   ],
-   "rows": [
-    [
-     36
+  },
+  {
+    "id": "sql-where-002",
+    "module": "sql",
+    "topic": "where",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "The risk team wants to see how many large payments failed, to review their fraud rules. How many FAILED transactions have an amount above 5000? Return one column `failed_big`.",
+    "dataset": "fintech",
+    "hint": "Both the status and the amount must match, so join the checks with AND.",
+    "solutionSql": "SELECT COUNT(*) AS failed_big FROM transactions WHERE status = 'FAILED' AND amount > 5000",
+    "expectedOutput": {
+      "columns": [
+        "failed_big"
+      ],
+      "rows": [
+        [
+          29
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "AND means both conditions must be true before a row is counted. Here a row needs the FAILED status and an amount above 5000. COUNT(*) then counts only the rows that pass both checks.",
+    "commonMistake": "Writing status = FAILED without quotes makes SQL read FAILED as a column name, so the query fails with a 'no such column' error.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "where",
+      "sql"
     ]
-   ]
-  }
- },
- {
-  "id": "sql-where-003",
-  "module": "sql",
-  "topic": "where",
-  "difficulty": "easy",
-  "language": "sql",
-  "question": "List `employee_id` and `full_name` of employees with `job_level` 'Lead' in `department_id` 5, ordered by `employee_id`.",
-  "dataset": "hr",
-  "hint": "Combine a job level check and a department check.",
-  "solutionSql": "SELECT employee_id, full_name FROM employees WHERE job_level = 'Lead' AND department_id = 5 ORDER BY employee_id",
-  "orderMatters": true,
-  "explanation": "Two equality checks joined with AND must both be true. job_level is text, so its value needs quotes. department_id is a number, so its value has none. ORDER BY sorts the output by employee_id.",
-  "commonMistake": "Writing job_level = 'Lead' OR department_id = 5 returns every Lead in the company plus everyone in department 5, which is far more rows than asked.",
-  "interviewFrequency": "medium",
-  "estimatedMinutes": 3,
-  "tags": [
-   "where",
-   "sql"
-  ],
-  "expectedOutput": {
-   "columns": [
-    "employee_id",
-    "full_name"
-   ],
-   "rows": [
-    [
-     159,
-     "Amit Qureshi"
-    ],
-    [
-     423,
-     "Sandeep Nair"
-    ],
-    [
-     453,
-     "Pooja Banerjee"
-    ],
-    [
-     458,
-     "Sanjay Chowdhury"
-    ],
-    [
-     675,
-     "Isha Nair"
-    ],
-    [
-     693,
-     "Dinesh Sheikh"
-    ],
-    [
-     2168,
-     "Sunita Desai"
-    ],
-    [
-     2296,
-     "Gaurav Bhatia"
+  },
+  {
+    "id": "sql-where-003",
+    "module": "sql",
+    "topic": "where",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "List `employee_id` and `full_name` of employees with `job_level` 'Lead' in `department_id` 5, ordered by `employee_id`.",
+    "dataset": "hr",
+    "hint": "Combine a job level check and a department check.",
+    "solutionSql": "SELECT employee_id, full_name FROM employees WHERE job_level = 'Lead' AND department_id = 5 ORDER BY employee_id",
+    "expectedOutput": {
+      "columns": [
+        "employee_id",
+        "full_name"
+      ],
+      "rows": [
+        [
+          159,
+          "Amit Qureshi"
+        ],
+        [
+          423,
+          "Sandeep Nair"
+        ],
+        [
+          453,
+          "Pooja Banerjee"
+        ],
+        [
+          458,
+          "Sanjay Chowdhury"
+        ],
+        [
+          675,
+          "Isha Nair"
+        ],
+        [
+          693,
+          "Dinesh Sheikh"
+        ],
+        [
+          2168,
+          "Sunita Desai"
+        ],
+        [
+          2296,
+          "Gaurav Bhatia"
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Two equality checks joined with AND must both be true. job_level is text, so its value needs quotes. department_id is a number, so its value has none. ORDER BY sorts the output by employee_id.",
+    "commonMistake": "Writing job_level = 'Lead' OR department_id = 5 returns every Lead in the company plus everyone in department 5, which is far more rows than asked.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "where",
+      "sql"
     ]
-   ]
-  }
- },
- {
-  "id": "sql-where-004",
-  "module": "sql",
-  "topic": "where",
-  "difficulty": "easy",
-  "language": "sql",
-  "question": "Count Delivered orders paid by 'UPI' or 'Wallet' with `delay_minutes` greater than 15. Return `late_digital`.",
-  "dataset": "food_delivery",
-  "hint": "Use one list check for the two payment modes.",
-  "solutionSql": "SELECT COUNT(*) AS late_digital FROM deliveries WHERE delivery_status = 'Delivered' AND payment_mode IN ('UPI', 'Wallet') AND delay_minutes > 15",
-  "orderMatters": false,
-  "explanation": "IN ('UPI', 'Wallet') matches either payment mode in one short list. The other checks, Delivered status and delay above 15 minutes, use AND. COUNT(*) then counts the orders that pass every check.",
-  "commonMistake": "Writing payment_mode = 'UPI' OR payment_mode = 'Wallet' AND delay_minutes > 15 without brackets lets AND bind first, so on-time UPI orders are counted as late and the total is too high.",
-  "interviewFrequency": "high",
-  "estimatedMinutes": 3,
-  "tags": [
-   "where",
-   "sql"
-  ],
-  "expectedOutput": {
-   "columns": [
-    "late_digital"
-   ],
-   "rows": [
-    [
-     755
+  },
+  {
+    "id": "sql-where-004",
+    "module": "sql",
+    "topic": "where",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "Count Delivered orders paid by 'UPI' or 'Wallet' with `delay_minutes` greater than 15. Return `late_digital`.",
+    "dataset": "food_delivery",
+    "hint": "Use one list check for the two payment modes.",
+    "solutionSql": "SELECT COUNT(*) AS late_digital FROM deliveries WHERE delivery_status = 'Delivered' AND payment_mode IN ('UPI', 'Wallet') AND delay_minutes > 15",
+    "expectedOutput": {
+      "columns": [
+        "late_digital"
+      ],
+      "rows": [
+        [
+          755
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "IN ('UPI', 'Wallet') matches either payment mode in one short list. The other checks, Delivered status and delay above 15 minutes, use AND. COUNT(*) then counts the orders that pass every check.",
+    "commonMistake": "Writing payment_mode = 'UPI' OR payment_mode = 'Wallet' AND delay_minutes > 15 without brackets lets AND bind first, so on-time UPI orders are counted as late and the total is too high.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "where",
+      "sql"
     ]
-   ]
-  }
- },
- {
-  "id": "sql-where-005",
-  "module": "sql",
-  "topic": "where",
-  "difficulty": "easy",
-  "language": "sql",
-  "question": "Count sales lines in the 'Apparel' or 'Home Decor' category with `quantity` of at least 5. Return `bulk_lines`.",
-  "dataset": "retail",
-  "hint": "Use IN for the two categories and >= for the quantity.",
-  "solutionSql": "SELECT COUNT(*) AS bulk_lines FROM sales WHERE category IN ('Apparel', 'Home Decor') AND quantity >= 5",
-  "orderMatters": false,
-  "explanation": "IN ('Apparel', 'Home Decor') matches either category in a short list. quantity >= 5 keeps lines with at least 5 units, including exactly 5. COUNT(*) counts the lines that pass both checks.",
-  "commonMistake": "Writing quantity > 5 skips the lines with exactly 5 units, so the count comes out lower than the real total.",
-  "interviewFrequency": "medium",
-  "estimatedMinutes": 3,
-  "tags": [
-   "where",
-   "sql"
-  ],
-  "expectedOutput": {
-   "columns": [
-    "bulk_lines"
-   ],
-   "rows": [
-    [
-     391
+  },
+  {
+    "id": "sql-where-005",
+    "module": "sql",
+    "topic": "where",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "Count sales lines in the 'Apparel' or 'Home Decor' category with `quantity` of at least 5. Return `bulk_lines`.",
+    "dataset": "retail",
+    "hint": "Use IN for the two categories and >= for the quantity.",
+    "solutionSql": "SELECT COUNT(*) AS bulk_lines FROM sales WHERE category IN ('Apparel', 'Home Decor') AND quantity >= 5",
+    "expectedOutput": {
+      "columns": [
+        "bulk_lines"
+      ],
+      "rows": [
+        [
+          391
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "IN ('Apparel', 'Home Decor') matches either category in a short list. quantity >= 5 keeps lines with at least 5 units, including exactly 5. COUNT(*) counts the lines that pass both checks.",
+    "commonMistake": "Writing quantity > 5 skips the lines with exactly 5 units, so the count comes out lower than the real total.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "where",
+      "sql"
     ]
-   ]
-  }
- },
- {
-  "id": "sql-where-006",
-  "module": "sql",
-  "topic": "where",
-  "difficulty": "medium",
-  "language": "sql",
-  "question": "Count products whose `product_name` contains 'Speaker' and whose `mrp` is between 5000 and 20000 (both inclusive). Return `speakers`.",
-  "dataset": "ecommerce",
-  "hint": "LIKE with % on both sides, and BETWEEN.",
-  "solutionSql": "SELECT COUNT(*) AS speakers FROM products WHERE product_name LIKE '%Speaker%' AND mrp BETWEEN 5000 AND 20000",
-  "orderMatters": false,
-  "explanation": "LIKE '%Speaker%' finds the word anywhere in the product name. BETWEEN 5000 AND 20000 includes both ends. COUNT(*) counts the products that pass both checks. In SQLite, LIKE ignores case for plain letters; PostgreSQL needs ILIKE for the same effect.",
-  "commonMistake": "Writing LIKE 'Speaker' without the % signs matches only names that are exactly 'Speaker', so names like 'Bluetooth Speaker' are missed.",
-  "interviewFrequency": "high",
-  "estimatedMinutes": 6,
-  "tags": [
-   "where",
-   "sql"
-  ],
-  "expectedOutput": {
-   "columns": [
-    "speakers"
-   ],
-   "rows": [
-    [
-     4
+  },
+  {
+    "id": "sql-where-006",
+    "module": "sql",
+    "topic": "where",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Count products whose `product_name` contains 'Speaker' and whose `mrp` is between 5000 and 20000 (both inclusive). Return `speakers`.",
+    "dataset": "ecommerce",
+    "hint": "LIKE with % on both sides, and BETWEEN.",
+    "solutionSql": "SELECT COUNT(*) AS speakers FROM products WHERE product_name LIKE '%Speaker%' AND mrp BETWEEN 5000 AND 20000",
+    "expectedOutput": {
+      "columns": [
+        "speakers"
+      ],
+      "rows": [
+        [
+          4
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "LIKE '%Speaker%' finds the word anywhere in the product name. BETWEEN 5000 AND 20000 includes both ends. COUNT(*) counts the products that pass both checks. In SQLite, LIKE ignores case for plain letters; PostgreSQL needs ILIKE for the same effect.",
+    "commonMistake": "Writing LIKE 'Speaker' without the % signs matches only names that are exactly 'Speaker', so names like 'Bluetooth Speaker' are missed.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "where",
+      "sql"
     ]
-   ]
-  }
- },
- {
-  "id": "sql-where-007",
-  "module": "sql",
-  "topic": "where",
-  "difficulty": "medium",
-  "language": "sql",
-  "question": "Count users who signed up in March 2024. Use a date range that does not depend on the time part. Return `march_2024_signups`.",
-  "dataset": "subscription",
-  "hint": "Use >= start and < first day of next month.",
-  "solutionSql": "SELECT COUNT(*) AS march_2024_signups FROM users WHERE signup_date >= '2024-03-01' AND signup_date < '2024-04-01'",
-  "orderMatters": false,
-  "explanation": "The range starts on March 1 and stops before April 1, so every time on March 31 is included. The >= and < pair works for dates and timestamps. ISO text dates like 2024-03-01 sort correctly in SQLite. COUNT(*) counts the users in the range.",
-  "commonMistake": "Using BETWEEN '2024-03-01' AND '2024-03-31' on a timestamp column misses sign-ups on March 31 after midnight, because '2024-03-31 10:00' is later than '2024-03-31'.",
-  "interviewFrequency": "high",
-  "estimatedMinutes": 6,
-  "tags": [
-   "where",
-   "sql"
-  ],
-  "expectedOutput": {
-   "columns": [
-    "march_2024_signups"
-   ],
-   "rows": [
-    [
-     245
+  },
+  {
+    "id": "sql-where-007",
+    "module": "sql",
+    "topic": "where",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Count users who signed up in March 2024. Use a date range that does not depend on the time part. Return `march_2024_signups`.",
+    "dataset": "subscription",
+    "hint": "Use >= start and < first day of next month.",
+    "solutionSql": "SELECT COUNT(*) AS march_2024_signups FROM users WHERE signup_date >= '2024-03-01' AND signup_date < '2024-04-01'",
+    "expectedOutput": {
+      "columns": [
+        "march_2024_signups"
+      ],
+      "rows": [
+        [
+          245
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "The range starts on March 1 and stops before April 1, so every time on March 31 is included. The >= and < pair works for dates and timestamps. ISO text dates like 2024-03-01 sort correctly in SQLite. COUNT(*) counts the users in the range.",
+    "commonMistake": "Using BETWEEN '2024-03-01' AND '2024-03-31' on a timestamp column misses sign-ups on March 31 after midnight, because '2024-03-31 10:00' is later than '2024-03-31'.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "where",
+      "sql"
     ]
-   ]
-  }
- },
- {
-  "id": "sql-where-008",
-  "module": "sql",
-  "topic": "where",
-  "difficulty": "medium",
-  "language": "sql",
-  "question": "Count employees who have `employment_status` 'Exited' and belong to department 1 or department 2. Return `exited_eng_sales`. Count each row (do not remove duplicates).",
-  "dataset": "hr",
-  "hint": "Group the two department checks together in brackets.",
-  "solutionSql": "SELECT COUNT(*) AS exited_eng_sales FROM employees WHERE employment_status = 'Exited' AND (department_id = 1 OR department_id = 2)",
-  "orderMatters": false,
-  "explanation": "The brackets make the OR apply to the department check only. The status check then applies to every row. Without brackets, AND binds first, so the filter means something different.",
-  "commonMistake": "Dropping the brackets gives employment_status = 'Exited' AND department_id = 1 OR department_id = 2, which also counts active staff in department 2.",
-  "interviewFrequency": "high",
-  "estimatedMinutes": 6,
-  "tags": [
-   "where",
-   "sql"
-  ],
-  "expectedOutput": {
-   "columns": [
-    "exited_eng_sales"
-   ],
-   "rows": [
-    [
-     250
+  },
+  {
+    "id": "sql-where-008",
+    "module": "sql",
+    "topic": "where",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Count employees who have `employment_status` 'Exited' and belong to department 1 or department 2. Return `exited_eng_sales`. Count each row (do not remove duplicates).",
+    "dataset": "hr",
+    "hint": "Group the two department checks together in brackets.",
+    "solutionSql": "SELECT COUNT(*) AS exited_eng_sales FROM employees WHERE employment_status = 'Exited' AND (department_id = 1 OR department_id = 2)",
+    "expectedOutput": {
+      "columns": [
+        "exited_eng_sales"
+      ],
+      "rows": [
+        [
+          250
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "The brackets make the OR apply to the department check only. The status check then applies to every row. Without brackets, AND binds first, so the filter means something different.",
+    "commonMistake": "Dropping the brackets gives employment_status = 'Exited' AND department_id = 1 OR department_id = 2, which also counts active staff in department 2.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "where",
+      "sql"
     ]
-   ]
   }
- }
 ]

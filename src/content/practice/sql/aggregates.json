@@ -1,218 +1,218 @@
 [
- {
-  "id": "sql-aggregates-001",
-  "module": "sql",
-  "topic": "aggregates",
-  "difficulty": "easy",
-  "language": "sql",
-  "question": "For Delivered orders, return `delivered_orders` (a row count) and `delivered_value` (sum of `total_amount`, rounded to 2 decimals).",
-  "dataset": "ecommerce",
-  "hint": "Filter the rows first, then count them and add up their totals.",
-  "solutionSql": "SELECT COUNT(*) AS delivered_orders, ROUND(SUM(total_amount), 2) AS delivered_value FROM orders WHERE order_status = 'Delivered'",
-  "orderMatters": false,
-  "explanation": "WHERE keeps only the Delivered rows before the aggregates run. COUNT(*) counts those rows, and SUM(total_amount) adds their order values. ROUND(..., 2) keeps two decimals. The table has some duplicate order rows, which a later lesson removes.",
-  "commonMistake": "Summing every order and skipping the WHERE, so Cancelled and Returned orders are added to the delivered totals.",
-  "interviewFrequency": "high",
-  "estimatedMinutes": 3,
-  "tags": [
-   "aggregates",
-   "sql"
-  ],
-  "expectedOutput": {
-   "columns": [
-    "delivered_orders",
-    "delivered_value"
-   ],
-   "rows": [
-    [
-     9357,
-     50325049.47
+  {
+    "id": "sql-aggregates-001",
+    "module": "sql",
+    "topic": "aggregates",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "For Delivered orders, return `delivered_orders` (a row count) and `delivered_value` (sum of `total_amount`, rounded to 2 decimals).",
+    "dataset": "ecommerce",
+    "hint": "Filter the rows first, then count them and add up their totals.",
+    "solutionSql": "SELECT COUNT(*) AS delivered_orders, ROUND(SUM(total_amount), 2) AS delivered_value FROM orders WHERE order_status = 'Delivered'",
+    "expectedOutput": {
+      "columns": [
+        "delivered_orders",
+        "delivered_value"
+      ],
+      "rows": [
+        [
+          9357,
+          50325049.47
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "WHERE keeps only the Delivered rows before the aggregates run. COUNT(*) counts those rows, and SUM(total_amount) adds their order values. ROUND(..., 2) keeps two decimals. The table has some duplicate order rows, which a later lesson removes.",
+    "commonMistake": "Summing every order and skipping the WHERE, so Cancelled and Returned orders are added to the delivered totals.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "aggregates",
+      "sql"
     ]
-   ]
-  }
- },
- {
-  "id": "sql-aggregates-002",
-  "module": "sql",
-  "topic": "aggregates",
-  "difficulty": "easy",
-  "language": "sql",
-  "question": "An HR analyst wants to show how long the company has been hiring. Return the earliest and latest `hire_date` in `employees` as `first_hire` and `last_hire`.",
-  "dataset": "hr",
-  "hint": "MIN and MAX work on dates.",
-  "solutionSql": "SELECT MIN(hire_date) AS first_hire, MAX(hire_date) AS last_hire FROM employees",
-  "orderMatters": false,
-  "explanation": "Dates written as YYYY-MM-DD sort correctly as plain text, so MIN and MAX find the oldest and newest date. No conversion is needed. The result is two text values in the same format.",
-  "commonMistake": "Casting hire_date to an integer first. CAST('2014-01-04' AS INTEGER) gives 2014, so MIN and MAX return only years.",
-  "interviewFrequency": "medium",
-  "estimatedMinutes": 3,
-  "tags": [
-   "aggregates",
-   "sql"
-  ],
-  "expectedOutput": {
-   "columns": [
-    "first_hire",
-    "last_hire"
-   ],
-   "rows": [
-    [
-     "2014-01-04",
-     "2024-11-28"
+  },
+  {
+    "id": "sql-aggregates-002",
+    "module": "sql",
+    "topic": "aggregates",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "An HR analyst wants to show how long the company has been hiring. Return the earliest and latest `hire_date` in `employees` as `first_hire` and `last_hire`.",
+    "dataset": "hr",
+    "hint": "MIN and MAX work on dates.",
+    "solutionSql": "SELECT MIN(hire_date) AS first_hire, MAX(hire_date) AS last_hire FROM employees",
+    "expectedOutput": {
+      "columns": [
+        "first_hire",
+        "last_hire"
+      ],
+      "rows": [
+        [
+          "2014-01-04",
+          "2024-11-28"
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "Dates written as YYYY-MM-DD sort correctly as plain text, so MIN and MAX find the oldest and newest date. No conversion is needed. The result is two text values in the same format.",
+    "commonMistake": "Casting hire_date to an integer first. CAST('2014-01-04' AS INTEGER) gives 2014, so MIN and MAX return only years.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "aggregates",
+      "sql"
     ]
-   ]
-  }
- },
- {
-  "id": "sql-aggregates-003",
-  "module": "sql",
-  "topic": "aggregates",
-  "difficulty": "easy",
-  "language": "sql",
-  "question": "What is the average `amount` of SUCCESS transactions of type 'P2P'? Return `avg_p2p`, rounded to 2 decimals.",
-  "dataset": "fintech",
-  "hint": "Keep only the rows with the right status and type, then take the average of their amount.",
-  "solutionSql": "SELECT ROUND(AVG(amount), 2) AS avg_p2p FROM transactions WHERE status = 'SUCCESS' AND txn_type = 'P2P'",
-  "orderMatters": false,
-  "explanation": "Both conditions go in one WHERE with AND, so only successful P2P rows are kept. AVG then averages their amount. ROUND(..., 2) gives a clean rupee value with two decimals.",
-  "commonMistake": "Filtering only on status. The average then mixes in other transaction types and gives the wrong number.",
-  "interviewFrequency": "medium",
-  "estimatedMinutes": 3,
-  "tags": [
-   "aggregates",
-   "sql"
-  ],
-  "expectedOutput": {
-   "columns": [
-    "avg_p2p"
-   ],
-   "rows": [
-    [
-     1152.25
+  },
+  {
+    "id": "sql-aggregates-003",
+    "module": "sql",
+    "topic": "aggregates",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "What is the average `amount` of SUCCESS transactions of type 'P2P'? Return `avg_p2p`, rounded to 2 decimals.",
+    "dataset": "fintech",
+    "hint": "Keep only the rows with the right status and type, then take the average of their amount.",
+    "solutionSql": "SELECT ROUND(AVG(amount), 2) AS avg_p2p FROM transactions WHERE status = 'SUCCESS' AND txn_type = 'P2P'",
+    "expectedOutput": {
+      "columns": [
+        "avg_p2p"
+      ],
+      "rows": [
+        [
+          1193.48
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "Both conditions go in one WHERE with AND, so only successful P2P rows are kept. AVG then averages their amount. ROUND(..., 2) gives a clean rupee value with two decimals.",
+    "commonMistake": "Filtering only on status. The average then mixes in other transaction types and gives the wrong number.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "aggregates",
+      "sql"
     ]
-   ]
-  }
- },
- {
-  "id": "sql-aggregates-004",
-  "module": "sql",
-  "topic": "aggregates",
-  "difficulty": "easy",
-  "language": "sql",
-  "question": "How many units (sum of `quantity`) were sold in the 'Home Decor' category? Return `units`.",
-  "dataset": "retail",
-  "hint": "Add up the quantity column, but only for the Home Decor rows.",
-  "solutionSql": "SELECT SUM(quantity) AS units FROM sales WHERE category = 'Home Decor'",
-  "orderMatters": false,
-  "explanation": "WHERE keeps the Home Decor sales lines. SUM(quantity) adds the units on those lines, so the result is the total number of items sold. COUNT would only count the lines.",
-  "commonMistake": "Using COUNT(*), which returns the number of sale lines instead of units. A line can sell several units, so the answer is too small.",
-  "interviewFrequency": "medium",
-  "estimatedMinutes": 3,
-  "tags": [
-   "aggregates",
-   "sql"
-  ],
-  "expectedOutput": {
-   "columns": [
-    "units"
-   ],
-   "rows": [
-    [
-     3330
+  },
+  {
+    "id": "sql-aggregates-004",
+    "module": "sql",
+    "topic": "aggregates",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "How many units (sum of `quantity`) were sold in the 'Home Decor' category? Return `units`.",
+    "dataset": "retail",
+    "hint": "Add up the quantity column, but only for the Home Decor rows.",
+    "solutionSql": "SELECT SUM(quantity) AS units FROM sales WHERE category = 'Home Decor'",
+    "expectedOutput": {
+      "columns": [
+        "units"
+      ],
+      "rows": [
+        [
+          3330
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "WHERE keeps the Home Decor sales lines. SUM(quantity) adds the units on those lines, so the result is the total number of items sold. COUNT would only count the lines.",
+    "commonMistake": "Using COUNT(*), which returns the number of sale lines instead of units. A line can sell several units, so the answer is too small.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "aggregates",
+      "sql"
     ]
-   ]
-  }
- },
- {
-  "id": "sql-aggregates-005",
-  "module": "sql",
-  "topic": "aggregates",
-  "difficulty": "easy",
-  "language": "sql",
-  "question": "A digital marketing manager wants a quick view of reach and engagement across all ad spend. From `ad_spend`, return `total_clicks` (sum of clicks) and `total_impressions` (sum of impressions).",
-  "dataset": "marketing",
-  "hint": "Use one SUM for each column, both in the same SELECT.",
-  "solutionSql": "SELECT SUM(clicks) AS total_clicks, SUM(impressions) AS total_impressions FROM ad_spend",
-  "orderMatters": false,
-  "explanation": "You can put several aggregates in one SELECT. Each SUM works on its own column over all rows. The query returns a single row with both totals.",
-  "commonMistake": "Using COUNT(impressions) instead of SUM(impressions). COUNT returns the number of ad rows, not the total number of views.",
-  "interviewFrequency": "low",
-  "estimatedMinutes": 3,
-  "tags": [
-   "aggregates",
-   "sql"
-  ],
-  "expectedOutput": {
-   "columns": [
-    "total_clicks",
-    "total_impressions"
-   ],
-   "rows": [
-    [
-     21578,
-     1649170
+  },
+  {
+    "id": "sql-aggregates-005",
+    "module": "sql",
+    "topic": "aggregates",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "A digital marketing manager wants a quick view of reach and engagement across all ad spend. From `ad_spend`, return `total_clicks` (sum of clicks) and `total_impressions` (sum of impressions).",
+    "dataset": "marketing",
+    "hint": "Use one SUM for each column, both in the same SELECT.",
+    "solutionSql": "SELECT SUM(clicks) AS total_clicks, SUM(impressions) AS total_impressions FROM ad_spend",
+    "expectedOutput": {
+      "columns": [
+        "total_clicks",
+        "total_impressions"
+      ],
+      "rows": [
+        [
+          21578,
+          1649170
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "You can put several aggregates in one SELECT. Each SUM works on its own column over all rows. The query returns a single row with both totals.",
+    "commonMistake": "Using COUNT(impressions) instead of SUM(impressions). COUNT returns the number of ad rows, not the total number of views.",
+    "interviewFrequency": "low",
+    "estimatedMinutes": 3,
+    "tags": [
+      "aggregates",
+      "sql"
     ]
-   ]
-  }
- },
- {
-  "id": "sql-aggregates-006",
-  "module": "sql",
-  "topic": "aggregates",
-  "difficulty": "medium",
-  "language": "sql",
-  "question": "A food delivery operations lead wants to track cancellations. What percentage of all deliveries were Cancelled? Return `cancel_pct`, rounded to 2 decimals.",
-  "dataset": "food_delivery",
-  "hint": "SUM of a true/false test divided by COUNT(*).",
-  "solutionSql": "SELECT ROUND(100.0 * SUM(delivery_status = 'Cancelled') / COUNT(*), 2) AS cancel_pct FROM deliveries",
-  "orderMatters": false,
-  "explanation": "In SQLite a comparison gives 1 when true and 0 when false, so SUM counts the Cancelled rows. Writing 100.0 forces decimal division. The portable form is SUM(CASE WHEN delivery_status = 'Cancelled' THEN 1 ELSE 0 END).",
-  "commonMistake": "Writing 100 instead of 100.0. Integer division then cuts the answer down, so a 4.72% rate shows as 4.",
-  "interviewFrequency": "high",
-  "estimatedMinutes": 6,
-  "tags": [
-   "aggregates",
-   "sql"
-  ],
-  "expectedOutput": {
-   "columns": [
-    "cancel_pct"
-   ],
-   "rows": [
-    [
-     4.72
+  },
+  {
+    "id": "sql-aggregates-006",
+    "module": "sql",
+    "topic": "aggregates",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "A food delivery operations lead wants to track cancellations. What percentage of all deliveries were Cancelled? Return `cancel_pct`, rounded to 2 decimals.",
+    "dataset": "food_delivery",
+    "hint": "SUM of a true/false test divided by COUNT(*).",
+    "solutionSql": "SELECT ROUND(100.0 * SUM(delivery_status = 'Cancelled') / COUNT(*), 2) AS cancel_pct FROM deliveries",
+    "expectedOutput": {
+      "columns": [
+        "cancel_pct"
+      ],
+      "rows": [
+        [
+          4.72
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "In SQLite a comparison gives 1 when true and 0 when false, so SUM counts the Cancelled rows. Writing 100.0 forces decimal division. The portable form is SUM(CASE WHEN delivery_status = 'Cancelled' THEN 1 ELSE 0 END).",
+    "commonMistake": "Writing 100 instead of 100.0. Integer division then cuts the answer down, so a 4.72% rate shows as 4.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "aggregates",
+      "sql"
     ]
-   ]
-  }
- },
- {
-  "id": "sql-aggregates-007",
-  "module": "sql",
-  "topic": "aggregates",
-  "difficulty": "medium",
-  "language": "sql",
-  "question": "How many distinct users have at least one `payment_success` event? Some event names are in UPPERCASE, so ignore case. Return `paying_users`.",
-  "dataset": "subscription",
-  "hint": "LOWER the event name, COUNT DISTINCT user_id.",
-  "solutionSql": "SELECT COUNT(DISTINCT user_id) AS paying_users FROM events WHERE LOWER(event_name) = 'payment_success'",
-  "orderMatters": false,
-  "explanation": "COUNT(DISTINCT user_id) counts each user once, however many payment events they have. LOWER(event_name) makes the match ignore case, so both 'payment_success' and 'PAYMENT_SUCCESS' are caught.",
-  "commonMistake": "Using COUNT(*) instead of COUNT(DISTINCT user_id). A user with three payments adds three to the total, so the number of paying users is too high.",
-  "interviewFrequency": "high",
-  "estimatedMinutes": 6,
-  "tags": [
-   "aggregates",
-   "sql"
-  ],
-  "expectedOutput": {
-   "columns": [
-    "paying_users"
-   ],
-   "rows": [
-    [
-     1193
+  },
+  {
+    "id": "sql-aggregates-007",
+    "module": "sql",
+    "topic": "aggregates",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "How many distinct users have at least one `payment_success` event? Some event names are in UPPERCASE, so ignore case. Return `paying_users`.",
+    "dataset": "subscription",
+    "hint": "LOWER the event name, COUNT DISTINCT user_id.",
+    "solutionSql": "SELECT COUNT(DISTINCT user_id) AS paying_users FROM events WHERE LOWER(event_name) = 'payment_success'",
+    "expectedOutput": {
+      "columns": [
+        "paying_users"
+      ],
+      "rows": [
+        [
+          1193
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "COUNT(DISTINCT user_id) counts each user once, however many payment events they have. LOWER(event_name) makes the match ignore case, so both 'payment_success' and 'PAYMENT_SUCCESS' are caught.",
+    "commonMistake": "Using COUNT(*) instead of COUNT(DISTINCT user_id). A user with three payments adds three to the total, so the number of paying users is too high.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "aggregates",
+      "sql"
     ]
-   ]
   }
- }
 ]

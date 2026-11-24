@@ -136,7 +136,7 @@
         [
           "Bharat Union Bank",
           "Failed",
-          125
+          121
         ],
         [
           "Bharat Union Bank",
@@ -146,42 +146,42 @@
         [
           "Coromandel Bank",
           "Failed",
-          56
+          52
         ],
         [
           "Himalaya Trust Bank",
           "Failed",
-          69
+          77
         ],
         [
           "Kaveri Co-op Bank",
           "Failed",
-          144
+          104
         ],
         [
           "Malabar Savings Bank",
           "Failed",
-          25
+          29
         ],
         [
           "PayNova Small Finance Bank",
           "Failed",
-          31
+          23
         ],
         [
           "Rajdhani National Bank",
           "Failed",
-          78
-        ],
-        [
-          "Rajdhani National Bank",
-          "Pending",
-          19
+          81
         ],
         [
           "Sundaram Bank",
           "Failed",
-          101
+          121
+        ],
+        [
+          "Sundaram Bank",
+          "Pending",
+          18
         ]
       ]
     },

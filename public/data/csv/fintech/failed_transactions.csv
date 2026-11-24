@@ -1,634 +1,608 @@
 failed_txn_id,txn_id,failure_code,failure_reason,failed_at,retried,retry_succeeded
-1,27,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-01-02 19:04:29,0,
-2,179,INSUFFICIENT_FUNDS,Insufficient balance in account,09-01-2023 13:36:34,1,1
-3,184,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-01-09 12:21:23,1,1
-4,209,BANK_SERVER_TIMEOUT,Remitter bank server timed out,10-01-2023 09:46:40,1,1
-5,265,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-01-12 18:01:08,1,1
-6,291,BANK_DECLINED,Declined by remitter bank,2023-01-13 19:26:32,1,0
-7,304,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-01-14 20:35:46,1,1
-8,355,BANK_DECLINED,Declined by remitter bank,2023-01-17 12:28:51,0,
-9,365,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-01-17 20:43:16,0,
-10,415,INCORRECT_PIN,Wrong UPI PIN entered,2023-01-19 19:12:54,1,1
-11,424,INSUFFICIENT_FUNDS,Insufficient balance in account,19-01-2023 10:06:26,0,
-12,428,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-01-20 10:55:17,1,0
-13,437,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-01-20 19:50:47,1,0
-14,438,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-01-20 21:32:16,0,
-15,490,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-01-22 15:53:08,1,0
-16,531,BANK_SERVER_TIMEOUT,Remitter bank server timed out,24-01-2023 10:19:48,1,1
-17,536,NETWORK_ERROR,Network error during authorisation,24-01-2023 09:48:59,0,
-18,589,INCORRECT_PIN,Wrong UPI PIN entered,26-01-2023 19:50:51,0,
-19,614,NETWORK_ERROR,Network error during authorisation,2023-01-28 12:26:09,0,
-20,650,NETWORK_ERROR,Network error during authorisation,2023-01-29 13:55:51,1,0
-21,683,INSUFFICIENT_FUNDS,Insufficient balance in account,30-01-2023 09:26:01,0,
-22,691,NETWORK_ERROR,Network error during authorisation,2023-01-31 12:15:17,1,1
-23,735,INSUFFICIENT_FUNDS,Insufficient balance in account,02-02-2023 06:47:15,0,
-24,833,NETWORK_ERROR,Network error during authorisation,2023-02-06 18:00:29,1,1
-25,920,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-02-09 20:33:13,0,
-26,948,BANK_DECLINED,Declined by remitter bank,11-02-2023 16:15:23,0,
-27,1020,INCORRECT_PIN,Wrong UPI PIN entered,2023-02-14 21:26:41,1,1
-28,1074,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-02-16 17:23:22,1,0
-29,1137,NETWORK_ERROR,Network error during authorisation,19-02-2023 23:04:04,1,0
-30,1145,BANK_DECLINED,Declined by remitter bank,19-02-2023 08:07:04,0,
-31,1213,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-02-21 11:30:38,1,1
-32,1298,BANK_SERVER_TIMEOUT,Remitter bank server timed out,25-02-2023 18:23:48,1,0
-33,1305,BANK_DECLINED,Declined by remitter bank,2023-02-25 15:31:21,0,
-34,1341,BANK_DECLINED,Declined by remitter bank,2023-02-27 17:38:22,1,1
-35,1374,NETWORK_ERROR,Network error during authorisation,2023-03-01 09:40:05,1,1
-36,1464,INCORRECT_PIN,Wrong UPI PIN entered,04-03-2023 12:18:34,0,
-37,1470,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-03-04 14:43:26,0,
-38,1471,BANK_DECLINED,Declined by remitter bank,04-03-2023 11:19:04,1,1
-39,1497,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-03-06 09:34:00,1,1
-40,1522,BANK_DECLINED,Declined by remitter bank,07-03-2023 22:59:06,0,
-41,1592,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-03-11 18:15:48,1,1
-42,1602,BANK_DECLINED,Declined by remitter bank,2023-03-12 08:05:03,0,
-43,1608,BANK_DECLINED,Declined by remitter bank,2023-03-12 14:21:59,1,0
-44,1647,BANK_DECLINED,Declined by remitter bank,2023-03-14 18:29:44,1,0
-45,1657,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-03-14 10:38:28,1,1
-46,1668,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-03-14 21:32:53,1,0
-47,1692,NETWORK_ERROR,Network error during authorisation,2023-03-15 19:48:53,1,1
-48,1718,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-03-16 20:52:14,1,1
-49,1825,INSUFFICIENT_FUNDS,Insufficient balance in account,22-03-2023 09:20:09,1,0
-50,1865,BANK_DECLINED,Declined by remitter bank,2023-03-23 12:28:47,0,
-51,1931,INCORRECT_PIN,Wrong UPI PIN entered,2023-03-26 21:09:03,1,1
-52,1947,INCORRECT_PIN,Wrong UPI PIN entered,2023-03-27 09:03:06,1,1
-53,1962,INCORRECT_PIN,Wrong UPI PIN entered,2023-03-27 14:11:45,0,
-54,1977,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-03-28 17:00:36,0,
-55,1983,INCORRECT_PIN,Wrong UPI PIN entered,2023-03-28 23:07:15,0,
-56,1993,INCORRECT_PIN,Wrong UPI PIN entered,2023-03-29 11:25:01,0,
-57,2068,BANK_DECLINED,Declined by remitter bank,2023-04-01 22:05:38,0,
-58,2079,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-04-01 10:51:59,0,
-59,2119,INCORRECT_PIN,Wrong UPI PIN entered,03-04-2023 08:16:06,1,1
-60,2126,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-04-03 19:09:58,1,1
-61,2204,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-04-06 14:46:03,0,
-62,2215,NETWORK_ERROR,Network error during authorisation,2023-04-06 10:31:03,1,0
-63,2261,NETWORK_ERROR,Network error during authorisation,2023-04-08 17:28:05,1,1
-64,2267,BANK_DECLINED,Declined by remitter bank,2023-04-08 20:01:15,0,
-65,2324,BANK_DECLINED,Declined by remitter bank,2023-04-10 20:25:40,1,1
-66,2413,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-04-14 14:58:54,0,
-67,2457,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-04-16 12:02:42,0,
-68,2554,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-04-21 20:27:30,0,
-69,2582,BANK_DECLINED,Declined by remitter bank,2023-04-23 20:55:14,0,
-70,2671,INSUFFICIENT_FUNDS,Insufficient balance in account,26-04-2023 12:06:12,0,
-71,2683,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-04-27 11:22:27,1,0
-72,2700,BANK_DECLINED,Declined by remitter bank,2023-04-27 21:52:54,1,1
-73,2707,INCORRECT_PIN,Wrong UPI PIN entered,2023-04-28 22:49:44,1,1
-74,2723,NETWORK_ERROR,Network error during authorisation,2023-04-28 10:09:23,0,
-75,2729,BANK_DECLINED,Declined by remitter bank,2023-04-29 09:06:11,1,0
-76,2741,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-04-29 20:50:10,1,1
-77,2830,BANK_DECLINED,Declined by remitter bank,2023-05-02 18:08:05,1,1
-78,2863,NETWORK_ERROR,Network error during authorisation,2023-05-03 13:29:42,1,1
-79,2881,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-05-04 10:25:42,1,1
-80,2885,BANK_DECLINED,Declined by remitter bank,2023-05-04 21:52:37,0,
-81,2892,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-05-04 20:28:20,0,
-82,2913,INCORRECT_PIN,Wrong UPI PIN entered,2023-05-05 00:23:03,1,1
-83,2943,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-05-07 18:14:00,1,0
-84,2962,INCORRECT_PIN,Wrong UPI PIN entered,2023-05-08 12:20:32,1,0
-85,3051,BANK_SERVER_TIMEOUT,Remitter bank server timed out,12-05-2023 09:10:03,1,1
-86,3077,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-05-13 09:54:53,1,0
-87,3083,BANK_DECLINED,Declined by remitter bank,2023-05-13 10:22:01,0,
-88,3187,BANK_DECLINED,Declined by remitter bank,2023-05-17 10:57:26,0,
-89,3220,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-05-19 08:50:30,1,0
-90,3285,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-05-21 08:16:46,1,1
-91,3370,NETWORK_ERROR,Network error during authorisation,2023-05-25 12:42:33,1,1
-92,3398,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-05-27 19:33:13,1,0
-93,3409,INCORRECT_PIN,Wrong UPI PIN entered,2023-05-28 16:48:55,0,
-94,3413,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-05-28 09:30:28,0,
-95,3463,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-05-29 18:01:05,1,0
-96,3490,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-05-30 15:16:06,0,
-97,3574,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-06-02 11:44:02,0,
-98,3589,BANK_DECLINED,Declined by remitter bank,2023-06-02 09:43:59,0,
-99,3596,BANK_DECLINED,Declined by remitter bank,2023-06-02 22:36:41,0,
-100,3600,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-06-03 19:16:28,0,
-101,3620,INSUFFICIENT_FUNDS,Insufficient balance in account,03-06-2023 21:51:58,1,0
-102,3659,INCORRECT_PIN,Wrong UPI PIN entered,04-06-2023 20:32:11,0,
-103,3673,BANK_DECLINED,Declined by remitter bank,2023-06-05 08:36:35,1,0
-104,3686,BANK_DECLINED,Declined by remitter bank,2023-06-06 14:05:36,0,
-105,3690,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-06-06 18:55:50,0,
-106,3774,INCORRECT_PIN,Wrong UPI PIN entered,2023-06-10 20:57:34,0,
-107,3793,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-06-10 10:37:16,0,
-108,3860,BANK_DECLINED,Declined by remitter bank,2023-06-13 08:06:29,1,1
-109,3903,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-06-15 19:35:37,0,
-110,3975,NETWORK_ERROR,Network error during authorisation,2023-06-18 19:23:10,1,1
-111,4022,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-06-20 18:28:37,1,1
-112,4038,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-06-20 12:56:52,0,
-113,4046,BANK_DECLINED,Declined by remitter bank,2023-06-21 18:38:09,0,
-114,4061,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-06-22 17:33:26,0,
-115,4095,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-06-23 19:27:03,0,
-116,4166,INSUFFICIENT_FUNDS,Insufficient balance in account,25-06-2023 07:01:49,0,
-117,4205,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-06-27 09:29:01,1,0
-118,4214,INCORRECT_PIN,Wrong UPI PIN entered,2023-06-27 23:53:15,1,1
-119,4229,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-06-28 09:08:28,1,0
-120,4234,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-06-28 19:41:02,0,
-121,4307,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-06-30 08:50:56,0,
-122,4331,NETWORK_ERROR,Network error during authorisation,01-07-2023 12:48:17,1,0
-123,4343,INCORRECT_PIN,Wrong UPI PIN entered,2023-07-01 09:43:51,1,1
-124,4352,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-07-01 16:24:13,0,
-125,4358,BANK_DECLINED,Declined by remitter bank,01-07-2023 07:34:17,0,
-126,4366,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-07-02 16:05:25,0,
-127,4407,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-07-03 18:38:27,1,0
-128,4471,NETWORK_ERROR,Network error during authorisation,2023-07-06 07:17:20,1,0
-129,4562,BANK_DECLINED,Declined by remitter bank,10-07-2023 10:14:51,0,
-130,4593,BANK_DECLINED,Declined by remitter bank,2023-07-11 18:44:57,1,1
-130,4593,BANK_DECLINED,Declined by remitter bank,11-07-2023 18:44:57,1,1
-131,4601,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-07-12 11:36:20,0,
-132,4681,INSUFFICIENT_FUNDS,Insufficient balance in account,15-07-2023 12:25:04,0,
-133,4711,INCORRECT_PIN,Wrong UPI PIN entered,2023-07-16 22:33:01,0,
-134,4778,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-07-19 18:28:34,1,0
-135,4783,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-07-19 08:54:18,1,1
-136,4832,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-07-21 20:50:54,0,
-137,5018,INCORRECT_PIN,Wrong UPI PIN entered,2023-07-28 19:42:19,0,
-138,5060,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-07-30 18:21:30,0,
-139,5074,BANK_DECLINED,Declined by remitter bank,30-07-2023 15:31:12,0,
-140,5178,INCORRECT_PIN,Wrong UPI PIN entered,2023-08-03 08:55:39,1,1
-141,5192,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-08-04 20:38:58,0,
-142,5198,BANK_DECLINED,Declined by remitter bank,04-08-2023 11:54:21,0,
-143,5214,NETWORK_ERROR,Network error during authorisation,2023-08-04 11:09:01,1,0
-144,5289,INCORRECT_PIN,Wrong UPI PIN entered,2023-08-07 21:54:25,0,
-145,5326,BANK_DECLINED,Declined by remitter bank,2023-08-09 12:22:38,0,
-146,5350,INCORRECT_PIN,Wrong UPI PIN entered,2023-08-09 16:43:12,0,
-147,5413,BANK_DECLINED,Declined by remitter bank,2023-08-11 16:10:13,0,
-148,5414,NETWORK_ERROR,Network error during authorisation,2023-08-11 19:05:05,1,1
-149,5431,BANK_DECLINED,Declined by remitter bank,2023-08-12 10:43:14,0,
-150,5464,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-08-13 21:27:01,0,
-151,5540,BANK_DECLINED,Declined by remitter bank,2023-08-16 08:05:30,0,
-152,5555,NETWORK_ERROR,Network error during authorisation,2023-08-16 18:59:07,1,1
-153,5557,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-08-16 10:57:23,1,1
-154,5567,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-08-17 23:43:57,1,0
-155,5678,NETWORK_ERROR,Network error during authorisation,2023-08-21 21:14:26,1,0
-156,5704,BANK_DECLINED,Declined by remitter bank,2023-08-22 08:50:09,0,
-157,5736,NETWORK_ERROR,Network error during authorisation,2023-08-24 10:12:57,0,
-158,5789,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-08-26 08:39:23,1,1
-159,5820,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-08-28 16:44:34,1,0
-160,5859,BANK_DECLINED,Declined by remitter bank,2023-08-29 15:40:34,0,
-161,5918,INCORRECT_PIN,Wrong UPI PIN entered,2023-09-01 12:51:28,0,
-162,5947,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-09-02 19:51:04,1,0
-163,5993,INCORRECT_PIN,Wrong UPI PIN entered,2023-09-03 07:25:37,0,
-164,6014,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-09-04 16:04:39,1,0
-165,6016,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-09-04 10:35:13,0,
-166,6036,INCORRECT_PIN,Wrong UPI PIN entered,2023-09-04 09:27:53,0,
-167,6086,INCORRECT_PIN,Wrong UPI PIN entered,2023-09-06 19:21:48,0,
-168,6296,BANK_DECLINED,Declined by remitter bank,2023-09-15 09:04:16,0,
-169,6342,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-09-17 20:55:03,1,1
-170,6343,INCORRECT_PIN,Wrong UPI PIN entered,2023-09-17 13:56:46,0,
-171,6387,NETWORK_ERROR,Network error during authorisation,2023-09-19 15:09:18,1,1
-172,6492,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-09-23 18:39:58,1,1
-173,6504,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-09-24 17:38:29,0,
-174,6531,BANK_DECLINED,Declined by remitter bank,2023-09-25 18:09:03,1,1
-175,6545,NETWORK_ERROR,Network error during authorisation,2023-09-26 18:39:21,1,1
-176,6558,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-09-26 14:26:41,1,0
-177,6572,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-09-27 10:19:21,1,0
-178,6612,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-09-28 18:09:35,1,0
-179,6641,BANK_DECLINED,Declined by remitter bank,29-09-2023 21:04:52,0,
-180,6696,INCORRECT_PIN,Wrong UPI PIN entered,2023-10-01 11:14:06,1,1
-181,6773,INCORRECT_PIN,Wrong UPI PIN entered,2023-10-03 13:40:16,0,
-182,6806,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-10-05 20:16:53,1,1
-183,6894,NETWORK_ERROR,Network error during authorisation,08-10-2023 08:28:01,1,1
-184,6975,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-10-11 18:07:36,1,0
-185,7015,NETWORK_ERROR,Network error during authorisation,2023-10-12 09:10:04,0,
-186,7017,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-10-12 18:55:28,1,0
-187,7037,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-10-13 22:53:30,1,1
-188,7046,INCORRECT_PIN,Wrong UPI PIN entered,2023-10-13 18:22:09,1,1
-189,7069,INCORRECT_PIN,Wrong UPI PIN entered,2023-10-13 09:55:26,0,
-190,7106,LIMIT_EXCEEDED,Daily/transaction limit exceeded,15-10-2023 15:41:56,1,1
-191,7152,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-10-16 07:33:30,1,1
-192,7200,NETWORK_ERROR,Network error during authorisation,2023-10-18 08:20:04,1,1
-193,7229,NETWORK_ERROR,Network error during authorisation,19-10-2023 19:36:35,1,1
-194,7233,BANK_DECLINED,Declined by remitter bank,2023-10-19 19:35:15,0,
-195,7316,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-10-23 20:25:43,1,1
-196,7343,INCORRECT_PIN,Wrong UPI PIN entered,2023-10-24 18:17:59,1,0
-197,7442,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-10-28 10:33:06,1,0
-198,7493,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-10-29 09:34:24,0,
-199,7617,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-11-01 12:14:37,1,1
-200,7620,INCORRECT_PIN,Wrong UPI PIN entered,2023-11-01 23:09:19,0,
-201,7625,NETWORK_ERROR,Network error during authorisation,2023-11-02 20:30:41,1,1
-202,7663,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-11-03 18:13:12,0,
-203,7700,INCORRECT_PIN,Wrong UPI PIN entered,2023-11-04 12:05:26,0,
-204,7708,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-11-04 22:04:59,1,0
-205,7782,BANK_DECLINED,Declined by remitter bank,06-11-2023 12:30:26,0,
-206,7813,INCORRECT_PIN,Wrong UPI PIN entered,2023-11-07 18:51:16,1,1
-207,7855,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-11-09 10:04:36,1,0
-208,7901,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-11-10 18:14:00,0,
-209,7949,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-11-11 15:31:52,0,
-210,7967,INCORRECT_PIN,Wrong UPI PIN entered,11-11-2023 13:30:32,1,1
-211,7975,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-11-12 21:37:35,1,0
-212,7983,UPI_SYSTEM_DOWN,UPI switch unavailable,12-11-2023 19:19:26,0,
-213,7985,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-11-12 18:50:56,0,
-214,7991,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-11-12 09:41:19,0,
-215,7992,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-11-12 18:11:30,1,0
-215,7992,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-11-12 18:11:30,1,0
-216,8005,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-11-12 19:24:38,1,1
-217,8007,UPI_SYSTEM_DOWN,UPI switch unavailable,12-11-2023 18:55:01,0,
-218,8014,BANK_SERVER_TIMEOUT,Remitter bank server timed out,12-11-2023 10:42:45,0,
-219,8019,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-11-12 19:04:07,1,0
-220,8033,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-11-13 17:12:34,0,
-221,8079,INCORRECT_PIN,Wrong UPI PIN entered,2023-11-14 17:52:10,0,
-222,8082,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-11-14 19:22:43,0,
-223,8086,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-11-14 09:20:36,0,
-224,8090,BANK_DECLINED,Declined by remitter bank,2023-11-14 08:49:20,0,
-225,8112,INSUFFICIENT_FUNDS,Insufficient balance in account,15-11-2023 21:07:51,0,
-226,8164,NETWORK_ERROR,Network error during authorisation,17-11-2023 21:44:43,1,1
-227,8243,INSUFFICIENT_FUNDS,Insufficient balance in account,20-11-2023 16:34:41,0,
-228,8427,NETWORK_ERROR,Network error during authorisation,2023-11-26 16:23:54,1,1
-229,8452,NETWORK_ERROR,Network error during authorisation,27-11-2023 18:20:44,0,
-230,8456,NETWORK_ERROR,Network error during authorisation,2023-11-27 18:47:18,1,1
-231,8463,NETWORK_ERROR,Network error during authorisation,2023-11-27 09:22:14,1,0
-232,8485,BANK_DECLINED,Declined by remitter bank,2023-11-28 18:36:51,0,
-233,8499,BANK_DECLINED,Declined by remitter bank,2023-11-29 19:29:25,0,
-234,8539,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-11-30 21:30:39,0,
-235,8566,NETWORK_ERROR,Network error during authorisation,2023-12-01 09:11:04,1,1
-236,8585,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-12-02 15:07:01,0,
-237,8613,INCORRECT_PIN,Wrong UPI PIN entered,2023-12-03 22:09:56,0,
-238,8617,BANK_DECLINED,Declined by remitter bank,2023-12-03 18:45:51,0,
-239,8633,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-12-03 13:40:46,0,
-240,8667,NETWORK_ERROR,Network error during authorisation,2023-12-04 17:23:57,0,
-241,8676,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-12-05 18:41:01,0,
-242,8678,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-12-05 20:53:33,1,0
-243,8691,BANK_DECLINED,Declined by remitter bank,05-12-2023 18:35:54,1,0
-244,8755,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-12-08 10:08:22,1,0
-245,8789,NETWORK_ERROR,Network error during authorisation,09-12-2023 10:42:54,0,
-246,8806,INCORRECT_PIN,Wrong UPI PIN entered,10-12-2023 20:31:40,1,0
-247,8839,INCORRECT_PIN,Wrong UPI PIN entered,2023-12-11 23:04:29,0,
-248,8871,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-12-13 10:39:20,0,
-249,8918,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-12-14 12:02:10,0,
-250,8927,INCORRECT_PIN,Wrong UPI PIN entered,2023-12-15 19:41:56,0,
-251,8973,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-12-16 14:45:19,1,0
-252,9008,BANK_DECLINED,Declined by remitter bank,2023-12-18 12:27:30,0,
-253,9034,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-12-18 19:40:37,0,
-254,9044,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-12-19 18:08:20,1,0
-255,9048,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-12-19 18:12:01,1,0
-256,9140,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-12-22 18:08:15,1,1
-257,9173,NETWORK_ERROR,Network error during authorisation,2023-12-23 21:51:27,0,
-258,9183,NETWORK_ERROR,Network error during authorisation,23-12-2023 19:37:54,0,
-259,9197,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-12-24 12:24:56,1,0
-260,9249,NETWORK_ERROR,Network error during authorisation,26-12-2023 00:31:17,1,1
-261,9278,BANK_DECLINED,Declined by remitter bank,2023-12-26 15:35:00,0,
-262,9312,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-12-27 19:32:40,0,
-263,9349,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-12-28 20:06:46,0,
-264,9363,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-12-29 17:21:33,0,
-265,9384,INCORRECT_PIN,Wrong UPI PIN entered,2023-12-29 12:10:46,0,
-266,9392,BANK_DECLINED,Declined by remitter bank,2023-12-29 18:45:40,1,0
-267,9465,NETWORK_ERROR,Network error during authorisation,2024-01-01 13:02:22,1,1
-268,9483,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-01-01 18:45:08,1,0
-269,9485,INCORRECT_PIN,Wrong UPI PIN entered,01-01-2024 19:57:12,0,
-270,9588,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-01-04 18:28:57,1,1
-271,9596,NETWORK_ERROR,Network error during authorisation,05-01-2024 21:22:12,1,1
-272,9598,NETWORK_ERROR,Network error during authorisation,2024-01-05 14:48:19,1,0
-273,9638,BANK_DECLINED,Declined by remitter bank,2024-01-06 21:36:43,0,
-274,9642,BANK_DECLINED,Declined by remitter bank,2024-01-07 08:08:19,1,0
-275,9684,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-01-08 09:12:19,1,1
-276,9701,NETWORK_ERROR,Network error during authorisation,2024-01-09 11:22:10,1,0
-277,9736,INCORRECT_PIN,Wrong UPI PIN entered,2024-01-10 17:52:45,1,1
-278,9751,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-01-11 18:28:23,1,0
-279,9752,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-01-11 06:18:36,0,
-280,9766,INCORRECT_PIN,Wrong UPI PIN entered,2024-01-11 10:30:11,0,
-281,9794,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-01-12 11:21:58,0,
-282,9837,NETWORK_ERROR,Network error during authorisation,14-01-2024 19:00:35,1,1
-283,9838,BANK_DECLINED,Declined by remitter bank,2024-01-14 10:35:53,0,
-284,9853,INCORRECT_PIN,Wrong UPI PIN entered,2024-01-14 06:48:02,1,1
-285,9955,INCORRECT_PIN,Wrong UPI PIN entered,2024-01-18 23:33:40,1,1
-286,9966,INSUFFICIENT_FUNDS,Insufficient balance in account,18-01-2024 09:34:00,1,0
-287,9982,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-01-19 17:46:00,1,1
-288,9999,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-01-19 10:34:04,1,1
-289,10019,INCORRECT_PIN,Wrong UPI PIN entered,2024-01-20 14:34:56,0,
-290,10073,INCORRECT_PIN,Wrong UPI PIN entered,22-01-2024 18:14:15,0,
-291,10100,BANK_DECLINED,Declined by remitter bank,22-01-2024 17:12:22,1,1
-292,10105,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-01-23 19:19:18,0,
-293,10107,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-01-23 00:52:37,0,
-294,10125,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-01-23 17:10:11,0,
-295,10150,NETWORK_ERROR,Network error during authorisation,2024-01-24 13:16:00,1,1
-296,10183,BANK_DECLINED,Declined by remitter bank,2024-01-25 23:59:48,0,
-297,10234,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-01-26 21:31:55,1,1
-298,10398,NETWORK_ERROR,Network error during authorisation,2024-01-31 16:41:57,1,0
-299,10402,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-01-31 19:36:28,0,
-300,10448,NETWORK_ERROR,Network error during authorisation,2024-02-02 20:44:50,1,1
-301,10483,BANK_SERVER_TIMEOUT,Remitter bank server timed out,03-02-2024 19:14:07,1,1
-302,10561,BANK_DECLINED,Declined by remitter bank,2024-02-05 21:51:56,0,
-303,10570,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-02-05 14:42:59,1,0
-304,10581,BANK_DECLINED,Declined by remitter bank,2024-02-06 07:15:00,1,1
-305,10608,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-02-07 20:02:07,1,1
-306,10623,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-02-07 19:32:48,0,
-307,10645,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-02-08 09:12:33,1,0
-308,10696,NETWORK_ERROR,Network error during authorisation,2024-02-10 09:17:38,1,0
-309,10747,BANK_DECLINED,Declined by remitter bank,2024-02-11 18:50:11,1,1
-310,10763,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-02-12 09:23:13,1,1
-311,10767,NETWORK_ERROR,Network error during authorisation,2024-02-12 07:29:27,1,1
-312,10780,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-02-12 09:17:06,0,
-313,10816,BANK_DECLINED,Declined by remitter bank,2024-02-13 10:52:49,0,
-314,10875,BANK_DECLINED,Declined by remitter bank,2024-02-16 09:06:04,1,0
-315,10900,BANK_DECLINED,Declined by remitter bank,2024-02-17 11:27:32,0,
-316,10902,BANK_DECLINED,Declined by remitter bank,2024-02-17 19:40:52,1,1
-317,10983,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-02-20 10:29:38,1,0
-318,11114,INCORRECT_PIN,Wrong UPI PIN entered,2024-02-24 10:35:54,0,
-319,11172,INSUFFICIENT_FUNDS,Insufficient balance in account,26-02-2024 11:29:34,0,
-320,11324,BANK_DECLINED,Declined by remitter bank,02-03-2024 20:43:36,0,
-321,11387,BANK_DECLINED,Declined by remitter bank,2024-03-04 18:57:49,1,1
-322,11425,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-03-06 12:34:30,0,
-323,11503,NETWORK_ERROR,Network error during authorisation,2024-03-09 08:41:08,1,1
-324,11504,INCORRECT_PIN,Wrong UPI PIN entered,09-03-2024 09:03:11,1,1
-325,11505,NETWORK_ERROR,Network error during authorisation,2024-03-09 18:10:57,1,0
-326,11534,BANK_DECLINED,Declined by remitter bank,2024-03-09 19:21:08,1,1
-327,11552,INCORRECT_PIN,Wrong UPI PIN entered,2024-03-10 18:04:39,0,
-328,11573,BANK_SERVER_TIMEOUT,Remitter bank server timed out,11-03-2024 18:33:00,1,1
-329,11584,NETWORK_ERROR,Network error during authorisation,11-03-2024 12:54:07,1,1
-330,11644,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-03-13 19:24:34,0,
-331,11653,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-03-13 20:42:39,1,0
-332,11673,BANK_DECLINED,Declined by remitter bank,2024-03-14 07:38:04,0,
-333,11710,INCORRECT_PIN,Wrong UPI PIN entered,2024-03-15 21:40:15,1,1
-334,11737,LIMIT_EXCEEDED,Daily/transaction limit exceeded,16-03-2024 20:12:52,1,0
-335,11839,BANK_DECLINED,Declined by remitter bank,19-03-2024 09:02:33,1,1
-336,11929,INCORRECT_PIN,Wrong UPI PIN entered,2024-03-22 13:36:02,0,
-337,11957,NETWORK_ERROR,Network error during authorisation,2024-03-23 19:09:08,1,1
-338,11989,BANK_DECLINED,Declined by remitter bank,2024-03-24 21:29:03,0,
-339,12018,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-03-25 19:10:02,0,
-340,12063,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-03-26 10:58:12,1,0
-341,12071,INSUFFICIENT_FUNDS,Insufficient balance in account,27-03-2024 12:06:58,1,0
-342,12113,BANK_DECLINED,Declined by remitter bank,2024-03-28 10:46:45,1,1
-343,12130,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-03-29 20:03:40,1,1
-344,12163,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-03-29 09:48:26,1,1
-345,12215,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-03-31 15:25:15,1,0
-346,12220,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-03-31 18:59:02,1,0
-347,12243,BANK_DECLINED,Declined by remitter bank,01-04-2024 20:14:33,0,
-348,12253,BANK_DECLINED,Declined by remitter bank,2024-04-01 07:54:33,0,
-349,12273,INCORRECT_PIN,Wrong UPI PIN entered,2024-04-02 18:01:56,0,
-350,12313,INCORRECT_PIN,Wrong UPI PIN entered,2024-04-03 18:53:36,0,
-351,12339,BANK_DECLINED,Declined by remitter bank,2024-04-04 17:54:05,0,
-352,12352,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-04-04 11:09:25,0,
-353,12418,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-04-06 16:36:20,1,0
-354,12438,NETWORK_ERROR,Network error during authorisation,2024-04-07 10:22:29,1,1
-355,12553,INSUFFICIENT_FUNDS,Insufficient balance in account,11-04-2024 11:54:26,0,
-356,12644,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-04-14 19:59:30,0,
-357,12689,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-04-16 14:12:27,1,1
-358,12780,BANK_DECLINED,Declined by remitter bank,2024-04-19 10:44:09,0,
-359,12809,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-04-20 10:05:15,1,0
-360,12828,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-04-21 13:14:44,0,
-361,13043,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-04-27 21:24:29,0,
-362,13055,BANK_DECLINED,Declined by remitter bank,2024-04-28 22:57:00,0,
-363,13093,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-04-29 12:07:31,0,
-364,13113,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-04-29 20:12:37,0,
-365,13128,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-04-30 15:57:24,0,
-366,13132,BANK_DECLINED,Declined by remitter bank,2024-04-30 20:46:31,0,
-367,13136,NETWORK_ERROR,Network error during authorisation,2024-04-30 18:02:25,1,1
-368,13190,NETWORK_ERROR,Network error during authorisation,2024-05-01 21:31:48,1,1
-369,13199,LIMIT_EXCEEDED,Daily/transaction limit exceeded,02-05-2024 21:07:32,0,
-370,13231,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-05-02 07:10:43,0,
-371,13243,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-05-03 16:01:19,0,
-372,13288,BANK_DECLINED,Declined by remitter bank,04-05-2024 12:19:13,0,
-373,13312,INCORRECT_PIN,Wrong UPI PIN entered,2024-05-05 12:44:11,1,1
-374,13366,BANK_DECLINED,Declined by remitter bank,2024-05-07 12:54:51,1,0
-375,13373,INCORRECT_PIN,Wrong UPI PIN entered,07-05-2024 13:21:00,0,
-376,13416,NETWORK_ERROR,Network error during authorisation,09-05-2024 10:53:56,1,0
-377,13424,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-05-09 11:44:40,1,0
-378,13453,INCORRECT_PIN,Wrong UPI PIN entered,2024-05-10 22:20:40,1,1
-379,13565,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-05-13 13:17:02,1,0
-380,13578,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-05-13 13:56:49,0,
-381,13695,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-05-18 14:56:47,0,
-382,13804,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-05-21 18:59:20,1,0
-383,13813,NETWORK_ERROR,Network error during authorisation,2024-05-22 17:13:47,0,
-384,13817,INCORRECT_PIN,Wrong UPI PIN entered,22-05-2024 13:00:45,1,1
-385,13868,BANK_DECLINED,Declined by remitter bank,23-05-2024 20:13:27,1,0
-386,13896,NETWORK_ERROR,Network error during authorisation,2024-05-24 10:36:41,1,1
-387,14013,BANK_DECLINED,Declined by remitter bank,2024-05-27 06:59:06,1,0
-388,14074,BANK_DECLINED,Declined by remitter bank,2024-05-29 17:54:47,1,1
-389,14076,NETWORK_ERROR,Network error during authorisation,2024-05-29 12:33:57,1,1
-390,14087,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-05-29 19:43:54,0,
-391,14096,INSUFFICIENT_FUNDS,Insufficient balance in account,29-05-2024 20:08:02,1,1
-392,14114,BANK_DECLINED,Declined by remitter bank,2024-05-30 14:35:20,0,
-393,14121,INSUFFICIENT_FUNDS,Insufficient balance in account,30-05-2024 13:40:24,0,
-394,14181,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-06-01 20:57:50,0,
-395,14206,NETWORK_ERROR,Network error during authorisation,2024-06-01 17:34:46,0,
-396,14362,INCORRECT_PIN,Wrong UPI PIN entered,06-06-2024 00:14:42,0,
-397,14377,INCORRECT_PIN,Wrong UPI PIN entered,2024-06-07 11:11:21,0,
-398,14391,BANK_DECLINED,Declined by remitter bank,2024-06-07 22:53:56,1,1
-399,14515,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-06-11 18:38:06,0,
-400,14568,INSUFFICIENT_FUNDS,Insufficient balance in account,13-06-2024 18:23:19,0,
-401,14571,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-06-13 19:23:50,1,0
-402,14652,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-06-16 17:18:16,0,
-403,14690,BANK_DECLINED,Declined by remitter bank,2024-06-17 18:22:53,1,1
-404,14714,LIMIT_EXCEEDED,Daily/transaction limit exceeded,18-06-2024 12:13:09,0,
-405,14736,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-06-18 18:18:54,0,
-406,14804,INCORRECT_PIN,Wrong UPI PIN entered,2024-06-20 18:46:47,1,1
-407,14972,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-06-25 10:51:43,0,
-408,14996,INCORRECT_PIN,Wrong UPI PIN entered,26-06-2024 18:02:26,0,
-409,15030,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-06-27 19:20:02,1,0
-410,15188,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-07-01 12:28:03,1,0
-411,15189,BANK_DECLINED,Declined by remitter bank,2024-07-01 20:16:29,0,
-412,15191,NETWORK_ERROR,Network error during authorisation,2024-07-01 08:21:25,1,0
-413,15204,NETWORK_ERROR,Network error during authorisation,2024-07-02 13:18:26,0,
-414,15226,INCORRECT_PIN,Wrong UPI PIN entered,2024-07-02 19:20:53,1,1
-415,15241,BANK_SERVER_TIMEOUT,Remitter bank server timed out,02-07-2024 09:20:06,1,1
-416,15250,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-07-02 19:40:49,1,1
-417,15264,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-07-03 18:55:38,1,0
-418,15314,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-07-04 13:57:11,0,
-419,15362,NETWORK_ERROR,Network error during authorisation,2024-07-06 11:31:25,0,
-420,15423,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-07-07 15:29:48,1,0
-421,15430,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-07-07 20:41:01,0,
-422,15438,NETWORK_ERROR,Network error during authorisation,08-07-2024 17:19:36,1,1
-423,15534,INCORRECT_PIN,Wrong UPI PIN entered,2024-07-11 01:27:36,0,
-424,15585,BANK_SERVER_TIMEOUT,Remitter bank server timed out,12-07-2024 19:53:26,0,
-425,15648,NETWORK_ERROR,Network error during authorisation,14-07-2024 21:57:54,1,1
-426,15654,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-07-14 14:37:33,1,0
-427,15689,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-07-15 20:42:01,1,1
-428,15753,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-07-17 09:20:05,1,0
-429,15756,LIMIT_EXCEEDED,Daily/transaction limit exceeded,18-07-2024 10:52:33,1,1
-430,15776,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-07-18 09:27:55,1,1
-431,15777,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-07-18 08:43:53,0,
-432,15952,INSUFFICIENT_FUNDS,Insufficient balance in account,24-07-2024 20:46:34,1,0
-433,16002,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-07-26 20:45:42,1,1
-434,16015,BANK_DECLINED,Declined by remitter bank,2024-07-26 23:33:45,0,
-435,16114,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-07-28 17:48:30,0,
-436,16138,NETWORK_ERROR,Network error during authorisation,2024-07-29 09:12:44,1,0
-437,16141,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-07-29 12:36:24,0,
-438,16142,BANK_DECLINED,Declined by remitter bank,2024-07-29 10:31:30,0,
-439,16212,NETWORK_ERROR,Network error during authorisation,2024-07-31 14:28:12,0,
-440,16249,BANK_DECLINED,Declined by remitter bank,2024-08-01 16:19:11,0,
-441,16254,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-08-01 18:31:21,1,0
-442,16256,NETWORK_ERROR,Network error during authorisation,01-08-2024 09:12:07,1,0
-443,16281,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-08-02 09:27:19,0,
-444,16295,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-08-02 00:30:50,1,1
-445,16309,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-08-02 11:12:52,0,
-446,16311,BANK_DECLINED,Declined by remitter bank,2024-08-02 16:49:33,0,
-447,16379,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-08-05 18:56:27,1,0
-448,16539,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-08-09 11:16:54,1,0
-449,16620,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-08-11 16:42:56,1,1
-450,16695,BANK_DECLINED,Declined by remitter bank,2024-08-13 18:20:58,0,
-451,16705,INCORRECT_PIN,Wrong UPI PIN entered,2024-08-14 19:34:23,0,
-452,16733,LIMIT_EXCEEDED,Daily/transaction limit exceeded,14-08-2024 13:10:11,0,
-453,16734,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-08-14 17:03:23,0,
-454,16751,BANK_DECLINED,Declined by remitter bank,2024-08-15 18:54:16,1,0
-455,16835,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-08-18 16:01:07,0,
-456,16874,BANK_DECLINED,Declined by remitter bank,2024-08-19 07:47:17,1,1
-457,16880,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-08-19 19:29:37,0,
-458,16882,BANK_DECLINED,Declined by remitter bank,2024-08-19 12:35:35,0,
-459,16908,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-08-20 13:06:52,1,0
-460,17013,LIMIT_EXCEEDED,Daily/transaction limit exceeded,24-08-2024 11:10:33,1,1
-461,17038,NETWORK_ERROR,Network error during authorisation,2024-08-24 08:51:44,1,0
-462,17059,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-08-25 10:46:02,1,0
-463,17112,LIMIT_EXCEEDED,Daily/transaction limit exceeded,27-08-2024 09:46:38,0,
-464,17123,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-08-27 23:01:48,0,
-465,17135,BANK_DECLINED,Declined by remitter bank,2024-08-27 16:33:41,0,
-466,17141,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-08-28 14:17:13,1,0
-467,17199,BANK_DECLINED,Declined by remitter bank,2024-08-29 20:26:40,1,1
-468,17232,INCORRECT_PIN,Wrong UPI PIN entered,2024-08-30 20:56:51,0,
-469,17237,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-08-30 11:06:30,0,
-470,17258,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-08-31 14:45:22,1,0
-471,17261,NETWORK_ERROR,Network error during authorisation,2024-08-31 14:35:27,0,
-472,17305,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-09-01 11:22:22,1,0
-473,17306,BANK_DECLINED,Declined by remitter bank,2024-09-01 15:59:10,1,0
-474,17331,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-09-01 11:23:19,0,
-475,17343,INCORRECT_PIN,Wrong UPI PIN entered,2024-09-02 12:28:07,1,1
-476,17404,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-09-04 20:43:23,1,1
-477,17448,INCORRECT_PIN,Wrong UPI PIN entered,2024-09-05 16:21:10,0,
-478,17463,NETWORK_ERROR,Network error during authorisation,2024-09-05 14:58:23,1,0
-479,17614,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-09-10 12:49:21,1,1
-480,17646,INSUFFICIENT_FUNDS,Insufficient balance in account,10-09-2024 17:02:07,1,0
-481,17690,INCORRECT_PIN,Wrong UPI PIN entered,2024-09-12 17:59:38,1,1
-482,17788,NETWORK_ERROR,Network error during authorisation,14-09-2024 21:44:13,1,1
-483,17872,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-09-16 16:44:56,0,
-484,17880,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-09-17 11:24:47,0,
-485,17894,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-09-17 19:26:10,1,0
-486,17914,NETWORK_ERROR,Network error during authorisation,2024-09-18 18:10:41,1,0
-487,17989,BANK_DECLINED,Declined by remitter bank,2024-09-20 12:04:42,0,
-488,17994,BANK_DECLINED,Declined by remitter bank,2024-09-20 09:02:28,1,1
-489,17996,BANK_DECLINED,Declined by remitter bank,2024-09-21 12:49:30,1,1
-490,18046,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-09-22 10:17:09,1,0
-491,18127,BANK_DECLINED,Declined by remitter bank,2024-09-24 22:29:09,0,
-492,18241,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-09-27 18:34:05,1,1
-493,18306,NETWORK_ERROR,Network error during authorisation,2024-09-28 21:03:17,1,1
-494,18363,BANK_SERVER_TIMEOUT,Remitter bank server timed out,30-09-2024 11:00:09,1,0
-495,18366,NETWORK_ERROR,Network error during authorisation,2024-09-30 18:48:31,1,0
-496,18391,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-09-30 10:56:27,1,0
-497,18428,INCORRECT_PIN,Wrong UPI PIN entered,2024-10-01 18:53:36,0,
-498,18443,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-10-02 20:52:38,1,0
-499,18489,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-10-02 19:38:34,1,1
-500,18504,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-10-03 19:42:50,1,1
-501,18553,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-10-04 17:08:13,1,0
-502,18563,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-10-04 18:13:49,1,0
-503,18588,INCORRECT_PIN,Wrong UPI PIN entered,2024-10-05 16:33:15,1,1
-504,18662,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-10-06 19:10:32,1,0
-505,18680,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-10-07 16:02:48,0,
-506,18757,NETWORK_ERROR,Network error during authorisation,09-10-2024 19:55:15,0,
-507,18835,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-10-12 14:33:25,0,
-508,18836,BANK_DECLINED,Declined by remitter bank,12-10-2024 13:46:21,1,0
-509,18875,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-10-13 18:02:12,0,
-510,18900,BANK_DECLINED,Declined by remitter bank,2024-10-13 19:24:41,0,
-511,18907,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-10-13 18:42:21,0,
-512,19137,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-10-20 09:04:10,0,
-513,19175,BANK_DECLINED,Declined by remitter bank,2024-10-21 18:05:53,1,1
-514,19190,INCORRECT_PIN,Wrong UPI PIN entered,2024-10-21 12:34:50,0,
-515,19195,INCORRECT_PIN,Wrong UPI PIN entered,2024-10-21 09:52:57,0,
-516,19218,NETWORK_ERROR,Network error during authorisation,2024-10-22 21:35:05,1,0
-517,19245,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-10-22 19:43:28,1,1
-518,19249,BANK_DECLINED,Declined by remitter bank,23-10-2024 16:36:53,1,0
-519,19315,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-10-24 11:00:07,0,
-520,19353,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-10-25 19:11:06,1,1
-521,19369,BANK_DECLINED,Declined by remitter bank,26-10-2024 22:29:36,0,
-522,19373,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-10-26 08:27:33,0,
-523,19400,BANK_SERVER_TIMEOUT,Remitter bank server timed out,26-10-2024 20:49:14,0,
-524,19402,INCORRECT_PIN,Wrong UPI PIN entered,2024-10-26 17:01:08,1,1
-525,19434,INCORRECT_PIN,Wrong UPI PIN entered,2024-10-27 17:06:32,0,
-526,19488,INSUFFICIENT_FUNDS,Insufficient balance in account,28-10-2024 07:14:48,1,0
-527,19498,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-10-28 12:10:10,1,0
-528,19528,INSUFFICIENT_FUNDS,Insufficient balance in account,28-10-2024 17:23:06,0,
-529,19594,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-10-29 09:51:49,1,1
-530,19616,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-10-30 10:36:51,0,
-530,19616,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-10-30 10:36:51,0,
-531,19632,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-10-30 10:26:13,0,
-532,19662,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-10-31 21:13:10,0,
-532,19662,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-10-31 21:13:10,0,
-533,19670,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-10-31 18:13:54,1,0
-534,19671,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-10-31 20:15:01,0,
-535,19673,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-10-31 20:51:56,0,
-536,19674,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-10-31 21:39:03,1,1
-537,19676,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-10-31 18:07:21,1,1
-538,19678,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-10-31 18:01:52,1,1
-539,19685,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-10-31 21:29:47,0,
-540,19688,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-10-31 20:09:19,1,1
-541,19691,BANK_DECLINED,Declined by remitter bank,2024-10-31 09:33:47,0,
-542,19693,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-10-31 20:44:44,1,1
-543,19699,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-10-31 19:08:36,1,0
-544,19704,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-10-31 17:22:02,0,
-545,19722,UPI_SYSTEM_DOWN,UPI switch unavailable,31-10-2024 20:47:32,0,
-546,19723,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-10-31 18:54:43,1,1
-547,19724,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-10-31 18:09:23,1,1
-548,19728,INSUFFICIENT_FUNDS,Insufficient balance in account,01-11-2024 17:41:27,0,
-549,19743,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-11-01 18:19:53,1,0
-550,19744,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-11-01 12:09:11,1,0
-551,19768,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-11-01 19:01:54,0,
-552,19772,NETWORK_ERROR,Network error during authorisation,2024-11-01 09:44:42,1,0
-553,19782,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-11-01 18:50:07,1,1
-554,19829,NETWORK_ERROR,Network error during authorisation,2024-11-02 19:03:25,1,1
-555,19848,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-11-02 16:43:04,1,0
-556,19864,BANK_DECLINED,Declined by remitter bank,03-11-2024 20:53:21,1,1
-557,19868,BANK_DECLINED,Declined by remitter bank,2024-11-03 19:31:12,1,0
-558,19875,BANK_DECLINED,Declined by remitter bank,2024-11-03 16:55:27,1,0
-559,19915,BANK_DECLINED,Declined by remitter bank,2024-11-03 20:35:41,1,0
-560,19989,NETWORK_ERROR,Network error during authorisation,2024-11-06 12:33:19,1,1
-561,20063,BANK_SERVER_TIMEOUT,Remitter bank server timed out,08-11-2024 09:14:31,1,1
-562,20067,LIMIT_EXCEEDED,Daily/transaction limit exceeded,08-11-2024 12:19:38,0,
-563,20106,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-11-10 10:03:16,0,
-564,20135,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-11-10 20:51:02,1,1
-565,20150,INSUFFICIENT_FUNDS,Insufficient balance in account,11-11-2024 07:50:57,0,
-566,20169,NETWORK_ERROR,Network error during authorisation,2024-11-11 07:07:40,1,0
-567,20196,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-11-12 10:23:59,1,0
-568,20204,NETWORK_ERROR,Network error during authorisation,2024-11-12 07:31:05,0,
-569,20279,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-11-14 10:42:54,0,
-570,20311,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-11-15 19:11:30,0,
-571,20346,INCORRECT_PIN,Wrong UPI PIN entered,2024-11-16 18:16:11,0,
-572,20347,INSUFFICIENT_FUNDS,Insufficient balance in account,17-11-2024 18:43:08,0,
-573,20356,BANK_SERVER_TIMEOUT,Remitter bank server timed out,17-11-2024 19:15:49,0,
-574,20391,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-11-18 20:12:36,0,
-575,20422,LIMIT_EXCEEDED,Daily/transaction limit exceeded,19-11-2024 15:04:57,0,
-576,20456,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-11-20 14:33:11,0,
-577,20476,LIMIT_EXCEEDED,Daily/transaction limit exceeded,20-11-2024 22:13:14,0,
-578,20477,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-11-20 14:02:02,0,
-579,20480,INCORRECT_PIN,Wrong UPI PIN entered,2024-11-20 18:05:05,1,0
-580,20498,INSUFFICIENT_FUNDS,Insufficient balance in account,21-11-2024 13:31:26,0,
-581,20531,BANK_DECLINED,Declined by remitter bank,2024-11-21 18:20:13,0,
-582,20542,INCORRECT_PIN,Wrong UPI PIN entered,2024-11-22 19:37:33,0,
-583,20599,INCORRECT_PIN,Wrong UPI PIN entered,2024-11-23 08:33:08,0,
-584,20638,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-11-24 10:44:34,1,1
-585,20662,NETWORK_ERROR,Network error during authorisation,2024-11-25 00:52:10,1,0
-586,20754,INCORRECT_PIN,Wrong UPI PIN entered,2024-11-28 21:10:08,1,1
-587,20777,NETWORK_ERROR,Network error during authorisation,2024-11-28 09:45:58,1,1
-588,20790,INSUFFICIENT_FUNDS,Insufficient balance in account,28-11-2024 21:14:22,0,
-589,20797,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-11-29 05:37:26,1,1
-590,20801,INSUFFICIENT_FUNDS,Insufficient balance in account,29-11-2024 10:22:10,0,
-591,20840,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-11-30 10:37:38,0,
-592,20851,NETWORK_ERROR,Network error during authorisation,2024-11-30 21:36:07,1,1
-592,20851,NETWORK_ERROR,Network error during authorisation,2024-11-30 21:36:07,1,1
-593,20873,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-11-30 16:24:04,0,
-594,20904,INCORRECT_PIN,Wrong UPI PIN entered,2024-12-01 13:02:46,0,
-595,20906,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-12-01 20:47:24,1,0
-596,20928,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-12-02 20:59:32,1,1
-597,21017,INSUFFICIENT_FUNDS,Insufficient balance in account,04-12-2024 08:55:26,1,0
-598,21035,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-12-05 23:42:10,1,1
-599,21040,BANK_DECLINED,Declined by remitter bank,2024-12-05 19:01:46,1,1
-600,21100,INCORRECT_PIN,Wrong UPI PIN entered,2024-12-07 18:53:09,0,
-601,21122,NETWORK_ERROR,Network error during authorisation,2024-12-08 22:01:30,1,1
-602,21131,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-12-08 18:47:51,1,0
-603,21168,BANK_DECLINED,Declined by remitter bank,2024-12-09 03:55:09,0,
-604,21357,INCORRECT_PIN,Wrong UPI PIN entered,15-12-2024 07:54:47,1,0
-605,21364,BANK_DECLINED,Declined by remitter bank,2024-12-15 10:11:40,1,1
-606,21381,INCORRECT_PIN,Wrong UPI PIN entered,2024-12-15 21:56:44,0,
-607,21413,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-12-16 10:13:10,0,
-608,21497,NETWORK_ERROR,Network error during authorisation,2024-12-19 17:14:01,1,1
-609,21508,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-12-19 08:33:50,0,
-610,21513,NETWORK_ERROR,Network error during authorisation,19-12-2024 18:27:25,0,
-611,21526,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-12-19 10:22:37,0,
-612,21539,NETWORK_ERROR,Network error during authorisation,2024-12-20 15:39:36,1,1
-613,21541,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-12-20 11:20:19,0,
-614,21545,INCORRECT_PIN,Wrong UPI PIN entered,2024-12-20 19:53:17,1,1
-615,21581,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-12-21 22:49:10,0,
-616,21625,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-12-22 11:45:48,1,1
-617,21644,BANK_DECLINED,Declined by remitter bank,2024-12-22 11:28:12,0,
-618,21651,INSUFFICIENT_FUNDS,Insufficient balance in account,22-12-2024 16:51:50,0,
-619,21654,BANK_DECLINED,Declined by remitter bank,2024-12-22 05:13:57,0,
-619,21654,BANK_DECLINED,Declined by remitter bank,2024-12-22 05:13:57,0,
-620,21673,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-12-23 10:27:33,1,0
-621,21735,INCORRECT_PIN,Wrong UPI PIN entered,2024-12-25 01:12:30,1,1
-622,21749,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-12-25 11:58:55,0,
-623,21774,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-12-26 15:23:13,1,0
-624,21788,BANK_DECLINED,Declined by remitter bank,2024-12-26 21:20:20,1,1
-625,21871,BANK_DECLINED,Declined by remitter bank,2024-12-29 21:33:17,0,
-626,21872,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-12-29 09:09:58,0,
-627,21896,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-12-29 13:05:58,1,0
+1,39,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-01-03 06:05:40,0,
+2,45,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-01-03 10:04:55,1,0
+3,102,NETWORK_ERROR,Network error during authorisation,2023-01-05 15:47:48,1,0
+4,191,NETWORK_ERROR,Network error during authorisation,2023-01-09 15:06:25,1,1
+5,235,NETWORK_ERROR,Network error during authorisation,2023-01-11 16:14:59,0,
+5,235,NETWORK_ERROR,Network error during authorisation,2023-01-11 16:14:59,0,
+6,356,BANK_DECLINED,Declined by remitter bank,17-01-2023 11:00:36,0,
+7,449,NETWORK_ERROR,Network error during authorisation,2023-01-20 20:52:45,1,1
+8,455,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-01-21 09:06:41,1,1
+9,485,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-01-22 14:27:21,0,
+10,501,NETWORK_ERROR,Network error during authorisation,2023-01-23 08:49:52,0,
+11,608,BANK_DECLINED,Declined by remitter bank,2023-01-28 08:37:41,0,
+12,663,BANK_DECLINED,Declined by remitter bank,30-01-2023 12:13:58,0,
+13,670,INCORRECT_PIN,Wrong UPI PIN entered,2023-01-30 18:09:23,0,
+14,721,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-02-01 18:27:40,0,
+15,740,BANK_DECLINED,Declined by remitter bank,2023-02-02 15:38:37,0,
+16,861,BANK_DECLINED,Declined by remitter bank,2023-02-07 09:05:53,1,1
+17,965,BANK_DECLINED,Declined by remitter bank,2023-02-11 18:55:18,0,
+18,998,NETWORK_ERROR,Network error during authorisation,2023-02-13 10:12:31,1,1
+19,1050,NETWORK_ERROR,Network error during authorisation,2023-02-15 17:48:19,1,1
+20,1148,LIMIT_EXCEEDED,Daily/transaction limit exceeded,19-02-2023 15:32:40,1,0
+21,1176,NETWORK_ERROR,Network error during authorisation,2023-02-20 13:27:12,1,1
+22,1187,NETWORK_ERROR,Network error during authorisation,2023-02-20 18:32:16,0,
+23,1191,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-02-20 19:42:54,0,
+24,1241,NETWORK_ERROR,Network error during authorisation,2023-02-23 08:37:57,1,1
+25,1352,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-02-27 19:59:24,0,
+26,1367,INCORRECT_PIN,Wrong UPI PIN entered,2023-03-01 07:33:10,0,
+27,1374,INCORRECT_PIN,Wrong UPI PIN entered,2023-03-01 09:56:42,0,
+28,1378,BANK_DECLINED,Declined by remitter bank,2023-03-01 12:49:12,0,
+29,1437,INCORRECT_PIN,Wrong UPI PIN entered,2023-03-03 14:02:58,0,
+30,1451,NETWORK_ERROR,Network error during authorisation,2023-03-03 20:55:20,1,0
+31,1464,BANK_DECLINED,Declined by remitter bank,2023-03-04 15:19:03,1,1
+32,1468,INCORRECT_PIN,Wrong UPI PIN entered,04-03-2023 19:19:25,0,
+33,1552,BANK_DECLINED,Declined by remitter bank,2023-03-09 12:48:53,0,
+34,1571,INCORRECT_PIN,Wrong UPI PIN entered,2023-03-10 14:01:11,1,1
+35,1574,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-03-10 18:40:14,1,1
+36,1638,INCORRECT_PIN,Wrong UPI PIN entered,2023-03-13 18:53:51,0,
+37,1651,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-03-14 10:08:03,1,1
+38,1652,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-03-14 10:09:25,0,
+39,1653,UPI_SYSTEM_DOWN,UPI switch unavailable,14-03-2023 10:08:31,1,1
+40,1654,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-03-14 10:13:55,1,1
+41,1655,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-03-14 10:16:52,0,
+42,1660,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-03-14 10:23:32,0,
+43,1663,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-03-14 10:31:05,1,1
+44,1664,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-03-14 10:33:06,0,
+45,1665,UPI_SYSTEM_DOWN,UPI switch unavailable,14-03-2023 10:36:25,1,1
+46,1669,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-03-14 10:42:14,1,1
+47,1671,UPI_SYSTEM_DOWN,UPI switch unavailable,14-03-2023 10:49:38,0,
+48,1673,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-03-14 10:51:35,0,
+49,1675,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-03-14 10:55:58,0,
+50,1676,UPI_SYSTEM_DOWN,UPI switch unavailable,14-03-2023 10:57:21,1,0
+51,1677,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-03-14 11:02:34,1,1
+52,1679,UPI_SYSTEM_DOWN,UPI switch unavailable,14-03-2023 11:08:43,0,
+53,1681,UPI_SYSTEM_DOWN,UPI switch unavailable,14-03-2023 11:11:18,0,
+54,1684,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-03-14 11:14:20,1,1
+55,1687,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-03-14 11:16:27,1,1
+56,1688,UPI_SYSTEM_DOWN,UPI switch unavailable,14-03-2023 11:24:25,1,0
+57,1691,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-03-14 11:31:48,1,1
+58,1694,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-03-14 11:36:47,0,
+59,1696,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-03-14 11:39:38,1,0
+60,1698,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-03-14 11:41:31,0,
+61,1700,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-03-14 11:43:17,1,0
+62,1702,UPI_SYSTEM_DOWN,UPI switch unavailable,14-03-2023 11:49:40,1,1
+63,1703,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-03-14 11:49:49,1,1
+64,1705,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-03-14 11:51:53,1,0
+65,1707,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-03-14 11:51:54,1,1
+66,1712,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-03-14 12:11:04,1,1
+67,1718,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-03-14 12:37:43,1,1
+68,1722,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-03-14 12:45:23,1,1
+69,1753,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-03-15 12:39:35,1,0
+70,1799,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-03-17 09:37:36,0,
+71,1800,INCORRECT_PIN,Wrong UPI PIN entered,2023-03-17 12:09:24,1,0
+72,1824,INSUFFICIENT_FUNDS,Insufficient balance in account,18-03-2023 11:07:33,0,
+73,1839,NETWORK_ERROR,Network error during authorisation,19-03-2023 12:31:00,1,0
+74,1873,NETWORK_ERROR,Network error during authorisation,20-03-2023 20:13:47,1,1
+75,1944,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-03-24 08:28:17,0,
+76,1983,NETWORK_ERROR,Network error during authorisation,2023-03-25 17:41:08,0,
+77,1992,BANK_DECLINED,Declined by remitter bank,2023-03-26 07:41:18,0,
+78,2085,INCORRECT_PIN,Wrong UPI PIN entered,2023-03-29 20:51:44,1,1
+79,2109,NETWORK_ERROR,Network error during authorisation,2023-03-31 08:39:34,1,1
+80,2136,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-03-31 22:34:56,0,
+80,2136,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-03-31 22:34:56,0,
+81,2144,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-04-01 12:28:49,0,
+82,2208,INCORRECT_PIN,Wrong UPI PIN entered,2023-04-03 14:42:39,0,
+83,2340,INCORRECT_PIN,Wrong UPI PIN entered,2023-04-08 14:19:26,0,
+84,2371,INCORRECT_PIN,Wrong UPI PIN entered,2023-04-09 15:45:46,0,
+85,2379,BANK_DECLINED,Declined by remitter bank,2023-04-09 19:33:29,0,
+86,2488,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-04-14 18:49:21,0,
+87,2489,INCORRECT_PIN,Wrong UPI PIN entered,14-04-2023 20:57:47,0,
+88,2556,INCORRECT_PIN,Wrong UPI PIN entered,2023-04-17 17:47:10,0,
+89,2561,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-04-17 22:07:59,1,0
+90,2796,NETWORK_ERROR,Network error during authorisation,2023-04-28 19:13:39,1,0
+91,2852,BANK_DECLINED,Declined by remitter bank,30-04-2023 20:53:48,0,
+92,2874,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-05-01 18:56:06,1,0
+93,2956,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-05-04 12:10:44,1,0
+94,2976,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-05-05 08:31:48,0,
+95,3067,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-05-09 14:01:10,0,
+96,3128,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-05-12 14:38:15,0,
+97,3191,INCORRECT_PIN,Wrong UPI PIN entered,2023-05-14 20:17:32,0,
+98,3192,INSUFFICIENT_FUNDS,Insufficient balance in account,14-05-2023 20:37:32,0,
+99,3209,LIMIT_EXCEEDED,Daily/transaction limit exceeded,15-05-2023 19:34:25,1,0
+100,3318,NETWORK_ERROR,Network error during authorisation,2023-05-20 12:07:39,0,
+101,3333,BANK_DECLINED,Declined by remitter bank,2023-05-20 19:07:49,0,
+102,3335,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-05-20 20:12:18,1,1
+103,3345,BANK_DECLINED,Declined by remitter bank,2023-05-21 10:29:45,0,
+104,3438,BANK_SERVER_TIMEOUT,Remitter bank server timed out,25-05-2023 18:19:19,1,1
+105,3456,BANK_DECLINED,Declined by remitter bank,26-05-2023 10:48:29,0,
+106,3482,BANK_DECLINED,Declined by remitter bank,2023-05-27 21:58:43,0,
+107,3514,NETWORK_ERROR,Network error during authorisation,2023-05-28 20:45:00,0,
+108,3598,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-05-31 18:29:07,0,
+109,3631,INCORRECT_PIN,Wrong UPI PIN entered,01-06-2023 19:08:44,1,1
+110,3637,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-06-01 20:20:55,1,0
+111,3696,NETWORK_ERROR,Network error during authorisation,2023-06-03 20:14:53,0,
+112,3725,NETWORK_ERROR,Network error during authorisation,04-06-2023 18:24:36,1,1
+113,3792,NETWORK_ERROR,Network error during authorisation,2023-06-07 07:38:30,1,1
+114,3794,BANK_DECLINED,Declined by remitter bank,2023-06-07 09:20:11,0,
+115,3814,INCORRECT_PIN,Wrong UPI PIN entered,2023-06-07 20:36:23,0,
+116,4016,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-06-17 01:44:41,0,
+117,4054,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-06-18 14:24:09,0,
+118,4074,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-06-19 10:33:12,1,0
+119,4121,NETWORK_ERROR,Network error during authorisation,2023-06-21 10:03:34,1,1
+120,4282,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-06-27 16:54:53,0,
+121,4309,NETWORK_ERROR,Network error during authorisation,2023-06-28 14:25:15,1,1
+122,4350,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-06-29 19:29:49,1,1
+123,4410,INCORRECT_PIN,Wrong UPI PIN entered,2023-07-01 11:22:26,0,
+124,4419,BANK_DECLINED,Declined by remitter bank,2023-07-01 14:30:35,0,
+125,4474,INCORRECT_PIN,Wrong UPI PIN entered,2023-07-03 11:38:19,0,
+126,4672,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-07-11 21:23:33,0,
+127,4753,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-07-15 16:08:08,0,
+128,4793,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-07-16 22:55:30,0,
+129,4815,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-07-18 15:22:17,1,0
+130,4824,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-07-18 18:28:03,1,1
+131,4847,INCORRECT_PIN,Wrong UPI PIN entered,2023-07-19 15:33:13,1,0
+132,4884,INSUFFICIENT_FUNDS,Insufficient balance in account,20-07-2023 19:30:12,0,
+133,4930,NETWORK_ERROR,Network error during authorisation,22-07-2023 10:43:40,1,0
+134,4975,NETWORK_ERROR,Network error during authorisation,2023-07-23 13:47:53,1,1
+135,4978,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-07-23 15:52:45,1,0
+136,5076,INSUFFICIENT_FUNDS,Insufficient balance in account,27-07-2023 22:55:09,1,0
+137,5121,BANK_DECLINED,Declined by remitter bank,2023-07-29 15:39:14,1,1
+138,5398,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-08-08 19:24:51,1,0
+139,5403,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-08-09 08:04:08,0,
+140,5486,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-08-11 19:05:13,0,
+141,5550,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-08-13 20:33:25,0,
+142,5560,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-08-14 10:49:43,0,
+143,5591,NETWORK_ERROR,Network error during authorisation,15-08-2023 14:30:42,1,1
+144,5633,INCORRECT_PIN,Wrong UPI PIN entered,2023-08-16 19:09:20,0,
+145,5727,INCORRECT_PIN,Wrong UPI PIN entered,2023-08-20 18:57:01,1,1
+146,5730,NETWORK_ERROR,Network error during authorisation,2023-08-20 19:43:18,1,1
+147,5745,BANK_DECLINED,Declined by remitter bank,21-08-2023 17:46:33,0,
+148,5769,BANK_DECLINED,Declined by remitter bank,2023-08-22 12:31:29,0,
+149,5792,BANK_DECLINED,Declined by remitter bank,2023-08-23 12:45:38,0,
+150,5811,BANK_DECLINED,Declined by remitter bank,2023-08-24 08:56:49,0,
+151,5857,INCORRECT_PIN,Wrong UPI PIN entered,26-08-2023 07:10:01,0,
+152,5868,NETWORK_ERROR,Network error during authorisation,2023-08-26 16:17:43,0,
+153,5890,INCORRECT_PIN,Wrong UPI PIN entered,2023-08-27 15:56:55,0,
+154,5942,INSUFFICIENT_FUNDS,Insufficient balance in account,30-08-2023 10:46:12,0,
+155,6021,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-09-02 08:43:22,1,0
+156,6230,BANK_DECLINED,Declined by remitter bank,2023-09-09 22:53:52,1,1
+157,6234,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-09-10 07:14:52,1,1
+158,6241,NETWORK_ERROR,Network error during authorisation,2023-09-10 11:56:39,1,1
+159,6277,INCORRECT_PIN,Wrong UPI PIN entered,2023-09-11 17:25:11,0,
+160,6317,NETWORK_ERROR,Network error during authorisation,13-09-2023 10:48:47,1,1
+161,6344,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-09-14 17:40:54,0,
+162,6363,INCORRECT_PIN,Wrong UPI PIN entered,2023-09-15 14:06:52,0,
+163,6391,BANK_DECLINED,Declined by remitter bank,2023-09-16 19:24:31,0,
+164,6395,BANK_DECLINED,Declined by remitter bank,2023-09-16 20:37:25,0,
+164,6395,BANK_DECLINED,Declined by remitter bank,2023-09-16 20:37:25,0,
+165,6445,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-09-18 18:00:30,1,0
+166,6454,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-09-18 22:06:57,0,
+167,6456,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-09-19 07:35:46,0,
+168,6469,NETWORK_ERROR,Network error during authorisation,2023-09-19 18:51:48,1,1
+169,6516,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-09-21 18:01:29,1,0
+170,6517,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-09-21 18:02:47,1,0
+171,6519,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-09-21 18:06:43,1,0
+172,6523,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-09-21 18:13:26,1,0
+173,6524,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-09-21 18:17:31,1,0
+174,6525,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-09-21 18:17:49,1,1
+175,6527,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-09-21 18:21:18,1,1
+176,6529,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-09-21 18:26:38,1,1
+177,6531,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-09-21 18:26:54,0,
+178,6532,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-09-21 18:30:01,1,1
+179,6533,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-09-21 18:33:10,1,1
+180,6534,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-09-21 18:38:00,0,
+181,6537,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-09-21 18:49:09,0,
+182,6539,UPI_SYSTEM_DOWN,UPI switch unavailable,21-09-2023 18:53:21,1,0
+183,6542,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-09-21 19:01:53,1,1
+184,6545,INCORRECT_PIN,Wrong UPI PIN entered,2023-09-21 19:08:14,1,1
+185,6555,UPI_SYSTEM_DOWN,UPI switch unavailable,21-09-2023 19:28:14,1,1
+186,6558,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-09-21 19:40:25,1,1
+187,6559,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-09-21 19:41:29,0,
+188,6564,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-09-21 19:53:37,0,
+189,6567,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-09-21 20:21:42,1,1
+190,6570,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-09-21 20:30:51,1,0
+191,6575,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-09-21 20:41:34,0,
+192,6576,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-09-21 20:41:04,0,
+193,6578,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-09-21 20:44:37,0,
+194,6584,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-09-21 20:58:02,1,1
+195,6585,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-09-21 20:59:52,0,
+196,6588,UPI_SYSTEM_DOWN,UPI switch unavailable,21-09-2023 21:04:51,1,1
+197,6593,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-09-21 21:21:35,0,
+198,6596,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-09-21 21:26:50,0,
+199,6601,UPI_SYSTEM_DOWN,UPI switch unavailable,21-09-2023 21:50:50,0,
+200,6602,UPI_SYSTEM_DOWN,UPI switch unavailable,2023-09-21 21:57:32,0,
+201,6617,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-09-22 15:17:36,1,0
+202,6649,INCORRECT_PIN,Wrong UPI PIN entered,2023-09-23 21:26:27,1,1
+203,6673,LIMIT_EXCEEDED,Daily/transaction limit exceeded,24-09-2023 20:07:53,1,1
+204,6705,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-09-26 15:56:23,0,
+205,6751,BANK_DECLINED,Declined by remitter bank,2023-09-28 12:19:54,0,
+206,6786,BANK_DECLINED,Declined by remitter bank,29-09-2023 15:21:20,1,0
+207,6826,BANK_DECLINED,Declined by remitter bank,2023-09-30 16:45:37,0,
+208,6918,INCORRECT_PIN,Wrong UPI PIN entered,2023-10-03 17:52:53,1,1
+209,6951,BANK_DECLINED,Declined by remitter bank,2023-10-05 10:55:29,0,
+210,6961,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-10-05 17:26:16,0,
+211,6975,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-10-06 09:13:03,0,
+212,7027,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-10-08 08:52:42,0,
+213,7056,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-10-09 08:03:38,0,
+214,7090,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-10-10 10:49:48,1,1
+215,7127,INCORRECT_PIN,Wrong UPI PIN entered,2023-10-11 15:45:12,0,
+216,7141,BANK_DECLINED,Declined by remitter bank,2023-10-11 20:21:35,1,1
+217,7162,LIMIT_EXCEEDED,Daily/transaction limit exceeded,12-10-2023 12:36:18,0,
+218,7170,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-10-12 17:50:08,1,1
+219,7243,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-10-14 20:34:47,0,
+220,7306,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-10-16 19:05:17,1,1
+221,7366,NETWORK_ERROR,Network error during authorisation,2023-10-19 14:55:10,1,0
+222,7374,LIMIT_EXCEEDED,Daily/transaction limit exceeded,19-10-2023 17:46:26,0,
+223,7376,BANK_DECLINED,Declined by remitter bank,19-10-2023 18:20:28,1,1
+224,7416,BANK_DECLINED,Declined by remitter bank,2023-10-21 09:04:17,1,0
+225,7420,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-10-21 12:45:44,1,0
+226,7431,BANK_DECLINED,Declined by remitter bank,21-10-2023 20:23:59,1,1
+227,7479,LIMIT_EXCEEDED,Daily/transaction limit exceeded,23-10-2023 20:18:59,0,
+228,7514,INCORRECT_PIN,Wrong UPI PIN entered,2023-10-25 12:30:21,0,
+229,7530,BANK_DECLINED,Declined by remitter bank,25-10-2023 19:42:22,1,0
+230,7544,BANK_DECLINED,Declined by remitter bank,2023-10-26 12:19:11,0,
+231,7572,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-10-27 14:31:32,0,
+232,7631,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-10-29 08:36:01,0,
+233,7733,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-11-01 08:53:45,0,
+234,7744,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-11-01 12:47:17,1,1
+235,7760,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-11-01 18:47:53,1,1
+236,7777,BANK_DECLINED,Declined by remitter bank,02-11-2023 10:57:20,0,
+237,7797,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-11-02 19:34:55,1,0
+238,7851,BANK_DECLINED,Declined by remitter bank,2023-11-04 12:32:27,1,0
+239,7878,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-11-05 13:40:10,0,
+240,7881,BANK_DECLINED,Declined by remitter bank,2023-11-05 14:59:28,0,
+241,7883,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-11-05 18:56:04,0,
+242,7885,NETWORK_ERROR,Network error during authorisation,2023-11-05 19:05:00,1,1
+243,7928,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-11-06 19:03:56,0,
+244,8180,NETWORK_ERROR,Network error during authorisation,13-11-2023 10:06:39,0,
+245,8307,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-11-17 09:33:33,0,
+246,8308,BANK_SERVER_TIMEOUT,Remitter bank server timed out,17-11-2023 09:44:00,0,
+247,8339,BANK_DECLINED,Declined by remitter bank,18-11-2023 07:35:37,0,
+248,8348,NETWORK_ERROR,Network error during authorisation,2023-11-18 18:23:06,1,1
+249,8359,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-11-18 21:31:21,1,0
+250,8386,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-11-19 18:55:15,1,0
+251,8401,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-11-20 15:39:42,0,
+252,8465,BANK_DECLINED,Declined by remitter bank,2023-11-22 16:13:38,1,0
+253,8474,LIMIT_EXCEEDED,Daily/transaction limit exceeded,22-11-2023 20:19:02,0,
+254,8545,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-11-25 13:10:50,1,0
+255,8594,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-11-27 01:54:01,1,0
+256,8600,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-11-27 09:53:33,1,1
+257,8653,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-11-29 13:13:33,0,
+257,8653,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-11-29 13:13:33,0,
+258,8678,INCORRECT_PIN,Wrong UPI PIN entered,30-11-2023 12:02:32,0,
+259,8680,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2023-11-30 12:38:31,1,0
+260,8761,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-12-03 12:52:35,1,0
+261,8869,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-12-06 23:38:39,1,0
+262,8892,INCORRECT_PIN,Wrong UPI PIN entered,2023-12-08 07:43:42,1,1
+263,8950,NETWORK_ERROR,Network error during authorisation,10-12-2023 11:35:21,1,1
+264,9013,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-12-12 19:54:06,1,0
+265,9165,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-12-18 11:35:36,0,
+266,9203,BANK_DECLINED,Declined by remitter bank,2023-12-19 18:39:47,1,1
+267,9281,INCORRECT_PIN,Wrong UPI PIN entered,2023-12-22 10:41:31,1,1
+268,9282,INSUFFICIENT_FUNDS,Insufficient balance in account,2023-12-22 10:46:15,1,1
+269,9283,INSUFFICIENT_FUNDS,Insufficient balance in account,22-12-2023 10:47:51,1,1
+270,9312,INSUFFICIENT_FUNDS,Insufficient balance in account,22-12-2023 20:50:41,1,0
+271,9330,BANK_DECLINED,Declined by remitter bank,2023-12-23 18:02:14,1,1
+272,9451,NETWORK_ERROR,Network error during authorisation,2023-12-27 17:25:46,1,1
+273,9488,BANK_DECLINED,Declined by remitter bank,2023-12-28 14:00:17,1,0
+274,9517,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2023-12-29 10:46:32,1,0
+275,9707,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-01-03 21:54:17,0,
+276,9735,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-01-04 19:52:06,0,
+277,9767,INSUFFICIENT_FUNDS,Insufficient balance in account,06-01-2024 10:19:57,0,
+278,9796,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-01-07 09:47:54,0,
+279,9849,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-01-09 11:54:02,0,
+280,9908,INCORRECT_PIN,Wrong UPI PIN entered,11-01-2024 12:49:20,1,1
+281,9941,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-01-12 17:38:41,0,
+282,9998,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-01-14 11:50:10,0,
+283,10091,BANK_DECLINED,Declined by remitter bank,2024-01-17 20:32:22,1,0
+284,10117,NETWORK_ERROR,Network error during authorisation,2024-01-18 16:05:08,1,1
+285,10130,BANK_DECLINED,Declined by remitter bank,19-01-2024 05:58:44,1,1
+286,10135,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-01-19 10:41:58,0,
+287,10216,INCORRECT_PIN,Wrong UPI PIN entered,2024-01-21 22:58:46,1,1
+288,10291,BANK_SERVER_TIMEOUT,Remitter bank server timed out,24-01-2024 10:07:02,0,
+289,10431,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-01-28 10:03:59,1,1
+290,10467,BANK_DECLINED,Declined by remitter bank,2024-01-29 11:28:58,0,
+291,10606,INSUFFICIENT_FUNDS,Insufficient balance in account,02-02-2024 19:35:05,1,0
+292,10732,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-02-06 09:02:08,1,1
+293,10734,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-02-06 09:05:31,1,0
+294,10735,UPI_SYSTEM_DOWN,UPI switch unavailable,06-02-2024 09:06:32,1,1
+295,10739,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-02-06 09:17:20,1,0
+296,10740,UPI_SYSTEM_DOWN,UPI switch unavailable,06-02-2024 09:19:41,1,0
+297,10744,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-02-06 09:28:38,0,
+298,10745,UPI_SYSTEM_DOWN,UPI switch unavailable,06-02-2024 09:42:44,1,1
+299,10746,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-02-06 09:44:48,1,0
+300,10749,UPI_SYSTEM_DOWN,UPI switch unavailable,06-02-2024 09:52:16,1,1
+301,10753,UPI_SYSTEM_DOWN,UPI switch unavailable,06-02-2024 09:58:35,0,
+302,10759,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-02-06 10:06:17,1,1
+303,10760,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-02-06 10:10:08,1,1
+304,10762,UPI_SYSTEM_DOWN,UPI switch unavailable,06-02-2024 10:14:01,1,0
+305,10764,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-02-06 10:17:44,0,
+306,10767,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-02-06 10:21:01,1,0
+307,10768,UPI_SYSTEM_DOWN,UPI switch unavailable,06-02-2024 10:22:00,1,1
+308,10769,UPI_SYSTEM_DOWN,UPI switch unavailable,06-02-2024 10:23:40,1,0
+309,10773,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-02-06 10:35:22,1,1
+310,10775,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-02-06 10:41:57,1,1
+311,10786,UPI_SYSTEM_DOWN,UPI switch unavailable,06-02-2024 11:10:42,1,1
+312,10788,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-02-06 11:15:10,1,1
+313,10792,UPI_SYSTEM_DOWN,UPI switch unavailable,06-02-2024 11:19:32,1,1
+314,10796,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-02-06 11:29:46,0,
+315,10803,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-02-06 11:42:17,0,
+316,10809,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-02-06 11:55:16,0,
+317,10821,BANK_DECLINED,Declined by remitter bank,2024-02-06 18:23:16,0,
+318,10833,INCORRECT_PIN,Wrong UPI PIN entered,2024-02-07 06:16:57,0,
+319,10871,INCORRECT_PIN,Wrong UPI PIN entered,2024-02-08 11:16:43,1,1
+320,10906,BANK_DECLINED,Declined by remitter bank,2024-02-09 18:23:32,0,
+321,10910,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-02-09 20:09:32,1,0
+322,10914,NETWORK_ERROR,Network error during authorisation,2024-02-10 03:33:17,1,1
+323,10915,BANK_DECLINED,Declined by remitter bank,2024-02-10 04:28:21,1,1
+324,10968,BANK_DECLINED,Declined by remitter bank,11-02-2024 10:54:53,0,
+325,10977,INCORRECT_PIN,Wrong UPI PIN entered,2024-02-11 16:54:58,0,
+326,11066,INCORRECT_PIN,Wrong UPI PIN entered,2024-02-14 21:32:25,0,
+327,11090,NETWORK_ERROR,Network error during authorisation,15-02-2024 20:10:28,1,1
+328,11144,BANK_DECLINED,Declined by remitter bank,2024-02-18 09:48:57,0,
+329,11151,INCORRECT_PIN,Wrong UPI PIN entered,2024-02-18 13:01:43,1,1
+330,11194,INSUFFICIENT_FUNDS,Insufficient balance in account,19-02-2024 17:31:16,0,
+331,11202,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-02-19 20:46:06,1,0
+332,11231,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-02-20 19:40:05,0,
+333,11246,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-02-21 18:29:39,0,
+334,11343,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-02-24 19:20:07,0,
+335,11356,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-02-25 09:45:10,1,1
+336,11473,BANK_DECLINED,Declined by remitter bank,2024-02-29 21:40:27,1,1
+337,11504,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-03-01 19:43:13,1,0
+338,11591,INCORRECT_PIN,Wrong UPI PIN entered,03-03-2024 20:01:00,1,1
+339,11595,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-03-03 21:12:16,0,
+340,11646,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-03-06 07:14:45,0,
+341,11791,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-03-10 18:05:22,1,1
+342,11823,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-03-11 20:07:20,0,
+343,11854,INCORRECT_PIN,Wrong UPI PIN entered,2024-03-12 20:50:44,0,
+344,11874,INSUFFICIENT_FUNDS,Insufficient balance in account,13-03-2024 13:57:57,1,0
+345,11899,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-03-14 11:33:33,0,
+346,11959,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-03-16 14:46:16,1,0
+347,11984,BANK_DECLINED,Declined by remitter bank,2024-03-17 09:23:28,0,
+348,12155,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-03-22 19:44:26,1,1
+349,12169,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-03-23 09:21:56,0,
+350,12346,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-03-28 19:45:01,0,
+351,12349,NETWORK_ERROR,Network error during authorisation,2024-03-28 21:26:17,0,
+352,12468,BANK_DECLINED,Declined by remitter bank,2024-04-01 11:31:31,1,1
+353,12492,BANK_DECLINED,Declined by remitter bank,2024-04-02 06:43:10,0,
+354,12514,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-04-02 18:02:30,0,
+355,12582,NETWORK_ERROR,Network error during authorisation,2024-04-04 16:29:47,1,1
+356,12774,INCORRECT_PIN,Wrong UPI PIN entered,2024-04-11 14:56:29,1,1
+356,12774,INCORRECT_PIN,Wrong UPI PIN entered,11-04-2024 14:56:29,1,1
+357,12799,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-04-12 19:14:22,1,1
+358,12966,INCORRECT_PIN,Wrong UPI PIN entered,2024-04-18 14:36:41,0,
+359,12976,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-04-18 19:19:28,0,
+360,12982,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-04-18 20:22:34,1,0
+361,13092,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-04-22 14:16:52,0,
+362,13140,INCORRECT_PIN,Wrong UPI PIN entered,2024-04-24 06:07:47,0,
+363,13201,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-04-26 06:15:00,0,
+364,13208,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-04-26 10:21:57,0,
+365,13216,BANK_DECLINED,Declined by remitter bank,2024-04-26 12:55:50,0,
+366,13265,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-04-27 20:16:12,1,0
+367,13312,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-04-29 08:18:55,1,0
+368,13363,INCORRECT_PIN,Wrong UPI PIN entered,2024-04-30 13:53:14,0,
+369,13426,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-05-02 11:20:13,1,1
+370,13432,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-05-02 12:53:29,0,
+371,13467,BANK_DECLINED,Declined by remitter bank,2024-05-03 11:09:00,1,1
+372,13531,BANK_DECLINED,Declined by remitter bank,05-05-2024 09:14:40,1,0
+373,13534,INCORRECT_PIN,Wrong UPI PIN entered,2024-05-05 11:00:08,0,
+374,13554,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-05-06 09:41:49,0,
+375,13555,INSUFFICIENT_FUNDS,Insufficient balance in account,06-05-2024 09:53:08,0,
+376,13655,INSUFFICIENT_FUNDS,Insufficient balance in account,09-05-2024 12:33:21,1,0
+377,13780,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-05-13 10:11:40,1,0
+378,13793,INCORRECT_PIN,Wrong UPI PIN entered,13-05-2024 17:50:10,0,
+379,13916,INCORRECT_PIN,Wrong UPI PIN entered,2024-05-17 19:02:12,0,
+380,13990,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-05-20 12:42:22,0,
+381,14027,NETWORK_ERROR,Network error during authorisation,21-05-2024 17:49:06,0,
+382,14059,BANK_DECLINED,Declined by remitter bank,2024-05-22 15:09:58,0,
+383,14089,NETWORK_ERROR,Network error during authorisation,2024-05-23 12:45:09,1,0
+384,14177,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-05-25 19:02:45,0,
+385,14380,INCORRECT_PIN,Wrong UPI PIN entered,31-05-2024 18:14:57,0,
+386,14398,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-06-01 10:03:21,0,
+387,14473,NETWORK_ERROR,Network error during authorisation,2024-06-02 20:37:04,1,0
+388,14483,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-06-03 08:30:49,1,0
+389,14512,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-06-04 08:50:32,1,0
+390,14529,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-06-04 17:11:48,0,
+391,14613,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-06-07 19:02:13,1,0
+392,14652,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-06-09 08:02:23,0,
+393,14658,NETWORK_ERROR,Network error during authorisation,2024-06-09 09:44:48,1,0
+394,14660,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-06-09 10:43:31,0,
+395,14686,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-06-09 22:30:03,0,
+396,14716,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-06-10 19:39:22,0,
+397,14791,INCORRECT_PIN,Wrong UPI PIN entered,2024-06-13 08:20:29,0,
+398,14816,NETWORK_ERROR,Network error during authorisation,2024-06-14 09:44:54,1,1
+399,14837,BANK_DECLINED,Declined by remitter bank,2024-06-14 20:41:11,1,0
+400,14890,BANK_DECLINED,Declined by remitter bank,16-06-2024 18:08:04,0,
+401,14901,INSUFFICIENT_FUNDS,Insufficient balance in account,16-06-2024 21:49:33,1,0
+402,14913,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-06-17 12:31:50,1,0
+403,14919,NETWORK_ERROR,Network error during authorisation,2024-06-17 14:49:30,0,
+404,14977,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-06-19 09:12:01,0,
+405,15010,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-06-20 08:32:56,0,
+406,15015,INCORRECT_PIN,Wrong UPI PIN entered,2024-06-20 09:43:54,0,
+407,15036,INSUFFICIENT_FUNDS,Insufficient balance in account,20-06-2024 19:42:53,0,
+408,15039,INCORRECT_PIN,Wrong UPI PIN entered,2024-06-20 21:14:11,0,
+409,15083,NETWORK_ERROR,Network error during authorisation,2024-06-22 12:46:11,0,
+410,15084,NETWORK_ERROR,Network error during authorisation,2024-06-22 12:54:06,1,0
+411,15207,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-06-25 19:25:07,1,1
+412,15226,BANK_DECLINED,Declined by remitter bank,26-06-2024 13:21:18,1,1
+413,15241,BANK_DECLINED,Declined by remitter bank,27-06-2024 08:57:56,1,0
+414,15392,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-07-01 10:47:37,1,1
+415,15406,BANK_DECLINED,Declined by remitter bank,2024-07-01 15:28:41,0,
+416,15424,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-07-01 20:04:06,0,
+417,15468,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-07-02 19:59:01,0,
+418,15479,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-07-03 09:35:25,0,
+419,15513,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-07-03 20:11:32,1,1
+420,15566,INCORRECT_PIN,Wrong UPI PIN entered,2024-07-05 15:39:07,0,
+421,15650,BANK_DECLINED,Declined by remitter bank,07-07-2024 19:12:35,0,
+422,15672,INCORRECT_PIN,Wrong UPI PIN entered,2024-07-08 13:32:08,0,
+423,15692,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-07-09 08:49:02,1,0
+424,15727,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-07-10 09:47:12,1,1
+425,15767,BANK_DECLINED,Declined by remitter bank,2024-07-11 11:01:17,0,
+426,15772,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-07-11 13:29:34,1,0
+427,15774,INSUFFICIENT_FUNDS,Insufficient balance in account,11-07-2024 15:17:17,0,
+428,15780,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-07-11 19:01:46,0,
+429,15824,INCORRECT_PIN,Wrong UPI PIN entered,2024-07-13 07:10:48,0,
+430,15951,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-07-16 19:01:59,1,0
+431,15953,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-07-16 19:06:24,1,0
+432,15955,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-07-16 19:12:19,0,
+433,15957,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-07-16 19:18:44,1,0
+434,15960,UPI_SYSTEM_DOWN,UPI switch unavailable,16-07-2024 19:23:49,1,0
+435,15962,UPI_SYSTEM_DOWN,UPI switch unavailable,16-07-2024 19:34:44,0,
+436,15966,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-07-16 19:48:23,1,1
+437,15968,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-07-16 19:55:06,1,0
+438,15969,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-07-16 19:54:42,1,1
+439,15970,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-07-16 20:00:16,1,1
+440,15972,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-07-16 20:05:35,1,0
+441,15973,UPI_SYSTEM_DOWN,UPI switch unavailable,16-07-2024 20:10:22,1,0
+442,15977,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-07-16 20:23:10,1,0
+443,15983,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-07-16 20:29:44,1,0
+444,15985,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-07-16 20:31:53,1,1
+445,15995,UPI_SYSTEM_DOWN,UPI switch unavailable,16-07-2024 20:49:57,0,
+446,15999,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-07-16 20:57:48,1,0
+447,16001,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-07-16 21:00:46,1,0
+448,16002,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-07-16 21:00:56,1,1
+449,16003,UPI_SYSTEM_DOWN,UPI switch unavailable,16-07-2024 21:01:12,1,1
+450,16009,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-07-16 21:16:04,1,0
+451,16010,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-07-16 21:19:24,1,0
+452,16012,UPI_SYSTEM_DOWN,UPI switch unavailable,16-07-2024 21:28:14,1,1
+453,16016,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-07-16 21:35:39,1,1
+454,16019,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-07-16 21:37:08,1,1
+455,16020,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-07-16 21:38:11,0,
+456,16022,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-07-16 21:41:01,1,1
+457,16026,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-07-16 21:52:44,0,
+458,16027,UPI_SYSTEM_DOWN,UPI switch unavailable,2024-07-16 21:55:28,1,1
+459,16031,UPI_SYSTEM_DOWN,UPI switch unavailable,16-07-2024 21:59:38,0,
+460,16112,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-07-19 18:32:10,0,
+461,16206,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-07-22 19:21:20,1,1
+462,16221,INSUFFICIENT_FUNDS,Insufficient balance in account,23-07-2024 11:32:00,0,
+463,16267,LIMIT_EXCEEDED,Daily/transaction limit exceeded,24-07-2024 21:10:59,0,
+464,16338,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-07-27 09:15:38,0,
+465,16366,INSUFFICIENT_FUNDS,Insufficient balance in account,27-07-2024 19:44:41,0,
+466,16614,NETWORK_ERROR,Network error during authorisation,2024-08-03 05:44:30,1,0
+467,16685,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-08-05 10:05:17,0,
+468,16915,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-08-11 10:51:40,0,
+469,16953,BANK_DECLINED,Declined by remitter bank,12-08-2024 14:00:01,0,
+470,16968,NETWORK_ERROR,Network error during authorisation,2024-08-12 22:06:41,1,0
+471,16973,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-08-13 10:03:53,1,0
+472,16996,BANK_DECLINED,Declined by remitter bank,2024-08-13 20:24:59,0,
+473,17023,BANK_DECLINED,Declined by remitter bank,14-08-2024 16:45:24,0,
+474,17027,BANK_DECLINED,Declined by remitter bank,2024-08-14 17:52:33,0,
+475,17093,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-08-16 18:05:26,0,
+476,17147,BANK_DECLINED,Declined by remitter bank,2024-08-18 11:44:59,0,
+477,17151,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-08-18 14:02:02,0,
+478,17180,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-08-19 15:39:08,0,
+479,17212,BANK_DECLINED,Declined by remitter bank,2024-08-20 16:32:11,1,1
+480,17266,NETWORK_ERROR,Network error during authorisation,2024-08-22 17:53:08,1,0
+481,17276,NETWORK_ERROR,Network error during authorisation,2024-08-22 20:21:08,1,1
+482,17306,NETWORK_ERROR,Network error during authorisation,2024-08-23 17:23:54,1,1
+483,17372,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-08-25 21:52:35,0,
+484,17482,BANK_DECLINED,Declined by remitter bank,2024-08-29 12:46:46,1,1
+485,17499,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-08-29 20:27:53,1,1
+486,17506,INSUFFICIENT_FUNDS,Insufficient balance in account,29-08-2024 21:55:07,0,
+487,17522,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-08-30 11:09:16,0,
+488,17550,INCORRECT_PIN,Wrong UPI PIN entered,2024-08-31 02:51:36,0,
+489,17607,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-09-01 13:24:20,1,0
+490,17626,INCORRECT_PIN,Wrong UPI PIN entered,01-09-2024 18:53:34,0,
+491,17642,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-09-02 15:11:50,0,
+492,17645,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-09-02 16:25:36,0,
+493,17646,BANK_DECLINED,Declined by remitter bank,2024-09-02 16:33:40,0,
+494,17653,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-09-02 18:34:58,0,
+495,17693,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-09-03 21:33:58,0,
+496,17741,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-09-05 10:33:53,1,1
+497,17767,NETWORK_ERROR,Network error during authorisation,2024-09-05 20:39:10,1,0
+497,17767,NETWORK_ERROR,Network error during authorisation,2024-09-05 20:39:10,1,0
+498,17845,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-09-08 00:53:16,1,0
+499,17887,NETWORK_ERROR,Network error during authorisation,2024-09-09 11:10:21,1,0
+500,17947,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-09-10 22:11:30,0,
+501,17974,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-09-11 18:05:49,0,
+502,17982,INCORRECT_PIN,Wrong UPI PIN entered,2024-09-11 19:43:07,1,0
+503,18040,INCORRECT_PIN,Wrong UPI PIN entered,2024-09-13 12:05:25,0,
+504,18089,BANK_SERVER_TIMEOUT,Remitter bank server timed out,14-09-2024 18:05:32,0,
+505,18124,NETWORK_ERROR,Network error during authorisation,2024-09-15 16:42:34,0,
+506,18200,NETWORK_ERROR,Network error during authorisation,2024-09-17 18:01:23,0,
+507,18234,INCORRECT_PIN,Wrong UPI PIN entered,2024-09-18 20:12:34,1,1
+508,18254,BANK_DECLINED,Declined by remitter bank,2024-09-19 16:33:49,0,
+509,18255,INCORRECT_PIN,Wrong UPI PIN entered,2024-09-19 16:55:08,1,1
+510,18258,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-09-19 18:12:07,0,
+511,18276,INSUFFICIENT_FUNDS,Insufficient balance in account,20-09-2024 09:57:09,0,
+512,18309,NETWORK_ERROR,Network error during authorisation,21-09-2024 14:29:32,1,1
+513,18320,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-09-21 19:41:54,0,
+514,18377,NETWORK_ERROR,Network error during authorisation,2024-09-23 12:04:39,1,1
+515,18440,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-09-25 09:20:35,1,1
+516,18532,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-09-27 17:20:46,1,0
+517,18555,INSUFFICIENT_FUNDS,Insufficient balance in account,28-09-2024 10:08:45,1,0
+518,18568,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-09-28 12:13:16,0,
+519,18575,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-09-28 13:37:16,1,0
+520,18579,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-09-28 14:27:57,0,
+521,18618,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-09-29 08:57:26,0,
+522,18629,NETWORK_ERROR,Network error during authorisation,29-09-2024 11:31:16,0,
+523,18682,BANK_DECLINED,Declined by remitter bank,2024-09-30 17:23:32,0,
+524,18725,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-10-01 18:00:15,0,
+525,18785,NETWORK_ERROR,Network error during authorisation,2024-10-02 19:37:06,0,
+526,18795,BANK_DECLINED,Declined by remitter bank,02-10-2024 22:30:27,1,1
+527,18813,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-10-03 16:06:46,1,0
+528,18818,BANK_DECLINED,Declined by remitter bank,03-10-2024 16:51:59,0,
+529,18891,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-10-05 10:48:33,1,1
+530,18900,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-10-05 13:56:22,1,0
+531,18909,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-10-05 17:41:49,0,
+532,18946,BANK_DECLINED,Declined by remitter bank,06-10-2024 14:32:27,0,
+533,19135,INCORRECT_PIN,Wrong UPI PIN entered,2024-10-12 01:28:04,0,
+534,19142,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-10-12 11:03:44,1,0
+535,19159,BANK_DECLINED,Declined by remitter bank,2024-10-12 16:32:34,1,1
+536,19191,LIMIT_EXCEEDED,Daily/transaction limit exceeded,13-10-2024 17:22:53,0,
+537,19275,BANK_DECLINED,Declined by remitter bank,2024-10-15 14:21:30,1,1
+538,19286,BANK_DECLINED,Declined by remitter bank,2024-10-15 19:49:31,0,
+539,19291,BANK_DECLINED,Declined by remitter bank,2024-10-15 22:57:30,1,1
+540,19297,INCORRECT_PIN,Wrong UPI PIN entered,2024-10-16 11:05:31,1,0
+541,19304,INCORRECT_PIN,Wrong UPI PIN entered,16-10-2024 15:02:13,1,1
+542,19317,BANK_DECLINED,Declined by remitter bank,16-10-2024 20:08:29,1,0
+543,19319,BANK_DECLINED,Declined by remitter bank,2024-10-16 20:28:09,0,
+544,19323,INSUFFICIENT_FUNDS,Insufficient balance in account,17-10-2024 08:50:11,0,
+545,19359,BANK_DECLINED,Declined by remitter bank,18-10-2024 10:31:35,0,
+546,19403,INSUFFICIENT_FUNDS,Insufficient balance in account,19-10-2024 10:42:30,1,1
+547,19429,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-10-19 20:32:35,1,1
+548,19432,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-10-19 21:00:14,1,1
+549,19513,BANK_DECLINED,Declined by remitter bank,2024-10-22 08:24:24,0,
+550,19527,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-10-22 15:23:50,0,
+551,19552,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-10-23 08:36:28,0,
+552,19566,NETWORK_ERROR,Network error during authorisation,2024-10-23 16:36:21,1,1
+553,19649,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-10-25 17:22:24,1,1
+554,19650,BANK_DECLINED,Declined by remitter bank,25-10-2024 17:43:13,0,
+555,19674,BANK_DECLINED,Declined by remitter bank,2024-10-26 08:59:16,0,
+556,19829,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-10-28 20:53:11,0,
+557,19889,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-10-29 19:07:20,0,
+558,20016,BANK_DECLINED,Declined by remitter bank,2024-10-31 20:58:04,1,1
+559,20093,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-11-02 10:19:45,1,1
+560,20110,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-11-02 13:48:07,0,
+561,20181,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-11-03 13:48:12,0,
+562,20212,BANK_DECLINED,Declined by remitter bank,03-11-2024 20:19:36,0,
+563,20255,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-11-04 21:50:12,0,
+564,20256,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-11-04 21:59:35,0,
+565,20310,INCORRECT_PIN,Wrong UPI PIN entered,2024-11-06 17:09:43,0,
+566,20372,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-11-09 07:54:56,0,
+567,20391,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-11-09 18:17:40,1,0
+568,20400,LIMIT_EXCEEDED,Daily/transaction limit exceeded,09-11-2024 23:52:49,0,
+569,20424,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-11-10 18:39:34,0,
+570,20434,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-11-10 22:15:18,0,
+571,20458,INSUFFICIENT_FUNDS,Insufficient balance in account,11-11-2024 15:04:37,0,
+572,20491,BANK_DECLINED,Declined by remitter bank,2024-11-12 11:36:02,0,
+573,20740,INCORRECT_PIN,Wrong UPI PIN entered,2024-11-19 17:34:54,0,
+574,20743,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-11-19 17:57:07,1,1
+575,20804,NETWORK_ERROR,Network error during authorisation,2024-11-21 12:25:35,1,1
+576,20811,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-11-21 16:44:35,0,
+577,20831,NETWORK_ERROR,Network error during authorisation,2024-11-21 22:31:56,0,
+578,20841,BANK_DECLINED,Declined by remitter bank,2024-11-22 12:48:49,0,
+579,20844,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-11-22 15:53:55,1,1
+580,20910,INCORRECT_PIN,Wrong UPI PIN entered,2024-11-24 08:32:59,1,1
+581,21031,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-11-27 13:04:37,0,
+582,21033,NETWORK_ERROR,Network error during authorisation,2024-11-27 15:02:12,1,0
+583,21072,BANK_DECLINED,Declined by remitter bank,2024-11-28 14:21:15,1,1
+584,21133,INSUFFICIENT_FUNDS,Insufficient balance in account,29-11-2024 21:40:52,1,0
+585,21213,BANK_DECLINED,Declined by remitter bank,01-12-2024 17:25:28,0,
+586,21288,BANK_SERVER_TIMEOUT,Remitter bank server timed out,2024-12-03 18:52:35,1,1
+587,21334,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-12-05 11:34:59,0,
+588,21393,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-12-07 10:22:13,0,
+589,21557,BANK_DECLINED,Declined by remitter bank,2024-12-12 17:04:05,1,1
+590,21737,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-12-17 11:47:00,0,
+591,21778,INCORRECT_PIN,Wrong UPI PIN entered,2024-12-18 15:38:54,1,1
+592,21780,INCORRECT_PIN,Wrong UPI PIN entered,2024-12-18 15:51:47,1,1
+593,21791,NETWORK_ERROR,Network error during authorisation,2024-12-18 21:03:57,0,
+594,21836,NETWORK_ERROR,Network error during authorisation,19-12-2024 22:40:12,0,
+595,21944,BANK_DECLINED,Declined by remitter bank,2024-12-22 18:17:02,1,0
+596,22030,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-12-25 07:12:01,1,1
+597,22080,INSUFFICIENT_FUNDS,Insufficient balance in account,2024-12-26 16:49:28,1,0
+598,22209,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-12-29 18:50:53,0,
+599,22230,LIMIT_EXCEEDED,Daily/transaction limit exceeded,2024-12-30 08:38:03,1,0
+600,22260,BANK_DECLINED,Declined by remitter bank,2024-12-30 20:12:44,0,
+601,22263,INSUFFICIENT_FUNDS,Insufficient balance in account,30-12-2024 22:54:38,0,

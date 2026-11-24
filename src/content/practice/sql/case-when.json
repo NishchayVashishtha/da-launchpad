@@ -1,284 +1,284 @@
 [
- {
-  "id": "sql-case-when-001",
-  "module": "sql",
-  "topic": "case-when",
-  "difficulty": "easy",
-  "language": "sql",
-  "question": "Bucket products by `mrp`: 'Budget' below 500, 'Mid' from 500 up to below 5000, 'Premium' otherwise. Return `price_band` and `products` (count), ordered by `price_band`.",
-  "dataset": "ecommerce",
-  "hint": "Write the WHEN checks in order, starting from the lowest price band.",
-  "solutionSql": "SELECT CASE WHEN mrp < 500 THEN 'Budget' WHEN mrp < 5000 THEN 'Mid' ELSE 'Premium' END AS price_band, COUNT(*) AS products FROM products GROUP BY price_band ORDER BY price_band",
-  "orderMatters": true,
-  "explanation": "CASE checks each WHEN in order and stops at the first true one. Because the Budget test runs first, a product under 500 is never labelled Mid. GROUP BY price_band then counts the products in each band.",
-  "commonMistake": "Checking mrp < 5000 before mrp < 500. Every cheap product lands in Mid, and the Budget band never shows up.",
-  "interviewFrequency": "high",
-  "estimatedMinutes": 3,
-  "tags": [
-   "case",
-   "sql"
-  ],
-  "expectedOutput": {
-   "columns": [
-    "price_band",
-    "products"
-   ],
-   "rows": [
-    [
-     "Budget",
-     132
-    ],
-    [
-     "Mid",
-     239
-    ],
-    [
-     "Premium",
-     49
+  {
+    "id": "sql-case-when-001",
+    "module": "sql",
+    "topic": "case-when",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "Bucket products by `mrp`: 'Budget' below 500, 'Mid' from 500 up to below 5000, 'Premium' otherwise. Return `price_band` and `products` (count), ordered by `price_band`.",
+    "dataset": "ecommerce",
+    "hint": "Write the WHEN checks in order, starting from the lowest price band.",
+    "solutionSql": "SELECT CASE WHEN mrp < 500 THEN 'Budget' WHEN mrp < 5000 THEN 'Mid' ELSE 'Premium' END AS price_band, COUNT(*) AS products FROM products GROUP BY price_band ORDER BY price_band",
+    "expectedOutput": {
+      "columns": [
+        "price_band",
+        "products"
+      ],
+      "rows": [
+        [
+          "Budget",
+          132
+        ],
+        [
+          "Mid",
+          239
+        ],
+        [
+          "Premium",
+          49
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "CASE checks each WHEN in order and stops at the first true one. Because the Budget test runs first, a product under 500 is never labelled Mid. GROUP BY price_band then counts the products in each band.",
+    "commonMistake": "Checking mrp < 5000 before mrp < 500. Every cheap product lands in Mid, and the Budget band never shows up.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "case",
+      "sql"
     ]
-   ]
-  }
- },
- {
-  "id": "sql-case-when-002",
-  "module": "sql",
-  "topic": "case-when",
-  "difficulty": "easy",
-  "language": "sql",
-  "question": "Label each sale's discount: 'Unknown' if `discount_pct` is NULL, 'None' if 0, 'Low' if below 10, otherwise 'High'. Return `discount_band` and `sales` (count), ordered by `discount_band`.",
-  "dataset": "retail",
-  "hint": "Put the NULL check at the top, since a NULL fails every comparison.",
-  "solutionSql": "SELECT CASE WHEN discount_pct IS NULL THEN 'Unknown' WHEN discount_pct = 0 THEN 'None' WHEN discount_pct < 10 THEN 'Low' ELSE 'High' END AS discount_band, COUNT(*) AS sales FROM sales GROUP BY discount_band ORDER BY discount_band",
-  "orderMatters": true,
-  "explanation": "CASE checks NULL first, because NULL cannot be compared with 0 or 10. A NULL discount then gets the Unknown label. The other WHEN branches handle the values that are present.",
-  "commonMistake": "Leaving out the NULL branch. Unknown discounts fall through to ELSE and are counted as High, so the High count is too big.",
-  "interviewFrequency": "medium",
-  "estimatedMinutes": 3,
-  "tags": [
-   "case",
-   "sql"
-  ],
-  "expectedOutput": {
-   "columns": [
-    "discount_band",
-    "sales"
-   ],
-   "rows": [
-    [
-     "High",
-     5804
-    ],
-    [
-     "Low",
-     4698
-    ],
-    [
-     "None",
-     12856
-    ],
-    [
-     "Unknown",
-     992
+  },
+  {
+    "id": "sql-case-when-002",
+    "module": "sql",
+    "topic": "case-when",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "Label each sale's discount: 'Unknown' if `discount_pct` is NULL, 'None' if 0, 'Low' if below 10, otherwise 'High'. Return `discount_band` and `sales` (count), ordered by `discount_band`.",
+    "dataset": "retail",
+    "hint": "Put the NULL check at the top, since a NULL fails every comparison.",
+    "solutionSql": "SELECT CASE WHEN discount_pct IS NULL THEN 'Unknown' WHEN discount_pct = 0 THEN 'None' WHEN discount_pct < 10 THEN 'Low' ELSE 'High' END AS discount_band, COUNT(*) AS sales FROM sales GROUP BY discount_band ORDER BY discount_band",
+    "expectedOutput": {
+      "columns": [
+        "discount_band",
+        "sales"
+      ],
+      "rows": [
+        [
+          "High",
+          5804
+        ],
+        [
+          "Low",
+          4698
+        ],
+        [
+          "None",
+          12856
+        ],
+        [
+          "Unknown",
+          992
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "CASE checks NULL first, because NULL cannot be compared with 0 or 10. A NULL discount then gets the Unknown label. The other WHEN branches handle the values that are present.",
+    "commonMistake": "Leaving out the NULL branch. Unknown discounts fall through to ELSE and are counted as High, so the High count is too big.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "case",
+      "sql"
     ]
-   ]
-  }
- },
- {
-  "id": "sql-case-when-003",
-  "module": "sql",
-  "topic": "case-when",
-  "difficulty": "medium",
-  "language": "sql",
-  "question": "For Delivered orders, per `payment_mode` return `delivered`, `late_orders` (delay above 10 minutes) and `late_pct` (2 decimals). Order by `payment_mode`.",
-  "dataset": "food_delivery",
-  "hint": "Use a CASE inside SUM to count only the late rows in each payment mode.",
-  "solutionSql": "SELECT payment_mode, COUNT(*) AS delivered, SUM(CASE WHEN delay_minutes > 10 THEN 1 ELSE 0 END) AS late_orders, ROUND(100.0 * SUM(CASE WHEN delay_minutes > 10 THEN 1 ELSE 0 END) / COUNT(*), 2) AS late_pct FROM deliveries WHERE delivery_status = 'Delivered' GROUP BY payment_mode ORDER BY payment_mode",
-  "orderMatters": true,
-  "explanation": "SUM(CASE WHEN delay_minutes > 10 THEN 1 ELSE 0 END) adds 1 for each late row inside a group. COUNT(*) gives the delivered total for the same group. Dividing the two gives late_pct, and the WHERE keeps only Delivered orders.",
-  "commonMistake": "Adding delay_minutes > 10 to the WHERE clause. That keeps only late rows, so late_pct shows 100 for every payment mode.",
-  "interviewFrequency": "high",
-  "estimatedMinutes": 6,
-  "tags": [
-   "case",
-   "sql"
-  ],
-  "expectedOutput": {
-   "columns": [
-    "payment_mode",
-    "delivered",
-    "late_orders",
-    "late_pct"
-   ],
-   "rows": [
-    [
-     "Card",
-     2679,
-     479,
-     17.88
-    ],
-    [
-     "Cash on Delivery",
-     2493,
-     446,
-     17.89
-    ],
-    [
-     "UPI",
-     8214,
-     1497,
-     18.22
-    ],
-    [
-     "Wallet",
-     1021,
-     182,
-     17.83
+  },
+  {
+    "id": "sql-case-when-003",
+    "module": "sql",
+    "topic": "case-when",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "For Delivered orders, per `payment_mode` return `delivered`, `late_orders` (delay above 10 minutes) and `late_pct` (2 decimals). Order by `payment_mode`.",
+    "dataset": "food_delivery",
+    "hint": "Use a CASE inside SUM to count only the late rows in each payment mode.",
+    "solutionSql": "SELECT payment_mode, COUNT(*) AS delivered, SUM(CASE WHEN delay_minutes > 10 THEN 1 ELSE 0 END) AS late_orders, ROUND(100.0 * SUM(CASE WHEN delay_minutes > 10 THEN 1 ELSE 0 END) / COUNT(*), 2) AS late_pct FROM deliveries WHERE delivery_status = 'Delivered' GROUP BY payment_mode ORDER BY payment_mode",
+    "expectedOutput": {
+      "columns": [
+        "payment_mode",
+        "delivered",
+        "late_orders",
+        "late_pct"
+      ],
+      "rows": [
+        [
+          "Card",
+          2679,
+          479,
+          17.88
+        ],
+        [
+          "Cash on Delivery",
+          2493,
+          446,
+          17.89
+        ],
+        [
+          "UPI",
+          8214,
+          1497,
+          18.22
+        ],
+        [
+          "Wallet",
+          1021,
+          182,
+          17.83
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "SUM(CASE WHEN delay_minutes > 10 THEN 1 ELSE 0 END) adds 1 for each late row inside a group. COUNT(*) gives the delivered total for the same group. Dividing the two gives late_pct, and the WHERE keeps only Delivered orders.",
+    "commonMistake": "Adding delay_minutes > 10 to the WHERE clause. That keeps only late rows, so late_pct shows 100 for every payment mode.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "case",
+      "sql"
     ]
-   ]
-  }
- },
- {
-  "id": "sql-case-when-004",
-  "module": "sql",
-  "topic": "case-when",
-  "difficulty": "medium",
-  "language": "sql",
-  "question": "A payments product manager wants to compare how transactions end across types. Per `txn_type`, return `success`, `failed` and `pending` counts as separate columns. Order by `txn_type`.",
-  "dataset": "fintech",
-  "hint": "Make one column per status, and let each column count only its own status.",
-  "solutionSql": "SELECT txn_type, SUM(CASE WHEN status = 'SUCCESS' THEN 1 ELSE 0 END) AS success, SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) AS failed, SUM(CASE WHEN status = 'PENDING' THEN 1 ELSE 0 END) AS pending FROM transactions GROUP BY txn_type ORDER BY txn_type",
-  "orderMatters": true,
-  "explanation": "Each SUM(CASE ...) adds 1 only for one status. All three columns come from one pass over the table, grouped by txn_type. This is a pivot, and it works in every major database.",
-  "commonMistake": "Using GROUP BY txn_type, status with COUNT(*). The result has one row per type and status pair, not the three columns that were asked for.",
-  "interviewFrequency": "high",
-  "estimatedMinutes": 6,
-  "tags": [
-   "case",
-   "sql"
-  ],
-  "expectedOutput": {
-   "columns": [
-    "txn_type",
-    "success",
-    "failed",
-    "pending"
-   ],
-   "rows": [
-    [
-     "Bill Pay",
-     2708,
-     84,
-     7
-    ],
-    [
-     "P2M",
-     11778,
-     343,
-     38
-    ],
-    [
-     "P2P",
-     5200,
-     161,
-     26
-    ],
-    [
-     "Recharge",
-     1693,
-     41,
-     9
+  },
+  {
+    "id": "sql-case-when-004",
+    "module": "sql",
+    "topic": "case-when",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "A payments product manager wants to compare how transactions end across types. Per `txn_type`, return `success`, `failed` and `pending` counts as separate columns. Order by `txn_type`.",
+    "dataset": "fintech",
+    "hint": "Make one column per status, and let each column count only its own status.",
+    "solutionSql": "SELECT txn_type, SUM(CASE WHEN status = 'SUCCESS' THEN 1 ELSE 0 END) AS success, SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) AS failed, SUM(CASE WHEN status = 'PENDING' THEN 1 ELSE 0 END) AS pending FROM transactions GROUP BY txn_type ORDER BY txn_type",
+    "expectedOutput": {
+      "columns": [
+        "txn_type",
+        "success",
+        "failed",
+        "pending"
+      ],
+      "rows": [
+        [
+          "Bill Pay",
+          2751,
+          74,
+          11
+        ],
+        [
+          "P2M",
+          11970,
+          332,
+          43
+        ],
+        [
+          "P2P",
+          5278,
+          143,
+          16
+        ],
+        [
+          "Recharge",
+          1702,
+          59,
+          10
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Each SUM(CASE ...) adds 1 only for one status. All three columns come from one pass over the table, grouped by txn_type. This is a pivot, and it works in every major database.",
+    "commonMistake": "Using GROUP BY txn_type, status with COUNT(*). The result has one row per type and status pair, not the three columns that were asked for.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "case",
+      "sql"
     ]
-   ]
-  }
- },
- {
-  "id": "sql-case-when-005",
-  "module": "sql",
-  "topic": "case-when",
-  "difficulty": "medium",
-  "language": "sql",
-  "question": "Count unique employees by cleaned gender: 'M' becomes 'Male', 'F' becomes 'Female', NULL becomes 'Unknown', other values stay as they are. Return `gender_clean` and `employees`, ordered by `gender_clean`.",
-  "dataset": "hr",
-  "hint": "Map each code to a label.",
-  "solutionSql": "SELECT CASE WHEN gender = 'M' THEN 'Male' WHEN gender = 'F' THEN 'Female' WHEN gender IS NULL THEN 'Unknown' ELSE gender END AS gender_clean, COUNT(DISTINCT employee_id) AS employees FROM employees GROUP BY gender_clean ORDER BY gender_clean",
-  "orderMatters": true,
-  "explanation": "CASE maps each code to a clear label, and ELSE gender keeps values that need no change. COUNT(DISTINCT employee_id) counts each employee once, even if the table has duplicate rows. The grouping uses the cleaned label.",
-  "commonMistake": "Leaving out ELSE. Any value that is not M, F or NULL becomes NULL, and those rows show up in a blank group.",
-  "interviewFrequency": "medium",
-  "estimatedMinutes": 6,
-  "tags": [
-   "case",
-   "sql"
-  ],
-  "expectedOutput": {
-   "columns": [
-    "gender_clean",
-    "employees"
-   ],
-   "rows": [
-    [
-     "Female",
-     910
-    ],
-    [
-     "Male",
-     1490
+  },
+  {
+    "id": "sql-case-when-005",
+    "module": "sql",
+    "topic": "case-when",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Count unique employees by cleaned gender: 'M' becomes 'Male', 'F' becomes 'Female', NULL becomes 'Unknown', other values stay as they are. Return `gender_clean` and `employees`, ordered by `gender_clean`.",
+    "dataset": "hr",
+    "hint": "Map each code to a label.",
+    "solutionSql": "SELECT CASE WHEN gender = 'M' THEN 'Male' WHEN gender = 'F' THEN 'Female' WHEN gender IS NULL THEN 'Unknown' ELSE gender END AS gender_clean, COUNT(DISTINCT employee_id) AS employees FROM employees GROUP BY gender_clean ORDER BY gender_clean",
+    "expectedOutput": {
+      "columns": [
+        "gender_clean",
+        "employees"
+      ],
+      "rows": [
+        [
+          "Female",
+          910
+        ],
+        [
+          "Male",
+          1490
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "CASE maps each code to a clear label, and ELSE gender keeps values that need no change. COUNT(DISTINCT employee_id) counts each employee once, even if the table has duplicate rows. The grouping uses the cleaned label.",
+    "commonMistake": "Leaving out ELSE. Any value that is not M, F or NULL becomes NULL, and those rows show up in a blank group.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 6,
+    "tags": [
+      "case",
+      "sql"
     ]
-   ]
-  }
- },
- {
-  "id": "sql-case-when-006",
-  "module": "sql",
-  "topic": "case-when",
-  "difficulty": "hard",
-  "language": "sql",
-  "question": "Per `sales_channel`, return `orders`, `lost_pct` (percent of orders with status 'Cancelled' or 'RTO', 2 decimals) and `lost_value` (sum of `total_amount` for those orders, rounded to 0 decimals). Order by `lost_pct` descending then `sales_channel`.",
-  "dataset": "ecommerce",
-  "hint": "Two conditional aggregates, one with 1/0 and one with amounts.",
-  "solutionSql": "SELECT sales_channel, COUNT(*) AS orders, ROUND(100.0 * SUM(CASE WHEN order_status IN ('Cancelled', 'RTO') THEN 1 ELSE 0 END) / COUNT(*), 2) AS lost_pct, ROUND(SUM(CASE WHEN order_status IN ('Cancelled', 'RTO') THEN total_amount ELSE 0 END), 0) AS lost_value FROM orders GROUP BY sales_channel ORDER BY lost_pct DESC, sales_channel",
-  "orderMatters": true,
-  "explanation": "One query gives the order count, the percent of lost orders and their value. The first CASE gives 1 for each lost order, and the second adds the amount for those orders only. ROUND keeps the percent to 2 decimals and the value to whole rupees.",
-  "commonMistake": "Writing COUNT(CASE WHEN ... THEN 1 ELSE 0 END). COUNT counts every row, including the 0 values, so lost_pct comes out as 100 for every channel.",
-  "interviewFrequency": "medium",
-  "estimatedMinutes": 10,
-  "tags": [
-   "case",
-   "sql"
-  ],
-  "expectedOutput": {
-   "columns": [
-    "sales_channel",
-    "orders",
-    "lost_pct",
-    "lost_value"
-   ],
-   "rows": [
-    [
-     "Website",
-     2112,
-     7.53,
-     1480534
-    ],
-    [
-     "Android App",
-     5028,
-     7.52,
-     2034644
-    ],
-    [
-     "iOS App",
-     1680,
-     7.26,
-     423585
-    ],
-    [
-     "Mobile Web",
-     1280,
-     6.56,
-     477320
+  },
+  {
+    "id": "sql-case-when-006",
+    "module": "sql",
+    "topic": "case-when",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Per `sales_channel`, return `orders`, `lost_pct` (percent of orders with status 'Cancelled' or 'RTO', 2 decimals) and `lost_value` (sum of `total_amount` for those orders, rounded to 0 decimals). Order by `lost_pct` descending then `sales_channel`.",
+    "dataset": "ecommerce",
+    "hint": "Two conditional aggregates, one with 1/0 and one with amounts.",
+    "solutionSql": "SELECT sales_channel, COUNT(*) AS orders, ROUND(100.0 * SUM(CASE WHEN order_status IN ('Cancelled', 'RTO') THEN 1 ELSE 0 END) / COUNT(*), 2) AS lost_pct, ROUND(SUM(CASE WHEN order_status IN ('Cancelled', 'RTO') THEN total_amount ELSE 0 END), 0) AS lost_value FROM orders GROUP BY sales_channel ORDER BY lost_pct DESC, sales_channel",
+    "expectedOutput": {
+      "columns": [
+        "sales_channel",
+        "orders",
+        "lost_pct",
+        "lost_value"
+      ],
+      "rows": [
+        [
+          "Website",
+          2112,
+          7.53,
+          1480534
+        ],
+        [
+          "Android App",
+          5028,
+          7.52,
+          2034644
+        ],
+        [
+          "iOS App",
+          1680,
+          7.26,
+          423585
+        ],
+        [
+          "Mobile Web",
+          1280,
+          6.56,
+          477320
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "One query gives the order count, the percent of lost orders and their value. The first CASE gives 1 for each lost order, and the second adds the amount for those orders only. ROUND keeps the percent to 2 decimals and the value to whole rupees.",
+    "commonMistake": "Writing COUNT(CASE WHEN ... THEN 1 ELSE 0 END). COUNT counts every row, including the 0 values, so lost_pct comes out as 100 for every channel.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 10,
+    "tags": [
+      "case",
+      "sql"
     ]
-   ]
   }
- }
 ]

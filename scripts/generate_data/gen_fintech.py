@@ -4,6 +4,9 @@ import pandas as pd
 from common import *
 
 SEED = 20230104
+OUTAGE_APP = "NammaPay"
+# (date, start hour, end hour exclusive, extra retry attempts): four NammaPay outages
+OUTAGE_WINDOWS = [("2023-03-14", 10, 13, 75), ("2023-09-21", 18, 22, 75), ("2024-02-06", 9, 12, 75), ("2024-07-16", 19, 22, 75)]
 
 MCATS = {  # category: (weight, median ticket, sigma)
     "Grocery": (0.2, 320, 0.7), "Food & Beverage": (0.17, 260, 0.6), "Fuel": (0.07, 1300, 0.45), "Pharmacy": (0.07, 450, 0.7),
@@ -58,10 +61,24 @@ def build():
                                                  "Travel": 4722, "Entertainment": 7832, "Utilities": 4900, "Fashion": 5651, "Education": 8299, "Healthcare": 8099}).values
     mpop = rng.pareto(1.3, nm) + 1
     # ---- transactions
-    n = 22000
+    nb = 22000
     w = day_weights(growth=0.7, weekend=1.1, festive=1.45, monthend=1.18, sales=1.15)
-    day = np.sort(sample_days(rng, n, w))
+    day = np.sort(sample_days(rng, nb, w))
     ts, hrs = make_times(rng, day, [.4, .2, .1, .1, .1, .3, .8, 2, 4, 5, 5, 4, 4.5, 4, 3.5, 3.5, 4, 5, 6.5, 6.5, 5, 3.5, 2, 1])
+    # outage windows: NammaPay retry-storm attempts added on top of the base volume (about 300 rows across 4 windows of 3-4 hours)
+    xd, xh = [], []
+    for d, h0, h1, k in OUTAGE_WINDOWS:
+        xd += [int((pd.Timestamp(d) - DAYS[0]).days)] * k
+        xh += list(rng.integers(h0, h1, k))
+    xd, xh = np.array(xd), np.array(xh)
+    xts = np.array((DAYS[xd] + pd.to_timedelta(xh * 3600 + rng.integers(0, 3600, len(xd)), unit="s")).strftime("%Y-%m-%d %H:%M:%S"), dtype=object)
+    day = np.concatenate([day, xd])
+    ts = np.concatenate([ts, xts])
+    hrs = np.concatenate([hrs, xh])
+    isx = np.concatenate([np.zeros(nb, bool), np.ones(len(xd), bool)])
+    o = np.argsort(ts, kind="stable")
+    day, ts, hrs, isx = day[o], ts[o], hrs[o], isx[o]
+    n = len(day)
     uidx = pick_by_signup(rng, day, sig_idx, cumw)
     ttype = choice(rng, ["P2M", "P2P", "Bill Pay", "Recharge"], n, p=[.55, .24, .13, .08])
     amount = np.zeros(n)
@@ -86,6 +103,11 @@ def build():
     ubank = bank[uidx]
     uapp = app[uidx]
     appx = np.where(rng.random(n) < 0.9, uapp, choice(rng, UPI_APPS, n))
+    appx = np.where(isx, OUTAGE_APP, appx)
+    in_win = np.zeros(n, bool)
+    for d, h0, h1, _k in OUTAGE_WINDOWS:
+        in_win |= (day == int((pd.Timestamp(d) - DAYS[0]).days)) & (hrs >= h0) & (hrs < h1)
+    outage = in_win & (appx == OUTAGE_APP)
     os_ = np.where(rng.random(n) < 0.83, "Android", "iOS")
     peak = np.isin(hrs, [9, 10, 18, 19, 20])
     dom = DAYS.day.values[day]
@@ -94,15 +116,21 @@ def build():
     pf = pf + np.where(kc, 0.02, 0) + np.where(kc & peak, 0.085, 0)
     pf = pf * np.where(dom <= 3, 1.35, 1.0) * np.where(amount > 50000, 2.5, 1.0) * np.where(os_ == "iOS", 0.9, 1.0)
     pf = pf + np.where(ubank == "PayNova Small Finance Bank", 0.012, 0)
-    outage = (pd.Series(ts).str[:13].isin(["2024-10-31 18", "2024-10-31 19", "2024-10-31 20", "2024-10-31 21", "2023-11-12 18", "2023-11-12 19", "2023-11-12 20", "2023-11-12 21"])).values
-    pf = np.where(outage, 0.55, pf)
+    pf = np.where(outage, 0.42, pf * 0.85)   # 0.85 keeps total failed rows close to the earlier volume
     failed = rng.random(n) < pf
     pend = (~failed) & (rng.random(n) < 0.003)
     status = np.where(failed, "FAILED", np.where(pend, "PENDING", "SUCCESS")).astype(object)
-    # fraud flag: late-night large P2P
-    night = np.isin(hrs, [0, 1, 2, 3, 4])
-    flag_p = np.where((ttype == "P2P") & night & (amount > 8000), 0.45, 0.0015)
-    flagged = ((rng.random(n) < flag_p) & (~failed)).astype(int)
+    # fraud flag: several learnable risk factors (about 1.5% of rows overall)
+    night = np.isin(hrs, [23, 0, 1, 2, 3, 4])
+    age_days = (pd.to_datetime(pd.Series(DAY_STR[day])) - pd.to_datetime(pd.Series(sdate[uidx]))).dt.days.values
+    new_acct = age_days < 30
+    med_amt = pd.Series(amount).groupby(uidx).transform("median").values
+    big_vs_median = amount > 3 * med_amt
+    tcat = np.array(["none"] + list(mcat), dtype=object)[mid]
+    risky_cat = np.isin(tcat, ["Electronics", "Travel", "Entertainment"])
+    flag_p = 0.006 * np.where(night, 3.5, 1.0) * np.where(new_acct, 5.0, 1.0) * np.where(big_vs_median, 4.0, 1.0) * np.where(risky_cat, 2.5, 1.0)
+    flag_p = np.where((ttype == "P2P") & night & (amount > 8000), 0.3, flag_p)
+    flagged = ((rng.random(n) < np.clip(flag_p, 0, 0.9)) & (~failed)).astype(int)
     txn = pd.DataFrame({
         "txn_id": np.arange(1, n + 1), "user_id": uidx + 1, "merchant_id": pd.array(np.where(mid == 0, -1, mid)).astype("Int64"),
         "receiver_user_id": pd.array(np.where(rid == 0, -1, rid)).astype("Int64"), "txn_type": ttype, "txn_datetime": ts, "amount": amount,
@@ -152,7 +180,7 @@ def build():
     spec = dict(
         id="fintech", title="Fintech: UPI-style Payments (PayZippy and friends)", csv_seed=14,
         description=("A fictional UPI-style digital payments ecosystem with five payment apps, eight banks and 400 merchants across India. "
-                     "Transactions cover P2P transfers, merchant payments, bill payments and recharges over two years, with salary-day, festive and evening peaks plus bank outages. "
+                     "Transactions cover P2P transfers, merchant payments, bill payments and recharges over two years, with salary-day, festive and evening peaks plus four NammaPay outages. "
                      "Use it for failure-rate analysis, peak-hour load, merchant category insights and simple fraud-flag exploration."),
         tables=[
             dict(name="users", df=users, pk="user_id", desc="App users (10 duplicate rows are deliberate).", csv=csv_users, cols="""
@@ -210,11 +238,11 @@ retry_succeeded - 1/0 result of retry (NULL if not retried)"""),
             "CSV only - failed_transactions.failed_at: ~20% DD-MM-YYYY."],
         signals=[
             "Kaveri Co-op Bank has a much higher failure rate than other banks, concentrated in peak hours (9-10h and 18-20h) with code BANK_SERVER_TIMEOUT (about 15% at peak vs ~2% elsewhere).",
-            "Two platform-wide UPI outages (2023-11-12 18-22h and 2024-10-31 18-22h, Diwali evenings) push failure rates to ~55%, code UPI_SYSTEM_DOWN.",
+            "NammaPay had four outage windows (2023-03-14 10-13h, 2023-09-21 18-22h, 2024-02-06 9-12h, 2024-07-16 19-22h). Inside them about 42% of NammaPay attempts fail with UPI_SYSTEM_DOWN, vs ~2-3% normally.",
             "Failures are ~35% higher on the 1st-3rd of the month (salary days) and amounts above 50,000 fail 2.5x more (LIMIT_EXCEEDED).",
             "Volume spikes around Diwali windows and month-end; weekends are ~10% higher; evening 18-20h is the busiest slot.",
             "Network/timeouts are retried and succeed far more often than insufficient-funds failures.",
-            "Late-night (0-4h) large P2P transfers (> 8,000) are flagged ~45% of the time (the fraud-risk signal).",
+            "About 1.5% of transactions are flagged (is_flagged = 1). Flags cluster in late-night hours (23h-4h), in accounts less than 30 days old, when an amount is more than 3x the payer's usual median, and for Electronics, Travel and Entertainment merchants. Large late-night P2P transfers (> 8,000) are the strongest signal (~30% flagged).",
             "Customer activity is heavy-tailed; merchant volume is power-law distributed; Fuel/Travel/Electronics have high ticket sizes."],
     )
     return spec

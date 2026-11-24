@@ -1,7 +1,7 @@
 {
   "id": "fintech",
   "title": "Fintech: UPI-style Payments (PayZippy and friends)",
-  "description": "A fictional UPI-style digital payments ecosystem with five payment apps, eight banks and 400 merchants across India. Transactions cover P2P transfers, merchant payments, bill payments and recharges over two years, with salary-day, festive and evening peaks plus bank outages. Use it for failure-rate analysis, peak-hour load, merchant category insights and simple fraud-flag exploration.",
+  "description": "A fictional UPI-style digital payments ecosystem with five payment apps, eight banks and 400 merchants across India. Transactions cover P2P transfers, merchant payments, bill payments and recharges over two years, with salary-day, festive and evening peaks plus four NammaPay outages. Use it for failure-rate analysis, peak-hour load, merchant category insights and simple fraud-flag exploration.",
   "tables": [
     {
       "name": "users",
@@ -145,7 +145,7 @@
     },
     {
       "name": "transactions",
-      "rowCount": 22088,
+      "rowCount": 22389,
       "description": "All payment attempts, successful or not (~0.4% exact duplicates).",
       "columns": [
         {
@@ -160,63 +160,63 @@
           "type": "INTEGER",
           "description": "FK to users.user_id (payer)",
           "nullable": false,
-          "example": "426"
+          "example": "440"
         },
         {
           "name": "merchant_id",
           "type": "INTEGER",
           "description": "FK to merchants.merchant_id (NULL for P2P)",
           "nullable": true,
-          "example": "56"
+          "example": "65"
         },
         {
           "name": "receiver_user_id",
           "type": "INTEGER",
           "description": "FK to users.user_id for P2P (NULL otherwise)",
           "nullable": true,
-          "example": "2338"
+          "example": "2918"
         },
         {
           "name": "txn_type",
           "type": "TEXT",
           "description": "P2M, P2P, Bill Pay or Recharge",
           "nullable": false,
-          "example": "P2M"
+          "example": "Bill Pay"
         },
         {
           "name": "txn_datetime",
           "type": "DATETIME",
           "description": "Timestamp of the attempt",
           "nullable": false,
-          "example": "2023-01-01 16:26:05"
+          "example": "2023-01-01 13:10:11"
         },
         {
           "name": "amount",
           "type": "REAL",
           "description": "Amount in INR (6 rows are 100x outliers)",
           "nullable": false,
-          "example": "887.52"
+          "example": "942.89"
         },
         {
           "name": "payment_app",
           "type": "TEXT",
           "description": "App used",
           "nullable": false,
-          "example": "SabPay"
+          "example": "PayZippy"
         },
         {
           "name": "bank",
           "type": "TEXT",
           "description": "Payer's bank",
           "nullable": false,
-          "example": "Himalaya Trust Bank"
+          "example": "Sundaram Bank"
         },
         {
           "name": "device_os",
           "type": "TEXT",
           "description": "Android or iOS",
           "nullable": false,
-          "example": "Android"
+          "example": "iOS"
         },
         {
           "name": "status",
@@ -236,7 +236,7 @@
     },
     {
       "name": "failed_transactions",
-      "rowCount": 633,
+      "rowCount": 607,
       "description": "Details for transactions with status FAILED (6 duplicate rows are deliberate).",
       "columns": [
         {
@@ -251,28 +251,28 @@
           "type": "INTEGER",
           "description": "FK to transactions.txn_id",
           "nullable": false,
-          "example": "184"
+          "example": "102"
         },
         {
           "name": "failure_code",
           "type": "TEXT",
           "description": "Machine failure code",
           "nullable": false,
-          "example": "INSUFFICIENT_FUNDS"
+          "example": "NETWORK_ERROR"
         },
         {
           "name": "failure_reason",
           "type": "TEXT",
           "description": "Human readable reason",
           "nullable": false,
-          "example": "Insufficient balance in account"
+          "example": "Network error during authorisation"
         },
         {
           "name": "failed_at",
           "type": "DATETIME",
           "description": "Timestamp of failure",
           "nullable": false,
-          "example": "2023-01-09 12:21:23"
+          "example": "2023-01-05 15:47:48"
         },
         {
           "name": "retried",
@@ -336,11 +336,11 @@
   },
   "signals": [
     "[Instructor note] Kaveri Co-op Bank has a much higher failure rate than other banks, concentrated in peak hours (9-10h and 18-20h) with code BANK_SERVER_TIMEOUT (about 15% at peak vs ~2% elsewhere).",
-    "[Instructor note] Two platform-wide UPI outages (2023-11-12 18-22h and 2024-10-31 18-22h, Diwali evenings) push failure rates to ~55%, code UPI_SYSTEM_DOWN.",
+    "[Instructor note] NammaPay had four outage windows (2023-03-14 10-13h, 2023-09-21 18-22h, 2024-02-06 9-12h, 2024-07-16 19-22h). Inside them about 42% of NammaPay attempts fail with UPI_SYSTEM_DOWN, vs ~2-3% normally.",
     "[Instructor note] Failures are ~35% higher on the 1st-3rd of the month (salary days) and amounts above 50,000 fail 2.5x more (LIMIT_EXCEEDED).",
     "[Instructor note] Volume spikes around Diwali windows and month-end; weekends are ~10% higher; evening 18-20h is the busiest slot.",
     "[Instructor note] Network/timeouts are retried and succeed far more often than insufficient-funds failures.",
-    "[Instructor note] Late-night (0-4h) large P2P transfers (> 8,000) are flagged ~45% of the time (the fraud-risk signal).",
+    "[Instructor note] About 1.5% of transactions are flagged (is_flagged = 1). Flags cluster in late-night hours (23h-4h), in accounts less than 30 days old, when an amount is more than 3x the payer's usual median, and for Electronics, Travel and Entertainment merchants. Large late-night P2P transfers (> 8,000) are the strongest signal (~30% flagged).",
     "[Instructor note] Customer activity is heavy-tailed; merchant volume is power-law distributed; Fuel/Travel/Electronics have high ticket sizes."
   ]
 }
