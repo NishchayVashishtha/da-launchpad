@@ -1,0 +1,642 @@
+[
+  {
+    "id": "interview-python-041",
+    "category": "python",
+    "question": "A column called amount was read as text. How do you check its type and convert it to numbers?",
+    "whatInterviewerIsTesting": "Dtype inspection and safe conversion of messy numeric text.",
+    "modelAnswer": "I start with `df.dtypes` to find the columns that are not numeric. When `amount` comes in as text, it usually has commas, rupee signs or stray spaces, such as `1,200` or ` 250`. I clean the text first with `.str.replace(\",\", \"\", regex=False).str.strip()`, and then I convert it with `pd.to_numeric(..., errors=\"coerce\")`. The `errors=\"coerce\"` option turns any bad value into NaN, so I can count those rows and look at them. I avoid `astype(float)` on dirty text, because it stops the script on the first bad value. In SQLite, I would do the same with `CAST(REPLACE(amount, ',', '') AS REAL)`.",
+    "followUps": [
+      "What would you do with the rows that became NaN after the conversion?",
+      "What is the difference between astype and pd.to_numeric?"
+    ],
+    "commonMistakes": [
+      "Using astype(int) on a column that has blanks or commas, which stops the script with a ValueError.",
+      "Converting the column and never counting how many values turned into NaN."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-python-042",
+    "category": "python",
+    "question": "Your order_date column has both 31/01/2024 and 2024-02-05. How do you parse it without losing rows?",
+    "whatInterviewerIsTesting": "Date parsing with mixed formats, dayfirst traps, coercion, and checking the rows that fail.",
+    "modelAnswer": "Indian data often mixes formats. Excel exports give DD/MM/YYYY, while app exports give ISO dates like 2024-02-05. If I pass `dayfirst=True` to one `to_datetime` call, pandas can read the ISO date as 2 May, which is wrong. So I parse each known pattern on its own with an explicit format and `errors=\"coerce\"`, then combine the results:\n\n```python\ns = df[\"order_date\"].str.strip()\nd_dmy = pd.to_datetime(s, format=\"%d/%m/%Y\", errors=\"coerce\")\nd_iso = pd.to_datetime(s, format=\"%Y-%m-%d\", errors=\"coerce\")\ndf[\"order_date\"] = d_dmy.fillna(d_iso)\n```\n\nAfter that, I count the NaT values and check those rows by hand. A wrong date can move a sale into the wrong month, so I never guess a date. If the business needs one format only, I convert the dates to ISO text before loading them into SQLite, because SQLite date functions expect `YYYY-MM-DD`.",
+    "followUps": [
+      "Why does dayfirst=True give a wrong result for ISO dates?",
+      "How would you report the rows that failed to parse to the data owner?"
+    ],
+    "commonMistakes": [
+      "Using dayfirst=True on a column that already has ISO dates.",
+      "Using errors=\"coerce\" and never counting the NaT values that come out of it."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-043",
+    "category": "python",
+    "question": "How do you find duplicate orders in a CSV export, and when should you not remove them?",
+    "whatInterviewerIsTesting": "Duplicate detection on a business key and judgement about real repeats versus data errors.",
+    "modelAnswer": "First I check whether the duplicates are full-row duplicates or key duplicates. `df.duplicated()` compares every column, while `df.duplicated(subset=[\"order_id\"], keep=False)` shows every row that shares an order id, including the first copy. I look at those rows before I drop anything, because a repeated order id can also come from a partial update. When the order id should be unique, as in an export that was loaded twice, I use `drop_duplicates(subset=[\"order_id\"], keep=\"first\")`. I do not remove rows when the business expects repeats, such as two separate line items for the same product on one order. I log how many rows I removed, so the total can be checked against the source system. In SQLite, I find them with `GROUP BY order_id HAVING COUNT(*) > 1`.",
+    "followUps": [
+      "How do you decide which copy to keep when two rows for one order differ?",
+      "What would you check if the duplicate count is unusually high for one day?"
+    ],
+    "commonMistakes": [
+      "Dropping duplicates on all columns when the rows differ only by a timestamp, which can hide a real status update.",
+      "Removing repeated rows without first checking whether the key is meant to be unique."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-044",
+    "category": "python",
+    "question": "A few order amounts are 50 times higher than normal. How do you handle them without deleting real large orders?",
+    "whatInterviewerIsTesting": "Outlier detection with IQR, business context, and a treatment that does not silently change the data.",
+    "modelAnswer": "I first check whether the big values are errors, such as a missing decimal point, a test order, or a duplicate row. Then I flag them with the IQR rule, using values below Q1 minus 1.5 times IQR or above Q3 plus 1.5 times IQR. Here is the code:\n\n```python\nq1, q3 = df[\"amount\"].quantile([0.25, 0.75])\niqr = q3 - q1\nflag = ~df[\"amount\"].between(q1 - 1.5 * iqr, q3 + 1.5 * iqr)\n```\n\nIf the flagged orders are real, such as a bulk order from a school in Pune, I keep them, because they are real revenue and they matter to the business. For an average or a model, I may cap them with `clip` at a percentile, but only for that analysis, and I tell the stakeholder that I did it. I never delete them silently. Removing the top 1 percent of orders can hide the customers who bring in the most money.",
+    "followUps": [
+      "When would you use a z-score instead of the IQR rule?",
+      "How would you explain a capped average to a manager who expects the raw average?"
+    ],
+    "commonMistakes": [
+      "Deleting every value outside the IQR fence without checking why it happened.",
+      "Capping the values in the source table, so the total revenue is wrong for everyone who uses it."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-python-045",
+    "category": "python",
+    "question": "How do you count orders by status and show each status as a share of the total?",
+    "whatInterviewerIsTesting": "Basic value counts, normalisation, and how missing values affect shares.",
+    "modelAnswer": "I use `value_counts()` on the status column. For example, `df[\"order_status\"].value_counts()` gives a count for each status, sorted from the highest to the lowest. Adding `normalize=True` returns shares instead of counts. Adding `dropna=False` keeps missing values in the result, so the shares add up to 100 percent. I round the output and multiply by 100 before I show it on a slide. In SQLite, the same answer comes from `COUNT(*)` with `GROUP BY order_status`, and then dividing each count by the total count.",
+    "followUps": [
+      "How is value_counts different from groupby(...).size()?",
+      "Why would you keep dropna=False during a data quality check?"
+    ],
+    "commonMistakes": [
+      "Forgetting that value_counts drops missing values by default, so the shares do not add up to 100 percent.",
+      "Showing raw counts when the audience needs shares, which makes a small city look like a big one."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-python-046",
+    "category": "python",
+    "question": "How do you get total sales and the number of unique customers per city in one groupby?",
+    "whatInterviewerIsTesting": "Named aggregation, nunique versus count, and clean output column names.",
+    "modelAnswer": "I use named aggregation, which gives each output column a clear name:\n\n```python\ncity_summary = df.groupby(\"city\").agg(\n    total_sales=(\"amount\", \"sum\"),\n    customers=(\"customer_id\", \"nunique\"),\n).reset_index()\n```\n\nI use `nunique` for customers, not `count`, because `count` counts orders and not people. A customer can place several orders in a month, so the two numbers are different. If the report needs more measures, I add more named pairs, such as `avg_order=(\"amount\", \"mean\")`. Named aggregation avoids a MultiIndex, which makes the export easier to use. In SQLite the equivalent is `COUNT(DISTINCT customer_id)`, which is the same idea.",
+    "followUps": [
+      "How would you add each city's percentage share of total_sales?",
+      "What happens to rows where city is missing, and how would you keep them?"
+    ],
+    "commonMistakes": [
+      "Using count() for unique customers, which counts orders instead of customers.",
+      "Passing a dict of lists to agg, which creates confusing column names that are hard to read in the report."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-047",
+    "category": "python",
+    "question": "What is the difference between transform and agg in groupby, and when do you use each?",
+    "whatInterviewerIsTesting": "Understanding that agg reduces rows while transform keeps the original row count.",
+    "modelAnswer": "`agg` returns one row per group, so the result is smaller than the original data. `transform` returns one value for each original row, with the same index. This matters when I want to add a group-level value as a new column. For example, to show each order's share of its city total, I write:\n\n```python\ndf[\"city_total\"] = df.groupby(\"city\")[\"amount\"].transform(\"sum\")\ndf[\"share_of_city\"] = df[\"amount\"] / df[\"city_total\"]\n```\n\nIf I tried to assign the output of `agg` to a column in the original DataFrame, the lengths would not match, so the code would fail or give the wrong values. My rule is simple: for a summary table, I use `agg`, and for a value that goes back onto each row, I use `transform`. For a running total within each customer, `transform(\"cumsum\")` works well.",
+    "followUps": [
+      "Can transform accept a lambda, and what does that cost in speed?",
+      "How would you compute a running total of spend per customer in pandas?"
+    ],
+    "commonMistakes": [
+      "Assigning the output of agg back to the original DataFrame and getting misaligned or missing values.",
+      "Using apply when a built-in transform such as sum, rank or cumsum would be faster and clearer."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-048",
+    "category": "python",
+    "question": "How do you build a city by month revenue table in pandas, and how is it different from groupby?",
+    "whatInterviewerIsTesting": "Pivot tables, default aggregation traps, and totals.",
+    "modelAnswer": "A pivot table is a groupby followed by a reshape, so the groups become rows and columns. I write it like this:\n\n```python\nrev_table = pd.pivot_table(\n    df, index=\"city\", columns=\"order_month\", values=\"amount\",\n    aggfunc=\"sum\", fill_value=0, margins=True, margins_name=\"Total\",\n)\n```\n\nI always pass `aggfunc=\"sum\"` explicitly, because the default aggregation is the mean. A pivot table that shows averages where the team expects totals is a common and costly mistake. The `fill_value=0` option replaces empty city and month combinations with zero, which is what a finance team usually expects. The `margins=True` option adds row and column totals. Plain `df.pivot` is stricter and raises a ValueError when a city and month pair appears more than once, while `pivot_table` aggregates those duplicates.",
+    "followUps": [
+      "Why does df.pivot raise an error when pivot_table does not?",
+      "How would you export this table to Excel for the finance team with the totals row kept?"
+    ],
+    "commonMistakes": [
+      "Forgetting aggfunc=\"sum\" and reporting averages when the team expected totals.",
+      "Using pivot on data that has duplicate city and month pairs, which raises a ValueError."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-049",
+    "category": "python",
+    "question": "How would you check whether the payment failure rate differs by device OS?",
+    "whatInterviewerIsTesting": "Using crosstab with the right normalisation, and not over-reading small differences.",
+    "modelAnswer": "I use `pd.crosstab`, which builds a count table of two categorical columns. To see rates within each OS, I set the normalisation to the row:\n\n```python\nrates = pd.crosstab(df[\"device_os\"], df[\"status\"], normalize=\"index\")\n```\n\nEach row then sums to 1, so I can compare Android with iOS even when one has many more transactions. I set `margins=True` when I also want the overall split. I do not stop at the percentages. If one OS has only 40 failed transactions, a gap of 2 percentage points may be random noise, so I check the counts before I tell anyone about it. In SQLite, I would calculate each rate with a `SUM(CASE WHEN ...)` divided by `COUNT(*)`.",
+    "followUps": [
+      "What does normalize=\"all\" compute differently from normalize=\"index\"?",
+      "What test would you use to decide whether the OS gap is meaningful?"
+    ],
+    "commonMistakes": [
+      "Leaving normalize unset, so you compare raw counts for groups of very different sizes.",
+      "Reading a difference between two groups with only a few dozen rows as a real trend."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-050",
+    "category": "python",
+    "question": "How do you get the top 3 customers by spend in each city, without writing a loop?",
+    "whatInterviewerIsTesting": "Group-wise top-N logic, sorting before head, and ties.",
+    "modelAnswer": "I first aggregate spend to one row per customer and city, because ranking only makes sense at that level. Then I sort and take the first three rows in each group:\n\n```python\ntop3 = (\n    cust.sort_values(\"spend\", ascending=False)\n        .groupby(\"city\")\n        .head(3)\n)\n```\n\nThe sort must come before `head`. If I call `head(3)` on an unsorted groupby, I get the first three rows in arrival order, which is not the top three. The `groupby().head()` form keeps the original columns, so the output is easy to read. For ties at position 3, I add a second sort key, such as the customer id, so the result is the same each time I run it. In SQLite, the same result comes from `ROW_NUMBER() OVER (PARTITION BY city ORDER BY spend DESC)` and a filter on that row number.",
+    "followUps": [
+      "How do you decide which customer to keep when two tie for third place?",
+      "How is ROW_NUMBER different from RANK in SQL, and which one fits this task?"
+    ],
+    "commonMistakes": [
+      "Taking head(3) before sorting, which returns three arbitrary rows per city.",
+      "Ranking order rows before aggregating to one row per customer, so the same customer appears more than once."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-python-051",
+    "category": "python",
+    "question": "A groupby on a categorical column showed zero-value rows in one report and not in another. Why?",
+    "whatInterviewerIsTesting": "Knowing the observed parameter, categorical dtypes, and version-dependent defaults.",
+    "modelAnswer": "When the grouping column has the category dtype, pandas can keep a row for every category, including categories with no data. Older pandas versions defaulted to `observed=False`, so an unused city still showed up with a zero or NaN. In pandas 3, the default is `observed=True`, so only categories present in the data appear. This is why the same code can give different reports after an upgrade. When I group by two categorical columns, the unused combinations are the issue. I set `observed=True` explicitly in the groupby, so the output does not depend on the version, and I check the row count against the number of real cities. Converting a column to category is useful for memory, but it needs this care.",
+    "followUps": [
+      "Why does a category dtype save memory on a text column with few distinct values?",
+      "What would you check after a groupby to confirm that every expected city is present?"
+    ],
+    "commonMistakes": [
+      "Assuming the groupby output has one row per real city when the column is categorical with unused categories.",
+      "Writing code that relies on the pandas default, so the report changes after a library upgrade."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-python-052",
+    "category": "python",
+    "question": "After a groupby on two keys, the report has a MultiIndex and the export looks broken. How do you fix it?",
+    "whatInterviewerIsTesting": "Flattening columns and indexes, as_index=False, and naming aggregations.",
+    "modelAnswer": "The cleanest fix is to avoid the MultiIndex from the start. With `as_index=False`, the group keys stay as ordinary columns, and named aggregation gives flat column names:\n\n```python\nout = df.groupby([\"city\", \"sales_channel\"], as_index=False).agg(\n    orders=(\"order_id\", \"nunique\"),\n    revenue=(\"amount\", \"sum\"),\n)\n```\n\nIf I already have a MultiIndex, such as after several aggregation functions, I call `reset_index()` to turn the index levels back into columns. For multi-level column names, I flatten them with `out.columns = [\"_\".join(c).strip(\"_\") for c in out.columns]`. I also avoid lambda functions inside agg, because pandas names those columns `<lambda_0>`, which is confusing for anyone reading the export. Flat tables are easier for Excel users and for Power BI.",
+    "followUps": [
+      "When would you deliberately keep a MultiIndex in an analysis?",
+      "How do you sort a MultiIndex DataFrame by one of its levels?"
+    ],
+    "commonMistakes": [
+      "Exporting a DataFrame with a MultiIndex to Excel without flattening it first.",
+      "Using lambda functions inside agg, which gives column names like <lambda_0> that nobody understands."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-python-053",
+    "category": "python",
+    "question": "What is the difference between merge, join and concat in pandas?",
+    "whatInterviewerIsTesting": "Choosing the right combine tool: lookup by key, index join, or stacking.",
+    "modelAnswer": "`merge` joins two DataFrames on columns, much like a SQL JOIN, and it is the most flexible option. `join` is a shorter way to merge on the index, which is useful when both tables share an index such as customer_id. `concat` stacks DataFrames. Stacking vertically adds rows, such as twelve monthly files that have the same columns. Stacking horizontally adds columns, but it aligns the rows by index, so the index must match. I use `merge` to add city to an orders table, and `concat` to combine monthly files. In SQLite, `merge` corresponds to a JOIN, and vertical `concat` is like `UNION ALL`.",
+    "followUps": [
+      "When would you choose join over merge?",
+      "What does ignore_index=True do in a vertical concat?"
+    ],
+    "commonMistakes": [
+      "Using concat to add a lookup column, which aligns on the index and fills gaps with NaN.",
+      "Calling merge for a task that only stacks files with the same columns."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-python-054",
+    "category": "python",
+    "question": "Which join type do you use if you want to keep every order, even when the customer is missing from the customer table?",
+    "whatInterviewerIsTesting": "Choosing how= for a merge and knowing that the default inner join drops rows.",
+    "modelAnswer": "I use `how=\"left\"`, because a left join keeps every row from the left table. Customer columns for unmatched orders become NaN. The default for `merge` is `inner`, which keeps only the matching rows, so orders without a customer would vanish without any warning. An `outer` join keeps unmatched rows from both sides. I write:\n\n```python\norders_full = orders.merge(customers, on=\"customer_id\", how=\"left\")\nmissing = orders_full[\"city\"].isna().sum()\n```\n\nAfter the join, I compare the number of rows with the number of orders. Then I count the missing city values, because those orders need a follow-up. In SQLite, `LEFT JOIN` works in every version, but `RIGHT JOIN` and `FULL OUTER JOIN` need SQLite 3.39 or newer.",
+    "followUps": [
+      "What is the default value of how in pandas merge?",
+      "How would you find the orders that did not match any customer?"
+    ],
+    "commonMistakes": [
+      "Using the default inner join and silently losing orders that have no customer record.",
+      "Skipping the row count check after a left join, which can grow if the right-side key is not unique."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-055",
+    "category": "python",
+    "question": "How do you stop a merge from silently duplicating rows?",
+    "whatInterviewerIsTesting": "Using validate= and row count checks to protect joins.",
+    "modelAnswer": "I use the `validate` argument, which tells pandas what key relationship I expect. For example, when I add a city to each order, each customer should appear only once in the customer table, so I write:\n\n```python\norders_full = orders.merge(\n    customers[[\"customer_id\", \"city\"]],\n    on=\"customer_id\", how=\"left\", validate=\"many_to_one\",\n)\n```\n\nIf the customer table has duplicate ids, pandas raises a MergeError right away, and I can fix the lookup before I trust any totals. I also compare the row count before and after the join. The `indicator=True` option adds a `_merge` column, which shows which rows matched. Lookup tables loaded from exports often have duplicates, so I check them every time.",
+    "followUps": [
+      "How is validate different from a manual assert on the row count?",
+      "Which validate value fits a join between orders and a monthly price table keyed by product and month?"
+    ],
+    "commonMistakes": [
+      "Assuming the lookup table has unique keys without checking it.",
+      "Choosing the wrong validate direction, so a correct merge fails and gets blamed for the error."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-056",
+    "category": "python",
+    "question": "A merge on customer_id returns almost no matches, even though both files seem to have the same ids. What do you check?",
+    "whatInterviewerIsTesting": "Diagnosing silent key mismatches such as dtype, spaces, case and lost leading zeros.",
+    "modelAnswer": "The usual causes are different dtypes, stray spaces, different letter case, and leading zeros that Excel removed. A text key on one side and an integer key on the other side will not match. I start by comparing `df.dtypes` for the key on both sides. Then I print a few raw values with `repr`, which shows trailing spaces. To make the keys comparable, I normalise both sides:\n\n```python\norders[\"customer_id\"] = orders[\"customer_id\"].astype(\"string\").str.strip().str.upper()\ncustomers[\"customer_id\"] = customers[\"customer_id\"].astype(\"string\").str.strip().str.upper()\n```\n\nThen I measure the match rate with `indicator=True` before and after the fix. A silent zero-match join can make a whole city look empty, so I never accept a merge without checking how many keys matched.",
+    "followUps": [
+      "How would you measure the match rate for a join?",
+      "How would you keep leading zeros in a customer code that is read from a CSV?"
+    ],
+    "commonMistakes": [
+      "Trusting a merge with very few matches without checking the match rate.",
+      "Dropping the unmatched rows to make the join look clean, without finding the real cause."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-057",
+    "category": "python",
+    "question": "Your orders table has 10,000 rows, and after a merge with a product table it has 14,000. Why, and how do you fix it?",
+    "whatInterviewerIsTesting": "Diagnosing a fan-out join caused by duplicate keys on the lookup side.",
+    "modelAnswer": "The lookup table probably has more than one row for some key. A product might appear under two price versions, or in two warehouse rows. Each order then matches both rows, so the count grows. I find the repeated keys before the merge:\n\n```python\ndupes = products[products.duplicated(\"product_id\", keep=False)]\n```\n\nThen I decide the right rule. I may keep the latest price, filter by an active flag, or aggregate the lookup to one row per product. After that, I run the merge with `validate=\"many_to_one\"`, so the same mistake fails loudly next time. Dropping duplicates from the orders table would be wrong, because the orders are correct. The fix belongs on the lookup side.",
+    "followUps": [
+      "What is a fan-out join, and how does it affect a revenue total?",
+      "How would you find which product key causes the extra rows in a big table?"
+    ],
+    "commonMistakes": [
+      "Dropping duplicate rows from the orders table, which removes real orders instead of fixing the lookup.",
+      "Summing revenue after the join without checking the row count against the original table."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-python-058",
+    "category": "python",
+    "question": "How do you attach the price that was active on the order date, when prices change over time?",
+    "whatInterviewerIsTesting": "Point-in-time lookup with merge_asof, sorting rules and the by= parameter.",
+    "modelAnswer": "An exact merge on the date would match only the days when a price row exists, which misses most orders. The right tool is `merge_asof`, which takes the last matching row on or before each order date:\n\n```python\norders = orders.sort_values(\"order_date\")\nprices = prices.sort_values(\"effective_from\")\npriced = pd.merge_asof(\n    orders, prices,\n    left_on=\"order_date\", right_on=\"effective_from\",\n    by=\"product_id\", direction=\"backward\",\n)\n```\n\nBoth tables must be sorted on their date key, or pandas raises an error. The `by` argument limits the match to the same product, so one product's price never applies to another. In SQLite, I would use a correlated subquery that finds the latest `effective_from` on or before the order date, or a window function that keeps the top row per order.",
+    "followUps": [
+      "What happens to an order placed before the first price row?",
+      "How would you write the same point-in-time lookup in SQLite?"
+    ],
+    "commonMistakes": [
+      "Using a normal merge on the date, which only matches exact dates and misses most orders.",
+      "Forgetting to sort both tables by the date key, which makes merge_asof raise an error."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-python-059",
+    "category": "python",
+    "question": "How do you find customers who placed no orders last month?",
+    "whatInterviewerIsTesting": "Anti-join logic using indicator or isin, and avoiding duplicate rows during the join.",
+    "modelAnswer": "This is an anti-join: I want rows from the customer table that have no match in the orders table. One approach is a left merge with an indicator, keeping the rows that did not match:\n\n```python\nrecent = last_month_orders[[\"customer_id\"]].drop_duplicates()\nm = customers.merge(recent, on=\"customer_id\", how=\"left\", indicator=True)\ninactive = m.loc[m[\"_merge\"] == \"left_only\", \"customer_id\"]\n```\n\nI deduplicate the right side first, so a customer with ten orders does not inflate the result. A simpler version is `customers[~customers[\"customer_id\"].isin(recent[\"customer_id\"])]`, which returns the same customers with less code. In SQLite, I would use `LEFT JOIN ... WHERE o.order_id IS NULL` or `NOT EXISTS`, which is usually the clearest form.",
+    "followUps": [
+      "Why does deduplicating the right side matter in this anti-join?",
+      "When is isin enough, and when do you need the merge version?"
+    ],
+    "commonMistakes": [
+      "Using an inner join, which returns only the customers who did place orders.",
+      "Forgetting to deduplicate the right side, so the same customer appears more than once in the output."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-python-060",
+    "category": "python",
+    "question": "How do you calculate monthly revenue from daily order data in pandas?",
+    "whatInterviewerIsTesting": "Resampling on a DatetimeIndex and knowing that empty periods become zero.",
+    "modelAnswer": "I make sure the date column is a real datetime, then set it as the index. After that, `resample` groups the rows into calendar periods:\n\n```python\nmonthly = (\n    df.assign(order_date=pd.to_datetime(df[\"order_date\"]))\n      .set_index(\"order_date\")[\"amount\"]\n      .resample(\"MS\").sum()\n)\n```\n\nThe alias `\"MS\"` means month start, and `\"ME\"` means month end. For a sum, months with no orders show as zero, which is the right result for a line chart. A `groupby` on a month text column skips those months, so the chart would have gaps. In SQLite, I would group by `strftime('%Y-%m', order_date)` and sum the amount, but I would add the empty months myself if the chart needs them.",
+    "followUps": [
+      "How would you fill months with no orders if you need them for a chart?",
+      "How is resample different from groupby on a month column?"
+    ],
+    "commonMistakes": [
+      "Resampling a text date column, which fails or gives the wrong result because the index is not a datetime.",
+      "Assuming a month with no orders is missing from the data, rather than a true zero."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-061",
+    "category": "python",
+    "question": "How do you get the weekday, the month and a weekend flag from an order date column?",
+    "whatInterviewerIsTesting": "Using the .dt accessor and understanding the weekday numbering.",
+    "modelAnswer": "The `.dt` accessor works only when the column has a datetime dtype, so I check that first. Then I derive the fields I need:\n\n```python\nd = df[\"order_date\"]\ndf[\"order_month\"] = d.dt.strftime(\"%Y-%m\")\ndf[\"weekday\"] = d.dt.day_name()\ndf[\"is_weekend\"] = d.dt.dayofweek >= 5\n```\n\n`dayofweek` counts Monday as 0 and Sunday as 6, so Saturday and Sunday are 5 and 6. That is a common source of mistakes, so I write the rule in a comment. The weekend definition also depends on the business. A grocery chain in India may treat Sunday as its busiest day, but a B2B service may not. In SQLite, `strftime('%w', order_date)` returns 0 for Sunday, which is a different numbering.",
+    "followUps": [
+      "Why does the .dt accessor raise an error on a text column?",
+      "How would you calculate the number of days between order date and delivery date?"
+    ],
+    "commonMistakes": [
+      "Assuming Monday is day 1 in dayofweek, when Monday is 0.",
+      "Running .dt on a column that still holds text, which raises an AttributeError."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-062",
+    "category": "python",
+    "question": "How do you calculate month-over-month growth in pandas?",
+    "whatInterviewerIsTesting": "Sorting, pct_change versus shift, and handling a zero base.",
+    "modelAnswer": "I first build a sorted monthly series, as in the resample example. Then I apply `pct_change`, which compares each month with the one before it:\n\n```python\nmonthly = df.set_index(\"order_date\")[\"amount\"].resample(\"MS\").sum()\nmom_growth = monthly.pct_change() * 100\n```\n\nThe first month has no previous value, so it shows NaN. The same result with `shift` is `(monthly - monthly.shift(1)) / monthly.shift(1)`, which is useful when I want the previous value as a column too. A zero in the previous month gives inf, because you cannot divide by zero, so I check for zeros before I publish the number. The rows must be in date order, or the growth compares the wrong months. In SQLite, the same calculation uses `LAG(revenue) OVER (ORDER BY month)`.",
+    "followUps": [
+      "What does pct_change return for the first month, and why?",
+      "How would you present a month that had zero revenue in the previous period?"
+    ],
+    "commonMistakes": [
+      "Calculating growth on unsorted rows, so each month compares with the wrong month.",
+      "Reporting an inf value as if it were a real growth rate, without explaining the zero base."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-063",
+    "category": "python",
+    "question": "How do you compute a 7-day rolling average of daily sales when some days have no rows at all?",
+    "whatInterviewerIsTesting": "Time-based rolling windows versus row-based windows, and calendar completeness.",
+    "modelAnswer": "A plain `rolling(7)` uses the last seven rows, not the last seven days. If a day is missing, the seven rows can cover nine calendar days, so the average is wrong. With a datetime index, `rolling(\"7D\")` uses a time window, so it averages whatever falls in the last seven calendar days. I also make the calendar complete first, with `asfreq(\"D\")`. Then I decide what a missing day means. For sales, a missing day may mean zero sales or missing data, and those need different treatment. I check the source before I fill anything. The filled series gives the right window, and the result is easy to explain.",
+    "followUps": [
+      "What does min_periods control in a rolling calculation?",
+      "How would you center the 7-day window on the middle day instead of the last day?"
+    ],
+    "commonMistakes": [
+      "Using rolling(7) on data with gaps, so the average covers more than a week of calendar time.",
+      "Filling missing days with the overall mean, which hides real low-sales days."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-python-064",
+    "category": "python",
+    "question": "Your app logs are in UTC, but the business reports daily sales in IST. How do you group by the IST date?",
+    "whatInterviewerIsTesting": "Timezone handling: naive versus aware timestamps, tz_localize versus tz_convert.",
+    "modelAnswer": "The log times have no offset, so pandas treats them as naive. I first confirm that the source is UTC, then I attach the zone and convert it:\n\n```python\nts = pd.to_datetime(df[\"event_ts\"]).dt.tz_localize(\"UTC\")\ndf[\"ist_date\"] = ts.dt.tz_convert(\"Asia/Kolkata\").dt.date\n```\n\n`tz_localize` says what zone a naive time is in. `tz_convert` changes the display for a time that already has a zone. An order at 20:00 UTC on 5 January is 01:30 on 6 January in IST, so grouping by the raw date would put it in the wrong day. I avoid adding 5 hours and 30 minutes by hand, because that breaks as soon as the code is reused for another zone. In SQLite, times are text, so I convert them in the query with the `'+5 hours', '+30 minutes'` modifiers and say so in the notes.",
+    "followUps": [
+      "What is the difference between tz_localize and tz_convert?",
+      "What goes wrong if you skip the timezone step and group by the date column?"
+    ],
+    "commonMistakes": [
+      "Calling tz_localize on a column that already has a timezone, which raises a TypeError.",
+      "Assuming every timestamp is IST because the business is based in India."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-python-065",
+    "category": "python",
+    "question": "Why is a vectorised expression faster than apply or iterrows?",
+    "whatInterviewerIsTesting": "Knowing the cost of Python-level loops versus column-wide operations.",
+    "modelAnswer": "A vectorised expression runs one operation over the whole column in optimised compiled code. `apply` with `axis=1` calls a Python function once for each row, and `iterrows` creates a Series for each row, which is the slowest. For example, `df[\"gst\"] = df[\"amount\"] * 0.18` is much faster than a row-wise lambda that does the same work. For conditions, I use `np.where` for two outcomes and `np.select` for several outcomes:\n\n```python\ndf[\"band\"] = np.select(\n    [df[\"amount\"] >= 10000, df[\"amount\"] >= 1000],\n    [\"High\", \"Medium\"],\n    default=\"Low\",\n)\n```\n\nI use `apply` only when the logic cannot be written as column operations. On a few million rows, the gap can be large enough to matter for a daily refresh.",
+    "followUps": [
+      "When would you still use apply, even though it is slower?",
+      "How would you write a label that depends on three columns without a row-wise loop?"
+    ],
+    "commonMistakes": [
+      "Using iterrows to build a column that one column expression could produce.",
+      "Using a lambda with axis=1 on a large DataFrame and not checking how long it takes."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-066",
+    "category": "python",
+    "question": "How do you check and reduce the memory use of a DataFrame?",
+    "whatInterviewerIsTesting": "Measuring memory with deep=True, using category dtype and downcasting numbers.",
+    "modelAnswer": "I start with `df.memory_usage(deep=True).sum()`, which gives the size in bytes. The `deep=True` option matters, because without it pandas counts only the pointers to text values and badly understates text columns. Repeated text values such as city or order status are good candidates for the category dtype, because pandas stores each label once and keeps small integer codes for the rows:\n\n```python\ndf[\"city\"] = df[\"city\"].astype(\"category\")\ndf[\"amount\"] = pd.to_numeric(df[\"amount\"], downcast=\"float\")\n```\n\nI measure before and after each change, so I know which change helped. Category dtype is not a fit for an ID column where every value is unique, because the lookup table would be as large as the data. Category columns also bring the unused-category issue that matters in groupby.",
+    "followUps": [
+      "Why does memory_usage without deep=True give a misleading number?",
+      "What is a risk of converting a column to category dtype?"
+    ],
+    "commonMistakes": [
+      "Calling memory_usage without deep=True, which undercounts text columns.",
+      "Converting a unique ID column to category, which costs more memory instead of less."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-067",
+    "category": "python",
+    "question": "A 1 GB CSV does not fit in memory. What do you do?",
+    "whatInterviewerIsTesting": "Reading large files in chunks, combining partial results, and knowing which statistics can be combined.",
+    "modelAnswer": "First I load only the columns I need with `usecols`, and I set smaller dtypes where I can, because that alone can shrink memory a lot. If the file still does not fit, I read it in chunks and combine the partial results. For sums and counts, I keep a running total per group:\n\n```python\ntotals = {}\nfor chunk in pd.read_csv(path, usecols=[\"city\", \"amount\"], chunksize=200_000):\n    part = chunk.groupby(\"city\")[\"amount\"].sum()\n    for city, value in part.items():\n        totals[city] = totals.get(city, 0) + value\n```\n\nSums and counts combine easily, but a median or a unique count does not, because one chunk cannot tell me the global middle value. For those, I load the data into SQLite or split it into partitioned Parquet files. A local database handles large aggregates on disk, which is safer than forcing everything into memory.",
+    "followUps": [
+      "Why is a median hard to compute from chunk-level medians?",
+      "How do you choose a sensible chunk size?"
+    ],
+    "commonMistakes": [
+      "Concatenating all the chunks back into one DataFrame, which brings back the memory problem.",
+      "Averaging the per-chunk means, which gives a wrong overall mean when the chunks have different sizes."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-python-068",
+    "category": "python",
+    "question": "Why would you convert a large CSV to Parquet, and what do you gain?",
+    "whatInterviewerIsTesting": "Columnar storage, typed files, column pruning and the trade-offs for business users.",
+    "modelAnswer": "Parquet is a columnar format that stores types in the file and compresses each column. A CSV is plain text, so pandas must parse every value each time. With Parquet, I can read only the columns I need, and the other columns are skipped on disk:\n\n```python\ndf.to_parquet(\"transactions.parquet\", index=False)\nslim = pd.read_parquet(\"transactions.parquet\", columns=[\"txn_datetime\", \"amount\"])\n```\n\nThe file is usually much smaller, and dates and numbers keep their types, so there is no parsing step on every run. Parquet needs the pyarrow package, and business users cannot open it easily in Excel. So I keep the CSV for sharing and use Parquet for my own repeated analysis. Before I convert, I fix the dtypes, because Parquet saves whatever types the load produced.",
+    "followUps": [
+      "What does columnar storage mean, and why does it help when I read two columns?",
+      "What checks would you run after converting a CSV to Parquet?"
+    ],
+    "commonMistakes": [
+      "Converting to Parquet and then reading the whole file anyway, which gains nothing.",
+      "Saving a file with wrong dtypes, such as dates stored as text, and then assuming Parquet will fix them."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-python-069",
+    "category": "python",
+    "question": "Your notebook takes 40 minutes on 5 million rows. How do you find the slow step?",
+    "whatInterviewerIsTesting": "Systematic profiling, measuring before changing code, and checking that results still match.",
+    "modelAnswer": "I time each step separately, using `%time` for a single cell or `time.perf_counter()` inside a script. If one step is still unclear, I use `%prun` or cProfile to see which functions use the most time. Slow steps are often a row-wise `apply`, a Python loop, or a merge that has grown because of a duplicate key. I also check dtypes, because object columns are slower than numbers and categories. I fix the slowest step first, time it again, and compare the output with the old version. Checking the row count and the totals before and after the change protects me from a fast but wrong result. Reading fewer columns or filtering early is often the biggest win.",
+    "followUps": [
+      "What does %prun show you that %time does not?",
+      "How do you prove that the faster version still gives the same answer?"
+    ],
+    "commonMistakes": [
+      "Optimising a step at random without measuring first.",
+      "Changing the code and not comparing outputs, so a faster but wrong number goes unnoticed."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-python-070",
+    "category": "python",
+    "question": "When do you use a bar chart and when a line chart?",
+    "whatInterviewerIsTesting": "Matching the chart type to the data: categories versus ordered time.",
+    "modelAnswer": "A bar chart compares categories, such as revenue by city. A line chart shows change over an ordered axis, such as monthly orders. Bars start at zero, so the length of each bar is honest. Lines are good for trends because the eye follows the slope. I avoid a line between unordered cities, because a line suggests a sequence that does not exist. I also avoid pie charts with many slices. In matplotlib or seaborn, the choice is the same, and Power BI works the same way for its visuals.",
+    "followUps": [
+      "Why should a bar chart start at zero?",
+      "When would you choose a scatter plot instead?"
+    ],
+    "commonMistakes": [
+      "Connecting unordered categories such as cities with a line.",
+      "Cutting the y-axis of a bar chart so that small gaps look large."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-python-071",
+    "category": "python",
+    "question": "What are the first steps you take when you get a new dataset?",
+    "whatInterviewerIsTesting": "A structured first-pass EDA checklist and the habit of checking before analysing.",
+    "modelAnswer": "I check the shape first, with `df.shape` and `df.head()`. Then I run `df.info()` to see the dtypes and non-null counts. I run `df.isna().sum()` to count missing values, and `df.duplicated().sum()` to count repeated rows. For key categories, I use `value_counts()`, and for numbers I use `describe()` and check the minimum and maximum. Negative amounts or future dates are obvious red flags. I write down the questions for the data owner before I start any chart or model. These steps take a few minutes and save hours of rework.",
+    "followUps": [
+      "Which single check usually finds the most problems quickly?",
+      "How would you document what you found, so a colleague can repeat the checks?"
+    ],
+    "commonMistakes": [
+      "Starting charts or models before checking nulls and duplicates.",
+      "Trusting the average from describe() without looking at impossible minimum or maximum values."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-python-072",
+    "category": "python",
+    "question": "A heatmap shows a strong correlation between two columns. What do you tell the stakeholder?",
+    "whatInterviewerIsTesting": "Limits of correlation: linear only, outlier sensitivity, causation and multiple comparisons.",
+    "modelAnswer": "Correlation measures how well two variables move together in a straight-line way, and it runs from -1 to 1. It does not show that one causes the other. Pearson correlation is sensitive to outliers, so one very large order can create a high value by itself. A curved relationship can show a correlation near zero even when the link is strong. I check a scatter plot before I trust the number, and I try Spearman correlation when the relationship is steady but not straight. On a large heatmap with many variables, some pairs will look strong by chance, so I focus on the few pairs that matter. If app crashes and UPI payments both rise in a festival week, the shared cause is the season, not one metric causing the other.",
+    "followUps": [
+      "When would you choose Spearman correlation over Pearson?",
+      "How would you check whether a correlation is statistically meaningful?"
+    ],
+    "commonMistakes": [
+      "Telling a stakeholder that one metric causes another because the heatmap shows a strong colour.",
+      "Relying on the heatmap alone and skipping the scatter plot."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-073",
+    "category": "python",
+    "question": "How do you check whether an order amount is skewed, and what do you do about it?",
+    "whatInterviewerIsTesting": "Recognising skew, choosing robust summaries, and using transforms with care.",
+    "modelAnswer": "I look at a histogram and a boxplot first, because they show the shape of the data. When the mean is much higher than the median, the data has a long right tail, which usually means a few very large orders. I check `df[\"amount\"].skew()` as a number, but the picture is more useful. For the report, I show the median and percentiles, because they describe a typical customer better. For a model or a linear analysis, a log transform helps: `np.log1p(df[\"amount\"])` handles zeros safely. A log scale on a chart can also show the spread clearly. I keep the raw numbers in the business report, because a log value is hard for most managers to read.",
+    "followUps": [
+      "Why would you use log1p instead of log?",
+      "What does a boxplot show that a histogram does not?"
+    ],
+    "commonMistakes": [
+      "Reporting the mean of a highly skewed amount without the median next to it.",
+      "Applying a log to a column that has zero or negative values, which gives -inf or NaN."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-074",
+    "category": "python",
+    "question": "What is a virtual environment, and why should an analyst use one?",
+    "whatInterviewerIsTesting": "Isolation of project dependencies and reproducible setups.",
+    "modelAnswer": "A virtual environment is a separate Python setup with its own packages. Different projects often need different pandas versions, and installing everything globally can break older notebooks. I create one with `python -m venv .venv`, activate it, and install what the project needs. On Linux or macOS, I can run the project's Python directly with `.venv/bin/python`. I save the list of packages with `pip freeze > requirements.txt`, so a colleague can recreate the same setup. The `.venv` folder itself stays out of Git through `.gitignore`.",
+    "followUps": [
+      "What should go into requirements.txt, and what should stay out?",
+      "Why do you keep the virtual environment folder out of Git?"
+    ],
+    "commonMistakes": [
+      "Installing every package into the system Python, which causes version conflicts later.",
+      "Committing the whole .venv folder into Git, which makes the repository huge and platform-specific."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-python-075",
+    "category": "python",
+    "question": "Which Git commands do you use in a data analysis project?",
+    "whatInterviewerIsTesting": "Basic version control habits for SQL, scripts and notebooks.",
+    "modelAnswer": "My everyday set is `git status`, `git diff`, `git add`, `git commit -m`, `git log`, `git pull` and `git push`. I create a branch for a new analysis with `git switch -c`, and I commit at each meaningful step, with a short message that says what changed. Notebooks create noisy diffs because outputs are stored in the file, so I clear outputs before committing or keep the logic in a script. I add raw data files, secrets and large outputs to `.gitignore`. Small commits are easier to review and easier to undo.",
+    "followUps": [
+      "How would you undo the last commit without losing the file changes?",
+      "Why should large raw data files stay out of Git?"
+    ],
+    "commonMistakes": [
+      "Committing large raw data files into Git, which makes the repository slow to clone.",
+      "Making one huge commit for a whole week of work, so nobody can review it."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-python-076",
+    "category": "python",
+    "question": "How do you make an analysis reproducible, so that someone else gets the same numbers?",
+    "whatInterviewerIsTesting": "Seeds, pinned versions, scripted steps and keeping raw data untouched.",
+    "modelAnswer": "I pin the package versions in `requirements.txt`, because a new pandas release can change a default. I set a seed for any sampling or random step, such as `np.random.default_rng(42)` or `random_state=42`. I keep the raw data in its own folder, unchanged, and I never edit it by hand or save over it. Every transformation lives in a script or a notebook that runs from top to bottom, not in manual Excel edits. I write the date of the data pull in the output, and I check the final totals against a known number from the source system. Before I share a notebook, I restart the kernel and run all cells in order, so I know it works from a clean start.",
+    "followUps": [
+      "What does random_state actually control?",
+      "How would you record where a dataset came from and when it was pulled?"
+    ],
+    "commonMistakes": [
+      "Editing the raw data by hand and saving over the original file.",
+      "Sharing a notebook whose cells only work when they are run in the order they were first written."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-077",
+    "category": "python",
+    "question": "When do you use SQL, and when do you use pandas?",
+    "whatInterviewerIsTesting": "Judgement about where to do work: database for large data, pandas for flexible analysis.",
+    "modelAnswer": "I use SQL when the data lives in a database, when the table is large, and when the main job is filtering, joining and aggregating. SQL engines are built for that work, and the team can share and review queries easily. I use pandas for flexible cleaning, complex text or date handling, charts, and exploratory work on data that fits in memory. Many projects use both. For example, I can aggregate a 20 million row transaction table to monthly totals by city in SQL, and then use pandas for the chart and the final checks. Pulling a huge table into pandas just to filter it is a waste, because the database can do that step faster.",
+    "followUps": [
+      "Which tool would you pick for 50 million rows on a laptop, and why?",
+      "What is the risk of doing cleaning steps in pandas without saving them as a script?"
+    ],
+    "commonMistakes": [
+      "Pulling a full large table into pandas just to do a simple filter that SQL could do in the query.",
+      "Doing manual pandas steps in a notebook that nobody else can repeat later."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-078",
+    "category": "python",
+    "question": "Count the frequency of each word in a sentence without using pandas.",
+    "whatInterviewerIsTesting": "Basic string handling, normalisation and the Counter collection.",
+    "modelAnswer": "I normalise the text, split it into words, and count them with `Counter` from the standard library:\n\n```python\nimport re\nfrom collections import Counter\n\ntext = \"Pune and pune are in Maharashtra. Pune is big.\"\nwords = re.findall(r\"[a-z']+\", text.lower())\nprint(Counter(words).most_common(3))\n```\n\nThe `re.findall` pattern removes punctuation, so `Pune.` and `Pune` count as the same word. Lowercasing first makes `Pune` and `pune` the same. `Counter` is a dictionary that counts repeated keys, and `most_common` returns the top items. The work is one pass over the words, so it scales well.",
+    "followUps": [
+      "How would you ignore common words such as the and is?",
+      "How would you do the same count with SQL on a table of words?"
+    ],
+    "commonMistakes": [
+      "Using only split(), so Pune. and Pune count as two different words.",
+      "Forgetting to lowercase the text, so Pune and pune are counted separately."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-python-079",
+    "category": "python",
+    "question": "How do you remove duplicates from a list but keep the original order?",
+    "whatInterviewerIsTesting": "Using a set for membership checks and preserving order.",
+    "modelAnswer": "A plain `set` removes duplicates, but it does not keep the order. I keep a separate set of the values I have seen and append only new values:\n\n```python\ndef unique_in_order(items):\n    seen = set()\n    out = []\n    for x in items:\n        if x not in seen:\n            seen.add(x)\n            out.append(x)\n    return out\n```\n\nSince Python 3.7, `list(dict.fromkeys(items))` gives the same result in one line, because dictionaries keep insertion order. The set lookup is fast, so the loop stays close to linear time. A list lookup inside the loop would be much slower for a big input. Items must be hashable, so a list of lists needs a different approach.",
+    "followUps": [
+      "Why is a set lookup faster than a list lookup?",
+      "How would you remove duplicate rows in pandas and keep the first occurrence?"
+    ],
+    "commonMistakes": [
+      "Using list(set(items)), which removes duplicates but loses the original order.",
+      "Checking x in out, a list, inside the loop, which slows the code down on big inputs."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-python-080",
+    "category": "python",
+    "question": "How do you find the second largest distinct number in a list, without sorting the whole list?",
+    "whatInterviewerIsTesting": "One-pass logic, handling duplicates and edge cases such as a single distinct value.",
+    "modelAnswer": "I track the largest and second largest values in one pass, and I skip any value that equals either one:\n\n```python\ndef second_largest(nums):\n    first = second = None\n    for x in nums:\n        if x == first or x == second:\n            continue\n        if first is None or x > first:\n            second, first = first, x\n        elif second is None or x > second:\n            second = x\n    return second\n```\n\nThis handles lists like `[9, 9, 7]`, where a simple second item of a sorted list would give 9 again. It returns None when there are fewer than two distinct values, so the caller can handle that case. A shorter alternative is `sorted(set(nums))[-2]`, which is clear and fine for small lists, but it sorts everything. The one-pass version uses constant extra memory.",
+    "followUps": [
+      "What should the function return when the list has only one distinct value?",
+      "What is the time complexity of sorted(set(nums))[-2], compared with your one-pass version?"
+    ],
+    "commonMistakes": [
+      "Returning the second item of a sorted list without removing duplicates, so [9, 9, 7] gives 9.",
+      "Forgetting to handle lists with fewer than two distinct values, which causes an error or a wrong answer."
+    ],
+    "difficulty": "medium"
+  }
+]

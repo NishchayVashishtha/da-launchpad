@@ -1,0 +1,482 @@
+[
+  {
+    "id": "interview-hr-031",
+    "category": "hr",
+    "question": "How do you work with someone who doesn't respond?",
+    "whatInterviewerIsTesting": "Follow-up discipline, polite escalation, and keeping work moving without blaming anyone.",
+    "modelAnswer": "If someone does not reply, I first check that my message was clear and had one specific question. If there is no reply in two working days, I send a short follow-up that restates the question and the deadline. I keep the tone polite and I do not blame the person. If the work is blocked, I tell my manager and suggest a fix, such as a 15-minute call. Meanwhile, I keep working on the parts that do not depend on that answer. I think this keeps the team moving and keeps the relationship good.\n\nAdapt: give one real example of a waiting task from college or your internship, and say how long you waited.",
+    "followUps": [
+      "What would you do if the manager asks you to stop following up?",
+      "How do you decide when to escalate?"
+    ],
+    "commonMistakes": [
+      "Sending a long, angry message instead of a short follow-up.",
+      "Waiting silently for a week and missing the deadline."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hr-032",
+    "category": "hr",
+    "question": "Describe your ideal manager and work environment.",
+    "whatInterviewerIsTesting": "Self-awareness about how you work best, and whether you fit a fast-moving analytics team.",
+    "modelAnswer": "I do my best work when my manager gives clear goals and says what a good result looks like. I like short feedback loops, so I know early if I am on the right track. I also want a team that shares data openly and explains why a number changed. I learn by doing, so I need a manager who answers questions when I am stuck. In a design team, review sessions are a normal habit, and I want that same habit with data work. For an analyst role, I would like access to clean data and written metric definitions.\n\nAdapt: keep the list to three traits and match each one to something you read about the team.",
+    "followUps": [
+      "What does good feedback look like to you?",
+      "How do you work when your manager is busy for a week?"
+    ],
+    "commonMistakes": [
+      "Describing an ideal that is impossible, like no deadlines at all.",
+      "Saying you need no guidance, which sounds unrealistic for a fresher."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hr-033",
+    "category": "hr",
+    "question": "How would you handle a stakeholder who keeps changing the requirement?",
+    "whatInterviewerIsTesting": "Scope control, written agreements, and calm communication under changing demands.",
+    "modelAnswer": "First, I would ask the stakeholder what problem they want to solve, because the problem often stays the same even when the request changes. I would write the current scope in a short note and share it with the stakeholder and my manager. Each change request would get a line: what changed, how much time it adds, and what must move out. If the change is important, I would agree on a new date and say which earlier item it replaces. I would also share a quick draft early, so the stakeholder can react before I build too much. This keeps the work calm and the deadline honest.\n\nAdapt: say whether your last team had a formal change process, and if not, describe how you would start one.",
+    "followUps": [
+      "What if the stakeholder is senior and refuses to sign off on the scope?",
+      "How do you show the cost of a change in simple terms?"
+    ],
+    "commonMistakes": [
+      "Agreeing to every change without updating the deadline.",
+      "Arguing with the stakeholder in a meeting instead of writing the trade-off down."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-hr-034",
+    "category": "hr",
+    "question": "Tell me about your academic projects.",
+    "whatInterviewerIsTesting": "Whether you can describe real project work clearly, with a business goal and steps.",
+    "modelAnswer": "I am a B.Tech student in Computer Science (Core), and I will graduate in 2027. My core subjects, like DBMS, gave me the base for tables, keys, and queries. For my own data work, I have built projects on fictional datasets, such as UPI payment failures and e-commerce customer groups. Each project starts with a business question, then cleaning, SQL queries, and a short summary with charts. I write a README so anyone can run the steps again. These projects show how I think, not only what I know.\n\nAdapt: lead with the project closest to the job, then mention the core subject that helped it.",
+    "followUps": [
+      "Which project would you explain first, and why?",
+      "What was the hardest step in one of your projects?"
+    ],
+    "commonMistakes": [
+      "Listing tool names without saying what question the project answered.",
+      "Describing a project you did not finish."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-hr-035",
+    "category": "hr",
+    "question": "What are your marks or CGPA, and what do you think about them?",
+    "whatInterviewerIsTesting": "Honesty about academic marks and a sensible view of what marks prove.",
+    "modelAnswer": "I will share my CGPA exactly as it appears on my transcript, and I do not hide it. I see marks as one signal, not the full picture. For a data analyst role, what matters more is whether I can write a correct query and explain a chart to a manager. So I have spent extra hours on SQL and Python practice, with new problems each day. If my CGPA is below the cut-off the company wants, I would say so and point to my project work as proof. I want to be judged by what I can deliver in my first three months.\n\nAdapt: write your real CGPA in one line and keep the whole answer under 20 seconds.",
+    "followUps": [
+      "Your CGPA is lower than the cut-off. What do you do?",
+      "Which subject marks do you think matter most for analytics?"
+    ],
+    "commonMistakes": [
+      "Rounding up the CGPA or giving a number you cannot show on a transcript.",
+      "Apologising for marks for two minutes instead of moving on."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-hr-036",
+    "category": "hr",
+    "question": "Do you have any gap in your education or career?",
+    "whatInterviewerIsTesting": "Whether you can explain any gap in one clear sentence, with proof of what you did in that time.",
+    "modelAnswer": "I do not have a gap in my education. I am on track to finish my B.Tech and graduate in 2027. I am also working in a current UI/UX internship, which gives me real team experience. Since I am looking for a first data role, I have used my study hours to build SQL and Python skills. If I ever had a gap, I would explain it in one sentence and show what I did during that time. A short, honest answer builds more trust than a long story.\n\nAdapt: if you have a real gap, use three parts: the reason, what you did during it, and what you learned.",
+    "followUps": [
+      "What did you learn during that period?",
+      "Is there any other time you were not in school or work?"
+    ],
+    "commonMistakes": [
+      "Making up a reason for a gap that the interviewer can check.",
+      "Giving a long, defensive explanation for a short gap."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hr-037",
+    "category": "hr",
+    "question": "Why did you choose CSE and not a data or AI specialisation?",
+    "whatInterviewerIsTesting": "Whether you understand the value of a strong computer science base for data work.",
+    "modelAnswer": "I chose CSE because it gives me a strong base in how software and data systems work. Subjects like DBMS, operating systems, and algorithms help me understand why a query is slow or why a data pipeline fails. A data analyst needs to know how data is stored and moved, and a core CSE course teaches that well. I plan to build the analytics skills on top of this base, through SQL, Python, and Power BI. A pure AI track would focus more on model building, which is not my first goal. Later, the core base will help me move toward data engineering.\n\nAdapt: name the one core subject you found most useful and say why in one line.",
+    "followUps": [
+      "Would you consider a data specialisation later in your career?",
+      "Which core subject do you find hardest, and how are you improving it?"
+    ],
+    "commonMistakes": [
+      "Attacking the AI or data specialisation as worse, instead of explaining your own choice.",
+      "Claiming core subjects made you an expert when you are still building depth."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hr-038",
+    "category": "hr",
+    "question": "What did you learn from your internship that applies here?",
+    "whatInterviewerIsTesting": "Transfer of skills from UI/UX work to analytics, such as user focus and clear communication.",
+    "modelAnswer": "In my UI/UX internship, I learned to start with the user and ask why a screen works or fails. I also learned to explain my choices to developers and managers in simple words. Those habits matter in data work, where I must find the real business question before I write any query. I saw how early feedback helps a team fix a problem before it gets expensive. I also learned to work to a deadline when other people depend on my files. These habits make me a better analyst, because numbers only help when people use them.\n\nAdapt: pick two habits you really used during your internship and give one small example for each.",
+    "followUps": [
+      "Which internship habit will be hardest to carry into analytics?",
+      "How did you handle feedback from a senior designer?"
+    ],
+    "commonMistakes": [
+      "Saying the internship taught you nothing relevant to data.",
+      "Listing many tasks without a clear habit or example."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hr-039",
+    "category": "hr",
+    "question": "You have basic coding skills. How will you handle Python and SQL tasks?",
+    "whatInterviewerIsTesting": "Honest self-assessment and a concrete plan to close the skill gap.",
+    "modelAnswer": "You are right that my coding is at a basic level, and I want to be honest about that. My plan is simple: I practise SQL and Python for 5 to 6 hours a day, with new problems each day. I track the time for each problem, so I can see if I am getting faster. Once a week, I rebuild one of my project queries from memory to test what I really remember. For Python, I focus on pandas first, because most analyst tasks use it. I ask for help only after I try a problem for about 30 minutes.\n\nAdapt: add your own weekly count, like problems solved, and quote only numbers you have tracked.",
+    "followUps": [
+      "How do you know you are improving?",
+      "What would you do if you were stuck on a SQL join for an hour?"
+    ],
+    "commonMistakes": [
+      "Saying you know Python well when you have only done small scripts.",
+      "Promising a skill level you cannot show with a test or project."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hr-040",
+    "category": "hr",
+    "question": "Are you willing to relocate?",
+    "whatInterviewerIsTesting": "Flexibility and clarity on location, without sounding unsure about commitment.",
+    "modelAnswer": "Yes, I am open to relocating anywhere in India for the right role. I am also happy to work remotely if the team works that way. I would like to know early whether the role needs office days in a specific city, so I can plan. Fintech and healthcare companies are spread across many cities, so I am open to that. I can share my exact moving timeline once the offer is clear.\n\nAdapt: name preferred cities only if you truly prefer them; otherwise keep the answer open.",
+    "followUps": [
+      "What if the office is in a city you have never lived in?",
+      "Would you relocate for a short project before a full move?"
+    ],
+    "commonMistakes": [
+      "Saying yes to relocation and then asking to stay in your home city in the next sentence.",
+      "Giving no answer at all, which sounds unclear."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-hr-041",
+    "category": "hr",
+    "question": "Are you comfortable with shift work or night shifts?",
+    "whatInterviewerIsTesting": "Honest limits, paired with flexibility where the role needs cover.",
+    "modelAnswer": "I am comfortable with flexible hours when the schedule is set in advance. I prefer day work, because it fits my study routine and my focus time. For a role that needs cover, such as a payment-failure alert window, I can do a short planned shift if the rota is shared fairly. I would not want night shifts as a regular habit, because my sleep and focus would suffer. I think it is fair to be clear about this now, so we both know the facts.\n\nAdapt: state your real limit first, then the one case where you can flex.",
+    "followUps": [
+      "What is the longest shift you would accept?",
+      "How would you plan a shift around your studies?"
+    ],
+    "commonMistakes": [
+      "Saying yes to any shift and then struggling in the first month.",
+      "Refusing all night work without giving a reason or any flexibility."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-hr-042",
+    "category": "hr",
+    "question": "What is your notice period?",
+    "whatInterviewerIsTesting": "Clear, accurate facts about availability for the start date.",
+    "modelAnswer": "As an intern, I do not have a formal notice period in the way a full-time employee does. My internship will end before I would join a full-time role. I will confirm the exact end date with my internship team, so there is no surprise for anyone. I can share that date in writing once it is final. I want to be fair to both teams.\n\nAdapt: confirm the internship end date and the offer letter timing before the interview, then use the real date.",
+    "followUps": [
+      "What happens if your internship end date changes?",
+      "Can you start early if the team needs you?"
+    ],
+    "commonMistakes": [
+      "Guessing a notice period and then giving a different date later.",
+      "Saying you can join tomorrow without checking your current commitments."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-hr-043",
+    "category": "hr",
+    "question": "When can you join?",
+    "whatInterviewerIsTesting": "Realistic start date, flexibility, and a clear plan for the final semester.",
+    "modelAnswer": "I can join as soon as the offer is final and the start date fits my college and internship plan. If the role starts after my 2027 graduation, I can join right after my last exam. I would like to know the joining date early, so I can plan my final semester. If an earlier start is possible, I am open to discuss that with the team. I want to start strong and not rush the handover of my work.\n\nAdapt: check your own final exam and internship dates, then give one clear date range, not a vague answer.",
+    "followUps": [
+      "What if the company wants you to start before your last exam?",
+      "How will you handle the handover from your internship?"
+    ],
+    "commonMistakes": [
+      "Giving a date that clashes with exams you have not checked.",
+      "Saying any date at all before you know the offer timeline."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-hr-044",
+    "category": "hr",
+    "question": "What are your salary expectations?",
+    "whatInterviewerIsTesting": "Research on the market, a range instead of one number, and openness to learning value.",
+    "modelAnswer": "I have looked at fresher data analyst roles, and the pay range I see is in line with the role and the market. I am open to a range that matches the work, the city, and the training on offer. For me, growth and a clear path to data engineering matter as much as the first number. I would like to hear the company's range for this role first, so we both start from facts. I can be flexible if the role gives good training and a fair review after six months.\n\nAdapt: say your researched range as a range, and say it only after the company shares theirs.",
+    "followUps": [
+      "What range have you seen on job portals?",
+      "Would you accept less if training is strong?"
+    ],
+    "commonMistakes": [
+      "Naming one exact number with no research behind it.",
+      "Asking about salary first, before showing interest in the role."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-hr-045",
+    "category": "hr",
+    "question": "Why are you looking for a change when you have an internship?",
+    "whatInterviewerIsTesting": "Whether the move is growth-driven and not an escape from a bad experience.",
+    "modelAnswer": "My internship is in UI/UX, and I enjoyed the user side of the work. But I found that I enjoy answering why people act a certain way with data more than designing the screen. I am not leaving design because I failed; I am moving to where my curiosity is strongest. A data analyst role lets me work with numbers, dashboards, and business questions every day. I also see a clear path from analyst to data engineering in a few years. I want to build that path while I am still early in my career.\n\nAdapt: keep the answer positive and do not name any manager or teammate.",
+    "followUps": [
+      "Would you ever go back to design work?",
+      "What did you find hardest about the design side?"
+    ],
+    "commonMistakes": [
+      "Criticising the internship team or manager.",
+      "Saying you want a data job only because it pays more."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hr-046",
+    "category": "hr",
+    "question": "Do you have other offers or interviews in process?",
+    "whatInterviewerIsTesting": "Honesty about your pipeline and how you handle timing, without pressure tactics.",
+    "modelAnswer": "Yes, I am applying to a few roles, mainly in data analytics. I am speaking with a small number of companies in fintech and healthcare. If I get an offer, I will tell you, and I will not use it as a bluff. I would like to move forward with the companies that fit my goals best. If your process has a clear timeline, I will plan my replies around it. I am honest about where I am, and I expect the same from you.\n\nAdapt: give the real number of processes in progress, not an inflated number.",
+    "followUps": [
+      "Which company is your first choice, and why?",
+      "How do you decide between two offers?"
+    ],
+    "commonMistakes": [
+      "Inventing offers to create pressure.",
+      "Naming other companies in a way that sounds disrespectful."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hr-047",
+    "category": "hr",
+    "question": "Are you okay with a service agreement or bond?",
+    "whatInterviewerIsTesting": "Awareness of contract terms and a careful, fair reading of obligations.",
+    "modelAnswer": "I am open to a service agreement if the terms are fair and clearly written. I would like to read the amount, the time period, and what happens if I leave early. I would also check how the training cost is calculated and whether it is shared fairly. A bond that is hidden or very large would make me hesitate. I would ask for the full document in writing before I sign anything. I want a job where both sides are clear from day one.\n\nAdapt: ask for the written terms by email, and read them with a mentor or family member before you accept.",
+    "followUps": [
+      "What would you do if the bond amount is higher than you expected?",
+      "What questions would you ask the HR team about the agreement?"
+    ],
+    "commonMistakes": [
+      "Signing a bond agreement without reading the exit terms.",
+      "Refusing all bonds without asking what they cover."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hr-048",
+    "category": "hr",
+    "question": "What is your current stipend or CTC, and what do you expect?",
+    "whatInterviewerIsTesting": "Honest facts about current pay, framed correctly for a fresher.",
+    "modelAnswer": "My current role is an internship, so my stipend is not a full-time CTC. I will share the stipend amount exactly if you ask, because I do not hide facts. For a fresher data analyst role, I expect pay that matches the role and the market. I see the first job as the start of a long career, so growth matters a lot to me. I would like to hear the company's range first, and then I can share mine. I can be flexible if the training and the role are strong.\n\nAdapt: write your real stipend in one line and keep the rest of the answer the same.",
+    "followUps": [
+      "Is your stipend fixed or does it include any allowance?",
+      "What range would make you say no to an offer?"
+    ],
+    "commonMistakes": [
+      "Comparing an internship stipend directly with a full-time CTC.",
+      "Giving an expected number before the company shares its range."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hr-049",
+    "category": "hr",
+    "question": "What if we offer you less than your expectation?",
+    "whatInterviewerIsTesting": "Negotiation maturity: asking how the offer is built, and deciding with facts.",
+    "modelAnswer": "I would first ask how the offer is built, and which part is fixed and which part is variable. I would ask whether a review is possible after six months, with clear goals for a raise. If the role gives good training and a strong path to data engineering, I may accept a fair offer that is a little lower. I would not accept a number that does not cover my basic living costs in that city. I would also take a day to think before I reply. I want to decide with facts, not in the middle of a call.\n\nAdapt: set your own minimum number in private before the interview, and keep it to yourself.",
+    "followUps": [
+      "What would make you take a lower offer?",
+      "How would you ask for a review in writing?"
+    ],
+    "commonMistakes": [
+      "Accepting on the call without asking any question.",
+      "Rejecting a fair offer only because it is below the first number you wrote down."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hr-050",
+    "category": "hr",
+    "question": "What would you do in your first 30 days?",
+    "whatInterviewerIsTesting": "A structured onboarding plan that focuses on data, metrics, and stakeholders.",
+    "modelAnswer": "In my first week, I would learn the team's data sources, the main tables, and the metric definitions. In the next two weeks, I would meet the people who use the reports, such as finance or product, and ask which decisions they make. I would check the current dashboards for errors and write down the questions they answer. By day 30, I want to deliver one small, correct analysis that the team can use. I would also keep a short log of what I learned, so I can improve fast.\n\nAdapt: name the team type you are applying to, such as fintech risk or growth, and use its metrics as the example.",
+    "followUps": [
+      "Which metric would you check first, and why?",
+      "How would you find out if a dashboard has an error?"
+    ],
+    "commonMistakes": [
+      "Planning to rebuild every dashboard in the first month.",
+      "Not naming any stakeholder you would talk to."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hr-051",
+    "category": "hr",
+    "question": "How do you stay updated with data trends?",
+    "whatInterviewerIsTesting": "Specific, honest habits for learning, not a generic claim of reading everything.",
+    "modelAnswer": "I plan to read a data newsletter each week, and to write a short summary of one article in my own words. I follow the release notes for tools like Power BI and Excel, so I know new features early. I also practise one new SQL or Python idea each week, so the learning stays practical. On LinkedIn, I follow analysts who share short case studies. I keep a notes file with ideas I want to use in a project. Learning with a project makes the idea stick.\n\nAdapt: name two or three real sources you actually read, so the answer is true.",
+    "followUps": [
+      "Which source gave you the most useful idea recently?",
+      "How do you decide what to skip?"
+    ],
+    "commonMistakes": [
+      "Listing many blogs you have never opened.",
+      "Saying you learn from everything without a routine."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hr-052",
+    "category": "hr",
+    "question": "Describe how you would handle a very repetitive task.",
+    "whatInterviewerIsTesting": "Automation thinking, documentation, and checking accuracy before you trust the output.",
+    "modelAnswer": "First, I would check if the task can be automated with a SQL query, a Power Query step, or a short Python script. If it is a monthly report, I would write the steps down and turn them into a saved query or a template. I would test the automated version against the manual result for one full cycle, to make sure the numbers match. Then I would document the steps in a short note, so anyone on the team can run it. I would also keep a small time log to show the time saved.\n\nAdapt: use a real repetitive task from your internship, or describe the one you would automate first.",
+    "followUps": [
+      "What would you do if the automated result is slightly different from the manual one?",
+      "When would you not automate a task?"
+    ],
+    "commonMistakes": [
+      "Automating a task without checking the output once by hand.",
+      "Writing the steps in your head and not in a document."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hr-053",
+    "category": "hr",
+    "question": "You made an analysis error that reached a client. What do you do?",
+    "whatInterviewerIsTesting": "Ownership, speed of disclosure, root-cause thinking, and prevention.",
+    "modelAnswer": "I would tell my manager right away, before I know every detail. Speed matters more than a perfect explanation at that moment. Then I would find the exact cause, and share the correct numbers with a short note of what changed. I would ask the client team which decisions they made using the wrong figure, and help them fix those decisions. After that, I would add a check to my process, such as a second-person review or a row count test. I would write a short note for the team, so the same error does not repeat.\n\nAdapt: use a real small error from your practice work, or say what you would own first if you have none yet.",
+    "followUps": [
+      "How would you explain the error to the client?",
+      "What check would have caught this error earlier?"
+    ],
+    "commonMistakes": [
+      "Hiding the error and hoping no one notices.",
+      "Blaming the data source without checking your own query first."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-hr-054",
+    "category": "hr",
+    "question": "A senior person asks you to change the numbers so the report looks better. What do you do?",
+    "whatInterviewerIsTesting": "Integrity, calm refusal, and escalation through the right channel.",
+    "modelAnswer": "I would politely say that I cannot change the numbers, because the report must match the data. I would ask what the senior person wants to show, because there may be a fair way to show it. For example, I could add a clear note, use a different time period, or use a chart that shows the trend honestly. If the request continues, I would share my concern with my manager or a trusted lead. I would also keep a short written record of the request and my reply. Trust in data depends on not changing facts to suit a goal.\n\nAdapt: practise the first sentence out loud, so you stay calm when it happens.",
+    "followUps": [
+      "What if your manager asks you to do it?",
+      "How would you write down the request?"
+    ],
+    "commonMistakes": [
+      "Agreeing in the moment and planning to fix it later.",
+      "Refusing rudely in front of the team."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-hr-055",
+    "category": "hr",
+    "question": "Your manager asks for a report in one hour, but you need three hours to do it right. What do you do?",
+    "whatInterviewerIsTesting": "Time-boxed communication: say the gap, offer a partial output, and set a firm delivery time.",
+    "modelAnswer": "I would tell my manager quickly what I can finish in one hour and what needs three hours. I would ask which part matters most for the decision in the meeting. I could deliver a first version with clear labels, marked as a draft, and note which checks are still pending. Then I would share the full version at the agreed time, with all checks done. I would not hide the gap or promise full accuracy in one hour. Clear communication saves more time than a rushed report.\n\nAdapt: use the same three steps: say the gap, offer a draft, and set the full delivery time.",
+    "followUps": [
+      "What goes into the draft, and what stays out?",
+      "What would you do if the manager still wants the full report in one hour?"
+    ],
+    "commonMistakes": [
+      "Sending a full report you have not checked and calling it final.",
+      "Going silent and delivering nothing on time."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-hr-056",
+    "category": "hr",
+    "question": "How do you handle several projects with conflicting deadlines?",
+    "whatInterviewerIsTesting": "Prioritisation, stakeholder alignment, and early communication of trade-offs.",
+    "modelAnswer": "First, I would list all tasks with their deadline, their impact, and the people waiting on each one. I would talk to my managers together, so they can agree on the priority in one place. I would ask what can move, what can shrink, and what must be done today. I would then plan my day in short blocks, with time for review at the end. If a deadline is still not possible, I would say so early, with a clear new date. Missing a date quietly is worse than changing it openly.\n\nAdapt: use a real example from college, such as two assignments due on the same day, and say what you moved and why.",
+    "followUps": [
+      "How would you decide which task has the highest impact?",
+      "What do you do when your manager is not available to decide?"
+    ],
+    "commonMistakes": [
+      "Working on the task you enjoy most instead of the one with the nearest deadline.",
+      "Saying yes to every request without checking your load."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-hr-057",
+    "category": "hr",
+    "question": "Tell me about a time you went above and beyond.",
+    "whatInterviewerIsTesting": "Initiative that is real, small, and does not hurt the main deadline.",
+    "modelAnswer": "When I get a task, I finish the core ask first. Then I look for one small extra step that saves the next person time, such as a short note on data definitions or a checklist for repeated questions. In my internship, I have seen how fast a design review goes when the questions are clear, so I value that habit. For a data role, I would write a short metric guide for the team and keep it updated. I do not add extra work that delays the main deadline.\n\nAdapt: use a real extra step you took. If you have none yet, describe the extra step you would take on your first project.",
+    "followUps": [
+      "Give me the result of that extra step in numbers.",
+      "What extra step would you not take, and why?"
+    ],
+    "commonMistakes": [
+      "Making up a big story that cannot be checked.",
+      "Doing extra work that delays the main task."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-hr-058",
+    "category": "hr",
+    "question": "Do you have any questions for us?",
+    "whatInterviewerIsTesting": "Quality of your questions, which shows how you think about the role and growth.",
+    "modelAnswer": "Yes, I have a few. First, what does your data stack look like, and where do analysts spend most of their time? Second, what would success look like for me in my first 90 days? Third, is there a mentor for new analysts, and how are reviews done? Fourth, which metrics does the leadership team check each week? Fifth, what does a growth path to analytics engineering or data engineering look like here? Last, can you share an example of a project a recent analyst delivered?\n\nAdapt: keep the six questions, ask the most important three, and save the rest for later.",
+    "followUps": [
+      "Which of these questions do you think matters most?",
+      "How would you use the answer to a question like this?"
+    ],
+    "commonMistakes": [
+      "Asking about salary or leave as the first question.",
+      "Asking questions that the company's website already answers."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-hr-059",
+    "category": "hr",
+    "question": "Is there anything else you want us to know?",
+    "whatInterviewerIsTesting": "A confident close that repeats one proof point and shows interest in the team.",
+    "modelAnswer": "Yes, I want you to know that I work steadily, and I learn fast when the goal is clear. I have built data projects with SQL and Python, and I can explain each step in a README. I also bring a user's view from my UI/UX internship, so I think about who reads a report. I am ready to learn your data tools from the first week. Thank you for your time today.\n\nAdapt: end with one proof point you can show, such as a project link, and keep the close under 20 seconds.",
+    "followUps": [
+      "What is the one thing you would like me to show from your projects?",
+      "Why should we pick you over another fresher?"
+    ],
+    "commonMistakes": [
+      "Repeating your whole resume in the close.",
+      "Ending with a long list of hopes instead of one clear point."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-hr-060",
+    "category": "hr",
+    "question": "If you do not get this job, what will you do?",
+    "whatInterviewerIsTesting": "Resilience and a clear direction that stays the same after a rejection.",
+    "modelAnswer": "I would take the feedback seriously, and I would ask the interviewer which skill I should improve, if they are willing to share. Then I would keep building my SQL and Python skills, and add one more project that matches the role I want. I would keep applying in the same direction, because I know data analytics is the right field for me. I may also join a short course or a practice set with a real dataset. I would not change my goal in a hurry because of one result.\n\nAdapt: name the specific skill you would work on first, such as window functions or a dashboard project, and say how long it would take.",
+    "followUps": [
+      "Which skill would you work on first after a rejection?",
+      "How would you track your progress over the next three months?"
+    ],
+    "commonMistakes": [
+      "Saying you would give up on data analytics.",
+      "Blaming the interviewer or the company for the result."
+    ],
+    "difficulty": "hard"
+  }
+]

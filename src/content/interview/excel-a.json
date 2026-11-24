@@ -1,0 +1,482 @@
+[
+  {
+    "id": "interview-excel-001",
+    "category": "excel",
+    "question": "What does $A$1 do in a formula, and how is it different from A1?",
+    "whatInterviewerIsTesting": "Understanding of absolute versus relative references and how copying formulas changes them.",
+    "modelAnswer": "The dollar signs lock both the column and the row, so `$A$1` always points to cell A1. A plain reference such as `A1` is relative, so Excel shifts it when you copy the formula. Suppose B2 holds the order quantity and A1 holds a GST rate. The formula `=B2*$A$1` in C2 becomes `=B3*$A$1` in C3 when filled down, so the rate stays fixed. A mixed reference like `$A1` locks only the column, and `A$1` locks only the row. In Excel, press F4 while editing a reference to cycle through these forms. This works the same in all Excel versions.",
+    "followUps": [
+      "What happens to `=B2*A1` when you fill it across to the right?",
+      "When would you use a mixed reference like `$A2`?"
+    ],
+    "commonMistakes": [
+      "Adding dollar signs to every reference, which breaks formulas that should move.",
+      "Typing the rate as a number inside the formula instead of pointing to a cell."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-excel-002",
+    "category": "excel",
+    "question": "How do you convert numbers stored as text into real numbers?",
+    "whatInterviewerIsTesting": "Practical data cleaning skill and awareness of the green warning triangle and why SUM ignores text.",
+    "modelAnswer": "Numbers copied from a PDF or a bank export often sit as text, so SUM ignores them and Excel shows a green triangle. Quick fixes are Data, Text to Columns, then Finish, or copying a cell with 1 and using Paste Special, Multiply, on the range. For a formula, `=VALUE(SUBSTITUTE(A2,\",\",\"\"))` removes Indian-style commas such as 1,25,000 before converting. The shorter `--A2` also works but is harder to read in a review. I check the result with `ISNUMBER`, which returns TRUE only for real numbers.",
+    "followUps": [
+      "Why does `ISNUMBER` return FALSE for a value that looks like a number?",
+      "How would you convert a column of dates stored as text?"
+    ],
+    "commonMistakes": [
+      "Converting with Find and Replace and leaving spaces at the end of the text.",
+      "Assuming the cell is numeric because it is right-aligned."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-excel-003",
+    "category": "excel",
+    "question": "What is an Excel Table, and why use structured references?",
+    "whatInterviewerIsTesting": "Knowledge of Tables as a way to build ranges that grow and formulas that read clearly.",
+    "modelAnswer": "An Excel Table, created with Ctrl+T, is a range with a header row, filters, and banded rows. Formulas use column names instead of cell addresses, such as `=[@Qty]*[@Price]` inside the table or `=SUM(Sales[Amount])` outside it. When a new row is added, the formula fills down automatically, and charts and pivot tables that use the table pick up the new rows. A monthly sales log for a Surat store grows every day, so a Table saves constant range editing. Tables work in Excel 2007 and later, including Excel 365.",
+    "followUps": [
+      "What is the difference between `[@Qty]` and `Sales[Qty]`?",
+      "Can a Table be referenced from another workbook?"
+    ],
+    "commonMistakes": [
+      "Merging cells inside a Table, which blocks sorting and filtering.",
+      "Using fixed ranges such as A2:A500 in formulas instead of the Table name."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-excel-004",
+    "category": "excel",
+    "question": "What is a named range, and when would you use one?",
+    "whatInterviewerIsTesting": "Ability to make formulas readable and to manage key inputs in a model.",
+    "modelAnswer": "A named range is a label for a cell or range, such as `Tax_Rate` for `Settings!B2`. Formulas read more clearly: `=Qty*Price*Tax_Rate` is easier to check than `=C2*Settings!$B$2`. You create names with Formulas, Define Name, or open Name Manager with Ctrl+F3. Names can refer to dynamic ranges, but an Excel Table is usually simpler for growing data. Names cannot contain spaces, and they cannot look like cell addresses such as `Q1`. I use names for a few key inputs and not for every cell.",
+    "followUps": [
+      "How do you find all the formulas that use a particular name?",
+      "What is the scope of a named range, and how do you limit it to one sheet?"
+    ],
+    "commonMistakes": [
+      "Naming a range `Q1` or `Sales2026`, which Excel reads as a cell address.",
+      "Creating many names and forgetting to delete old ones that point to deleted ranges."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-excel-005",
+    "category": "excel",
+    "question": "What is Paste Special, and when do you paste values only?",
+    "whatInterviewerIsTesting": "Awareness of how pasted formulas can break and when to freeze results.",
+    "modelAnswer": "Paste Special, with Ctrl+Alt+V, lets you choose what to paste: formulas, values, formats, column widths, or a transposed layout. Paste Values drops the formulas and keeps only the results. I use it when I copy a report from a shared file, because the copied formulas would point to cells that do not exist in my workbook. A monthly GST summary can be pasted as values, so the figures do not change when the source sheet changes. Paste Special with Multiply is also useful to apply a 10 percent price increase to a whole column in one step.",
+    "followUps": [
+      "When would you paste formulas only and keep the original formatting?",
+      "How do you transpose a row of data into a column?"
+    ],
+    "commonMistakes": [
+      "Pasting values and then expecting the formulas to update later.",
+      "Pasting a whole range with the Ctrl+V shortcut when only values were needed, which copies formats too."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-excel-006",
+    "category": "excel",
+    "question": "Why do dates sometimes sort or filter wrongly, and how do you fix them?",
+    "whatInterviewerIsTesting": "Knowledge that Excel stores dates as serial numbers and that text dates depend on the locale.",
+    "modelAnswer": "Excel stores a real date as a serial number, so it sorts and calculates correctly. A date typed or imported as text does not, and text like 05/04/2026 can mean 5 April or 4 May depending on the locale. Indian files usually use day, month, year, while some systems read month, day, year. I check with `ISNUMBER`, where TRUE means a real date. To convert text such as 05-04-2026, use Text to Columns with the Date option set to DMY, or build the date with `=DATE(RIGHT(A2,4), MID(A2,4,2), LEFT(A2,2))`. I format the result as dd-mmm-yyyy so the month is not in doubt.",
+    "followUps": [
+      "Why does the same formula show a different date after you change the system locale?",
+      "How do you find all cells in a column that are text instead of dates?"
+    ],
+    "commonMistakes": [
+      "Formatting a text date as a date and assuming the value changed.",
+      "Using MM/DD logic for a file that comes from an Indian bank."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-excel-007",
+    "category": "excel",
+    "question": "How would you fill blank cells in a column with the value from the row above?",
+    "whatInterviewerIsTesting": "Use of Go To Special and keyboard shortcuts for quick data cleaning.",
+    "modelAnswer": "I select the column range, press Ctrl+G, and choose Special, then Blanks. Excel selects only the empty cells. I type `=`, press the Up Arrow key to point at the cell above, and press Ctrl+Enter to fill all the selected blanks at once. This pattern is common in a sales export where the branch name appears only on the first row of each group. The result is a formula, so it updates if the source changes. If I need fixed values, I copy the column and use Paste Special, Values. Go To Special works in all current versions.",
+    "followUps": [
+      "What does Ctrl+Enter do differently from pressing Enter after typing a formula?",
+      "How do you find all cells that contain errors?"
+    ],
+    "commonMistakes": [
+      "Filling blanks with Ctrl+V of the same value, which replaces values and not only the blanks.",
+      "Forgetting to convert the formulas to values before sending the file to someone who does not need the chain."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-excel-008",
+    "category": "excel",
+    "question": "What is the difference between COUNTA, COUNTBLANK and COUNT, and why do formulas that return an empty string cause trouble?",
+    "whatInterviewerIsTesting": "Understanding of empty, blank, and numeric cells, and the effect of formulas that return \"\".",
+    "modelAnswer": "COUNT counts only numeric cells. COUNTA counts all non-empty cells, including text and formulas. COUNTBLANK counts cells that are empty or hold an empty string. A formula such as `=IF(A2=\"\",\"\",A2)` returns an empty string, so COUNTA counts it as filled, while COUNTBLANK counts it as blank. In an attendance sheet built with formulas, this can give a wrong count of marked days. For a true count of cells with some content, use `=SUMPRODUCT(--(LEN(A2:A100)>0))`, because LEN of an empty string is 0. I test the count against a few rows I can check by eye.",
+    "followUps": [
+      "How would you count only the cells that contain a number greater than zero?",
+      "What does COUNTIF with a criteria of \"\" count?"
+    ],
+    "commonMistakes": [
+      "Using COUNTA on a column with formulas and expecting it to match the visible number of entries.",
+      "Treating a cell with a space as blank, when a space is a character."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-excel-009",
+    "category": "excel",
+    "question": "What are the main limits of VLOOKUP?",
+    "whatInterviewerIsTesting": "Awareness of why VLOOKUP is fragile and when to use newer functions.",
+    "modelAnswer": "VLOOKUP searches only the first column of the range and returns a value to the right of it. The column number is a fixed number such as 3, so inserting a column in the source sheet can return the wrong field without any error. It cannot look to the left of the key column. Its default match type is approximate when the fourth argument is left out. For a product code lookup in a Bengaluru store, I now use XLOOKUP or INDEX-MATCH. VLOOKUP still works in every version, so it is common in older files I receive.",
+    "followUps": [
+      "How would you fix a VLOOKUP that breaks after a column is inserted?",
+      "What is the maximum lookup value length in VLOOKUP?"
+    ],
+    "commonMistakes": [
+      "Hard-coding the column number and forgetting to update it when the source changes.",
+      "Assuming VLOOKUP works on a column to its left because the formula returns no error."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-excel-010",
+    "category": "excel",
+    "question": "What does the fourth argument of VLOOKUP do, and what happens if you leave it out?",
+    "whatInterviewerIsTesting": "Understanding of exact versus approximate match and the risk of a missing argument.",
+    "modelAnswer": "The fourth argument, range_lookup, decides between exact and approximate match. FALSE asks for an exact match, which is what most business lookups need, such as an employee ID. TRUE, or leaving the argument out, assumes the first column is sorted, and Excel returns the largest value that is less than or equal to the search value. On an unsorted list of IDs, this returns wrong results with no error message. I always write FALSE explicitly, because it prevents many reporting mistakes in older workbooks.",
+    "followUps": [
+      "What does MATCH with 0 as the third argument do?",
+      "Why does approximate match return a value even when the search value is not in the list?"
+    ],
+    "commonMistakes": [
+      "Leaving out the fourth argument and assuming an exact match.",
+      "Using TRUE on an unsorted list and trusting the result."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-excel-011",
+    "category": "excel",
+    "question": "VLOOKUP, XLOOKUP and INDEX-MATCH: which would you use and why?",
+    "whatInterviewerIsTesting": "Judgement about lookup functions across Excel versions, and knowing that compatibility matters.",
+    "modelAnswer": "XLOOKUP is the simplest choice in Excel 365 and Excel 2021. It takes the lookup value, the lookup array, the return array, and an optional not-found text. It uses exact match by default, can search left or right, and does not need a column number. INDEX-MATCH works in every version, so it is the safe choice for a file that is shared with older Excel users. For example, `=INDEX(Price, MATCH(F2, SKU, 0))` returns the price for a SKU. VLOOKUP is fine for quick checks, but I avoid it in new work.",
+    "followUps": [
+      "When would you still choose VLOOKUP over XLOOKUP?",
+      "How does XLOOKUP's if_not_found argument help with reporting?"
+    ],
+    "commonMistakes": [
+      "Using XLOOKUP in a file that colleagues open in Excel 2016, which shows #NAME?.",
+      "Choosing a function because it is newer, without checking the sharing needs."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-excel-012",
+    "category": "excel",
+    "question": "How do you look up a value that sits to the left of the key column?",
+    "whatInterviewerIsTesting": "Ability to use INDEX-MATCH or XLOOKUP for left lookups instead of inserting helper columns.",
+    "modelAnswer": "VLOOKUP cannot look left, so I use INDEX-MATCH or XLOOKUP. Suppose column C holds customer names and column A holds invoice numbers, and I have a name in F2. In INDEX-MATCH, the formula is `=INDEX(A:A, MATCH(F2, C:C, 0))`. In XLOOKUP, it is `=XLOOKUP(F2, C:C, A:A)`. Both use exact match and return the first matching invoice. A helper column is another option, but it changes the source table. I prefer a formula that leaves the data as it is.",
+    "followUps": [
+      "What happens if two customers have the same name?",
+      "How would you write the same lookup using Table column names?"
+    ],
+    "commonMistakes": [
+      "Trying to use VLOOKUP with a negative column index.",
+      "Sorting the table to make the lookup work, which changes the order of the source data."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-excel-013",
+    "category": "excel",
+    "question": "How does HLOOKUP work, and when would you use it?",
+    "whatInterviewerIsTesting": "Knowledge of the horizontal lookup and its fixed-index limitation.",
+    "modelAnswer": "HLOOKUP searches the first row of a range and returns a value from a row below it. It is the horizontal version of VLOOKUP. I use it when the data has months across the top, such as a target table where row 1 has the month and row 2 has the target in Rs lakh. The formula is `=HLOOKUP(F1, B1:M3, 2, FALSE)`. Like VLOOKUP, it uses a fixed row index, so an inserted row can return the wrong value. For new work I use INDEX-MATCH or XLOOKUP, which work in either direction with one formula.",
+    "followUps": [
+      "How would you write the same lookup with INDEX and MATCH?",
+      "What does the row index argument do in HLOOKUP?"
+    ],
+    "commonMistakes": [
+      "Searching the first column with HLOOKUP, which needs the value in the top row.",
+      "Forgetting the FALSE argument and getting an approximate match."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-excel-014",
+    "category": "excel",
+    "question": "How do you do a two-way lookup, such as finding a value by both row and column headers?",
+    "whatInterviewerIsTesting": "Ability to combine two MATCH calls inside INDEX for a grid lookup.",
+    "modelAnswer": "A two-way lookup uses one MATCH for the row and one MATCH for the column, both wrapped in INDEX. Suppose a dealer grid has cities down the rows and months across the columns. The formula is `=INDEX(B2:M20, MATCH(F2, A2:A20, 0), MATCH(G2, B1:M1, 0))`. The first MATCH finds the city in F2 and the second finds the month in G2. Both use exact match, so a typo in a header returns #N/A, which is useful because it shows the error. The INDEX-MATCH form works in every version.",
+    "followUps": [
+      "How would you handle a case where the city is not in the grid?",
+      "Could you do the same with a single XLOOKUP?"
+    ],
+    "commonMistakes": [
+      "Using a range for the row MATCH that does not match the size of the data range.",
+      "Using approximate match for text headers."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-excel-015",
+    "category": "excel",
+    "question": "Why does a lookup return #N/A, and how do you handle it with IFNA or IFERROR?",
+    "whatInterviewerIsTesting": "Error handling in lookups and the difference between a targeted and a broad error trap.",
+    "modelAnswer": "#N/A means the lookup value was not found in the lookup array. Common causes are extra spaces, a number stored as text, or a code missing from the master list. I check those causes first, and I use TRIM or a data type check where needed. To show a friendly message, I use `=IFNA(XLOOKUP(...), \"Not in master\")`. IFNA only traps #N/A, so real errors such as #REF! still show. IFERROR traps every error, which can hide a broken formula. IFNA is available from Excel 2013 onward.",
+    "followUps": [
+      "When would you use IFERROR and still be comfortable with it?",
+      "How do you count how many lookups returned #N/A?"
+    ],
+    "commonMistakes": [
+      "Wrapping the whole sheet in IFERROR, which hides real problems.",
+      "Returning zero for missing values, which makes them look like real data."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-excel-016",
+    "category": "excel",
+    "question": "How would you look up a value using two criteria, such as branch and product?",
+    "whatInterviewerIsTesting": "Ability to build a multi-criteria lookup in Excel 365 and in older versions.",
+    "modelAnswer": "In Excel 365, I use XLOOKUP with a combined test: `=XLOOKUP(1, (Branch=F2)*(Product=G2), Sales)`. Each condition returns TRUE or FALSE, and multiplying them gives 1 only when both are true. In older versions, I add a helper column that joins the keys, such as `=A2&\"|\"&B2`, and then run INDEX-MATCH on that column. Helper columns are easy to audit, but they must be updated when the data changes. The array form needs a dynamic array Excel to work without extra keystrokes.",
+    "followUps": [
+      "How would you handle duplicate branch and product rows?",
+      "What is the difference between a helper column and a concatenated key?"
+    ],
+    "commonMistakes": [
+      "Joining keys with a separator that appears in the data, which can match wrong rows.",
+      "Using only one criterion and assuming it is unique."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-excel-017",
+    "category": "excel",
+    "question": "How do you return all matching rows instead of only the first one?",
+    "whatInterviewerIsTesting": "Knowledge of FILTER in Excel 365 and the older helper-column approach, plus spill behaviour.",
+    "modelAnswer": "VLOOKUP and XLOOKUP return only the first match. In Excel 365, FILTER returns all of them: `=FILTER(Sales[Amount], Sales[Branch]=F2)` lists every amount for one branch. The result spills into the cells below, so those cells must be empty, or Excel shows #SPILL!. In older versions, I add a helper column that numbers each occurrence with COUNTIF, and then use INDEX with SMALL or AGGREGATE to list the rows one by one. The helper method is harder to read, so I would only use it when the team has an older Excel version.",
+    "followUps": [
+      "What error appears when a spilled range is blocked, and how do you fix it?",
+      "How would you return all matches to a different sheet without spilling?"
+    ],
+    "commonMistakes": [
+      "Using FILTER in a file that will be opened in Excel 2019, which shows #NAME?.",
+      "Writing the formula in a cell that has data below it, which triggers #SPILL!."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-excel-018",
+    "category": "excel",
+    "question": "What goes wrong when you use approximate match on unsorted data?",
+    "whatInterviewerIsTesting": "Understanding of the binary search behind approximate match and how to use slab tables safely.",
+    "modelAnswer": "Approximate match, such as VLOOKUP with TRUE or MATCH with 1, uses a binary search. It assumes the lookup column is sorted in ascending order. On unsorted data, the search can jump to the wrong position and return a value that looks plausible but is wrong. For example, a commission table with thresholds in the order 0, 50000, 10000 gives wrong rates for some sales amounts. I fix this by sorting the table ascending, or by using XLOOKUP with `match_mode` -1 and its default linear search, which does not depend on sort order. I test a few values at each threshold to confirm the result.",
+    "followUps": [
+      "What does match_mode 1 do in XLOOKUP?",
+      "Why is a sorted table with approximate match faster on very large data?"
+    ],
+    "commonMistakes": [
+      "Sorting only the lookup column and not the matching return column.",
+      "Assuming an approximate match gives an error if the table is unsorted."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-excel-019",
+    "category": "excel",
+    "question": "What is the difference between AND and OR in a formula? Give a loan eligibility example.",
+    "whatInterviewerIsTesting": "Clear understanding of combined logical tests.",
+    "modelAnswer": "AND returns TRUE only when every condition is true, and OR returns TRUE when at least one condition is true. For a personal loan check at a small finance company, `=IF(AND(C2>=600, D2>=25000), \"Eligible\", \"Review\")` passes only applicants with a credit score of 600 or more and a monthly income of at least Rs 25,000. Using OR instead would approve anyone who meets just one of those tests. When the rules are long, I put each test in its own helper cell, so the logic is easy to check.",
+    "followUps": [
+      "How would you write NOT(OR(...)) for the same case?",
+      "What does AND return when one of the inputs is an empty cell?"
+    ],
+    "commonMistakes": [
+      "Using OR where every condition must hold.",
+      "Mixing up the order of the numbers in a comparison, such as 25000 >= D2."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-excel-020",
+    "category": "excel",
+    "question": "What is a nested IF, and how would you grade marks into four bands?",
+    "whatInterviewerIsTesting": "Ability to build a readable multi-level IF and to know when it becomes hard to maintain.",
+    "modelAnswer": "A nested IF places one IF inside another, so each false branch tests the next condition. To grade marks, I write `=IF(B2>=80,\"A\",IF(B2>=60,\"B\",IF(B2>=40,\"C\",\"D\")))`. The order matters, because the first true test wins. Beyond three or four levels, a nested IF is hard to read and easy to break. If the thresholds change often, a small lookup table with approximate match is clearer. I would use a nested IF only for a short, fixed set of bands.",
+    "followUps": [
+      "What happens if you swap the order of the 80 and 60 tests?",
+      "How would you rewrite the same grades with IFS?"
+    ],
+    "commonMistakes": [
+      "Writing the highest threshold last, so every mark gets the lowest grade.",
+      "Using = instead of >= at a band boundary, which leaves a gap."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-excel-021",
+    "category": "excel",
+    "question": "What is the SWITCH function, and how is it different from a nested IF?",
+    "whatInterviewerIsTesting": "Knowledge of newer functions and whether they fit the problem.",
+    "modelAnswer": "SWITCH compares one expression with a list of values and returns the matching result. For example, `=SWITCH(B2,\"MH\",\"Maharashtra\",\"KA\",\"Karnataka\",\"Other\")` converts state codes to names. The last argument is the default result. A nested IF tests a different condition at each step, while SWITCH checks one value against many options. SWITCH needs Excel 2019 or Excel 365, so older versions show #NAME?. SQLite has no SWITCH, so the equivalent there is a CASE WHEN expression.",
+    "followUps": [
+      "When would you choose SWITCH over a lookup table?",
+      "What does SWITCH return if no value matches and no default is given?"
+    ],
+    "commonMistakes": [
+      "Using SWITCH for range tests such as salary above 50,000, which it does not handle well.",
+      "Forgetting the default value, so unmatched codes show #N/A."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-excel-022",
+    "category": "excel",
+    "question": "Write a slab-based commission formula using IFS for monthly sales in Rs.",
+    "whatInterviewerIsTesting": "Ability to write IFS and to check whether the business rule is a step rate or a progressive rate.",
+    "modelAnswer": "Assume the rule is 2 percent up to Rs 2,00,000, 3 percent up to Rs 5,00,000, and 4 percent above that. I write `=IFS(B2<=200000, B2*2%, B2<=500000, B2*3%, TRUE, B2*4%)`. The final TRUE acts as the else condition. This gives one rate to the whole amount, which is a step rule. A progressive slab, where each part earns its own rate, needs a different formula, so I confirm the rule with the sales manager first. IFS needs Excel 2019 or Excel 365.",
+    "followUps": [
+      "How would you change this formula for a progressive slab?",
+      "How would you avoid wrong results if the sales cell is blank?"
+    ],
+    "commonMistakes": [
+      "Writing the thresholds in the wrong order, so the first test always wins.",
+      "Using a percent value such as 2 instead of 2%, which gives 100 times the commission."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-excel-023",
+    "category": "excel",
+    "question": "How would you replace a long IF chain of slab rates with a lookup table?",
+    "whatInterviewerIsTesting": "Design judgement: putting business rules in a table so the rates can change without editing formulas.",
+    "modelAnswer": "I put the thresholds in a small table, sorted ascending: 0 with 2 percent, 200000 with 3 percent, and 500000 with 4 percent. Then I use `=XLOOKUP(B2, Slabs[From], Slabs[Rate], , -1)` or the approximate form `=VLOOKUP(B2, Slabs, 2, TRUE)`. The finance team can change the rates without touching a formula. The IF chain used `<=` at each boundary, while the table uses the start value of each slab, so I test boundary values such as 200000 and 199999 to make sure both versions agree.",
+    "followUps": [
+      "How would you name the table so the formula is easy to read?",
+      "What changes if the table has a row with a blank rate?"
+    ],
+    "commonMistakes": [
+      "Changing the rate table but not the threshold direction, which moves boundary sales to the wrong slab.",
+      "Not sorting the table before using approximate match."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-excel-024",
+    "category": "excel",
+    "question": "What is the difference between SUMIF and SUMIFS?",
+    "whatInterviewerIsTesting": "Knowledge of single versus multi-condition summing and the argument order.",
+    "modelAnswer": "SUMIF adds values in one range that meet one condition. SUMIFS adds values that meet several conditions. An example is `=SUMIFS(Sales[Amount], Sales[Branch], \"Pune\", Sales[Status], \"Paid\")`, which gives paid sales for Pune. SUMIF would need a helper column to combine the two tests. The argument order also differs: SUMIF puts the sum range last, while SUMIFS puts it first. SUMIFS is available from Excel 2007 onward, so I use it in every case.",
+    "followUps": [
+      "How would you add a third condition, such as a date range?",
+      "What does SUMIFS return when no row matches?"
+    ],
+    "commonMistakes": [
+      "Copying the SUMIF argument order into SUMIFS, which gives wrong results.",
+      "Using SUMIFS with ranges of different sizes."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-excel-025",
+    "category": "excel",
+    "question": "How do you calculate an average with conditions, and what pitfall should you avoid?",
+    "whatInterviewerIsTesting": "Use of AVERAGEIFS and awareness that zeros and blanks change the average differently.",
+    "modelAnswer": "I use AVERAGEIFS. For example, the average marks for students in section B with attendance above 75 percent is `=AVERAGEIFS(Marks, Section, \"B\", Attendance, \">75\")`. The function skips empty cells in the average range, but it counts zeros. If missing marks were entered as 0, the average drops, which is a common error in school and college data. I clean the zeros or leave the cells blank. AVERAGEIFS returns #DIV/0! when no row matches, so I wrap it with IFERROR only when that result is expected.",
+    "followUps": [
+      "How would you calculate the average excluding a specific branch?",
+      "What is the difference between AVERAGE and AVERAGEIF on the same data?"
+    ],
+    "commonMistakes": [
+      "Entering missing values as 0 and then treating the average as correct.",
+      "Hiding the #DIV/0! error without checking why no rows matched."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-excel-026",
+    "category": "excel",
+    "question": "How do wildcards work in SUMIFS criteria? Give an example.",
+    "whatInterviewerIsTesting": "Understanding of text pattern matching and its limits on numbers.",
+    "modelAnswer": "An asterisk (*) matches any run of characters, and a question mark (?) matches exactly one character. To sum sales for every product whose name starts with Saree, I use `=SUMIFS(Sales[Amount], Sales[Product], \"Saree*\")`. For a fixed four-character code, the criteria is `\"????\"`. To search for a literal asterisk or question mark, I put a tilde before it. Wildcards work only on text, so a numeric code stored as a number will not match a pattern such as `\"12*\"`. I check the column type before relying on a wildcard.",
+    "followUps": [
+      "How would you find product names that contain the word Silk anywhere?",
+      "How do you match a literal tilde in a criteria?"
+    ],
+    "commonMistakes": [
+      "Expecting a wildcard to match a number that is stored in a numeric cell.",
+      "Using a wildcard with a blank space and expecting it to match empty cells."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-excel-027",
+    "category": "excel",
+    "question": "What is SUMPRODUCT, and what are its main use cases?",
+    "whatInterviewerIsTesting": "Understanding of array math in Excel and the ability to count or total with several conditions.",
+    "modelAnswer": "SUMPRODUCT multiplies matching items in two or more arrays and adds the results. `=SUMPRODUCT(Qty, Price)` gives the total invoice value without a helper column. It can also count with conditions: `=SUMPRODUCT((Branch=\"Pune\")*(Amount>10000))` counts rows that meet both tests. The double unary, as in `--(range=\"Pune\")`, converts TRUE and FALSE to 1 and 0. It works in all versions without Ctrl+Shift+Enter. On very large files, SUMIFS is usually faster for simple totals.",
+    "followUps": [
+      "Why does a double unary sign convert TRUE and FALSE?",
+      "How would you compute a weighted average with SUMPRODUCT?"
+    ],
+    "commonMistakes": [
+      "Using SUMPRODUCT on a range that has text values, which can produce errors.",
+      "Using a SUMPRODUCT formula where SUMIFS would be simpler and faster."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-excel-028",
+    "category": "excel",
+    "question": "How do you build a running total that restarts for each branch?",
+    "whatInterviewerIsTesting": "Ability to use an expanding range with SUMIFS and to check the sort order first.",
+    "modelAnswer": "I sort the data by branch and date first, so the running total follows the calendar. Then in row 2 I write `=SUMIFS(C$2:C2, A$2:A2, A2)`. The expanding range adds all earlier rows that have the same branch. I fill the formula down, and it restarts at each branch automatically. This works in every version. If the data is not sorted by date, the total follows the sheet order instead, so the sort check is the important step.",
+    "followUps": [
+      "How would you show a running total without the restart?",
+      "Why does an expanding range need a dollar sign on the first cell only?"
+    ],
+    "commonMistakes": [
+      "Forgetting to sort by date, so the running total follows the wrong order.",
+      "Using a fixed range such as C$2:C$100, which does not expand."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-excel-029",
+    "category": "excel",
+    "question": "When would you use SUBTOTAL or AGGREGATE instead of SUM?",
+    "whatInterviewerIsTesting": "Knowledge of filter-aware totals and error-tolerant aggregation.",
+    "modelAnswer": "SUBTOTAL(9, range) skips rows hidden by a filter, but it still counts rows I hid by hand. SUBTOTAL(109, range) skips both kinds of hidden rows. It also ignores other SUBTOTAL results, which avoids double counting in a grouped report. AGGREGATE does similar work and can skip errors. For example, `=AGGREGATE(9, 6, range)` sums a range and ignores #N/A or #DIV/0! cells. AGGREGATE is available from Excel 2010 onward.",
+    "followUps": [
+      "What is the difference between SUBTOTAL(9) and SUBTOTAL(109)?",
+      "What do the option numbers in AGGREGATE mean?"
+    ],
+    "commonMistakes": [
+      "Using SUM under a filtered table and reporting a total for all rows.",
+      "Using AGGREGATE with an option number that does not ignore errors."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-excel-030",
+    "category": "excel",
+    "question": "How do you count distinct values with a condition in older Excel versions, and what does the formula do?",
+    "whatInterviewerIsTesting": "Knowledge of the SUMPRODUCT and COUNTIFS distinct-count pattern and the limits of each approach.",
+    "modelAnswer": "A classic formula is `=SUMPRODUCT((Branch=\"Pune\")/COUNTIFS(Branch, Branch, Customer, Customer))`. For each row, COUNTIFS counts how many rows have that customer and branch. Dividing 1 by that count gives each row a share, so each customer adds up to exactly 1 across its rows. The Branch test sets rows from other branches to zero, so the total is the number of unique Pune customers. Blank rows can cause #DIV/0!, so I limit the ranges to real data rows. In Excel 365, `=COUNTA(UNIQUE(FILTER(Customer, Branch=\"Pune\")))` is simpler.",
+    "followUps": [
+      "How would you count distinct values in a Table in Excel 365?",
+      "Why does the same method fail when the range includes a blank row?"
+    ],
+    "commonMistakes": [
+      "Counting rows instead of distinct values, which overstates the number of customers.",
+      "Using COUNTIF alone, which counts repeats and does not remove them."
+    ],
+    "difficulty": "hard"
+  }
+]

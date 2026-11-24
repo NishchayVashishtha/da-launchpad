@@ -1,0 +1,482 @@
+[
+  {
+    "id": "interview-powerbi-001",
+    "category": "power-bi",
+    "question": "What are the main parts of Power BI, and what does each one do?",
+    "whatInterviewerIsTesting": "Whether the candidate knows the build-to-share flow and the role of each product part.",
+    "modelAnswer": "**Power BI Desktop** is the Windows app where you connect to data, shape it in Power Query, build the model and design reports. **Power BI Service** is the cloud site where you publish those files, share them, set refresh schedules and create dashboards. **Power BI Mobile** lets people view and act on published reports on a phone. The **on-premises data gateway** is a small program on a company machine that lets the Service reach a local database.\n\nIn practice, I build in Desktop, publish to a workspace in the Service, and then share the content with the sales team in Pune and Chennai. The Service holds the schedule, and Mobile is the viewing channel for managers on the road.",
+    "followUps": [
+      "Where do you set up a daily refresh?",
+      "Can a user edit a report in the Mobile app?"
+    ],
+    "commonMistakes": [
+      "Saying the Service is where the data model is built.",
+      "Forgetting that a gateway is needed for on-premises sources."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-powerbi-002",
+    "category": "power-bi",
+    "question": "What is the difference between a report and a dashboard in Power BI?",
+    "whatInterviewerIsTesting": "Whether the candidate understands that a dashboard is a summary of pinned tiles, not a full analysis page.",
+    "modelAnswer": "A **report** is a set of one or more pages built in Desktop on a single semantic model. It holds slicers, filters, drill-through and many visuals, so users can explore the detail.\n\nA **dashboard** is a single page in the Service. You pin tiles from reports to it. Each tile is a snapshot that opens its source report when clicked. Dashboards suit a quick summary, such as five KPI tiles for a regional head in Bengaluru, while the monthly breakdown stays in the report behind them.",
+    "followUps": [
+      "Can one dashboard hold tiles from two different reports?",
+      "Does a dashboard refresh the data by itself?"
+    ],
+    "commonMistakes": [
+      "Calling a dashboard a report.",
+      "Thinking a pinned tile copies its own separate data."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-powerbi-003",
+    "category": "power-bi",
+    "question": "What does a Power BI Pro licence allow, and who needs one?",
+    "whatInterviewerIsTesting": "Basic licence awareness and whether the candidate knows that sharing needs a licence.",
+    "modelAnswer": "A **Pro** licence lets a user publish to shared workspaces, collaborate on content and view reports that others share with them. A user on the **Free** licence can build in Desktop and publish only to their own personal workspace, so they cannot share with a team.\n\nViewers who do not hold a Pro or Premium Per User licence can see content only when it sits in a Premium or Fabric capacity workspace. Licence rules and prices change, so I would check the current price page before I quote anything in a client proposal.",
+    "followUps": [
+      "Can a Free user view a report shared from a Pro workspace?",
+      "What is a capacity, in simple words?"
+    ],
+    "commonMistakes": [
+      "Saying Pro is only needed to build reports.",
+      "Quoting old prices as if they are current."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-powerbi-004",
+    "category": "power-bi",
+    "question": "How does a scheduled refresh work, and why might a report show old numbers?",
+    "whatInterviewerIsTesting": "Understanding of import models, refresh schedules and common causes of stale data.",
+    "modelAnswer": "An **import** model keeps a copy of the data inside the Power BI file or dataset. A **refresh** reads the source again and loads fresh data into that copy. In the Service, you set a schedule for this.\n\nOld numbers usually come from one of four causes: the refresh failed, the schedule runs before the source is ready, the source was updated after the refresh, or a gateway is offline. I check the refresh history in the workspace settings first. For a Mumbai retail team, I would set the refresh for 7 AM, after the overnight sales load has finished.",
+    "followUps": [
+      "Why would you set the refresh after the source load and not before?",
+      "Where do you look to see why a refresh failed?"
+    ],
+    "commonMistakes": [
+      "Scheduling refresh before the source data is loaded.",
+      "Thinking a DirectQuery report needs scheduled refresh (it does not import data)."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-powerbi-005",
+    "category": "power-bi",
+    "question": "What are the workspace roles in Power BI Service, and what can each role do?",
+    "whatInterviewerIsTesting": "Knowledge of workspace access control and least-privilege thinking.",
+    "modelAnswer": "Power BI has four workspace roles. **Admin** manages the workspace, including its members and settings. **Member** can publish, edit and share content. **Contributor** can create and edit content but cannot share it or manage access. **Viewer** can only read content in the workspace.\n\nI give most business users Viewer access and keep editing rights with a small group of analysts. This keeps reports stable and limits who can change the data model. Admin and Member can also manage access or publish, so I keep that list short. Access to the underlying dataset is separate from workspace roles, so I check both when someone reports missing data.",
+    "followUps": [
+      "Which role would you give a contractor who should only edit reports, not share them?",
+      "Can a Viewer see the underlying dataset?"
+    ],
+    "commonMistakes": [
+      "Giving everyone Admin rights for convenience.",
+      "Mixing up Contributor and Member when sharing reports."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-powerbi-006",
+    "category": "power-bi",
+    "question": "What are the trade-offs between Import and DirectQuery modes, and when would you use Live connection?",
+    "whatInterviewerIsTesting": "Ability to choose a storage mode based on data size, freshness and performance.",
+    "modelAnswer": "**Import** copies data into the model and stores it compressed in memory. Visuals are very fast, all DAX functions work, and time intelligence is easy. The costs are refresh time, the dataset size limit, and data that is only as fresh as the last refresh.\n\n**DirectQuery** keeps data at the source, so it is fresh and can handle very large tables. But every visual sends a query to the database, so a slow source gives a slow report, and some Power Query and DAX features are restricted.\n\nA **Live connection** points to an existing Analysis Services or Power BI semantic model, and the model itself stays on the server. For 40 million transaction rows in a Hyderabad bank's warehouse, I would consider DirectQuery with an aggregation table, not an import of everything.",
+    "followUps": [
+      "What is an aggregation table, and why does it help DirectQuery?",
+      "Which mode would you pick for a small budget file shared by Finance?"
+    ],
+    "commonMistakes": [
+      "Choosing DirectQuery just because the data must be fresh, without checking source speed.",
+      "Confusing Live connection with DirectQuery, which lets you build a model on the Power BI side."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-powerbi-007",
+    "category": "power-bi",
+    "question": "When would you use a composite model in Power BI?",
+    "whatInterviewerIsTesting": "Awareness of mixed storage modes and their performance effects.",
+    "modelAnswer": "A **composite model** mixes storage modes in one model. Some tables are Import and others are DirectQuery, or the model combines DirectQuery sources with imported local data.\n\nA common pattern is a large fact table in DirectQuery with small dimension tables, such as dates and regions, imported. Slicers then load fast because the small tables are in memory. Another use is adding a local Excel budget file to a live database model.\n\nWatch the speed. Each DirectQuery source adds load, and mixing import and DirectQuery tables can make some queries slower. I test the result with Performance Analyzer before I accept the design.",
+    "followUps": [
+      "What is dual storage mode?",
+      "Why can a DirectQuery fact table joined to an Import dimension make slicers behave differently?"
+    ],
+    "commonMistakes": [
+      "Making every table DirectQuery because it sounds fresher.",
+      "Adding many sources to one composite model without checking query speed."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-powerbi-008",
+    "category": "power-bi",
+    "question": "What is an on-premises data gateway, and when do you need one?",
+    "whatInterviewerIsTesting": "Understanding of cloud versus on-premises data access and the gateway's role in refresh.",
+    "modelAnswer": "The Power BI Service runs in the cloud, so it cannot reach a database inside a company's office network by itself. An **on-premises data gateway** is software installed on a machine inside the network. The Service sends refresh or query requests to the gateway, and the gateway runs them against the local source and returns the results.\n\nYou need a gateway for scheduled refresh and DirectQuery to on-premises sources such as SQL Server or Oracle. Files in SharePoint or OneDrive do not need one. For team use, I install the **standard** gateway, not the personal gateway, which serves one user only. The gateway machine must stay powered on.",
+    "followUps": [
+      "What happens to scheduled refresh if the gateway machine goes to sleep?",
+      "What is the difference between a personal gateway and a standard gateway?"
+    ],
+    "commonMistakes": [
+      "Installing the gateway on a laptop that is often off.",
+      "Using the personal gateway for a shared team report."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-powerbi-009",
+    "category": "power-bi",
+    "question": "What is the difference between merging and appending queries in Power Query?",
+    "whatInterviewerIsTesting": "Whether the candidate can choose the right combine operation for the shape of the data.",
+    "modelAnswer": "**Append** stacks tables on top of each other. Use it when the tables have the same columns, such as sales files for January, February and March. The row count is the sum of the tables.\n\n**Merge** joins tables side by side using a key, like a SQL join. Use it to add the customer city from a customer table to an orders table. You pick a join kind, such as left outer, inner or left anti.\n\nA quick test: if you are adding rows, append. If you are adding columns by matching a key, merge.",
+    "followUps": [
+      "How would you append 12 monthly files from a folder?",
+      "What is the difference between a merge and a SQL join?"
+    ],
+    "commonMistakes": [
+      "Merging monthly files when you should append them.",
+      "Merging on a key with mismatched data types, which gives no matches."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-powerbi-010",
+    "category": "power-bi",
+    "question": "What does Unpivot Columns do, and when would you use it?",
+    "whatInterviewerIsTesting": "Ability to reshape wide data into a tidy, analysis-ready format.",
+    "modelAnswer": "**Unpivot Columns** turns a wide table into a long one. For example, a sheet with one column per month, such as Apr-2026, May-2026 and so on, becomes two columns: **Month** and **Sales**, with one row per store per month.\n\nI use it when the source report is built for people to read, not for analysis. A long table works well with slicers, time intelligence and charts, because each month is a value, not a column name. I always rename the new columns straight after the unpivot step so the steps stay clear.",
+    "followUps": [
+      "What is the opposite of Unpivot in Power Query?",
+      "Why is the long format better for DAX measures?"
+    ],
+    "commonMistakes": [
+      "Unpivoting only some columns when the rest should be kept as fixed columns.",
+      "Leaving the default names Attribute and Value in the final model."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-powerbi-011",
+    "category": "power-bi",
+    "question": "Why is it important to set the correct data types in Power Query?",
+    "whatInterviewerIsTesting": "Awareness that data types affect sorting, calculations, date logic and load errors.",
+    "modelAnswer": "Power Query guesses data types when it loads a file, and the guess is sometimes wrong. A date stored as text cannot be sorted by month, and a number with a comma or a currency symbol can be read as text. A text column also breaks sums and averages.\n\nI check every column type after loading. I set dates to Date, amounts to Decimal Number or Fixed Decimal for INR values, and IDs to Text so leading zeros stay. Wrong types also cause errors later, when a relationship between two tables joins a number to text.",
+    "followUps": [
+      "How do you fix a date column that Power Query read as text?",
+      "Why set a product code column to Text and not Whole Number?"
+    ],
+    "commonMistakes": [
+      "Trusting the automatic type detection on every file.",
+      "Storing an ID with leading zeros as a number, which removes the zeros."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-powerbi-012",
+    "category": "power-bi",
+    "question": "What is query folding, and why do you care about it?",
+    "whatInterviewerIsTesting": "Deep understanding of how Power Query pushes work to the source and how that affects refresh speed.",
+    "modelAnswer": "**Query folding** means Power Query translates your steps into the source's own query language, such as SQL, and the source does the work. A filter step on a SQL Server table becomes a WHERE clause, so only the needed rows travel over the network.\n\nFolding matters most for large tables and incremental refresh. Some steps break folding, such as adding an index column, a custom M function, or some merges with non-foldable sources. Once a step breaks folding, all later steps run in Power Query on the full data. To check, right-click a step and choose **View Native Query**. If it is greyed out, folding has stopped at that step.",
+    "followUps": [
+      "Which step types usually break query folding?",
+      "How would you restructure a query so that the filter folds but a custom column is added later?"
+    ],
+    "commonMistakes": [
+      "Assuming every filter folds without checking View Native Query.",
+      "Placing a custom M step early, which stops folding for all later steps."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-powerbi-013",
+    "category": "power-bi",
+    "question": "How do you use parameters in Power Query, and what is a common example?",
+    "whatInterviewerIsTesting": "Practical use of parameters to make queries reusable and environment-aware.",
+    "modelAnswer": "A **parameter** is a single value you set once and use in many steps. A common example is a file path or a server name. If the team moves the sales file from a local folder to SharePoint, you change one parameter, and every query updates.\n\nParameters also help with a date range. For example, a parameter named StartDate can filter a table in every query that uses it. In Power Query, I create the parameter from the Manage Parameters option, then reference it in the Filter Rows step instead of typing the value by hand.",
+    "followUps": [
+      "How do parameters relate to incremental refresh?",
+      "What is the difference between a parameter and a hard-coded value in a step?"
+    ],
+    "commonMistakes": [
+      "Typing the same file path into many queries.",
+      "Using a parameter in the model but not in Power Query, which does not change the source."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-powerbi-014",
+    "category": "power-bi",
+    "question": "How do you handle errors in a Power Query step, such as a text value in a numeric column?",
+    "whatInterviewerIsTesting": "Practical error handling and data quality thinking during ETL.",
+    "modelAnswer": "Errors happen when a value cannot be converted, such as the text 'NA' in a sales amount column. I first find them with the error filter on the column. Then I decide the rule.\n\nTo replace errors with a default, I use **Replace Errors** and enter 0, or I add a custom column with a `try ... otherwise` expression, for example `try Number.From([Amount]) otherwise null`. I also keep a count of replaced rows, so the team knows how much data was changed. Silent fixes without a count can hide real problems in the source.",
+    "followUps": [
+      "What does the try keyword return when there is no error?",
+      "How would you report the number of rows you replaced?"
+    ],
+    "commonMistakes": [
+      "Replacing every error with 0 without telling anyone.",
+      "Converting the column type before checking which values fail."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-powerbi-015",
+    "category": "power-bi",
+    "question": "What is M, and what do the steps in a Power Query query look like behind the scenes?",
+    "whatInterviewerIsTesting": "Basic understanding of the M language that powers Power Query.",
+    "modelAnswer": "**M** is the functional language behind Power Query. Each step in the Applied Steps pane is a line that takes the previous result and changes it. The whole query is a `let ... in` block. For example:\n\n```\nlet\n    Source = Excel.Workbook(File.Contents(\"C:\\Data\\Sales.xlsx\"), null, true),\n    Sales = Source{[Item=\"Sales\",Kind=\"Sheet\"]}[Data],\n    Filtered = Table.SelectRows(Sales, each [Region] = \"West\")\nin\n    Filtered\n```\n\nI rarely write M by hand, but I read the Advanced Editor when I need to fix a step or check folding. The Advanced Editor shows the full M code for one query. The formula bar shows the same step. Simple steps such as renaming a column or changing a type are generated for me, and I only edit M when the built-in options cannot do the job.",
+    "followUps": [
+      "What does Table.SelectRows do in M?",
+      "Why does the in block return a value?"
+    ],
+    "commonMistakes": [
+      "Editing the M code without saving a copy of the query first.",
+      "Assuming the Applied Steps order does not matter."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-powerbi-016",
+    "category": "power-bi",
+    "question": "How does incremental refresh work, and what do RangeStart and RangeEnd do?",
+    "whatInterviewerIsTesting": "Understanding of large-data refresh strategy, partitioning and parameter design.",
+    "modelAnswer": "**Incremental refresh** loads only recent data, such as the last 7 days, instead of the whole history. The model keeps older partitions as they are. You need two datetime parameters in Power Query, named **RangeStart** and **RangeEnd**, and you filter the date column between them. Power BI sets these values automatically at each refresh.\n\nYou also set a policy, such as store 5 years and refresh 7 days. The query must fold to the source for this to work well, and the table must have a reliable date column. The feature also depends on licence and workspace capacity, so I check the current requirements before a rollout.",
+    "followUps": [
+      "What happens to late-arriving data older than the refresh window?",
+      "Why must the filter on the date column fold?"
+    ],
+    "commonMistakes": [
+      "Using a filter on a text date column, which breaks partitioning.",
+      "Setting the refresh window shorter than the time it takes to load late data."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-powerbi-017",
+    "category": "power-bi",
+    "question": "How would you find customers who have no orders in Power Query?",
+    "whatInterviewerIsTesting": "Ability to choose the right join kind for an anti-join question.",
+    "modelAnswer": "I would **merge** the customer table with the orders table, using CustomerID as the key, and choose the **Left Anti** join kind. The result keeps only the customers with no matching order.\n\nIn SQL, the same idea is `SELECT c.* FROM customers c LEFT JOIN orders o ON c.id = o.customer_id WHERE o.customer_id IS NULL`. SQLite supports this form. The Power Query version is faster to build and easy to refresh. After the merge, I remove the extra columns from the orders table so the output is clean.",
+    "followUps": [
+      "What is the difference between Left Anti and Right Anti?",
+      "How would you find customers with orders in only one month?"
+    ],
+    "commonMistakes": [
+      "Using an inner join, which keeps only matched rows.",
+      "Forgetting to check that the key columns have the same data type."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-powerbi-018",
+    "category": "power-bi",
+    "question": "What is a star schema, and why is it better than one large flat table for Power BI?",
+    "whatInterviewerIsTesting": "Core modelling knowledge and why it helps performance and DAX.",
+    "modelAnswer": "A **star schema** has one fact table, such as Sales, in the centre. It holds numbers and foreign keys. Around it are dimension tables, such as Date, Product, Customer and Store, with descriptive columns.\n\nThe model is smaller and faster than one wide flat table, because the descriptions are stored once. Filters flow cleanly from dimensions to facts, and DAX measures are easier to write and reuse. For a Delhi retail chain, I would keep Sales as the fact table and build Product, Store and Date dimensions beside it.",
+    "followUps": [
+      "What goes in a fact table and what goes in a dimension table?",
+      "Why does a flat table lead to repeated text and a larger model?"
+    ],
+    "commonMistakes": [
+      "Putting descriptive text columns in the fact table.",
+      "Building one big flat table because it looks simpler."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-powerbi-019",
+    "category": "power-bi",
+    "question": "What are relationships and cardinality in a Power BI model?",
+    "whatInterviewerIsTesting": "Basic understanding of one-to-many relationships and how filters travel.",
+    "modelAnswer": "A **relationship** links a column in one table to a column in another. **Cardinality** describes how many rows match on each side. The most common type is **one-to-many**: one customer row matches many order rows.\n\nThe 'one' side is the dimension, and it should have unique values. Filters go from the one side to the many side by default. If the key on the one side has duplicates, Power BI shows an error or double counts, so I check uniqueness before I create the relationship.",
+    "followUps": [
+      "What is the difference between one-to-many and many-to-one in the Power BI interface?",
+      "What happens if two tables have duplicate keys on the one side?"
+    ],
+    "commonMistakes": [
+      "Creating a relationship between two fact tables without a dimension.",
+      "Assuming Power BI detects the right relationship every time."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-powerbi-020",
+    "category": "power-bi",
+    "question": "What is cross-filter direction, and why are bi-directional filters risky?",
+    "whatInterviewerIsTesting": "Understanding of filter flow, ambiguity and the risk of double counting.",
+    "modelAnswer": "**Cross-filter direction** controls which way a filter travels across a relationship. **Single** means filters flow from the dimension to the fact table only. **Both** means filters also flow back from the fact to the dimension.\n\nBi-directional filters can create ambiguous paths when a model has several relationships, and they can slow queries. They can also change results in surprising ways. I keep single direction by default. When a specific measure needs to filter the other way, I use `CROSSFILTER` or a measure with `TREATAS` so the change applies only where it is needed.",
+    "followUps": [
+      "When would a both-direction filter be the right choice?",
+      "What error does Power BI show when two relationships make an ambiguous path?"
+    ],
+    "commonMistakes": [
+      "Setting both directions on every relationship to fix one measure.",
+      "Not knowing that a both-direction filter can create circular paths."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-powerbi-021",
+    "category": "power-bi",
+    "question": "Why do you need a dedicated date table in Power BI?",
+    "whatInterviewerIsTesting": "Understanding of time intelligence prerequisites and the marked date table.",
+    "modelAnswer": "A **date table** has one row per day, with no gaps, and with columns such as Year, Quarter, Month and Fiscal Year. Time intelligence functions like `SAMEPERIODLASTYEAR` and `TOTALYTD` need a continuous date range. Without it, the functions return wrong results or fail.\n\nI create the table in Power Query or with DAX, for example:\n\n```\nDate = CALENDAR(DATE(2022, 1, 1), DATE(2026, 12, 31))\n```\n\nThen I mark it as the date table and set the fiscal year start to April, which matches India's financial year. I hide the raw date column in fact tables and use only the date table in visuals.",
+    "followUps": [
+      "How would you add a fiscal quarter column that starts in April?",
+      "Why must the date table be marked as a date table?"
+    ],
+    "commonMistakes": [
+      "Using the date column from the Sales table as the time dimension.",
+      "Leaving gaps in the date range for weekends or holidays."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-powerbi-022",
+    "category": "power-bi",
+    "question": "How do you handle a role-playing dimension, such as order date and ship date both pointing to a Date table?",
+    "whatInterviewerIsTesting": "Ability to model two relationships to one dimension and keep measures clear.",
+    "modelAnswer": "A **role-playing dimension** is one dimension used in more than one role. The Date table can serve as Order Date and as Ship Date. Power BI allows only one active relationship between two tables, so I keep the Order Date relationship active and make the Ship Date relationship **inactive**.\n\nTo use the inactive one, I write a measure with `USERELATIONSHIP`, for example `Shipped Units = CALCULATE(SUM(Sales[Qty]), USERELATIONSHIP(Sales[Ship Date], 'Date'[Date]))`. Another option is to create a second Date table for shipping, which is simpler for users but adds a table.",
+    "followUps": [
+      "When would you choose a second Date table instead of USERELATIONSHIP?",
+      "What does the active relationship control in a visual?"
+    ],
+    "commonMistakes": [
+      "Creating two active relationships from the same Date table.",
+      "Writing a measure without USERELATIONSHIP and getting the order-date result by mistake."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-powerbi-023",
+    "category": "power-bi",
+    "question": "How do you handle a many-to-many relationship, such as customers who belong to many loyalty groups?",
+    "whatInterviewerIsTesting": "Advanced modelling: bridge tables, filter paths and the risks of many-to-many links.",
+    "modelAnswer": "Power BI supports many-to-many relationships, but the results can double count if the model is not built carefully. The clean approach is a **bridge table**. For example, a table called Customer_Group holds one row for each customer and group pair. It links to Customer on one side and to Group on the other side, with one-to-many relationships on each side.\n\nIf you use a direct many-to-many relationship, you must be careful about the filter direction and test totals. I always check that the grand total equals the sum of the parts. A bridge table with clear keys is easier to explain to the business team.",
+    "followUps": [
+      "How would you check that a bridge table is not double counting?",
+      "What is the risk of a direct many-to-many relationship in a total?"
+    ],
+    "commonMistakes": [
+      "Joining two tables with many-to-many without a bridge table and trusting the total.",
+      "Creating duplicate rows in the bridge table."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-powerbi-024",
+    "category": "power-bi",
+    "question": "What is a snowflake schema, and how is it different from a star schema in Power BI?",
+    "whatInterviewerIsTesting": "Understanding of normalised dimensions and why star is usually preferred.",
+    "modelAnswer": "A **snowflake schema** splits a dimension into several linked tables. For example, Product links to Category, and Category links to Department. A **star schema** keeps all those columns in one Product table.\n\nIn Power BI, a star schema is usually faster and easier for users, because there are fewer relationships to follow and the slicer fields are in one place. A snowflake can make sense when a dimension is very large or when one sub-dimension is shared by many tables. I normally flatten the snowflake into a star during Power Query, unless the data source changes often.",
+    "followUps": [
+      "When would you keep a snowflake instead of flattening it?",
+      "How does a snowflake affect the number of relationships?"
+    ],
+    "commonMistakes": [
+      "Keeping a snowflake because it looks more normalised.",
+      "Creating a relationship between Category and the fact table, which skips the Product table."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-powerbi-025",
+    "category": "power-bi",
+    "question": "Why do you hide fields in a Power BI model, and how do you decide which ones to hide?",
+    "whatInterviewerIsTesting": "Model design for end users and clean report building.",
+    "modelAnswer": "Hiding a field means it does not show in the Fields pane for report builders, but measures and other formulas can still use it. I hide foreign key columns, such as CustomerID in the fact table, because the user should slice by the Customer table, not by an ID. I also hide raw date columns and helper columns.\n\nI show measures and friendly attributes only. In a Hyderabad sales model, a user sees Total Sales, Store Name and Month, and does not see the ten helper columns that only DAX needs. This keeps the report clean and reduces mistakes.",
+    "followUps": [
+      "Does hiding a column change how DAX measures calculate?",
+      "What is the difference between hiding a column and deleting it?"
+    ],
+    "commonMistakes": [
+      "Hiding a column that a slicer still needs.",
+      "Hiding everything, which makes report building hard."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-powerbi-026",
+    "category": "power-bi",
+    "question": "What is a surrogate key, and why would you use one instead of the natural key in a dimension table?",
+    "whatInterviewerIsTesting": "Data warehouse modelling thinking and the link between source keys and the model.",
+    "modelAnswer": "A **natural key** is an ID that comes from the source system, such as a store code or an employee number. A **surrogate key** is a simple integer that the warehouse or Power Query creates to identify each dimension row.\n\nSurrogate keys help when source codes change, when two source systems use the same code, or when a dimension needs history. They also make joins faster because integers are small. In a Power BI model, I keep the natural key for lookups and add a surrogate key when the dimension has multiple versions of the same entity, such as a customer who moved cities.",
+    "followUps": [
+      "Where is a surrogate key usually created, in the warehouse or in Power BI?",
+      "How do surrogate keys support slowly changing dimensions?"
+    ],
+    "commonMistakes": [
+      "Using the source code as the key when two systems share the same code.",
+      "Changing a surrogate key on each refresh, which breaks relationships."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-powerbi-027",
+    "category": "power-bi",
+    "question": "What is a slowly changing dimension of type 2, and how would you model it in Power BI?",
+    "whatInterviewerIsTesting": "Understanding of history tracking in dimensions and how to report by the right version.",
+    "modelAnswer": "A **Type 2 slowly changing dimension** keeps history by adding a new row when an attribute changes. Each row has a start date, an end date and an active flag. If a customer moves from Pune to Bengaluru, the old row ends on that date and a new row starts.\n\nIn Power BI, the fact table must link to the row that was active on the transaction date. Usually this is done in the warehouse, or in Power Query by joining on the surrogate key and checking the date range. Reports can then show sales by the city the customer lived in at the time of sale. I test the join with a few known customers before I trust the totals.",
+    "followUps": [
+      "How would you show the current city for each customer in one visual?",
+      "What is the difference between Type 1 and Type 2 handling?"
+    ],
+    "commonMistakes": [
+      "Overwriting the old city, which loses history.",
+      "Joining on the customer name instead of the surrogate key, which causes duplicates."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-powerbi-028",
+    "category": "power-bi",
+    "question": "What is the difference between a measure and a calculated column in DAX?",
+    "whatInterviewerIsTesting": "The most basic DAX distinction: when each is evaluated and where it is stored.",
+    "modelAnswer": "A **calculated column** is computed row by row when the model refreshes, and the result is stored in the table. A **measure** is computed at query time, based on the filters in the visual. Measures do not take storage.\n\nFor example, a column `Margin = Sales[Amount] - Sales[Cost]` gives a value for each sales row. A measure `Total Margin = SUM(Sales[Margin])` gives the total for whatever the report is filtered to. I use measures for totals and ratios, and I use columns only when I need a value to slice by, such as a price band.",
+    "followUps": [
+      "Why can a calculated column increase the model size?",
+      "Can a measure be used on the rows axis of a visual?"
+    ],
+    "commonMistakes": [
+      "Using a calculated column for a total, which gives the wrong answer in a filtered visual.",
+      "Writing a measure to create a slicer category."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-powerbi-029",
+    "category": "power-bi",
+    "question": "What is the difference between row context and filter context in DAX?",
+    "whatInterviewerIsTesting": "Understanding of how DAX evaluates formulas, which is the base for CALCULATE questions.",
+    "modelAnswer": "**Row context** is the current row when DAX works through a table one row at a time. A calculated column always has a row context. For example, `Net = Sales[Amount] - Sales[Discount]` runs for each row.\n\n**Filter context** is the set of filters that apply to a calculation. It comes from slicers, visual axes, relationships and the `CALCULATE` function. A measure like `Total Sales = SUM(Sales[Amount])` works in filter context. If the report is filtered to Kerala, the measure returns Kerala sales only.\n\nA measure has filter context but no row context by default, unless you use an iterator like `SUMX`.",
+    "followUps": [
+      "Does a measure have a row context by default?",
+      "How does a slicer for Gujarat change the value of a card visual?"
+    ],
+    "commonMistakes": [
+      "Saying a measure runs row by row, which is true only for iterators.",
+      "Mixing up the two contexts when debugging a wrong total."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-powerbi-030",
+    "category": "power-bi",
+    "question": "What is the difference between SUM and SUMX in DAX?",
+    "whatInterviewerIsTesting": "Understanding of iterator functions and row-level calculations inside a measure.",
+    "modelAnswer": "`SUM` adds up one column. It cannot multiply two columns row by row. `SUMX` is an iterator. It goes through each row of a table, runs an expression for that row, and adds the results.\n\nFor example, to get revenue from quantity and price, I write:\n\n```\nTotal Units = SUM(Sales[Qty])\nTotal Revenue = SUMX(Sales, Sales[Qty] * Sales[Price])\n```\n\n`SUM` would give the total of Qty, which is wrong for revenue. `SUMX` gives the right value, because each row's quantity is multiplied by its price before the sum. Iterators can be slower on very large tables, so I use `SUM` when a simple total is enough.",
+    "followUps": [
+      "Could you write the same revenue measure with SUM and a calculated column?",
+      "What is the difference between SUMX and AVERAGEX?"
+    ],
+    "commonMistakes": [
+      "Using SUM on a price column and getting a total price, not revenue.",
+      "Using SUMX everywhere, which can slow large reports."
+    ],
+    "difficulty": "medium"
+  }
+]

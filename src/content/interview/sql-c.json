@@ -1,0 +1,482 @@
+[
+  {
+    "id": "interview-sql-071",
+    "category": "sql",
+    "question": "How do you calculate each category's share of total revenue in one SQL query?",
+    "whatInterviewerIsTesting": "Percent of total using a window function over an aggregate.",
+    "modelAnswer": "Group the revenue by category, then divide each group's sum by the grand total. In SQLite you can get the grand total in the same query with `SUM(SUM(x)) OVER ()`. In this ecommerce data, category text has mixed case and extra spaces, so I clean it with `LOWER(TRIM())` before grouping. Electronics is about 52 percent of delivered revenue in this sample.\n\n```sql\nSELECT LOWER(TRIM(p.category)) AS category,\n       ROUND(SUM(oi.line_total), 0) AS revenue,\n       ROUND(100.0 * SUM(oi.line_total) / SUM(SUM(oi.line_total)) OVER (), 2) AS pct_of_total\nFROM order_items oi\nJOIN products p ON p.product_id = oi.product_id\nJOIN orders o ON o.order_id = oi.order_id\nWHERE o.order_status = 'Delivered'\nGROUP BY LOWER(TRIM(p.category))\nORDER BY revenue DESC;\n```\n\nI would also multiply by `100.0` first so the division does not drop the decimals.",
+    "followUps": [
+      "How would you do the same without a window function?",
+      "Why does the filter on delivered orders change the percentages?"
+    ],
+    "commonMistakes": [
+      "Dividing two integer sums and getting 0 or 1 instead of a percentage.",
+      "Forgetting to clean category text, so Fashion and fashion show up as two rows."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-sql-072",
+    "category": "sql",
+    "question": "How would you build a signup-to-paid funnel from an events table?",
+    "whatInterviewerIsTesting": "One row per user with a flag per step, then step conversion rates.",
+    "modelAnswer": "I reduce the events to one row per user, with a 0 or 1 flag for each step. Then I sum the flags to count users at each step. Conversion is the next step divided by the step before it. In the subscription data, event names mix upper and lower case, so I wrap them in `LOWER()`. On this sample, about 64 percent of signups start a trial, and about 36 percent of trial users have a payment_success event.\n\n```sql\nWITH steps AS (\n  SELECT user_id,\n         MAX(CASE WHEN LOWER(event_name) = 'signup' THEN 1 ELSE 0 END) AS s1,\n         MAX(CASE WHEN LOWER(event_name) = 'trial_start' THEN 1 ELSE 0 END) AS s2,\n         MAX(CASE WHEN LOWER(event_name) = 'payment_success' THEN 1 ELSE 0 END) AS s3\n  FROM events\n  GROUP BY user_id\n)\nSELECT SUM(s1) AS signed_up,\n       SUM(s2) AS started_trial,\n       SUM(s3) AS paid,\n       ROUND(100.0 * SUM(s2) / SUM(s1), 1) AS trial_pct,\n       ROUND(100.0 * SUM(s3) / SUM(s2), 1) AS paid_pct\nFROM steps;\n```\n\nThis version does not check the order of the steps. If order matters, I would compare the MIN event times for each step.",
+    "followUps": [
+      "How would you make sure a trial start happens before a payment?",
+      "What changes if one user can sign up more than once?"
+    ],
+    "commonMistakes": [
+      "Counting events instead of distinct users, so repeat app opens inflate the funnel.",
+      "Using = on raw event names that are stored in mixed case."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-sql-073",
+    "category": "sql",
+    "question": "How do you find streaks of consecutive days, for example days in a row with successful transactions?",
+    "whatInterviewerIsTesting": "Gaps and islands: a constant group key for consecutive dates.",
+    "modelAnswer": "I take one row per user per day first, so two transactions on the same day do not break a streak. Then I number each day with `ROW_NUMBER()` and subtract that number from the date. Consecutive days give the same result, so grouping by that result gives one streak per run. In SQLite I subtract the number of days with `DATE(day, '-n days')`. This query returns the longest streaks in the fintech sample.\n\n```sql\nWITH d AS (\n  SELECT DISTINCT user_id, DATE(txn_datetime) AS day\n  FROM transactions\n  WHERE status = 'SUCCESS'\n),\ng AS (\n  SELECT user_id, day,\n         DATE(day, '-' || ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY day) || ' days') AS grp\n  FROM d\n)\nSELECT user_id, MIN(day) AS streak_start, MAX(day) AS streak_end, COUNT(*) AS days\nFROM g\nGROUP BY user_id, grp\nORDER BY days DESC, user_id\nLIMIT 5;\n```\n\nPostgres and MySQL would use `INTERVAL` or `DATE_SUB` here, but the idea is the same.",
+    "followUps": [
+      "How would you allow a gap of one missing day in a streak?",
+      "Why must the rows be made distinct by day first?"
+    ],
+    "commonMistakes": [
+      "Skipping DISTINCT, so two transactions on one day split a streak.",
+      "Using DATEDIFF, which SQLite does not have. Use JULIANDAY or DATE instead."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-sql-074",
+    "category": "sql",
+    "question": "How do you compute a median in SQL when the database has no MEDIAN function?",
+    "whatInterviewerIsTesting": "Ranking rows and handling an even row count.",
+    "modelAnswer": "I rank the rows by value and count them. The middle row is at position `(n + 1) / 2`. If the count is even, there are two middle rows at `(n + 1) / 2` and `(n + 2) / 2`, so I average them. In SQLite, integer division gives the right positions. Postgres has `PERCENTILE_CONT(0.5)` for this, but the ranking method works in every database.\n\n```sql\nWITH ranked AS (\n  SELECT amount,\n         ROW_NUMBER() OVER (ORDER BY amount) AS rn,\n         COUNT(*) OVER () AS n\n  FROM transactions\n  WHERE status = 'SUCCESS'\n)\nSELECT AVG(amount) AS median_amount\nFROM ranked\nWHERE rn IN ((n + 1) / 2, (n + 2) / 2);\n```\n\nFor the fintech sample, the median successful transaction is about INR 557.",
+    "followUps": [
+      "Why does the query use AVG on the middle rows?",
+      "How does a tie at the middle affect the answer?"
+    ],
+    "commonMistakes": [
+      "Using AVG(amount) on all rows and calling it the median.",
+      "Forgetting the two middle rows when the count is even."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-sql-075",
+    "category": "sql",
+    "question": "How do you calculate year-on-year growth for each month of revenue?",
+    "whatInterviewerIsTesting": "Period aggregation and self join to the same period last year.",
+    "modelAnswer": "I first total the delivered order value for each year and month. Then I join that summary to itself, matching the same month in the previous year. Growth is the difference divided by the prior year value. `STRFTIME` returns text, so I compare the year with the string `'2023'`, not a number. In the ecommerce sample, February 2024 is about 57 percent above February 2023.\n\n```sql\nWITH m AS (\n  SELECT STRFTIME('%Y', order_date) AS yr,\n         STRFTIME('%m', order_date) AS mo,\n         SUM(total_amount) AS revenue\n  FROM orders\n  WHERE order_status = 'Delivered'\n  GROUP BY yr, mo\n)\nSELECT cur.mo,\n       ROUND(cur.revenue, 0) AS rev_2024,\n       ROUND(prev.revenue, 0) AS rev_2023,\n       ROUND(100.0 * (cur.revenue - prev.revenue) / NULLIF(prev.revenue, 0), 1) AS yoy_pct\nFROM m AS cur\nJOIN m AS prev ON prev.mo = cur.mo AND prev.yr = '2023'\nWHERE cur.yr = '2024'\nORDER BY cur.mo;\n```\n\n`NULLIF` protects the division if a month has no prior-year sales.",
+    "followUps": [
+      "How would you do this with LAG instead of a self join?",
+      "What do you do when a month had no sales last year?"
+    ],
+    "commonMistakes": [
+      "Comparing all orders, including cancelled ones, so the growth number is distorted.",
+      "Dividing by zero when the prior-year month is empty."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-sql-076",
+    "category": "sql",
+    "question": "How do you split a user's events into sessions when a gap of 30 minutes starts a new session?",
+    "whatInterviewerIsTesting": "LAG to find gaps, then a running sum to number sessions.",
+    "modelAnswer": "I sort each user's events by time, then use `LAG()` to get the previous event time for the same user. If there is no previous event, or the gap is over 30 minutes, the event starts a new session. A running sum of that flag gives each session a number. In SQLite I measure the gap in minutes with `JULIANDAY` because there is no datediff function. I add `event_id` as a tiebreaker so the session numbers stay the same on every run.\n\n```sql\nWITH e AS (\n  SELECT user_id, event_id, event_time,\n         LAG(event_time) OVER (PARTITION BY user_id ORDER BY event_time, event_id) AS prev_time\n  FROM events\n),\nf AS (\n  SELECT user_id, event_id, event_time,\n         CASE WHEN prev_time IS NULL\n                OR (JULIANDAY(event_time) - JULIANDAY(prev_time)) * 1440 > 30\n              THEN 1 ELSE 0 END AS new_session\n  FROM e\n),\ns AS (\n  SELECT user_id, event_time, event_id,\n         SUM(new_session) OVER (PARTITION BY user_id ORDER BY event_time, event_id\n                                ROWS UNBOUNDED PRECEDING) AS session_no\n  FROM f\n)\nSELECT user_id, session_no, COUNT(*) AS events,\n       MIN(event_time) AS started_at, MAX(event_time) AS ended_at\nFROM s\nGROUP BY user_id, session_no\nORDER BY events DESC, user_id, session_no\nLIMIT 5;\n```",
+    "followUps": [
+      "How would you change the timeout to 60 minutes?",
+      "What happens if two events have the same timestamp?"
+    ],
+    "commonMistakes": [
+      "Leaving out PARTITION BY user_id, so one user's last event is compared with another user's first.",
+      "Sorting by time only, so session numbers can change between runs."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-sql-077",
+    "category": "sql",
+    "question": "How would you build a month-1 retention table for users who signed up in the first half of 2023?",
+    "whatInterviewerIsTesting": "Cohort assignment, month offset, and distinct counts per cohort.",
+    "modelAnswer": "A cohort is the month of signup. A user is retained in month 1 if they have any event in the next calendar month. I build the cohort size from the users table, not from the events table, so users with no events still count. Then I count distinct users who were active in the next month. On this sample, the January 2023 cohort has 152 users and about 32 percent are active in month 1.\n\n```sql\nWITH cohort AS (\n  SELECT user_id, STRFTIME('%Y-%m', signup_date) AS cohort_month\n  FROM users\n),\nact AS (\n  SELECT DISTINCT user_id, STRFTIME('%Y-%m', event_time) AS active_month\n  FROM events\n),\nsizes AS (\n  SELECT cohort_month, COUNT(*) AS cohort_size\n  FROM cohort\n  GROUP BY cohort_month\n),\nm1 AS (\n  SELECT c.cohort_month, COUNT(DISTINCT c.user_id) AS active_m1\n  FROM cohort c\n  JOIN act a ON a.user_id = c.user_id\n   AND a.active_month = STRFTIME('%Y-%m', DATE(c.cohort_month || '-01', '+1 month'))\n  GROUP BY c.cohort_month\n)\nSELECT s.cohort_month, s.cohort_size,\n       COALESCE(m1.active_m1, 0) AS active_m1,\n       ROUND(100.0 * COALESCE(m1.active_m1, 0) / s.cohort_size, 1) AS m1_pct\nFROM sizes s\nLEFT JOIN m1 USING (cohort_month)\nWHERE s.cohort_month BETWEEN '2023-01' AND '2023-06'\nORDER BY s.cohort_month;\n```\n\n`DATE(..., '+1 month')` is SQLite syntax. MySQL uses `DATE_ADD`.",
+    "followUps": [
+      "Why use COUNT(DISTINCT) instead of COUNT(*)?",
+      "How would you change the definition to weekly retention?"
+    ],
+    "commonMistakes": [
+      "Building the cohort size from a join to events, which drops users with no activity.",
+      "Calling the signup month month 0 and then counting month 0 as retention."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-sql-078",
+    "category": "sql",
+    "question": "How would you score customers with RFM (recency, frequency, monetary) in SQL?",
+    "whatInterviewerIsTesting": "NTILE bucketing and getting the direction of each score right.",
+    "modelAnswer": "For each customer I compute days since the last delivered order, the order count, and the total value. I use `NTILE(5)` to split each measure into five equal groups. For recency, I order by days descending, so the most recent customers land in group 5. I fix the as-of date as 2025-01-01 instead of today, so the scores stay the same when I rerun the query on this historical data.\n\n```sql\nWITH c AS (\n  SELECT customer_id,\n         JULIANDAY('2025-01-01') - JULIANDAY(MAX(order_date)) AS recency_days,\n         COUNT(*) AS frequency,\n         ROUND(SUM(total_amount), 2) AS monetary\n  FROM orders\n  WHERE order_status = 'Delivered'\n  GROUP BY customer_id\n),\ns AS (\n  SELECT customer_id, recency_days, frequency, monetary,\n         NTILE(5) OVER (ORDER BY recency_days DESC) AS r_score,\n         NTILE(5) OVER (ORDER BY frequency) AS f_score,\n         NTILE(5) OVER (ORDER BY monetary) AS m_score\n  FROM c\n)\nSELECT customer_id, ROUND(recency_days) AS days_since_last,\n       frequency, monetary, r_score, f_score, m_score\nFROM s\nORDER BY (r_score + f_score + m_score) DESC, monetary DESC, customer_id\nLIMIT 5;\n```",
+    "followUps": [
+      "Why use NTILE instead of fixed cut-off values?",
+      "How would you handle customers with only one order?"
+    ],
+    "commonMistakes": [
+      "Ordering recency ascending, so the most recent customers get score 1.",
+      "Using today's real date for recency in a historical dataset, so the scores change every day."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-sql-079",
+    "category": "sql",
+    "question": "How do you find how many customers make up 80 percent of revenue?",
+    "whatInterviewerIsTesting": "Running totals and the boundary row in a Pareto cut.",
+    "modelAnswer": "I total the revenue for each customer and sort from highest to lowest. A running total shows the cumulative share. I want every customer whose running total before their own row is still below 80 percent, because the last customer who crosses the line also counts. So I compare `running - revenue` (the running total before this row) with 80 percent of the grand total. In this ecommerce sample, about 723 customers, or 33 percent of buyers, make up 80 percent of revenue.\n\n```sql\nWITH rev AS (\n  SELECT customer_id, SUM(total_amount) AS revenue\n  FROM orders\n  WHERE order_status = 'Delivered'\n  GROUP BY customer_id\n),\nranked AS (\n  SELECT customer_id, revenue,\n         SUM(revenue) OVER (ORDER BY revenue DESC ROWS UNBOUNDED PRECEDING) AS running,\n         SUM(revenue) OVER () AS total\n  FROM rev\n)\nSELECT COUNT(*) AS customers_for_80pct\nFROM ranked\nWHERE running - revenue < 0.8 * total;\n```",
+    "followUps": [
+      "Why not use running <= 0.8 * total?",
+      "How would you list the customers themselves instead of counting them?"
+    ],
+    "commonMistakes": [
+      "Using running <= 80 percent, which misses the customer that crosses the line.",
+      "Ordering by customer_id instead of revenue."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-sql-080",
+    "category": "sql",
+    "question": "How do you calculate a rolling 7-day active user count for each day?",
+    "whatInterviewerIsTesting": "Counting distinct users in a date window, not adding daily counts.",
+    "modelAnswer": "For each day, I count the distinct users who had a successful transaction in that day or the six days before. I cannot add up seven daily counts, because a user active on five days would be counted five times. I compare dates with `DATE()` so the last day's late-evening transactions are not cut off. The sample shows about 250 users in a rolling week in early December 2024.\n\n```sql\nWITH days AS (\n  SELECT DISTINCT DATE(txn_datetime) AS d\n  FROM transactions\n  WHERE status = 'SUCCESS'\n)\nSELECT dy.d AS day, COUNT(DISTINCT t.user_id) AS users_7d\nFROM days dy\nJOIN transactions t\n  ON t.status = 'SUCCESS'\n AND DATE(t.txn_datetime) BETWEEN DATE(dy.d, '-6 days') AND dy.d\nWHERE dy.d BETWEEN '2024-12-01' AND '2024-12-05'\nGROUP BY dy.d\nORDER BY dy.d;\n```\n\nOn a large table, I would pre-aggregate one row per user per day first.",
+    "followUps": [
+      "Why can you not sum the daily active users for the week?",
+      "How would you speed this up on a table with millions of rows?"
+    ],
+    "commonMistakes": [
+      "Summing daily counts, which counts the same user several times.",
+      "Comparing a raw timestamp with a date, which drops the rest of the last day."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-sql-081",
+    "category": "sql",
+    "question": "What is the difference between a primary key and a foreign key?",
+    "whatInterviewerIsTesting": "Basic relational vocabulary and how tables link.",
+    "modelAnswer": "A **primary key** uniquely identifies each row in its own table, and it cannot repeat or be empty. A **foreign key** is a column in one table that points to the primary key of another table. In the ecommerce data, `orders.order_id` is the primary key of `orders`, and `order_items.order_id` is a foreign key to it. This lets me join each order to its items. In SQLite, foreign key checks are off by default, so I turn them on with `PRAGMA foreign_keys = ON`.",
+    "followUps": [
+      "Can a foreign key be NULL?",
+      "Can a table have more than one primary key?"
+    ],
+    "commonMistakes": [
+      "Saying a table can have many primary keys. It has one primary key, which can span several columns.",
+      "Assuming the database always enforces foreign keys. SQLite needs the pragma first."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-sql-082",
+    "category": "sql",
+    "question": "Explain first, second and third normal form in plain words.",
+    "whatInterviewerIsTesting": "Normalisation as a design habit, with a concrete example.",
+    "modelAnswer": "**1NF** means each cell holds one value. A cell should not hold \"Pune, Mumbai\". **2NF** means every non-key column depends on the whole key. If `order_items` stored `product_name`, that name depends only on `product_id`, so it belongs in `products`. **3NF** means no non-key column depends on another non-key column. For example, a product's category should not depend on its sub-category if the same rule is stored twice. The goal is to store each fact once, so updates do not leave conflicting copies.",
+    "followUps": [
+      "What is BCNF, in simple terms?",
+      "Why would an analyst ever want to undo normalisation?"
+    ],
+    "commonMistakes": [
+      "Thinking 3NF means exactly three tables.",
+      "Normalising every table to the extreme, which makes simple reports slow to write."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-sql-083",
+    "category": "sql",
+    "question": "What is the difference between an OLTP database and a star schema?",
+    "whatInterviewerIsTesting": "Knowing when to use transactional versus analytical models.",
+    "modelAnswer": "An **OLTP** database runs the live app. It has many small inserts and updates, and it is normalised so each fact is stored once. A **star schema** is built for reports. It has one fact table, with one row per event such as an order item, and dimension tables such as customer, product and date around it. The fact table holds keys and numbers, and the dimensions hold the descriptive text. Before I design a star schema, I state its grain, for example \"one row per order item per day\".",
+    "followUps": [
+      "Why does a date dimension help reports?",
+      "What goes wrong if you mix two grains in one fact table?"
+    ],
+    "commonMistakes": [
+      "Running heavy reports on the live OLTP database, which can slow the app.",
+      "Not stating the grain of the fact table."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-sql-084",
+    "category": "sql",
+    "question": "What is a surrogate key, and when would you use one?",
+    "whatInterviewerIsTesting": "Stable identifiers when natural keys can change.",
+    "modelAnswer": "A **surrogate key** is an artificial ID with no business meaning, such as a warehouse-generated `customer_key` from 1 upward. I use one when the natural key can change or comes from several source systems. Surrogate keys are also smaller and faster to join on than long text keys, which helps large fact tables. For example, a customer's mobile number can change, but the warehouse keeps the same `customer_key`, so the history of orders stays linked. The natural key is still stored as a normal column, so I can trace each row back to the source.",
+    "followUps": [
+      "How do you keep a surrogate key stable across daily loads?",
+      "How is a surrogate key different from an auto-increment column in the app database?"
+    ],
+    "commonMistakes": [
+      "Using email or mobile number as the primary key, then changing it and breaking the history.",
+      "Dropping the natural key completely, so rows cannot be traced back to the source."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-sql-085",
+    "category": "sql",
+    "question": "When would you denormalise a table, and what do you give up?",
+    "whatInterviewerIsTesting": "Trade-off judgement between query simplicity and data consistency.",
+    "modelAnswer": "I denormalise for reporting when many queries repeat the same joins. For example, I can copy `city` and `category` onto each order line in a daily sales table, so analysts do not join four tables. The gain is simpler and faster queries. The cost is extra storage, and a copied value can go out of date if the source changes. So I document that the copied value is a snapshot at load time, and I rebuild the table when the rules change. I would not denormalise the live app database, because writes get harder.",
+    "followUps": [
+      "How would you keep a denormalised column in sync with its source?",
+      "When would you avoid denormalising?"
+    ],
+    "commonMistakes": [
+      "Denormalising the transactional app database, which makes every update touch more rows.",
+      "Not documenting that the copied value is a snapshot from the load date."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-sql-086",
+    "category": "sql",
+    "question": "How do you model a many-to-many relationship, such as orders and products?",
+    "whatInterviewerIsTesting": "Bridge tables and where to store the price.",
+    "modelAnswer": "An order can have many products, and a product can appear in many orders. So I use a **bridge table** with one row per order and product pair. In the ecommerce data, `order_items` is the bridge. It holds `order_id`, `product_id`, `quantity` and `unit_price`. A one-to-many link, such as customer to orders, needs only a foreign key on the many side, `orders.customer_id`. I store `unit_price` in the bridge too, because the price at the time of sale can differ from today's price in `products`.",
+    "followUps": [
+      "Why store unit_price in the bridge table?",
+      "Can a bridge table have its own primary key?"
+    ],
+    "commonMistakes": [
+      "Storing a comma-separated list of product IDs in the orders table.",
+      "Keeping the price only in products, so old orders change when the price changes."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-sql-087",
+    "category": "sql",
+    "question": "What is an index, and when does it not help?",
+    "whatInterviewerIsTesting": "Index purpose, costs, and when the optimiser skips it.",
+    "modelAnswer": "An **index** is a sorted lookup structure. It lets the database find matching rows without scanning the whole table, for example rows for one `customer_id`. It does not help when the query returns a large part of the table, when the column has only two values like a yes or no flag, when a function hides the column, or when the table is tiny. Indexes also slow inserts and updates and use extra storage. I check whether an index is used with the query plan, not by guessing. In SQLite I create one with `CREATE INDEX idx_orders_date ON orders(order_date);`.",
+    "followUps": [
+      "Why not index every column?",
+      "What is the cost of an index on a column that changes often?"
+    ],
+    "commonMistakes": [
+      "Saying an index always makes a query faster.",
+      "Indexing a flag column alone, where the index splits the rows almost evenly and does not narrow the search."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-sql-088",
+    "category": "sql",
+    "question": "Why is SELECT * risky in production queries?",
+    "whatInterviewerIsTesting": "Awareness of cost, breakage and index use.",
+    "modelAnswer": "`SELECT *` pulls every column, including wide text columns that the report does not need, so it uses more I/O and memory. It also breaks code when someone adds or renames a column. And it stops the query from being answered from a narrow index alone. I list the columns I need, for example `SELECT order_id, total_amount FROM orders WHERE customer_id = 452;`. `SELECT *` is fine for a quick look at a small table while exploring data. In a report that other people rely on, I always name the columns.",
+    "followUps": [
+      "When is SELECT * acceptable?",
+      "What can go wrong in a view or a join that uses SELECT *?"
+    ],
+    "commonMistakes": [
+      "Thinking SELECT * costs nothing when only one column is needed.",
+      "Using SELECT * in a join, so the same column name appears twice in the output."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-sql-089",
+    "category": "sql",
+    "question": "How do you read a query plan? Which SQLite command do you use?",
+    "whatInterviewerIsTesting": "Reading SEARCH versus SCAN in a plan.",
+    "modelAnswer": "I put `EXPLAIN QUERY PLAN` in front of the query. The output shows how SQLite reads each table. `SEARCH ... USING INDEX` means it looks up rows by an index. `SCAN` means it reads every row. For the ecommerce orders table, a filter on `customer_id` uses the existing index. Here is the output for that query:\n\n```\nQUERY PLAN\n`--SEARCH orders USING INDEX idx_orders_customer_id (customer_id=?)\n```\n\nPostgres gives a similar view with `EXPLAIN ANALYZE`, which also shows actual timings. A `SCAN` on a 500-row lookup table is usually fine.",
+    "followUps": [
+      "What does USING COVERING INDEX mean?",
+      "How is reading an EXPLAIN plan in Postgres different?"
+    ],
+    "commonMistakes": [
+      "Reading the plan as if it were the query result.",
+      "Treating every SCAN as a problem, even on a small table."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-sql-090",
+    "category": "sql",
+    "question": "Why does a function on a column stop an index from being used, and how do you fix it?",
+    "whatInterviewerIsTesting": "Sargable filters: move the work to the constant side.",
+    "modelAnswer": "An index is sorted by the raw column value. If I write `STRFTIME('%Y', order_date) = '2024'`, SQLite has to compute the year for every row, so it cannot jump to 2024 in the index. I rewrite the filter as a range on the raw column. The result is the same, and the index can be used. The same rule applies to `LOWER(email) = ...`.\n\n```sql\n-- Slow: the function hides order_date from the index\nSELECT order_id FROM orders WHERE STRFTIME('%Y', order_date) = '2024';\n\n-- Fast: a range on the raw column\nSELECT order_id FROM orders\nWHERE order_date >= '2024-01-01' AND order_date < '2025-01-01';\n```\n\nI tested this with a copy of the database and an index on `order_date`. The first query scans, and the second searches the index.",
+    "followUps": [
+      "Does the same rule apply to LIKE '%abc'?",
+      "Why is a range safer than BETWEEN on timestamps?"
+    ],
+    "commonMistakes": [
+      "Wrapping the column in LOWER or CAST for convenience and losing the index.",
+      "Using BETWEEN '2024-01-01' AND '2024-12-31' on timestamps, which drops all times on 31 December."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-sql-091",
+    "category": "sql",
+    "question": "What is a covering index, and when does it help?",
+    "whatInterviewerIsTesting": "Index-only reads and the trade-off with write cost.",
+    "modelAnswer": "A **covering index** holds every column a query needs, so the database can answer the query from the index and never read the table row. For example, `CREATE INDEX idx_orders_cust_total ON orders(customer_id, total_amount);` covers `SELECT customer_id, total_amount FROM orders WHERE customer_id = 452;`. The SQLite plan shows `SEARCH ... USING COVERING INDEX`. The trade-off is extra storage and slower writes, so I add a covering index only for a query that runs often. I check the plan after creating it to confirm the database actually uses it.",
+    "followUps": [
+      "Would adding order_status to this index help this query?",
+      "Why does the column order in a composite index matter?"
+    ],
+    "commonMistakes": [
+      "Adding every column to the index, which slows every insert.",
+      "Expecting a covering index to help when the query uses SELECT *."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-sql-092",
+    "category": "sql",
+    "question": "In a composite index, which column should come first?",
+    "whatInterviewerIsTesting": "Equality first, then range; leftmost prefix rule.",
+    "modelAnswer": "I put equality filters first and one range column last. For the query `WHERE order_status = 'Delivered' AND order_date >= '2024-01-01'`, the index `(order_status, order_date)` lets SQLite seek to the Delivered rows and then scan one date range. I tested this on a copy of the ecommerce table, and the plan showed `SEARCH ... USING INDEX idx_orders_status_date (order_status=? AND order_date>?)`. A range column placed first stops the index from seeking on the columns after it. An index that starts with `order_date` is also not useful for a query that filters only on `order_status`.",
+    "followUps": [
+      "Would an index on (order_status, order_date) help a query that filters only on order_date?",
+      "How do you decide between two composite indexes for the same table?"
+    ],
+    "commonMistakes": [
+      "Putting the range column first, so the status filter cannot be used for seeking.",
+      "Creating one index per column and expecting the database to combine all of them for every query."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-sql-093",
+    "category": "sql",
+    "question": "Your query shows a higher total than the finance report. How do you debug it?",
+    "whatInterviewerIsTesting": "Structured debugging: grain, joins, duplicates and filters.",
+    "modelAnswer": "I check the grain first. I count rows before and after each join to find fan-out, where one order repeats once for each item. Then I check duplicates in the source table and the filters, such as status and date range. In the ecommerce data, summing `orders.total_amount` after joining `order_items` gives about INR 138 million, while the true total is about INR 54.7 million, because each order total repeats for each item. Summing before the join fixes it. I also found 100 order IDs that appear twice in `orders`.\n\n```sql\n-- Wrong: order totals repeat once per item\nSELECT SUM(o.total_amount) FROM orders o\nJOIN order_items oi ON oi.order_id = o.order_id;\n\n-- Right: sum at the order level\nSELECT SUM(total_amount) FROM orders;\n```",
+    "followUps": [
+      "How would you find the duplicate order IDs?",
+      "How would you confirm the fixed number matches finance?"
+    ],
+    "commonMistakes": [
+      "Changing the filters until the number matches finance, without knowing why it differed.",
+      "Reading the SQL once and not checking row counts after each join."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-sql-094",
+    "category": "sql",
+    "question": "What is the logical order of execution of a SELECT statement?",
+    "whatInterviewerIsTesting": "Knowing why aliases and aggregates behave as they do.",
+    "modelAnswer": "The logical order is FROM and JOIN, then WHERE, then GROUP BY, then HAVING, then SELECT, then DISTINCT, then ORDER BY, and finally LIMIT. This explains why `WHERE SUM(amount) > 1000` fails, because aggregates are not ready yet, and `HAVING SUM(amount) > 1000` works. It also explains why a SELECT alias is not visible in WHERE in standard SQL. SQLite allows it, but Postgres does not, so I avoid relying on that. Aliases work in ORDER BY because that step runs last.",
+    "followUps": [
+      "Where do window functions run in this order?",
+      "Why does LIMIT without ORDER BY give rows that can change?"
+    ],
+    "commonMistakes": [
+      "Expecting WHERE to filter on an aggregate such as SUM(amount).",
+      "Thinking LIMIT runs before ORDER BY, so the top rows are wrong."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-sql-095",
+    "category": "sql",
+    "question": "How does AVG treat NULL values, and how do you get an average that counts NULL as zero?",
+    "whatInterviewerIsTesting": "NULL handling in aggregates.",
+    "modelAnswer": "Aggregates such as `AVG`, `SUM` and `MIN` skip NULLs. `COUNT(*)` counts rows, but `COUNT(col)` counts only non-NULL values. So `AVG(discount)` divides by the number of non-NULL discounts. If a NULL should count as zero, I use `AVG(COALESCE(discount, 0))`. For example, values 10, NULL and 20 give `AVG` of 15, but `SUM / COUNT(*)` gives 10. A discount column that is NULL for orders without a coupon is a common case. I decide which meaning the business wants before I write the query, and I write the rule in a comment.",
+    "followUps": [
+      "What does AVG return when there are no rows?",
+      "How do you avoid a divide-by-zero in a ratio?"
+    ],
+    "commonMistakes": [
+      "Dividing SUM by COUNT(*) on a column with NULLs and getting a lower average without noticing.",
+      "Applying COALESCE to the wrong column, which changes the average unintentionally."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-sql-096",
+    "category": "sql",
+    "question": "How do you check that a query result is right before you share it?",
+    "whatInterviewerIsTesting": "Validation habits: control totals, key uniqueness and spot checks.",
+    "modelAnswer": "I reconcile the result with a control number from a trusted source, such as a finance report or a source table total. I check row counts and key uniqueness. In the ecommerce orders table, `COUNT(*)` gives 10,100 but `COUNT(DISTINCT order_id)` gives 10,000, so 100 orders are duplicated. I report that as a data issue before I share any totals. Last, I pick one customer or one order and check it by hand against the raw rows.\n\n```sql\nSELECT COUNT(*) AS rows_now, COUNT(DISTINCT order_id) AS distinct_ids\nFROM orders;\n```",
+    "followUps": [
+      "What would you do if the totals differ by a few rupees because of rounding?",
+      "How would you turn these checks into a repeatable query?"
+    ],
+    "commonMistakes": [
+      "Trusting a query only because it runs without an error.",
+      "Checking only the first 10 rows, which may all be correct while later rows are not."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-sql-097",
+    "category": "sql",
+    "question": "What does idempotent mean for a daily SQL load, and how do you write one?",
+    "whatInterviewerIsTesting": "Reliable reruns: delete the affected range, then insert, in one transaction.",
+    "modelAnswer": "An idempotent job gives the same result whether it runs once or twice. A rerun should not double the rows. I delete the rows for the dates I am loading, then insert them again, inside one transaction. If the job fails halfway, the transaction rolls back and the old rows stay. In SQLite, an `INSERT ... ON CONFLICT(sales_date) DO UPDATE` is another option when the date is the primary key.\n\n```sql\nBEGIN;\nDELETE FROM daily_revenue WHERE sales_date = '2024-12-31';\nINSERT INTO daily_revenue (sales_date, revenue)\nSELECT DATE(order_date), SUM(total_amount)\nFROM orders\nWHERE order_status = 'Delivered' AND order_date = '2024-12-31'\nGROUP BY DATE(order_date);\nCOMMIT;\n```",
+    "followUps": [
+      "Why wrap the delete and insert in a transaction?",
+      "What would you change if the source data arrives late?"
+    ],
+    "commonMistakes": [
+      "Using a plain INSERT, so a rerun doubles the rows for that day.",
+      "Deleting the whole table instead of only the dates being reloaded."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-sql-098",
+    "category": "sql",
+    "question": "Why does 3 / 2 return 1 in SQLite, and how do you get a percentage?",
+    "whatInterviewerIsTesting": "Integer division trap in SQL.",
+    "modelAnswer": "When both operands are integers, SQLite returns an integer and drops the fraction, so `3 / 2` is 1. To get a decimal, I multiply by `100.0` or cast to REAL before dividing. For example, `ROUND(100.0 * delivered_orders / total_orders, 1)` gives a percentage with one decimal. Postgres also truncates integer division. MySQL's `/` returns a decimal, but its `DIV` operator truncates, so the rule differs by database. In any tool, I check a small example such as `3 / 2` before I trust a ratio in a report.",
+    "followUps": [
+      "How would you round to one decimal place?",
+      "What is the risk of CAST(x AS INTEGER) before a division?"
+    ],
+    "commonMistakes": [
+      "Multiplying by 100 after the division, so the answer is already truncated.",
+      "Writing SUM(x) / COUNT(*) on integer columns and getting 0 for a small share."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-sql-099",
+    "category": "sql",
+    "question": "How do you stop SQL injection when a Python app builds a query from user input?",
+    "whatInterviewerIsTesting": "Parameter binding and the limits of it.",
+    "modelAnswer": "I never paste user text into the SQL string. I write the query with `?` markers and pass the values as a separate tuple, so the driver treats them as data, not SQL. Python's `sqlite3` module does this for you. Table and column names cannot be passed as values, so for those I check the input against a fixed list. An ORM protects most queries too, but raw SQL still needs the same care.\n\n```python\ncur.execute(\n    \"SELECT full_name, city FROM customers WHERE city = ?\",\n    (city,),\n)\n```",
+    "followUps": [
+      "Why can't you bind a table name as a parameter?",
+      "Does an ORM make SQL injection impossible?"
+    ],
+    "commonMistakes": [
+      "Escaping quotes by hand with replace, which misses some cases.",
+      "Trusting the input because it comes from a dropdown, when the request can be edited."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-sql-100",
+    "category": "sql",
+    "question": "A join-based check says some orders were paid twice. How do you verify it?",
+    "whatInterviewerIsTesting": "Separating true duplicates from fan-out caused by a join.",
+    "modelAnswer": "I first check the payments table alone, grouped by order, for two or more successful rows. Then I join to orders and compare the two results. In the ecommerce sample, the join-based check listed orders such as 79 with two successful payments, but the payments-only check returns zero orders. The join was the problem: order 79 appears twice in `orders`, so each payment row was counted twice. I would fix the duplicate orders first and then rerun the check.\n\n```sql\nSELECT order_id, COUNT(*) AS success_payments\nFROM payments\nWHERE payment_status = 'Success'\nGROUP BY order_id\nHAVING COUNT(*) > 1;\n```",
+    "followUps": [
+      "How would you find the duplicate rows in orders?",
+      "How would you present this to the payments team?"
+    ],
+    "commonMistakes": [
+      "Reporting double charges from a join without checking the source table alone.",
+      "Deleting rows from orders to make the check pass, without understanding why they were duplicated."
+    ],
+    "difficulty": "hard"
+  }
+]

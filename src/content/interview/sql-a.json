@@ -1,0 +1,562 @@
+[
+  {
+    "id": "interview-sql-001",
+    "category": "sql",
+    "question": "What is the difference between WHERE and HAVING?",
+    "whatInterviewerIsTesting": "Row filters before grouping versus group filters after aggregation.",
+    "modelAnswer": "WHERE filters individual rows before any grouping happens. HAVING filters groups after GROUP BY has run, so it can use aggregates such as COUNT or SUM. To find cities with more than 100 delivered orders, I filter the status in WHERE and the count in HAVING:\n\n```sql\nSELECT c.city, COUNT(*) AS delivered_orders\nFROM orders o\nJOIN customers c ON c.customer_id = o.customer_id\nWHERE o.order_status = 'Delivered'\nGROUP BY c.city\nHAVING COUNT(*) > 100;\n```\n\nA plain status check placed in HAVING gives the same answer, but the database groups rows it never needed. Keeping row filters in WHERE is cleaner and faster to read.",
+    "followUps": [
+      "Can you put COUNT(*) > 100 in WHERE?",
+      "Does the order of WHERE and GROUP BY in the text matter to the engine?"
+    ],
+    "commonMistakes": [
+      "Putting an aggregate condition such as COUNT(*) > 5 in WHERE, which is an error.",
+      "Using HAVING for plain row filters, which hides the intent and adds grouping work."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-sql-002",
+    "category": "sql",
+    "question": "How does NULL behave when you compare it in a WHERE clause?",
+    "whatInterviewerIsTesting": "Three-valued logic and the correct use of IS NULL and COALESCE.",
+    "modelAnswer": "NULL means the value is unknown. Any comparison with it, such as city = NULL or NULL = NULL, returns NULL rather than true or false. WHERE keeps only rows where the condition is true, so those rows drop out silently. To find customers with no city, I write IS NULL:\n\n```sql\nSELECT COUNT(*) AS no_city FROM customers WHERE city IS NULL;\n```\n\nTo show a default in a report, I use COALESCE(city, 'Unknown'), which returns the first non-null value. IS NULL, IS NOT NULL and COALESCE behave the same in SQLite, MySQL and Postgres.",
+    "followUps": [
+      "What does NULL = NULL return?",
+      "How is COALESCE different from IFNULL?"
+    ],
+    "commonMistakes": [
+      "Writing city = NULL, which never matches any row.",
+      "Assuming NOT (city = 'Pune') keeps the rows where city is NULL."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-sql-003",
+    "category": "sql",
+    "question": "Why use IN instead of several OR conditions?",
+    "whatInterviewerIsTesting": "Clean filter syntax for a list of values.",
+    "modelAnswer": "IN checks whether a value matches any item in a list. The filter `city IN ('Pune', 'Chennai', 'Kochi')` is shorter than three OR conditions and easier to change, because I edit one list. IN also accepts a subquery, such as `customer_id IN (SELECT customer_id FROM customers WHERE is_prime = 1)`. Both forms return the same rows. For a single city I would use = instead. The NOT IN version has a NULL trap that I explain in the joins section.",
+    "followUps": [
+      "Is IN faster than OR in SQLite?",
+      "How do you exclude a list of cities?"
+    ],
+    "commonMistakes": [
+      "Writing long chains of OR conditions that are hard to maintain.",
+      "Forgetting the parentheses around the list in a bigger filter."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-sql-004",
+    "category": "sql",
+    "question": "How do you get the five most expensive delivered orders?",
+    "whatInterviewerIsTesting": "ORDER BY direction, LIMIT and a tie-breaker for stable results.",
+    "modelAnswer": "I sort by the amount in descending order and keep the first five rows with LIMIT:\n\n```sql\nSELECT order_id, customer_id, total_amount\nFROM orders\nWHERE order_status = 'Delivered'\nORDER BY total_amount DESC, order_id ASC\nLIMIT 5;\n```\n\nI add order_id as a second sort key, so the result is the same every time when two orders have equal amounts. LIMIT works in SQLite, MySQL and Postgres. SQL Server uses TOP and Oracle uses FETCH FIRST. Without ORDER BY, LIMIT returns arbitrary rows, which is a common bug.",
+    "followUps": [
+      "What if two orders tie at the fifth place?",
+      "How would you get the top order per city?"
+    ],
+    "commonMistakes": [
+      "Using LIMIT without ORDER BY, so the rows returned are arbitrary.",
+      "Sorting ascending by mistake, which returns the cheapest orders."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-sql-005",
+    "category": "sql",
+    "question": "What does DISTINCT do, and when can it hide a real data problem?",
+    "whatInterviewerIsTesting": "Removing duplicates and recognising when DISTINCT masks a bad join.",
+    "modelAnswer": "DISTINCT removes duplicate rows from the result. It compares all selected columns together, so SELECT DISTINCT city returns each city once, while SELECT DISTINCT city, state returns each city and state pair. The risk is using it to hide duplicates that come from a join. Before I accept a DISTINCT fix, I compare row counts:\n\n```sql\nSELECT COUNT(*) AS rows_total, COUNT(DISTINCT customer_id) AS unique_customers\nFROM customers;\n```\n\nHere the two numbers differ, which means customer_id has duplicate rows. The real fix is to find the duplicates, not to hide them with DISTINCT everywhere.",
+    "followUps": [
+      "Does DISTINCT apply to one column or the whole row?",
+      "How is DISTINCT different from GROUP BY?"
+    ],
+    "commonMistakes": [
+      "Adding DISTINCT to hide duplicates without finding why they exist.",
+      "Selecting DISTINCT on one column while other selected columns vary, which gives confusing rows."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-sql-006",
+    "category": "sql",
+    "question": "When do you use LIKE instead of the equals sign for text?",
+    "whatInterviewerIsTesting": "Pattern matching with wildcards and the cost of leading wildcards.",
+    "modelAnswer": "Use = for an exact match, such as city = 'Pune'. Use LIKE for a pattern, such as customers on a Gmail address: `WHERE email LIKE '%@gmail.com'`. The % wildcard matches any number of characters, and _ matches exactly one. A pattern that starts with % cannot use a normal index, so the database checks every row. On a large table I would store a clean domain column, or check the plan with EXPLAIN QUERY PLAN before I rely on the filter. A literal % or _ can be searched with an ESCAPE clause.",
+    "followUps": [
+      "Is LIKE case-sensitive in Postgres?",
+      "How do you search for a literal % character?"
+    ],
+    "commonMistakes": [
+      "Using LIKE without wildcards and expecting a partial match.",
+      "Ignoring that a leading % makes the filter slow on big tables."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-sql-007",
+    "category": "sql",
+    "question": "Can you use a column alias from SELECT in the WHERE clause?",
+    "whatInterviewerIsTesting": "Logical order of SQL clauses and portability between engines.",
+    "modelAnswer": "No, not in standard SQL. WHERE runs before SELECT, so the alias does not exist yet when WHERE is checked. SQLite accepts it as an extension, but Postgres rejects it. The portable version repeats the expression:\n\n```sql\nSELECT order_id, total_amount - discount_amount AS net_amount\nFROM orders\nWHERE total_amount - discount_amount > 500;\n```\n\nAnother option is a CTE that computes the alias first, and then filters it in the outer query. I write the full expression in WHERE, so the same query runs on any engine.",
+    "followUps": [
+      "Why does ORDER BY accept aliases when WHERE does not?",
+      "What is the logical order of SQL clauses?"
+    ],
+    "commonMistakes": [
+      "Writing WHERE alias_name > x and assuming every engine accepts it.",
+      "Repeating a long expression in several places without checking that the copies match."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-sql-008",
+    "category": "sql",
+    "question": "Why can a BETWEEN filter on a timestamp miss the last day of data?",
+    "whatInterviewerIsTesting": "Date and time literal handling and half-open ranges.",
+    "modelAnswer": "BETWEEN includes both ends. If the column stores a timestamp such as '2023-03-31 14:20:00', then `order_date BETWEEN '2023-01-01' AND '2023-03-31'` compares the text with a value that has no time part, so rows later on March 31 are missed. A safer form is a half-open range:\n\n```sql\nSELECT COUNT(*) AS march_orders\nFROM orders\nWHERE order_date >= '2023-03-01' AND order_date < '2023-04-01';\n```\n\nThe start is included, the end is excluded, and the full month is covered whatever the time part is. Text dates only compare correctly in YYYY-MM-DD form, so I check the format first.",
+    "followUps": [
+      "How do you filter one calendar month in Postgres versus SQLite?",
+      "Why is a half-open range safer than BETWEEN?"
+    ],
+    "commonMistakes": [
+      "Using BETWEEN with an end date on a timestamp column.",
+      "Filtering text dates stored as DD/MM/YYYY, which compare in the wrong order."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-sql-009",
+    "category": "sql",
+    "question": "How do you find customers who have no email or no phone, and why do the parentheses matter?",
+    "whatInterviewerIsTesting": "Boolean precedence and NULL-aware filters.",
+    "modelAnswer": "AND binds tighter than OR. So `email IS NULL OR phone IS NULL AND city = 'Pune'` means email is null, or phone is null and the city is Pune. The intent is almost always the grouped version:\n\n```sql\nSELECT customer_id, full_name, city\nFROM customers\nWHERE (email IS NULL OR phone IS NULL)\n  AND city = 'Pune';\n```\n\nI must use IS NULL here. Writing email = NULL returns no rows, because the comparison is unknown. I also check the filter by counting its rows and comparing them with a second query, so I know the logic is right.",
+    "followUps": [
+      "What does NOT (email = 'x') return when email is NULL?",
+      "How would you count the rows that fail a filter?"
+    ],
+    "commonMistakes": [
+      "Leaving out parentheses around an OR inside an AND filter.",
+      "Writing email = NULL to find missing emails."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-sql-010",
+    "category": "sql",
+    "question": "How do you run a text search that is case-sensitive or case-insensitive across databases?",
+    "whatInterviewerIsTesting": "Knowledge of engine-specific text matching behaviour.",
+    "modelAnswer": "In SQLite, LIKE is case-insensitive for plain ASCII letters, and GLOB is case-sensitive but uses * and ? as wildcards. Postgres has ILIKE for case-insensitive matching, and its LIKE is case-sensitive. MySQL depends on the column collation. So `full_name LIKE 'rohan%'` finds 'Rohan Patel' in SQLite but not in Postgres. The portable pattern is to normalise both sides:\n\n```sql\nSELECT customer_id, full_name\nFROM customers\nWHERE LOWER(full_name) LIKE 'rohan%';\n```\n\nThis works on every engine, although it may stop an index from being used. I say which engine a query targets in the answer.",
+    "followUps": [
+      "How does LOWER handle non-English letters in SQLite?",
+      "What is ILIKE in Postgres?"
+    ],
+    "commonMistakes": [
+      "Assuming LIKE is case-insensitive in every database.",
+      "Using % wildcards with GLOB, which matches nothing special."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-sql-011",
+    "category": "sql",
+    "question": "What is the difference between COUNT(*), COUNT(column) and COUNT(DISTINCT column)?",
+    "whatInterviewerIsTesting": "Counting rows, non-null values and unique values.",
+    "modelAnswer": "COUNT(*) counts every row in the group, including rows with NULLs. COUNT(column) counts only rows where that column is not NULL. COUNT(DISTINCT column) counts the unique non-null values. On the customers table, COUNT(*) counts rows, COUNT(city) skips customers without a city, and COUNT(DISTINCT city) gives the number of different cities. These work the same in SQLite, MySQL and Postgres. In a report, I always say which count I used, because 'number of customers' can mean rows or people. I also run COUNT(*) first as a sanity check, since every other count should be equal to or smaller than it.",
+    "followUps": [
+      "Is COUNT(DISTINCT) expensive on a big table?",
+      "Does COUNT(1) behave like COUNT(*)?"
+    ],
+    "commonMistakes": [
+      "Using COUNT(column) for total rows and getting a smaller number because of NULLs.",
+      "Counting order rows when the question asks for unique customers."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-sql-012",
+    "category": "sql",
+    "question": "What does GROUP BY do, and why does a non-grouped column in SELECT fail in some databases?",
+    "whatInterviewerIsTesting": "Understanding that each output row is one group.",
+    "modelAnswer": "GROUP BY puts rows with the same key into one group, and each aggregate such as SUM runs once per group. Every column in SELECT must either appear in GROUP BY or sit inside an aggregate, because one output row cannot show many different values for one group. Postgres rejects `SELECT city, customer_id, COUNT(*) FROM customers GROUP BY city`, because many customers share a city. SQLite accepts it and returns an arbitrary customer_id, which is a silent bug. I group by every plain column I select, so the query has one clear meaning.",
+    "followUps": [
+      "What value does SQLite pick for the non-grouped column?",
+      "Can you group by an expression such as the month of a date?"
+    ],
+    "commonMistakes": [
+      "Relying on SQLite to pick a value for a non-grouped column.",
+      "Adding a column to SELECT and forgetting to add it to GROUP BY."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-sql-013",
+    "category": "sql",
+    "question": "How does GROUP BY work with more than one column?",
+    "whatInterviewerIsTesting": "The grain of a grouped result and the number of rows it returns.",
+    "modelAnswer": "Each unique combination of the grouping columns becomes one row. For example, `SELECT city, gender, COUNT(*) FROM customers GROUP BY city, gender` returns one row for each city and gender pair. The number of output rows equals the number of distinct pairs, not the number of cities. Before writing the query I decide the grain I want, such as one row per city per month, because it sets the GROUP BY columns. NULL values form their own group, so the group counts still add up to the table total.",
+    "followUps": [
+      "Where do NULL grouping keys appear in the result?",
+      "How do you sort the result by the count?"
+    ],
+    "commonMistakes": [
+      "Choosing the wrong grain and reporting totals that double count.",
+      "Expecting rows with a NULL key to disappear from the result."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-sql-014",
+    "category": "sql",
+    "question": "How do you rank cities by total revenue and show the top three?",
+    "whatInterviewerIsTesting": "Aliases in ORDER BY and LIMIT after aggregation.",
+    "modelAnswer": "I group by city, sum the order value, sort by the sum and keep three rows:\n\n```sql\nSELECT c.city, ROUND(SUM(o.total_amount), 2) AS revenue\nFROM orders o\nJOIN customers c ON c.customer_id = o.customer_id\nWHERE o.order_status = 'Delivered'\nGROUP BY c.city\nORDER BY revenue DESC\nLIMIT 3;\n```\n\nThe alias in ORDER BY keeps the query short. I filter to Delivered orders first, so cancelled and returned orders do not count as revenue. I round after the sum, not on each row, so the rounding error does not build up. In the answer I state which statuses count as revenue.",
+    "followUps": [
+      "How would you add a rank number to each city?",
+      "Why round at the end instead of on each row?"
+    ],
+    "commonMistakes": [
+      "Rounding each row before summing, which adds small errors.",
+      "Sorting ascending by mistake and showing the smallest cities."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-sql-015",
+    "category": "sql",
+    "question": "How do you count delivered and cancelled orders in one row per city?",
+    "whatInterviewerIsTesting": "Conditional aggregation with CASE.",
+    "modelAnswer": "I use SUM with a CASE expression that returns 1 for the rows I want and 0 for the rest:\n\n```sql\nSELECT c.city,\n       SUM(CASE WHEN o.order_status = 'Delivered' THEN 1 ELSE 0 END) AS delivered,\n       SUM(CASE WHEN o.order_status = 'Cancelled' THEN 1 ELSE 0 END) AS cancelled\nFROM orders o\nJOIN customers c ON c.customer_id = o.customer_id\nGROUP BY c.city;\n```\n\nThe table is scanned once, instead of running one query per status. A WHERE clause would remove the other status rows, so it cannot give both columns in one pass. COUNT(CASE WHEN ... THEN 1 END) also works, because COUNT skips NULLs. The pattern runs on SQLite, MySQL and Postgres.",
+    "followUps": [
+      "How would you turn these two columns into a cancel rate?",
+      "Is ELSE 0 needed, or does ELSE NULL also work with SUM?"
+    ],
+    "commonMistakes": [
+      "Running one query per status and joining the results.",
+      "Putting the status filter in WHERE, which drops the other status from the same row."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-sql-016",
+    "category": "sql",
+    "question": "Why is the average of customer averages different from the average order value?",
+    "whatInterviewerIsTesting": "Weighted versus unweighted averages.",
+    "modelAnswer": "The average of averages gives each customer the same weight, even if one customer placed 40 orders and another placed one. The true average order value weights each order equally, so it is total value divided by total orders. SQL does not allow AVG(AVG(...)), so I compute it in two steps:\n\n```sql\nWITH per_customer AS (\n  SELECT customer_id, AVG(total_amount) AS avg_order\n  FROM orders\n  GROUP BY customer_id\n)\nSELECT AVG(avg_order) AS avg_of_customer_avgs\nFROM per_customer;\n```\n\nThis number differs from `SUM(total_amount) / COUNT(*)`. For a question about order value, I use the second form.",
+    "followUps": [
+      "When is the average of averages the right answer?",
+      "How do you compute a weighted average of rates?"
+    ],
+    "commonMistakes": [
+      "Averaging a precomputed average column across groups.",
+      "Using a simple average of rates when the denominators are different."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-sql-017",
+    "category": "sql",
+    "question": "How do you find customers who placed at least five orders?",
+    "whatInterviewerIsTesting": "HAVING on an aggregate and the effect of filters on counts.",
+    "modelAnswer": "I group by customer and keep groups where the count is at least five, using HAVING:\n\n```sql\nSELECT customer_id, COUNT(*) AS order_count\nFROM orders\nGROUP BY customer_id\nHAVING COUNT(*) >= 5\nORDER BY order_count DESC;\n```\n\nIf the question means valid orders only, I add WHERE order_status <> 'Cancelled' before GROUP BY, so cancelled rows do not count. Here COUNT(*) counts orders per customer, so the label must say orders. I also check the size of the output first, because a list of thousands of customers is not useful for a dashboard.",
+    "followUps": [
+      "How do you find customers with exactly one order?",
+      "What happens to orders with a NULL customer_id?"
+    ],
+    "commonMistakes": [
+      "Putting COUNT(*) >= 5 in WHERE, which is an error.",
+      "Counting cancelled orders when the question asks for valid orders."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-sql-018",
+    "category": "sql",
+    "question": "How do SUM and AVG treat NULL values, and when does that change the answer?",
+    "whatInterviewerIsTesting": "Knowing that aggregates skip NULLs and that AVG changes its denominator.",
+    "modelAnswer": "SUM and AVG ignore NULL values. AVG divides by the count of non-null values, not by the number of rows. If the discount column is NULL for orders with no coupon, AVG(discount_amount) averages only the orders that recorded a discount, so the result is too high. To treat a missing discount as zero, I write AVG(COALESCE(discount_amount, 0)), which divides by all rows. The right choice depends on what NULL means in the source, so I confirm that with the data owner before I put the number in a report.",
+    "followUps": [
+      "What does SUM return when every value is NULL?",
+      "How do you count the NULLs in a column?"
+    ],
+    "commonMistakes": [
+      "Assuming AVG divides by the total row count.",
+      "Using COALESCE to zero for a column where NULL means unknown, not zero."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-sql-019",
+    "category": "sql",
+    "question": "How do you calculate the cancellation rate for each sales channel?",
+    "whatInterviewerIsTesting": "Rate calculation with a safe denominator and matching filters.",
+    "modelAnswer": "Cancellation rate is cancelled orders divided by all orders in the same channel. I use conditional aggregation, a decimal multiplier and NULLIF to guard the denominator:\n\n```sql\nSELECT sales_channel,\n       ROUND(100.0 * SUM(CASE WHEN order_status = 'Cancelled' THEN 1 ELSE 0 END)\n             / NULLIF(COUNT(*), 0), 2) AS cancel_pct\nFROM orders\nGROUP BY sales_channel\nORDER BY cancel_pct DESC;\n```\n\nThe 100.0 forces decimal division. In SQLite, two integers divide to an integer, so 3 / 10 gives 0. NULLIF turns an empty group into NULL instead of an error. The numerator and denominator must share the same filter, or the rate is wrong.",
+    "followUps": [
+      "Would AVG of a 0/1 cancelled flag give the same answer?",
+      "How would you get this rate per channel per month?"
+    ],
+    "commonMistakes": [
+      "Using a different filter for the numerator than for the denominator.",
+      "Forgetting the decimal multiplier, so every rate shows as 0."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-sql-020",
+    "category": "sql",
+    "question": "How do you add a grand total row next to the group rows in SQLite, which has no ROLLUP?",
+    "whatInterviewerIsTesting": "Building totals with UNION ALL and knowing engine limits.",
+    "modelAnswer": "Postgres and MySQL support ROLLUP, but SQLite does not. I write one query for the group level and one for the grand total, then join them with UNION ALL. A sort key keeps the total row last:\n\n```sql\nSELECT city, revenue, 0 AS row_type\nFROM (\n  SELECT c.city, SUM(o.total_amount) AS revenue\n  FROM orders o\n  JOIN customers c ON c.customer_id = o.customer_id\n  WHERE o.order_status = 'Delivered'\n  GROUP BY c.city\n)\nUNION ALL\nSELECT 'Grand total', SUM(o.total_amount), 1\nFROM orders o\nJOIN customers c ON c.customer_id = o.customer_id\nWHERE o.order_status = 'Delivered'\nORDER BY row_type, revenue DESC;\n```\n\nUNION ALL is used because the rows are already distinct, and it does not spend time removing duplicates. Both parts must use the same filter and join, or the total will not match the group rows. I drop row_type in the final output.",
+    "followUps": [
+      "Why is UNION ALL faster than UNION here?",
+      "How would the total differ if one order has no matching customer?"
+    ],
+    "commonMistakes": [
+      "Using UNION instead of UNION ALL, which removes duplicate rows and can change the totals.",
+      "Building the total from a different filter than the group rows, so the numbers do not add up."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-sql-021",
+    "category": "sql",
+    "question": "What is the difference between INNER JOIN, LEFT JOIN and FULL OUTER JOIN?",
+    "whatInterviewerIsTesting": "Which rows each join type keeps when keys do not match.",
+    "modelAnswer": "INNER JOIN keeps only rows that match on both sides. LEFT JOIN keeps every row from the left table and fills the right-side columns with NULL when nothing matches. FULL OUTER JOIN keeps unmatched rows from both sides. For example, with customers on the left and orders on the right, INNER drops customers who never ordered, LEFT keeps them with NULL order columns, and FULL also keeps orders that have no matching customer. SQLite supports FULL OUTER JOIN only from version 3.39, and MySQL does not support it at all, so there I combine two LEFT JOINs with UNION.",
+    "followUps": [
+      "How do you find rows that exist only on the right side?",
+      "Does LEFT JOIN ever create extra rows?"
+    ],
+    "commonMistakes": [
+      "Using INNER JOIN when the question asks for all customers, which silently drops rows.",
+      "Filtering a right-side column in WHERE, which turns the LEFT JOIN back into an INNER JOIN."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-sql-022",
+    "category": "sql",
+    "question": "When would you use a CROSS JOIN, and what is the main risk?",
+    "whatInterviewerIsTesting": "Cartesian products used on purpose and their row explosion.",
+    "modelAnswer": "A CROSS JOIN pairs every row of one table with every row of another. It is useful for building a complete grid, such as every city combined with every month, so a month with no sales still appears after a LEFT JOIN. The risk is size: 30 cities times 36 months gives 1,080 rows, and a CROSS JOIN between two large tables can produce millions. An accidental cross join, caused by a missing ON condition, gives totals that are far too high. I compare the row count with the expected count before I trust the result.",
+    "followUps": [
+      "How do you spot an accidental cross join?",
+      "How would you build a list of dates to use as a grid?"
+    ],
+    "commonMistakes": [
+      "Forgetting the ON condition, which creates a cartesian product.",
+      "Using CROSS JOIN between two big tables when a small grid is needed."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-sql-023",
+    "category": "sql",
+    "question": "How do you check that a join key is unique before you join two tables?",
+    "whatInterviewerIsTesting": "Grain awareness and checking for fan-out before a join.",
+    "modelAnswer": "I compare the row count with the distinct key count on the table that should have one row per key:\n\n```sql\nSELECT COUNT(*) AS rows_total, COUNT(DISTINCT customer_id) AS unique_keys\nFROM customers;\n```\n\nIn this dataset the counts differ, so customer_id is not unique in the customers table. A join from orders to customers would then repeat some orders, and revenue would be overstated. I raise that with the data owner and use a de-duplicated customer list for joins. I run this check before every new join, so the expected row count after the join is known.",
+    "followUps": [
+      "What is a composite key, and when do you need one?",
+      "What should you do if the key column has NULLs?"
+    ],
+    "commonMistakes": [
+      "Joining first and checking the counts later.",
+      "Assuming any column named id is unique in every table."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-sql-024",
+    "category": "sql",
+    "question": "How do you find customers who never placed an order, and which method is safest?",
+    "whatInterviewerIsTesting": "Anti-join techniques and how they handle missing keys.",
+    "modelAnswer": "Two methods are common. A LEFT JOIN with IS NULL:\n\n```sql\nSELECT c.customer_id, c.full_name\nFROM customers c\nLEFT JOIN orders o ON o.customer_id = c.customer_id\nWHERE o.order_id IS NULL;\n```\n\nAnd NOT EXISTS:\n\n```sql\nSELECT c.customer_id, c.full_name\nFROM customers c\nWHERE NOT EXISTS (SELECT 1 FROM orders o WHERE o.customer_id = c.customer_id);\n```\n\nBoth return the same rows here. I prefer NOT EXISTS because it states the intent and never multiplies rows. NOT IN also works in many cases, but it breaks when the subquery returns a NULL, which I explain in another question. Both forms work in SQLite, MySQL and Postgres.",
+    "followUps": [
+      "Customers has duplicate customer_id rows. What changes in each query?",
+      "Which method do you expect to be fastest in SQLite?"
+    ],
+    "commonMistakes": [
+      "Filtering a right-side column in WHERE instead of testing IS NULL, which returns nothing.",
+      "Using an INNER JOIN and then wondering why no customer appears."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-sql-025",
+    "category": "sql",
+    "question": "What changes when you put a filter on the right table in ON instead of WHERE in a LEFT JOIN?",
+    "whatInterviewerIsTesting": "Filtering order in outer joins.",
+    "modelAnswer": "In a LEFT JOIN, a condition in ON decides which right-side rows can match. Left rows still appear with NULLs when nothing matches. A condition in WHERE runs after the join and removes left rows that have no match. To list every customer with their 2023 delivered orders:\n\n```sql\nSELECT c.customer_id, o.order_id\nFROM customers c\nLEFT JOIN orders o\n  ON o.customer_id = c.customer_id\n AND o.order_status = 'Delivered'\n AND o.order_date LIKE '2023%';\n```\n\nIf I move the status test into WHERE, customers without a delivered 2023 order disappear. The right version depends on the question: 'all customers' needs ON, while 'customers who ordered' can use INNER JOIN.",
+    "followUps": [
+      "What happens to the customers who have no match in each version?",
+      "Does the same rule apply to an INNER JOIN?"
+    ],
+    "commonMistakes": [
+      "Moving a right-table filter to WHERE and losing the unmatched left rows.",
+      "Assuming ON and WHERE give the same result for every join type."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-sql-026",
+    "category": "sql",
+    "question": "How would you use a self join to find pairs of users who live in the same city and state?",
+    "whatInterviewerIsTesting": "Self join with an inequality to avoid duplicate and self pairs.",
+    "modelAnswer": "A self join joins a table to itself using two aliases. To find pairs of users in the same city and state without repeating a pair, I add a less-than condition on the key:\n\n```sql\nSELECT a.user_id AS user_1, b.user_id AS user_2, a.city\nFROM users a\nJOIN users b\n  ON a.city = b.city\n AND a.state = b.state\n AND a.user_id < b.user_id\nWHERE a.city = 'Pune'\nLIMIT 20;\n```\n\nWithout the < condition, each pair appears twice and every user pairs with themselves. The city filter keeps the output small. For comparing each row with the previous row, a LAG window function is usually clearer than a self join.",
+    "followUps": [
+      "Why does a.user_id < b.user_id remove duplicate pairs?",
+      "How would you find each employee's manager with a self join?"
+    ],
+    "commonMistakes": [
+      "Leaving out the inequality, so each pair appears twice and self pairs appear.",
+      "Using a self join for a row-to-previous-row comparison where LAG is simpler."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-sql-027",
+    "category": "sql",
+    "question": "Do rows with NULL join keys match each other in a join?",
+    "whatInterviewerIsTesting": "NULL equality rules in join conditions and silent row loss.",
+    "modelAnswer": "No. In a join condition, NULL = NULL is unknown, so rows with a NULL key never match, even another NULL key. A customer with a NULL city does not join to another customer with a NULL city on city. If you need NULLs to match, use IS NOT DISTINCT FROM in Postgres or newer SQLite, or write `(a.city = b.city OR (a.city IS NULL AND b.city IS NULL))` in older engines. An INNER JOIN silently drops rows with NULL keys, so I count the NULL keys on each side before I join.",
+    "followUps": [
+      "How many rows does an INNER JOIN lose because of NULL keys?",
+      "Does COUNT(*) count rows with NULL keys?"
+    ],
+    "commonMistakes": [
+      "Assuming NULL keys will match each other.",
+      "Ignoring rows lost in an INNER JOIN because of NULL keys."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-sql-028",
+    "category": "sql",
+    "question": "How do you count distinct orders per product category when orders link to products through order_items?",
+    "whatInterviewerIsTesting": "Bridge tables, grain and avoiding double counting.",
+    "modelAnswer": "order_items is a bridge table. One order can contain many products, and one product can appear in many orders. Joining orders to order_items and counting order_id gives one row per line, so an order with three items counts three times. For distinct orders per category, I count distinct order IDs:\n\n```sql\nSELECT p.category, COUNT(DISTINCT oi.order_id) AS orders_with_category\nFROM order_items oi\nJOIN products p ON p.product_id = oi.product_id\nGROUP BY p.category;\n```\n\nCOUNT(DISTINCT) fixes the repeat within one category. An order that contains two categories still appears in both rows, so the sum of these numbers is larger than the number of orders. A grand total must come from a separate query on orders.",
+    "followUps": [
+      "What is the grain of the order_items table?",
+      "Why can't you add the category totals to get the total orders?"
+    ],
+    "commonMistakes": [
+      "Counting order_items rows and calling them orders.",
+      "Summing an order-level amount after joining to order_items, which repeats it for each line."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-sql-029",
+    "category": "sql",
+    "question": "How would you join customers, orders and payments to get the payment success rate by city?",
+    "whatInterviewerIsTesting": "Multi-table join chains and one-to-many awareness.",
+    "modelAnswer": "An order can have more than one payment row, because a failed payment can be retried. So the join from orders to payments is one-to-many. I first reduce payments to one row per order, then join:\n\n```sql\nWITH pay AS (\n  SELECT order_id,\n         MAX(CASE WHEN payment_status = 'Success' THEN 1 ELSE 0 END) AS paid\n  FROM payments\n  GROUP BY order_id\n)\nSELECT c.city, ROUND(AVG(pay.paid) * 100.0, 1) AS paid_order_pct\nFROM orders o\nJOIN customers c ON c.customer_id = o.customer_id\nJOIN pay ON pay.order_id = o.order_id\nGROUP BY c.city;\n```\n\nReducing payments first keeps each order counted once. Orders with no payment row drop out of this INNER JOIN, so I check that count separately.",
+    "followUps": [
+      "Why not use a LEFT JOIN here?",
+      "How do you treat an order with a failed attempt and then a success?"
+    ],
+    "commonMistakes": [
+      "Joining payments straight to orders and counting orders, which inflates the count.",
+      "Averaging the payment status text instead of a 0/1 flag."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-sql-030",
+    "category": "sql",
+    "question": "Why can NOT IN return no rows when you expect some, and how do you avoid the trap?",
+    "whatInterviewerIsTesting": "Three-valued logic in NOT IN subqueries.",
+    "modelAnswer": "NOT IN checks that a value differs from every item in a list. If the list contains a NULL, that comparison is unknown, so the whole NOT IN is unknown and no row passes. For example, `WHERE order_id NOT IN (SELECT order_id FROM returns)` returns nothing if any returns row has a NULL order_id. The fix is to remove NULLs inside the subquery: `NOT IN (SELECT order_id FROM returns WHERE order_id IS NOT NULL)`. NOT EXISTS avoids the trap completely, so I use it for anti-joins. For example, users with no subscription:\n\n```sql\nSELECT u.user_id\nFROM users u\nWHERE NOT EXISTS (SELECT 1 FROM subscriptions s WHERE s.user_id = u.user_id);\n```",
+    "followUps": [
+      "Does NOT EXISTS behave differently when the subquery has NULLs?",
+      "What does IN return when the list contains a NULL?"
+    ],
+    "commonMistakes": [
+      "Using NOT IN on a subquery column that can be NULL.",
+      "Assuming an empty result means the data is clean."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-sql-031",
+    "category": "sql",
+    "question": "How do you detect and fix double counting caused by a join that multiplies rows?",
+    "whatInterviewerIsTesting": "Grain analysis, fan-out detection and pre-aggregation.",
+    "modelAnswer": "Fan-out happens when a one-to-many join repeats the parent row. For example, joining orders to payments repeats each order for every payment attempt, so SUM(total_amount) becomes too big. To detect it, I compare the row count before and after the join. If the count grew, I check the grain. To fix it, I aggregate the child table first and join the result to the parent:\n\n```sql\nWITH pay AS (\n  SELECT order_id, SUM(amount) AS paid_amount\n  FROM payments\n  GROUP BY order_id\n)\nSELECT SUM(o.total_amount) AS order_revenue\nFROM orders o\nLEFT JOIN pay ON pay.order_id = o.order_id;\n```\n\nThis keeps one row per order. COUNT(DISTINCT order_id) also stops repeated counts, but it cannot fix a SUM of amounts.",
+    "followUps": [
+      "Why is DISTINCT on the amount column a wrong fix?",
+      "How would you test a fix against a known total?"
+    ],
+    "commonMistakes": [
+      "Trusting a total without comparing row counts before and after the join.",
+      "Fixing double counts with DISTINCT on the amount, which removes real equal amounts."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-sql-032",
+    "category": "sql",
+    "question": "How do you reconcile two sources, such as orders and payments, to find rows missing on either side?",
+    "whatInterviewerIsTesting": "Full outer join logic, SQLite version limits and unmatched-row checks.",
+    "modelAnswer": "A FULL OUTER JOIN keeps unmatched rows from both sides, which makes gaps easy to spot. SQLite 3.39 and later support it directly. For older versions, or MySQL, I combine two LEFT JOINs with UNION:\n\n```sql\nSELECT o.order_id, NULL AS payment_order_id\nFROM orders o\nLEFT JOIN payments p ON p.order_id = o.order_id\nWHERE p.order_id IS NULL\nUNION\nSELECT NULL, p.order_id\nFROM payments p\nLEFT JOIN orders o ON o.order_id = p.order_id\nWHERE o.order_id IS NULL;\n```\n\nThe first part finds orders with no payment, and the second finds payments with no order. In a real reconciliation I report the count on each side and check that matched rows plus unmatched rows equal each source total.",
+    "followUps": [
+      "Why could UNION ALL be used here instead of UNION?",
+      "How would you calculate the match rate?"
+    ],
+    "commonMistakes": [
+      "Using an INNER JOIN for a reconciliation, which hides the missing rows.",
+      "Starting a reconciliation without agreeing which source is the source of truth."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-sql-033",
+    "category": "sql",
+    "question": "What is the difference between a subquery, a CTE and a temporary table?",
+    "whatInterviewerIsTesting": "Choosing the right structure for readability and reuse.",
+    "modelAnswer": "A subquery is a query inside another query, used once in that statement. A CTE, written with WITH, names a subquery at the top of the statement, so the main query reads top-down. A temporary table is stored for the session, can be indexed, and is reused by several statements. I use a CTE to break a long query into named steps. I use a temp table when several queries reuse a large result, because it is computed once and can get an index. In SQLite, CREATE TEMP TABLE works. A CTE is not stored, so a CTE used many times may be recomputed.",
+    "followUps": [
+      "When does a CTE get materialised?",
+      "Which one would you use for a daily dashboard query?"
+    ],
+    "commonMistakes": [
+      "Thinking a CTE always makes a query faster.",
+      "Using a temp table for a small query that runs once."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-sql-034",
+    "category": "sql",
+    "question": "What is a correlated subquery, and what does it cost?",
+    "whatInterviewerIsTesting": "Row-by-row dependency and performance awareness.",
+    "modelAnswer": "A correlated subquery refers to a column of the outer query, so it runs once for each outer row. To find each customer's latest order date:\n\n```sql\nSELECT c.customer_id,\n       (SELECT MAX(o.order_date) FROM orders o\n        WHERE o.customer_id = c.customer_id) AS last_order_date\nFROM customers c;\n```\n\nWith an index on orders.customer_id, this is quick. Without one, the database scans orders again for each customer, which is slow on a big table. A GROUP BY join or a window function often does the same work in one pass, so I rewrite the query when it is slow.",
+    "followUps": [
+      "How would you rewrite this with GROUP BY?",
+      "How does a correlated EXISTS work?"
+    ],
+    "commonMistakes": [
+      "Using a correlated subquery on millions of rows without checking the plan.",
+      "Forgetting the link condition, so every row gets the table's overall maximum."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-sql-035",
+    "category": "sql",
+    "question": "What is a recursive CTE, and when would an analyst use one?",
+    "whatInterviewerIsTesting": "Recursive structure for generating sequences and hierarchies.",
+    "modelAnswer": "A recursive CTE has an anchor query and a recursive part that refers to the CTE itself. It repeats until no new rows come out. Analysts use it to build a date spine, such as every day of January 2023, so days with zero orders still appear after a LEFT JOIN:\n\n```sql\nWITH RECURSIVE days(d) AS (\n  SELECT '2023-01-01'\n  UNION ALL\n  SELECT date(d, '+1 day') FROM days WHERE d < '2023-01-31'\n)\nSELECT d FROM days;\n```\n\nThe same pattern walks hierarchies such as a manager chain. Each recursion needs a stop condition, or the query never ends. Postgres and MySQL 8 use the same WITH RECURSIVE syntax.",
+    "followUps": [
+      "How would you join the date spine to daily orders?",
+      "What happens if you forget the WHERE stop condition?"
+    ],
+    "commonMistakes": [
+      "Writing a recursive CTE with no stop condition.",
+      "Using UNION instead of UNION ALL and getting slower results for no reason."
+    ],
+    "difficulty": "hard"
+  }
+]

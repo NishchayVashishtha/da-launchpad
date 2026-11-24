@@ -1,0 +1,482 @@
+[
+  {
+    "id": "interview-hr-001",
+    "category": "hr",
+    "question": "Tell me about yourself.",
+    "whatInterviewerIsTesting": "Whether you can give a short, clear story that links your background to the role.",
+    "modelAnswer": "I am Nishchay, a B.Tech student in Computer Science (Core), graduating in 2027. I started with a UI/UX internship, where I worked on user flows, wireframes and feedback sessions with developers. That work showed me that good product decisions need data, and I began asking why users drop off a screen. So I started learning SQL and Python, and I now study five to six hours a day. I am building data projects, including a UPI failure analysis, to practise the full path from raw data to a clear answer. My goal is to start as a Data Analyst, ideally in fintech, where data affects millions of users.\n\n*Adapt:* keep it to 60-90 seconds, and name one project you have actually finished.",
+    "followUps": [
+      "What did you enjoy most in your internship?",
+      "Why did you pick CSE over a data specialisation?"
+    ],
+    "commonMistakes": [
+      "Reciting the whole resume instead of a short story.",
+      "Saying you already know SQL well when you are still practising it."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-hr-002",
+    "category": "hr",
+    "question": "Why do you want to be a Data Analyst?",
+    "whatInterviewerIsTesting": "Whether your motivation is real and tied to the actual work of an analyst.",
+    "modelAnswer": "I like to know why something happens, and data gives a clear answer to that question. In my UI/UX internship, I often had to guess which screen confused users, and I wanted better proof than a guess. A data analyst turns raw records into an answer that a team can act on. I am practising this with SQL and Python, so I can clean data, query it and explain the result in plain words. I enjoy the step where a messy table becomes one useful chart, and I want that to be my daily work.\n\n*Adapt:* name one question you answered in a project, and say what the team could do with the answer.",
+    "followUps": [
+      "What is the hardest part of the analyst job for you?",
+      "How do you know you will enjoy it every day?"
+    ],
+    "commonMistakes": [
+      "Saying you like numbers, with no example of using them.",
+      "Giving a generic answer such as I want a good salary."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-hr-003",
+    "category": "hr",
+    "question": "Why are you moving from UI/UX to data?",
+    "whatInterviewerIsTesting": "Whether you can explain a career change honestly and positively, without blaming your past work.",
+    "modelAnswer": "I liked the user side of my internship, because I learned what people need from a product. But I found that I enjoy answering why with data more than I enjoy drawing screens. In design reviews, many decisions came down to opinions, and I wanted numbers to test them. Data work keeps the user focus I learned, and it adds measurement on top. I am not leaving design because I disliked it. I am moving because the question I enjoy most can be answered with data.\n\n*Adapt:* keep the tone positive. Never criticise design or your internship.",
+    "followUps": [
+      "Would you ever go back to design work?",
+      "What part of UI/UX will you use in data work?"
+    ],
+    "commonMistakes": [
+      "Saying design was boring or too hard.",
+      "Making it sound like a last-minute escape from the internship."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-hr-004",
+    "category": "hr",
+    "question": "Why this company?",
+    "whatInterviewerIsTesting": "Whether you researched the company and can link its business to your goals.",
+    "modelAnswer": "I know Dhanpath Pay runs a payments app used by many people across India, so its data is large and varied. In fintech, trust and fast payments matter a lot, and an analyst helps find where payments fail and why. I also read that your analysts work close to product and engineering, which is how I want to learn. Those three points match my goal of starting as a Data Analyst in fintech. I would like to contribute by finding problems early and explaining them clearly.\n\n*Adapt:* replace these facts with three facts you checked on the company's own website before the interview.",
+    "followUps": [
+      "What would you look at in our first month?",
+      "Which of our products would you want to learn about first?"
+    ],
+    "commonMistakes": [
+      "Giving a generic answer that could fit any company.",
+      "Using facts you did not check, such as an old funding round."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-hr-005",
+    "category": "hr",
+    "question": "Why fintech?",
+    "whatInterviewerIsTesting": "Whether you understand the scale, risk and trust needs of fintech.",
+    "modelAnswer": "Fintech moves money for millions of people, so a small failure has a real effect. UPI handles a very large number of transactions every day, which gives analysts a lot of data to learn from. I am interested in why payments fail, where users drop off during KYC, and where risk checks block good customers. Fintech also depends on trust, so accurate and clear reports matter a lot. That mix of scale and impact is why fintech is my first choice, and healthcare is my second.\n\n*Adapt:* if you have a fintech project, name it and give one finding from it.",
+    "followUps": [
+      "What is the biggest risk in fintech data?",
+      "Why is healthcare your second choice?"
+    ],
+    "commonMistakes": [
+      "Saying fintech pays well, with no other reason.",
+      "Using terms like UPI or KYC without knowing what they mean."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-hr-006",
+    "category": "hr",
+    "question": "Where do you see yourself in 5 years?",
+    "whatInterviewerIsTesting": "Whether your goals are realistic and show growth, not only a job title.",
+    "modelAnswer": "In five years, I want to be a strong analyst who owns a business area, such as payments or risk reporting. Within two to three years, I hope to move towards Data Engineer or Analytics Engineer, where I build the pipelines and models that analysts use. I want to learn how data is stored, cleaned and tested, not only how it is reported. I plan to keep learning every week and take on harder projects as I grow. For me, growth means deeper ownership and better decisions, not only a new title.\n\n*Adapt:* keep the analyst-to-engineer path, and name one skill you will learn next, such as dbt or Airflow.",
+    "followUps": [
+      "Why do you want to move into data engineering?",
+      "What would make you stay in an analyst role?"
+    ],
+    "commonMistakes": [
+      "Naming a senior title that is unrealistic for a fresher.",
+      "Saying you have no plan beyond the first job."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-hr-007",
+    "category": "hr",
+    "question": "What do you know about our product/business?",
+    "whatInterviewerIsTesting": "Whether you can break a business into product, customers, metric and one idea.",
+    "modelAnswer": "I will answer in four parts. Your product is a payments app, so money must move fast and users expect no failures. Your customers are people and small shops who pay every day, so speed and trust are key. The metric I would watch first is the payment success rate, split by bank and by hour. One idea I have is to rank the top failure reasons for each bank and share them with the product team. I would check these numbers against your public reports before I suggest any change.\n\n*Adapt:* replace the details with facts you verified on the company's site, and keep the four-part structure.",
+    "followUps": [
+      "What data would you need to test your idea?",
+      "Which metric would you not trust, and why?"
+    ],
+    "commonMistakes": [
+      "Reciting the company's homepage without any analysis.",
+      "Making a big claim about the product that you cannot support."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-hr-008",
+    "category": "hr",
+    "question": "Why should we hire you over other freshers?",
+    "whatInterviewerIsTesting": "Whether you give proof and specific strengths instead of general adjectives.",
+    "modelAnswer": "Many freshers have a degree, so I focus on what I can show. I have a CSE background and a current UI/UX internship, so I understand users and teams, not only tables. I am building data projects, including a UPI failure analysis, and I can explain each step from cleaning to the final chart. I practise SQL and Python for five to six hours a day, so I learn new tools quickly. I can also write short summaries for non-technical readers, which I learned in design reviews. I would like to prove this with a short test or a sample project.\n\n*Adapt:* give one finished project as proof, and drop words like hard-working unless you can show them.",
+    "followUps": [
+      "What is one thing a fresher often gets wrong here?",
+      "How quickly can you deliver your first report?"
+    ],
+    "commonMistakes": [
+      "Saying you are a fast learner with no example.",
+      "Comparing yourself to other candidates by name."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hr-009",
+    "category": "hr",
+    "question": "What makes you a good fit for a data role given your design background?",
+    "whatInterviewerIsTesting": "Whether you can turn a non-data background into a clear advantage.",
+    "modelAnswer": "My design work taught me to start with the user, and that helps me pick the right question in data. I know how to make a dashboard easy to read, so the people who use it can act fast. I am used to feedback loops with stakeholders, so I can show a draft chart and change it based on comments. I also work well with developers, which helps when I ask for clean data or a new field. My SQL and Python skills are still growing, and I practise every day to close that gap.\n\n*Adapt:* pick one design habit, such as asking who will use the chart, and show how you would apply it to a data task.",
+    "followUps": [
+      "How would you design a dashboard for a manager?",
+      "What is one design habit you would not use in data work?"
+    ],
+    "commonMistakes": [
+      "Claiming the design background makes you strong at coding.",
+      "Speaking only about design and not connecting it to data work."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hr-010",
+    "category": "hr",
+    "question": "Walk me through your resume.",
+    "whatInterviewerIsTesting": "Whether you can order your resume by relevance and keep the walk-through short.",
+    "modelAnswer": "I would start with my data projects, since they match this role best. One project is a UPI failure analysis, where I cleaned transaction data, found the main failure reasons and wrote a short summary. Next are my skills: my SQL is basic but I practise it daily, and I am learning Python. Then I would cover my current UI/UX internship, where I worked on user flows, feedback and deadlines. Last, I would mention my B.Tech in Computer Science (Core), graduating in 2027. I can go deeper into any part you choose.\n\n*Adapt:* put the most relevant item first, and keep the walk-through under 90 seconds.",
+    "followUps": [
+      "Which project would you explain in more depth?",
+      "Why did you put projects before your internship?"
+    ],
+    "commonMistakes": [
+      "Reading the resume line by line.",
+      "Listing skills you have only heard of as if you know them well."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hr-011",
+    "category": "hr",
+    "question": "What are your strengths?",
+    "whatInterviewerIsTesting": "Whether you can name real strengths and back them with proof.",
+    "modelAnswer": "My first strength is that I explain things clearly. In my internship, I wrote short notes so developers and product staff could follow a design decision. My second strength is steady learning. I study five to six hours a day, and I keep a log of what I practised, so I can see my progress. I also take feedback calmly and change my work when the evidence says so. I can back each strength with a project or a practice record, not only a claim.\n\n*Adapt:* pick two strengths you can prove with a project or a test score.",
+    "followUps": [
+      "Can you show me the practice log?",
+      "Which strength do you use most in your projects?"
+    ],
+    "commonMistakes": [
+      "Listing five strengths with no proof.",
+      "Naming a strength that is really a weakness, such as being a perfectionist."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-hr-012",
+    "category": "hr",
+    "question": "What is your weakness?",
+    "whatInterviewerIsTesting": "Whether you can name a real weakness and show a clear plan to fix it.",
+    "modelAnswer": "My weakness is coding depth. I know the basics of SQL and Python, but I am not yet fast at writing complex queries from memory. To fix this, I practise every day, with one set of practice questions and one small task. I record the time I take for each question, and I check that it goes down each week. I also review my wrong answers, so I do not repeat the same mistake. I expect this routine to close the gap over the next few months.\n\n*Adapt:* name a weakness you really work on, and show how you measure your progress.",
+    "followUps": [
+      "How do you measure that you are improving?",
+      "What will you do if the practice does not help?"
+    ],
+    "commonMistakes": [
+      "Saying your weakness is working too hard.",
+      "Naming a weakness that is critical for the job and giving no fix."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-hr-013",
+    "category": "hr",
+    "question": "How do you handle feedback?",
+    "whatInterviewerIsTesting": "Whether you take feedback well and turn it into better work.",
+    "modelAnswer": "I see feedback as useful information about the user, not as a judgement on me. In my internship, design reviews were often tough, so I learned to write down each comment before I replied. Then I sort the comments into must-fix and nice-to-have. If I disagree, I ask for the reason and bring evidence. After I make a change, I tell the reviewer what I changed and why. This habit keeps the work moving and keeps the working relationship good.\n\n*Adapt:* give one example of a comment you received and the change you made.",
+    "followUps": [
+      "What do you do when feedback contradicts itself?",
+      "How do you ask for feedback from a busy manager?"
+    ],
+    "commonMistakes": [
+      "Saying you never get feedback.",
+      "Arguing in the review instead of noting the comment."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-hr-014",
+    "category": "hr",
+    "question": "What is your biggest achievement?",
+    "whatInterviewerIsTesting": "Whether you can tell a clear story with a real result and show what you learned.",
+    "modelAnswer": "Example story. Situation: in a practice project, I noticed that UPI failures spiked at night for one bank. Task: I needed to find out whether the pattern was real or just noise. Action: I grouped the failures by hour and bank, then checked each count against the total transaction volume. Result: the night spike held up, and I wrote a short summary with the top three failure reasons. The biggest thing I learned was to check the base volume before I call a pattern a problem.\n\n*Adapt:* this is an example story. Replace it with a real result you got, and add the one number you measured.",
+    "followUps": [
+      "How did you check that the pattern was not random?",
+      "What would you do differently next time?"
+    ],
+    "commonMistakes": [
+      "Picking a small task and making it sound huge.",
+      "Describing the result without any number or outcome."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hr-015",
+    "category": "hr",
+    "question": "How do you prioritise learning many tools?",
+    "whatInterviewerIsTesting": "Whether you have a learning order that matches what analysts are hired for.",
+    "modelAnswer": "I learn in a fixed order, because each tool depends on the one before. First I learn SQL, since almost every analyst job tests it. Next comes Excel for quick checks and pivots, then Python for cleaning and analysis. I start Power BI after I can write clean queries, because dashboards need good data. I give each tool a set time each day, and I review older topics once a week. I do not start a new tool until I can finish a small task in the current one.\n\n*Adapt:* write your own order and the weekly hours for each tool, and say why it fits the job you want.",
+    "followUps": [
+      "Why do you put SQL before Python?",
+      "What do you do when a tool is taking too long?"
+    ],
+    "commonMistakes": [
+      "Saying you learn all tools at the same time.",
+      "Choosing tools because they are trending, not because jobs ask for them."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hr-016",
+    "category": "hr",
+    "question": "How would your friends/teammates describe you?",
+    "whatInterviewerIsTesting": "Whether you can describe yourself through other people's view, with honest traits.",
+    "modelAnswer": "I think my friends would say I am calm, curious and careful about checking facts. My teammates in college would say I ask questions until the goal is clear. I also think they would say I keep my promises on deadlines, even when the work is long. Some might say I can be too detailed in a summary, and I am working on keeping it short. I would rather hear this directly, so I ask for feedback often.\n\n*Adapt:* use three traits that people have really told you, and one area you are improving.",
+    "followUps": [
+      "Can you give an example of when a teammate said that about you?",
+      "What is the most useful feedback you got from a friend?"
+    ],
+    "commonMistakes": [
+      "Only giving positive traits with no balance.",
+      "Claiming what others think without any real basis."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hr-017",
+    "category": "hr",
+    "question": "Tell me about something you taught yourself recently.",
+    "whatInterviewerIsTesting": "Whether you can learn on your own, with a routine and a way to check progress.",
+    "modelAnswer": "Recently I taught myself SQL basics, and I now practise it for part of my five to six study hours each day. I started with SELECT, WHERE and GROUP BY, then moved to joins and subqueries. I used sample data, wrote one query each day and checked my answer against the expected output. When a query was wrong, I wrote down the mistake, such as a missing GROUP BY, so I did not repeat it. I am now comfortable with basic joins, and I am still working on window functions.\n\n*Adapt:* keep the story true for your own learning. Name the topic, the daily routine and one mistake you fixed.",
+    "followUps": [
+      "How did you check that your queries were correct?",
+      "What is the next topic you will learn?"
+    ],
+    "commonMistakes": [
+      "Saying you learned a whole language in a weekend.",
+      "Naming a topic you cannot explain when asked."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hr-018",
+    "category": "hr",
+    "question": "Tell me about a failure.",
+    "whatInterviewerIsTesting": "Whether you can own a failure, learn from it and show a changed habit.",
+    "modelAnswer": "Example story. Situation: in an early practice project, I wrote a SQL query that counted each customer twice, because I joined two tables without checking the keys. Task: my summary showed too many customers, and I needed to find the cause. Action: I checked the row count after each join and found the duplicate keys. Result: I fixed the join, reran the check, and the total matched the source table. I now test row counts after every join, and I do this in each project.\n\n*Adapt:* this is an example. Replace it with a real failure, and keep the lesson short and specific.",
+    "followUps": [
+      "How do you catch this kind of error now?",
+      "What would you tell a junior analyst about joins?"
+    ],
+    "commonMistakes": [
+      "Choosing a failure that is really a strength in disguise.",
+      "Blaming the tool or the teacher instead of your own check."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hr-019",
+    "category": "hr",
+    "question": "Tell me about a conflict with a teammate.",
+    "whatInterviewerIsTesting": "Whether you can disagree respectfully and settle it with shared goals and evidence.",
+    "modelAnswer": "Example story. Situation: during my internship, a developer and I disagreed about a form layout. He thought the change would take too long, and I wanted to test it first. Task: I needed a way to settle this without blame. Action: we both listed the user problem, then I ran a quick check with a few users and counted where they got stuck. Result: the data showed that the field order was the real problem, so we made a small change and avoided a full rebuild. I start from the shared goal and let the evidence decide.\n\n*Adapt:* this is an example story. Replace the details with a real disagreement you resolved.",
+    "followUps": [
+      "What if the evidence was not clear?",
+      "How do you keep working well with that person later?"
+    ],
+    "commonMistakes": [
+      "Describing the other person as the problem.",
+      "Giving a story with no clear result."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hr-020",
+    "category": "hr",
+    "question": "Describe a time you worked under pressure or a tight deadline.",
+    "whatInterviewerIsTesting": "Whether you can prioritise under time pressure and communicate clearly.",
+    "modelAnswer": "Example story. Situation: during my internship, a design deadline was close, and a few screens were still missing their final states. Task: I had to finish the key screens and hand them to developers on time. Action: I listed the must-have screens, did those first, and moved the extra options to a later sprint. I also shared a short daily update, so the team knew what was done and what was not. Result: the core screens reached developers on the deadline, and the extra states followed in the next release.\n\n*Adapt:* this is an example. Replace it with your own deadline, and name what you cut.",
+    "followUps": [
+      "What did you cut, and how did you decide?",
+      "How did the team react to the scope change?"
+    ],
+    "commonMistakes": [
+      "Saying you never felt pressure.",
+      "Making the story about how hard you worked, not about the plan."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hr-021",
+    "category": "hr",
+    "question": "How do you handle stress?",
+    "whatInterviewerIsTesting": "Whether you have healthy routines and a clear way to handle pressure.",
+    "modelAnswer": "I handle stress by breaking work into small steps and writing a short list every morning. When I feel overloaded, I pick the one task that unblocks the rest and finish it before I check messages. I take short breaks and keep a fixed sleep time, because tired work leads to careless mistakes in data. If a deadline is at risk, I tell the person early and suggest a clear option. A plan and an early warning reduce my stress more than trying to do everything at once.\n\n*Adapt:* name one routine that really works for you, such as a fixed sleep time or a short walk.",
+    "followUps": [
+      "What do you do when the plan fails?",
+      "How do you tell a manager that you are overloaded?"
+    ],
+    "commonMistakes": [
+      "Saying you have no stress at all.",
+      "Describing a routine that is not realistic, such as no sleep."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hr-022",
+    "category": "hr",
+    "question": "Tell me about a time you made a mistake in your work.",
+    "whatInterviewerIsTesting": "Whether you own errors quickly and put checks in place to prevent them.",
+    "modelAnswer": "Example story. Situation: in a practice report, I shared a chart before I checked the date filter, so the totals covered only part of the month. Task: I had to correct the chart fast and avoid confusion. Action: I told the person who had seen it, explained the wrong filter, and sent the fixed chart with a short note on what changed. Result: the correct total was shared the same day, and no decision was made on the wrong number. Now I check the date range and the row count before I share any output.\n\n*Adapt:* this is an example. Replace it with a real mistake, and keep the lesson about checking before sharing.",
+    "followUps": [
+      "How do you check a report before sending it?",
+      "What would you do if the wrong number was already used?"
+    ],
+    "commonMistakes": [
+      "Choosing a mistake that is too small to matter.",
+      "Hiding the mistake or blaming the data."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hr-023",
+    "category": "hr",
+    "question": "How do you handle criticism from a manager you disagree with?",
+    "whatInterviewerIsTesting": "Whether you can handle disagreement professionally and still respect the decision.",
+    "modelAnswer": "First, I listen fully and ask questions to understand the reason behind the criticism. Then I check the facts, because my view might be wrong. If I still disagree, I explain my reasoning with evidence, such as a user comment or a number, and I ask what would change their mind. I try not to argue in front of others, and I agree on next steps in writing. Once a decision is made, I commit to it, even if I would have chosen differently.\n\n*Adapt:* give one example where you changed your view after checking facts, or where you kept your view respectfully.",
+    "followUps": [
+      "What if the manager still says no?",
+      "How do you know when to let a point go?"
+    ],
+    "commonMistakes": [
+      "Arguing in front of the team.",
+      "Saying you never disagree with a manager."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hr-024",
+    "category": "hr",
+    "question": "Tell me about a time you disagreed with a decision.",
+    "whatInterviewerIsTesting": "Whether you can disagree with ideas, not people, and accept a group decision.",
+    "modelAnswer": "Example story. Situation: in a group project, the team chose a bar chart to show churn over time, but I thought a line chart would show the trend better. Task: I wanted to raise my view without slowing the team down. Action: I made both charts from the same data and showed them in a short meeting. Result: the team agreed the line chart made the trend clearer, and we used it in the final slides. I disagree with ideas, not people, and I accept the group's decision when the evidence does not support my view.\n\n*Adapt:* this is an example. Replace it with a real decision you disagreed with, and say how the evidence settled it.",
+    "followUps": [
+      "What if the team had chosen the bar chart anyway?",
+      "How do you show your view without sounding negative?"
+    ],
+    "commonMistakes": [
+      "Saying you were right and the team was wrong.",
+      "Picking a disagreement with no evidence or outcome."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hr-025",
+    "category": "hr",
+    "question": "Describe a time you had to learn something very fast.",
+    "whatInterviewerIsTesting": "Whether you can learn quickly under deadline and still deliver a useful result.",
+    "modelAnswer": "Example story. Situation: during my internship, I had two days to learn a new design tool before a review. Task: I needed to build a clickable prototype for a set review date. Action: I followed short tutorials each evening, then built one small screen each day and asked a colleague to check my steps. Result: I finished the prototype on time, and I kept the tool skills for later tasks. My method is to learn just enough for the next deliverable, then go deeper when there is time. The same method works for SQL and Python.\n\n*Adapt:* this is an example. Replace it with the tool or topic you learned fast and the deadline you met.",
+    "followUps": [
+      "What did you skip, and why was that fine?",
+      "How do you decide what is enough to learn?"
+    ],
+    "commonMistakes": [
+      "Saying you learn everything perfectly the first time.",
+      "Giving a story where you learned but never delivered."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-hr-026",
+    "category": "hr",
+    "question": "Tell me about a time you had incomplete information and still had to decide.",
+    "whatInterviewerIsTesting": "Whether you can make a sensible decision, state assumptions and plan how to check them.",
+    "modelAnswer": "Example story. Situation: in a practice project, I had to suggest a fix for failed payments, but the data covered only one week. Task: I needed a useful answer without waiting for a full month of data. Action: I wrote my assumptions clearly, such as the week being typical, and checked whether the pattern held on each day. I also listed what would change my answer, and I suggested a short test as the next step. Result: the team agreed to run a small test while we collected more data. I make the assumption visible, so anyone can challenge it.\n\n*Adapt:* this is an example. Replace it with a real decision you made with partial data, and state your assumptions.",
+    "followUps": [
+      "What would make you change your recommendation?",
+      "How do you pick the size of a test?"
+    ],
+    "commonMistakes": [
+      "Pretending the data was complete.",
+      "Refusing to decide and calling it caution."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-hr-027",
+    "category": "hr",
+    "question": "Do you prefer working alone or in a team?",
+    "whatInterviewerIsTesting": "Whether you know how you work best and can work well in both settings.",
+    "modelAnswer": "I like both, and I use each for different work. Alone, I can focus on SQL practice and write clean queries without interruptions. In a team, I get better ideas, because a developer or designer often spots a gap I missed. In my internship, the best results came from short solo work followed by a team review. So I plan my day with focus time first, then a discussion or review. This balance helps me deliver good work on time.\n\n*Adapt:* name one solo task and one team task you did well, and say which one you enjoy more.",
+    "followUps": [
+      "When do you prefer to work alone?",
+      "How do you share a task with a team that works differently?"
+    ],
+    "commonMistakes": [
+      "Saying you only work alone, which sounds hard to manage.",
+      "Saying you always want a team with no focus time."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-hr-028",
+    "category": "hr",
+    "question": "How do you explain a technical idea to a non-technical person?",
+    "whatInterviewerIsTesting": "Whether you can translate technical work into plain words for a business reader.",
+    "modelAnswer": "I start with the question they care about, not the tool. For example, I would explain a join as matching a customer list with an order list by customer ID. Then I show one small example table, so they can see the result. I avoid jargon, or I explain it in one line when I must use it. In UI/UX work, I often used a simple sketch to explain a change, and a chart works the same way. Finally, I ask them to repeat the main point in their own words, to check that they understood.\n\n*Adapt:* pick one technical idea you explained to a friend or classmate, and use it as your example.",
+    "followUps": [
+      "How would you explain a p-value in one minute?",
+      "What do you do if they still do not understand?"
+    ],
+    "commonMistakes": [
+      "Using the tool name instead of the business meaning.",
+      "Skipping the check that they understood."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hr-029",
+    "category": "hr",
+    "question": "Tell me about a time you led something.",
+    "whatInterviewerIsTesting": "Whether you can lead through planning and communication, without needing a title.",
+    "modelAnswer": "Example story. Situation: in a college group project, I took the lead on dividing the work and setting the deadlines. Task: the team was stuck, because no one owned the data cleaning step. Action: I split the work into four parts with one owner each, and I set a short check-in every two days. Result: the group finished the report before the due date, and each member knew their part. I did not need a title to lead. I needed a clear plan and a regular check.\n\n*Adapt:* this is an example. Replace it with a real group or internship task you led, even if you only organised it.",
+    "followUps": [
+      "How did you handle a member who did not finish?",
+      "What would you change in the plan next time?"
+    ],
+    "commonMistakes": [
+      "Talking about leading a group but giving no action.",
+      "Claiming a title you did not have."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hr-030",
+    "category": "hr",
+    "question": "How do you manage time between college and internship?",
+    "whatInterviewerIsTesting": "Whether you have a realistic weekly plan that protects both study and work.",
+    "modelAnswer": "I plan my week on Sunday, with fixed blocks for classes, internship work and study. Internship tasks get the morning, when my focus is highest, and college work fills the gaps. My study time is usually five to six hours a day, and I protect at least one hour for SQL or Python practice. When a week is heavy, I move the least urgent study to the weekend and tell my manager early. I also keep one free block each week, so I do not burn out.\n\n*Adapt:* write your own weekly blocks, and change the hours so they match your real week.",
+    "followUps": [
+      "What happens during exam weeks?",
+      "What do you drop first when time is short?"
+    ],
+    "commonMistakes": [
+      "Saying you have unlimited time for everything.",
+      "Promising more study hours than you can keep up."
+    ],
+    "difficulty": "medium"
+  }
+]

@@ -1,0 +1,482 @@
+[
+  {
+    "id": "interview-excel-031",
+    "category": "excel",
+    "question": "What do TRIM and CLEAN do, and when would you use them?",
+    "whatInterviewerIsTesting": "Knowing the two cleanup functions for stray spaces and non-printing characters in exported data.",
+    "modelAnswer": "TRIM removes extra spaces. It cuts leading and trailing spaces and reduces repeated spaces between words to one. CLEAN removes non-printing characters, such as line breaks and some symbols copied from a PDF or an ERP export. For a vendor list, I use a helper column with `=TRIM(CLEAN(A2))`, so that a name with a double space still matches in a lookup. TRIM does not remove non-breaking spaces (CHAR(160)), so I first replace them with `SUBSTITUTE(A2,CHAR(160),\" \")`. Both functions work the same in Excel 2010 and Excel 365.",
+    "followUps": [
+      "Why does a lookup fail on a name that looks identical on screen?",
+      "How would you remove non-breaking spaces from a whole column?"
+    ],
+    "commonMistakes": [
+      "Assuming TRIM removes non-breaking spaces.",
+      "Typing over the original data instead of cleaning in a helper column."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-excel-032",
+    "category": "excel",
+    "question": "How do you pull the state code out of a 15-character GSTIN?",
+    "whatInterviewerIsTesting": "Using LEFT, MID and RIGHT on fixed-position text.",
+    "modelAnswer": "In a GSTIN, the first two digits are the state code, so `=LEFT(A2,2)` returns 27 for Maharashtra. The next ten characters hold the PAN, which I get with `=MID(A2,3,10)`. The last character is a check digit, so `=RIGHT(A2,1)` returns it. I put these in helper columns and then group the sales by state for GST reporting. These functions work in every Excel version. SQLite has no MID, so the same split uses `SUBSTR(gstin,1,2)`. If some GSTINs have a stray space, I wrap the cell in TRIM first.",
+    "followUps": [
+      "How would you find GSTINs that are not 15 characters long?",
+      "What is the difference between MID and SUBSTR?"
+    ],
+    "commonMistakes": [
+      "Using a fixed position on data that has a leading space.",
+      "Confusing the state code with the PIN code."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-excel-033",
+    "category": "excel",
+    "question": "How would you clean a column of mobile numbers written as '+91 98765-43210', '098765 43210' and '9876543210'?",
+    "whatInterviewerIsTesting": "Combining SUBSTITUTE, TRIM and RIGHT to standardise text before validation.",
+    "modelAnswer": "First I remove the dashes and spaces with nested SUBSTITUTE calls, and TRIM any leftover spaces. Then `RIGHT(x,10)` keeps the last ten digits, which drops the +91 prefix or a leading 0. The full formula is `=RIGHT(SUBSTITUTE(SUBSTITUTE(TRIM(A2),\"-\",\"\"),\" \",\"\"),10)`. I then check the length with LEN and flag anything that is not 10 digits. The result must stay text, so I format the output column as Text, or the leading digit is lost. In Excel 365 the same job can be done with TEXTSPLIT or Power Query, but the formula works in every version.",
+    "followUps": [
+      "How would you flag numbers that are not 10 digits after cleaning?",
+      "Why should a phone number be stored as text, not as a number?"
+    ],
+    "commonMistakes": [
+      "Converting the phone number to a number and losing a leading zero.",
+      "Removing spaces but forgetting dashes or the +91 prefix."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-excel-034",
+    "category": "excel",
+    "question": "How do you split 'Pune, Maharashtra, 411001' into three columns?",
+    "whatInterviewerIsTesting": "Choosing between Text to Columns (any version) and TEXTSPLIT (Excel 365 and 2024) for delimited text.",
+    "modelAnswer": "In older Excel, I select the column and use Data > Text to Columns with a comma as the delimiter. That is a one-time split, so the output does not change when the source changes. In Excel 365, `=TEXTSPLIT(A2, \", \")` spills the three parts across three columns and updates by itself. The reverse job is `=TEXTJOIN(\", \", TRUE, B2:D2)`, which joins cells back together and skips blanks when the second argument is TRUE. TEXTJOIN needs Excel 2019 or later. Before splitting, I check that no number has a comma inside, such as 1,25,000, because that would split the amount too.",
+    "followUps": [
+      "What happens to the split if one address has only two parts?",
+      "How would you do the same split in Power Query?"
+    ],
+    "commonMistakes": [
+      "Running Text to Columns on live data and forgetting the result is static.",
+      "Splitting on a comma that also appears inside an Indian-format amount."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-excel-035",
+    "category": "excel",
+    "question": "How do you calculate an employee's tenure in years and months?",
+    "whatInterviewerIsTesting": "Knowing DATEDIF, its hidden status, and the date-order trap.",
+    "modelAnswer": "I use `=DATEDIF(B2, TODAY(), \"y\")` for full years and `=DATEDIF(B2, TODAY(), \"ym\")` for the leftover months. DATEDIF is not listed in the function menu, but it works in all Excel versions. If the start date is after the end date, it returns #NUM!. For a bill due date, `=EOMONTH(B2,1)` returns the last day of the next month. TODAY() changes every day, so in a monthly report I store a report date in one cell and refer to it. SQLite has no DATEDIF, so I would use julianday() to get the day difference.",
+    "followUps": [
+      "Why is TODAY() risky in a report that is reprinted later?",
+      "How would you count working days between two dates, excluding holidays?"
+    ],
+    "commonMistakes": [
+      "Putting the start date after the end date and getting #NUM!.",
+      "Dividing the day count by 365 to get years, which drifts over time."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-excel-036",
+    "category": "excel",
+    "question": "A date column imports as text. The value 04/05/2026 shows as 5 April in one file and 4 May in another. What is the cause and the fix?",
+    "whatInterviewerIsTesting": "Understanding locale-dependent date parsing and a reliable fix.",
+    "modelAnswer": "The cause is the locale setting. An en-IN or en-GB system reads dd/mm/yyyy with the day first, while an en-US system reads mm/dd/yyyy. Once a value is text, date arithmetic, filters and pivots fail. The fix is to import with Power Query and set the column type to Date with the correct locale. For text that is already in the sheet, I use `=DATE(RIGHT(A2,4), MID(A2,4,2), LEFT(A2,2))` for dd/mm/yyyy. I test with a value where the day is above 12, such as 25/04/2026, to confirm the order. For a shared template, I ask the source system to export ISO dates as yyyy-mm-dd.",
+    "followUps": [
+      "How would you spot wrongly parsed dates after an import, using a formula?",
+      "Why is ISO format safer for a multi-user file?"
+    ],
+    "commonMistakes": [
+      "Retyping dates by hand instead of fixing the import settings.",
+      "Trusting a date just because it looks right on screen."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-excel-037",
+    "category": "excel",
+    "question": "What are the four areas of a pivot table, and what does each one do?",
+    "whatInterviewerIsTesting": "Basic pivot structure: Rows, Columns, Values and Filters.",
+    "modelAnswer": "A pivot table has four areas. Rows and Columns hold the categories you group by, such as State and Quarter. Values hold the numbers you summarise, such as the sum of Invoice Amount in Rs. Filters limit the whole table, such as to one salesperson. Numbers default to Sum and text defaults to Count. I always build the pivot from an Excel Table, so new rows are included on refresh. The same grouping in SQL is a GROUP BY on the Rows field, with an aggregate such as SUM on the Values field.",
+    "followUps": [
+      "Why does a text field in Values show Count by default?",
+      "What is the difference between a Filter field and a Slicer?"
+    ],
+    "commonMistakes": [
+      "Putting a date or number field in Rows and expecting a Sum.",
+      "Building the pivot from a plain range that grows later."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-excel-038",
+    "category": "excel",
+    "question": "How do you group dates into months, quarters and years in a pivot table?",
+    "whatInterviewerIsTesting": "Grouping date fields without changing the source data.",
+    "modelAnswer": "I right-click any date in the pivot and choose Group, then select Months, Quarters and Years. The grouping changes only the pivot, not the source dates. For an Indian financial year from April to March, I add a helper column with `=YEAR(A2)-(MONTH(A2)<4)` and use it as the label, so 15/03/2026 becomes FY2025-26. The Group option is greyed out if the date column holds text or blanks, so I check the column type first. In SQLite the same month grouping is `strftime('%Y-%m', sale_date)`.",
+    "followUps": [
+      "How would you group sales by Indian financial year in a pivot?",
+      "Why is the Group option greyed out for a date column?"
+    ],
+    "commonMistakes": [
+      "Grouping by month without noticing that some dates are stored as text.",
+      "Using calendar years for a report that must follow the April to March year."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-excel-039",
+    "category": "excel",
+    "question": "Why does my pivot table not show new rows after I add data to the sheet?",
+    "whatInterviewerIsTesting": "Pivot cache and source range knowledge, plus the refresh steps.",
+    "modelAnswer": "A pivot table keeps a stored copy of the source data, called the pivot cache, and shows that copy until it is refreshed. I press Alt+F5 or choose Data > Refresh All. If the source is a fixed range such as A1:F500, rows added below row 500 are missing. Converting the data to an Excel Table with Ctrl+T fixes this, because the pivot source grows with the table. I also check that new numbers were not pasted as text, since text is counted as Count, not Sum. A Power Query or Data Model source needs the same refresh step.",
+    "followUps": [
+      "How would you make the pivot refresh automatically when the file opens?",
+      "Why does refresh not fix a pivot where the source column has mixed data types?"
+    ],
+    "commonMistakes": [
+      "Rebuilding the whole pivot instead of refreshing it.",
+      "Expecting a refresh to pick up rows typed below a fixed range."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-excel-040",
+    "category": "excel",
+    "question": "How do you show each region's sales as a percentage of the column total?",
+    "whatInterviewerIsTesting": "Show Values As options and what the base field means.",
+    "modelAnswer": "I add Sales to Values, then right-click the value and choose Show Values As > % of Column Total. If Regions are in Rows and Quarters are in Columns, each cell becomes its share of that quarter's total. For a share of the whole year, I would choose % of Grand Total. The same result as a formula is `=B5/B$12`, where row 12 holds the totals and is locked with the dollar sign. Running Total and % Difference From are useful for trend views. Pivot percentages update on refresh, which typed numbers do not.",
+    "followUps": [
+      "What is the difference between % of Column Total and % of Row Total?",
+      "How would you show each region's share of the full year?"
+    ],
+    "commonMistakes": [
+      "Choosing % of Row Total and reporting it as a column share.",
+      "Typing the percentages as fixed numbers that do not update after a refresh."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-excel-041",
+    "category": "excel",
+    "question": "What are slicers and timelines, and how do you connect one slicer to several pivot tables?",
+    "whatInterviewerIsTesting": "Interactive filtering and the Report Connections setting.",
+    "modelAnswer": "A slicer is a set of buttons that filters one or more pivot tables. A timeline does the same for a date field, with months, quarters or years. To connect a slicer to other pivots, I select the slicer, open Slicer > Report Connections, and tick each pivot that uses the same source. Pivots from different sources cannot share a slicer unless they use the Data Model. On a sales dashboard, one Region slicer and one Month timeline can drive four pivots at once. Slicers work from Excel 2010 onwards, so I check the team's version before I share the file.",
+    "followUps": [
+      "What is the difference between a slicer and a Filter field in a pivot?",
+      "Why might a slicer fail to connect to a pivot built on another table?"
+    ],
+    "commonMistakes": [
+      "Building four separate pivots and filtering each one by hand.",
+      "Assuming a slicer will filter a pivot that uses a different source."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-excel-042",
+    "category": "excel",
+    "question": "Which chart would you choose for a monthly sales trend, and which one for the share of sales by region?",
+    "whatInterviewerIsTesting": "Matching the chart type to the question: change over time, comparison and part of a whole.",
+    "modelAnswer": "For a monthly trend, I use a line chart, because the eye reads direction and change over time easily. For sales by region, a bar chart sorted from highest to lowest is clearer than a pie chart. A pie or donut is fine for one simple split, such as UPI against cash, when there are only three or four slices. I avoid 3D charts, because they distort the bars. A PivotChart updates with its pivot, so I use it when the data is refreshed often. For bars, the Rs axis must start at zero, or small gaps look large.",
+    "followUps": [
+      "When is a stacked bar chart a poor choice?",
+      "How would you add a monthly target line to the trend chart?"
+    ],
+    "commonMistakes": [
+      "Using a pie chart for eight regions.",
+      "Starting a bar chart axis above zero, which exaggerates small differences."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-excel-043",
+    "category": "excel",
+    "question": "What does GETPIVOTDATA do, and why is it better than a plain cell reference to a pivot value?",
+    "whatInterviewerIsTesting": "Building summary sheets from pivots that do not break when the layout moves.",
+    "modelAnswer": "GETPIVOTDATA reads a value from a pivot table by its field names, for example `=GETPIVOTDATA(\"Sales\",$A$3,\"Region\",\"West\")`. A plain reference such as =B7 breaks when the pivot grows, moves, or a filter changes the row order. GETPIVOTDATA finds the right number by label. If the item is no longer in the pivot, it returns #REF!, which is safer than a silent wrong value. I use it on a summary sheet that feeds a board report. Every Excel version supports it. In SQL, the same lookup is a query with a WHERE clause on region.",
+    "followUps": [
+      "How do you write GETPIVOTDATA for a date field that is grouped by month?",
+      "What does GETPIVOTDATA return if the pivot shows no Grand Totals?"
+    ],
+    "commonMistakes": [
+      "Hardcoding cell references to pivot output on a summary sheet.",
+      "Assuming a #REF! from GETPIVOTDATA means the source data is wrong."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-excel-044",
+    "category": "excel",
+    "question": "What is the pivot cache, and why does it matter for file size and the Data Model?",
+    "whatInterviewerIsTesting": "Memory and performance trade-offs of several pivots, and the basics of the Data Model.",
+    "modelAnswer": "The pivot cache is a copy of the source data stored inside the workbook. Each pivot built on its own copy adds to the file size, so five pivots on one 200,000-row sales range can make the file slow. Pivots built from the same source with the same settings can share one cache. The Data Model, which uses Power Pivot, stores several related tables once, with relationships between them. It is the right choice when a sales table joins to city and product tables. A calculated field lives inside one pivot, while a DAX measure in the Data Model can be reused in many pivots. Power Pivot is built in from Excel 2013, and older versions need an add-in.",
+    "followUps": [
+      "How does a calculated field differ from a DAX measure?",
+      "When would you avoid the Data Model?"
+    ],
+    "commonMistakes": [
+      "Building many pivots from separate copies of the same data.",
+      "Assuming the Data Model removes the need to refresh."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-excel-045",
+    "category": "excel",
+    "question": "FILTER or Advanced Filter: which would you use to extract the West region sales above Rs 50,000?",
+    "whatInterviewerIsTesting": "Choosing a live formula over a one-time filtering tool.",
+    "modelAnswer": "Advanced Filter copies the matching rows once, so the copy does not change when the source changes. FILTER is a formula that returns a live list, for example `=FILTER(A2:F500, (C2:C500=\"West\")*(F2:F500>50000), \"No rows\")`. FILTER needs Excel 365 or Excel 2021 or later. For a monthly extract that must refresh by itself, I use FILTER. For a one-time export with a criteria range, Advanced Filter works in any version. In SQL, the same extract is a SELECT with a WHERE clause. Both tools leave the source table itself unchanged.",
+    "followUps": [
+      "What does the third argument of FILTER do?",
+      "What is the SQL equivalent of a FILTER formula with two conditions?"
+    ],
+    "commonMistakes": [
+      "Using FILTER in Excel 2016 and getting #NAME?.",
+      "Expecting Advanced Filter to update when the source data changes."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-excel-046",
+    "category": "excel",
+    "question": "How do UNIQUE and SORT work together to make an alphabetical list of cities?",
+    "whatInterviewerIsTesting": "Chaining dynamic array functions correctly.",
+    "modelAnswer": "UNIQUE returns the distinct values from a range, and SORT puts them in order. So `=SORT(UNIQUE(B2:B500))` gives a clean, alphabetical list of cities for a summary or a dropdown source. UNIQUE keeps the order of first appearance, so SORT is needed for an alphabetical list. UNIQUE is not case-sensitive, so 'pune' and 'Pune' merge into one item. The result spills into the cells below, so I leave those cells empty. These functions need Excel 365 or Excel 2021. In SQL the same result is `SELECT DISTINCT city FROM orders ORDER BY city`.",
+    "followUps": [
+      "What happens if a city name has a trailing space in the source?",
+      "How would you sort the cities by number of orders instead of by name?"
+    ],
+    "commonMistakes": [
+      "Typing values under a spilled range and causing #SPILL!.",
+      "Forgetting that UNIQUE treats different capitals as the same value."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-excel-047",
+    "category": "excel",
+    "question": "What causes #SPILL! in a dynamic array formula, and how do you fix it?",
+    "whatInterviewerIsTesting": "Debugging spill blocking and using the spill range operator.",
+    "modelAnswer": "#SPILL! appears when the cells that the result needs are not empty. The usual cause is a value or formula sitting in one of those cells. The fix is to clear the blocking cells, or move the formula to a place where the space is free. To refer to a whole spilled result, I use the spill range operator, such as `A2#`, which grows with the result. If only one value is needed, I wrap the formula with `INDEX(..., 1)`. Excel 2016 shows #NAME? for these functions, not #SPILL!, so check the version first.",
+    "followUps": [
+      "What does the @ operator do in front of a formula that returns a list?",
+      "How would you turn a spilled result into a fixed table for a report?"
+    ],
+    "commonMistakes": [
+      "Dragging a formula down a column that already holds a spill.",
+      "Deleting the formula to fix #SPILL! without finding the blocking cell."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-excel-048",
+    "category": "excel",
+    "question": "What does LET do, and when does it make a formula easier to read?",
+    "whatInterviewerIsTesting": "Naming intermediate values and avoiding repeated calculation.",
+    "modelAnswer": "LET gives a name to a value inside a formula, so the value is calculated once and reused. For example, for an incentive in Rs: `=LET(total, SUMIFS(F:F, B:B, A2), IF(total>=500000, total*0.02, total*0.01))`. Without LET, the same SUMIFS would appear twice, which is hard to audit. A LET name cannot look like a cell address, such as AB12. LET is available in Excel 365 and Excel 2021 onwards. The SQL equivalent is a CTE, written with WITH, that names an intermediate result.",
+    "followUps": [
+      "Why can't a LET name be R or C?",
+      "When would you still prefer a helper column over LET?"
+    ],
+    "commonMistakes": [
+      "Naming a LET variable like a cell address, such as AB12.",
+      "Using LET to hide a complicated formula that a colleague cannot audit."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-excel-049",
+    "category": "excel",
+    "question": "A colleague on Excel 2016 opens a file with FILTER, UNIQUE and LET formulas. What happens, and what do you do?",
+    "whatInterviewerIsTesting": "Compatibility planning for dynamic arrays across Excel versions.",
+    "modelAnswer": "In Excel 2016 and 2019, the new functions are not recognised, so the cells show #NAME?. The file still opens, but the results are missing. Excel 2019 also lacks the dynamic array engine, so spilled results do not work even with the same function names. Before I share a template, I ask the team which versions they use. For older versions, I rewrite the lookups with INDEX and MATCH and the extracts with Advanced Filter, and I add a note about the change. An .xls file loses these features completely, so I save as .xlsx or .xlsm.",
+    "followUps": [
+      "How would you find every formula in a large workbook that uses a dynamic array function?",
+      "How would you rewrite a FILTER formula with older functions?"
+    ],
+    "commonMistakes": [
+      "Sharing a dynamic array template with a team on older Excel without a warning.",
+      "Assuming the file will show the same results after it is saved as .xls."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-excel-050",
+    "category": "excel",
+    "question": "How do you remove duplicate rows, and which row does Excel keep?",
+    "whatInterviewerIsTesting": "Using Remove Duplicates safely.",
+    "modelAnswer": "I select the table, then choose Data > Remove Duplicates and tick only the columns that define a unique record, such as Invoice No and Invoice Date. Excel keeps the first occurrence and deletes the rest, and it does not show what it removed. So I copy the sheet first. Text that differs only by an extra space is not treated as a duplicate, so I run TRIM before I compare. This works in Excel 2007 and later. In SQL, the same result comes from ROW_NUMBER() OVER (PARTITION BY invoice_no ORDER BY invoice_date) and a filter on row 1.",
+    "followUps": [
+      "Why can two rows that look identical stay after Remove Duplicates?",
+      "How would you keep the last occurrence instead of the first?"
+    ],
+    "commonMistakes": [
+      "Removing duplicates on the only copy of the data, with no backup.",
+      "Ticking every column when only Invoice No should define the duplicate."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-excel-051",
+    "category": "excel",
+    "question": "What is data validation, and how do you build a dropdown list for a State column?",
+    "whatInterviewerIsTesting": "Input control that keeps data clean at the point of entry.",
+    "modelAnswer": "Data validation limits what a user can type into a cell. To make a dropdown for State, I select the column, choose Data > Data Validation, pick List, and point the source to a range that holds the state names. A table column or a named range is better than a typed list, because it updates when a state is added. Validation blocks typed values that are not in the list, but pasting can bypass it. So I also check the column with a COUNTIF formula or conditional formatting. In Excel 365, the source can be a spilled range.",
+    "followUps": [
+      "How would you show a custom error message when a wrong value is entered?",
+      "How would you allow a new state to be added and still validated?"
+    ],
+    "commonMistakes": [
+      "Typing the list with commas and not updating it when new items come in.",
+      "Assuming validation stops every wrong value, including pasted ones."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-excel-052",
+    "category": "excel",
+    "question": "How do you find duplicate invoice numbers without deleting anything?",
+    "whatInterviewerIsTesting": "Using COUNTIF to flag duplicates for review.",
+    "modelAnswer": "I add a helper column with `=COUNTIF($A$2:$A$500, A2)`. Any value above 1 marks a duplicate, and I filter the column to review those rows. COUNTIF cannot match text longer than 255 characters, so for long codes I build a key column and test that instead. To check two fields together, such as invoice number and customer, I use COUNTIFS. This keeps all the data in place, so the check is safe to run. In SQL, the same check is `GROUP BY invoice_no HAVING COUNT(*) > 1`.",
+    "followUps": [
+      "How would you list only the first occurrence of each duplicate?",
+      "Does COUNTIF treat the number 1001 and the text '1001' as the same value?"
+    ],
+    "commonMistakes": [
+      "Using Remove Duplicates to check, which deletes rows as it goes.",
+      "Ignoring the 255-character limit of COUNTIF on long codes."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-excel-053",
+    "category": "excel",
+    "question": "What is Flash Fill, and when does it fail?",
+    "whatInterviewerIsTesting": "Pattern-based fill and its limits.",
+    "modelAnswer": "Flash Fill detects a pattern from examples you type. If I type 'Asha' next to 'Asha Verma' and press Ctrl+E, it fills the rest of the column with first names. It works well for a fixed pattern, such as pulling the year out of a bill number. It fails when the pattern is inconsistent, such as names with middle names, so I always check a sample of rows. Flash Fill is not a formula, so it does not update when the source changes. For a job that repeats each month, I use a formula or Power Query instead. It is available in Excel 2013 and later.",
+    "followUps": [
+      "Why does Flash Fill output not update when the source data changes?",
+      "When would you choose Flash Fill over TEXTSPLIT?"
+    ],
+    "commonMistakes": [
+      "Trusting Flash Fill output without checking a sample of rows.",
+      "Using Flash Fill for a monthly job that gets new data each time."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-excel-054",
+    "category": "excel",
+    "question": "How would you use conditional formatting to highlight overdue unpaid invoices?",
+    "whatInterviewerIsTesting": "Formula-based conditional formatting for a business rule.",
+    "modelAnswer": "I select the invoice rows, then choose Conditional Formatting > New Rule > Use a formula. The formula is `=AND($E2<TODAY(), $F2=\"Unpaid\")`, where column E holds the due date and column F holds the status. I set a light red fill. A formula rule can combine conditions, which a simple 'greater than' rule cannot do. TODAY() makes the rule recalculate each day, which is what overdue tracking needs. I apply the rule to the whole table, so new rows get the colour too.",
+    "followUps": [
+      "How do you stop two conditional formatting rules from clashing on the same cell?",
+      "How would you highlight the top 10 customers by amount?"
+    ],
+    "commonMistakes": [
+      "Applying the rule to a fixed range that does not include new rows.",
+      "Colouring cells by hand, so the colour does not update."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-excel-055",
+    "category": "excel",
+    "question": "What are the main steps in a Power Query cleaning flow, and why is it better than manual cleaning?",
+    "whatInterviewerIsTesting": "Repeatable cleaning in Excel with Applied Steps, data types and refresh.",
+    "modelAnswer": "Power Query records each cleaning step in the Applied Steps list. A typical flow connects to the file or folder, promotes the headers, removes blank rows, sets column data types, trims and replaces values, and unpivots if needed. When I refresh, every step runs again on the new file, so next month's data gets the same rules. Manual cleaning is quicker once, but it is hard to repeat and to audit. I remove unused columns early to keep the query fast. Power Query, called Get & Transform, is built in from Excel 2016. It does not replace a database when the data is very large.",
+    "followUps": [
+      "What is the difference between loading a query to a table and loading it to the Data Model?",
+      "How would you handle a monthly file whose columns come in a different order?"
+    ],
+    "commonMistakes": [
+      "Fixing values in the output table, which is lost on the next refresh.",
+      "Letting Power Query change data types automatically without checking dates."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-excel-056",
+    "category": "excel",
+    "question": "What is Goal Seek, and when would you use Solver instead?",
+    "whatInterviewerIsTesting": "Single-target backward calculation versus constrained optimisation.",
+    "modelAnswer": "Goal Seek finds the input value that makes one formula give a target result. For example, if I want an EMI of Rs 12,000, Goal Seek can find the loan amount that produces it. I run it from Data > What-If Analysis > Goal Seek, choose the result cell, the target and the input cell. Solver handles several inputs with constraints, such as a Rs 10 lakh budget split across three marketing channels to maximise leads. Solver is an add-in that must be enabled. Goal Seek is faster for one number, and Solver is right for a set of rules.",
+    "followUps": [
+      "What happens if Goal Seek cannot find a solution?",
+      "When would you use a Data Table instead?"
+    ],
+    "commonMistakes": [
+      "Choosing an input cell that holds a formula, so Goal Seek cannot change it.",
+      "Running Solver with no constraints when the answer must fit a budget."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-excel-057",
+    "category": "excel",
+    "question": "What is a one-variable Data Table, and how does it compare with Scenario Manager?",
+    "whatInterviewerIsTesting": "Sensitivity analysis with a live table versus stored named scenarios.",
+    "modelAnswer": "A one-variable Data Table, from Data > What-If Analysis > Data Table, runs the model for a list of input values. For example, I list interest rates from 8 to 12 percent and see the EMI for each. The table recalculates with the model, so it is a live sensitivity check. Scenario Manager stores a few named sets of inputs, such as best, base and worst cases. Data Tables suit many values, and scenarios suit a few named cases. The input cell must be on the same sheet as the table. Data Tables slow large workbooks, so I set calculation to Automatic except for data tables.",
+    "followUps": [
+      "What is a two-variable Data Table?",
+      "How do you set the row and column input cells correctly?"
+    ],
+    "commonMistakes": [
+      "Pointing the input cell at a formula instead of an input value.",
+      "Putting the input cell on a different sheet from the Data Table."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-excel-058",
+    "category": "excel",
+    "question": "What are good model hygiene rules for an Excel file that others will use?",
+    "whatInterviewerIsTesting": "Structure and clarity in a working file.",
+    "modelAnswer": "I keep inputs, calculations and outputs on separate sheets, and I colour input cells in one clear style, such as blue text. I avoid hardcoded numbers inside formulas, so a rate such as 18 percent GST sits in one labelled cell. I keep one formula for each column, so the logic stays consistent down the rows. A notes sheet records the source, the date and the owner. Before I send the file, I check for #N/A and #REF! errors. These rules let a manager audit the file in a few minutes.",
+    "followUps": [
+      "Why is a hardcoded number inside a formula a risk?",
+      "How do you check that a formula is consistent down a whole column?"
+    ],
+    "commonMistakes": [
+      "Mixing inputs and outputs on the same sheet.",
+      "Using a number such as 0.18 inside formulas with no label."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-excel-059",
+    "category": "excel",
+    "question": "How do you protect a sheet so that users can type only in the input cells?",
+    "whatInterviewerIsTesting": "Sheet protection and unlocked cells.",
+    "modelAnswer": "First I select the input cells, open Format Cells > Protection, and untick Locked. Then I go to Review > Protect Sheet and set a password if needed. Users can now type only in the unlocked cells, and the formulas stay safe. The password stops accidental edits, but it is not strong security, so I never rely on it for sensitive salary data. In the protection options, I can also allow sorting and filtering. To stop sheets being renamed or deleted, I protect the workbook structure as well.",
+    "followUps": [
+      "What is the difference between sheet protection and workbook structure protection?",
+      "Why is a sheet password not strong security?"
+    ],
+    "commonMistakes": [
+      "Protecting the sheet without unlocking the input cells first.",
+      "Calling a password-protected salary file secure."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-excel-060",
+    "category": "excel",
+    "question": "Your Excel file takes a minute to open and recalculate. What do you check?",
+    "whatInterviewerIsTesting": "A systematic approach to diagnosing a slow workbook.",
+    "modelAnswer": "I first check the calculation mode and switch it to Manual while I work. Then I look for whole-column references, such as A:A inside SUMIFS, which scan over a million rows, and I replace them with a fixed range or a table. I look for volatile functions such as OFFSET, INDIRECT, TODAY and NOW, because they recalculate on every change. I also check for pivot caches that are copied many times, unused formatting, and large pasted images. Finally, I press Ctrl+Alt+F9 to force a full recalculation and time it. If the raw data is large, I move it to Power Query or a database.",
+    "followUps": [
+      "Why is INDEX preferred over OFFSET for a dynamic range?",
+      "When would you move raw data out of the workbook into Power Query or a database?"
+    ],
+    "commonMistakes": [
+      "Deleting formulas to speed up the file without checking the outputs.",
+      "Adding more helper columns when the real cause is a whole-column reference."
+    ],
+    "difficulty": "medium"
+  }
+]

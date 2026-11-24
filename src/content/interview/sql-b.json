@@ -1,0 +1,562 @@
+[
+  {
+    "id": "interview-sql-036",
+    "category": "sql",
+    "difficulty": "easy",
+    "question": "What is a derived table, and when would you use one?",
+    "whatInterviewerIsTesting": "Whether the candidate can split a problem into an inner aggregate and an outer summary.",
+    "modelAnswer": "A derived table is a subquery in the FROM clause, and you treat it like a table. I use one when I need to aggregate twice, for example total orders per customer first, then the average of those totals per city. I use LEFT JOIN so customers with zero orders stay in the average, which would otherwise be inflated. Always give the derived table an alias, because MySQL requires one.\n\n```sql\nSELECT city, ROUND(AVG(order_count), 2) AS avg_orders\nFROM (\n  SELECT c.customer_id, c.city, COUNT(o.order_id) AS order_count\n  FROM customers c\n  LEFT JOIN orders o ON o.customer_id = c.customer_id\n  GROUP BY c.customer_id, c.city\n) AS per_customer\nGROUP BY city\nORDER BY avg_orders DESC\nLIMIT 5;\n```",
+    "followUps": [
+      "How is a derived table different from a CTE?",
+      "What happens to the average if you switch to INNER JOIN?"
+    ],
+    "commonMistakes": [
+      "Leaving out customers with zero orders, which pushes the averages up.",
+      "Forgetting the alias on the derived table, which fails in MySQL."
+    ]
+  },
+  {
+    "id": "interview-sql-037",
+    "category": "sql",
+    "difficulty": "medium",
+    "question": "When would you use a scalar subquery in the SELECT list, and what is its risk?",
+    "whatInterviewerIsTesting": "Knowledge of scalar subqueries, their per-row cost, and the one-value rule.",
+    "modelAnswer": "A scalar subquery returns exactly one value, so you can place it in the SELECT list beside normal columns. It works well as a benchmark, such as the average MRP of a product's category shown next to each product. It runs once for every outer row, and it fails if it returns more than one row. On a large table, a join to a grouped subquery is usually faster and easier to read.\n\n```sql\nSELECT p.product_id, p.product_name, p.mrp,\n       (SELECT ROUND(AVG(p2.mrp), 2)\n        FROM products p2\n        WHERE p2.category = p.category) AS category_avg_mrp\nFROM products p\nORDER BY p.product_id\nLIMIT 10;\n```",
+    "followUps": [
+      "What error do you get if the subquery returns two rows?",
+      "When would a join to an aggregated CTE be the better choice?"
+    ],
+    "commonMistakes": [
+      "Writing a scalar subquery that can return several rows and expecting it to work.",
+      "Using a scalar subquery on a big table without checking the query plan."
+    ]
+  },
+  {
+    "id": "interview-sql-038",
+    "category": "sql",
+    "difficulty": "medium",
+    "question": "How do you choose between IN and EXISTS when filtering rows based on another table?",
+    "whatInterviewerIsTesting": "Whether the candidate knows the semantic difference between membership and existence checks, and the NOT IN NULL trap.",
+    "modelAnswer": "Both check whether a matching row exists in another table. EXISTS can stop at the first match, and it is my default for correlated checks because the intent is clear. IN works well for a short, fixed list of values. The trap is NOT IN, which returns no rows at all if the subquery returns a single NULL. Here I want ecommerce customers with at least one delivered order in 2024.\n\n```sql\nSELECT c.customer_id, c.full_name\nFROM customers c\nWHERE EXISTS (\n  SELECT 1\n  FROM orders o\n  WHERE o.customer_id = c.customer_id\n    AND o.order_status = 'Delivered'\n    AND o.order_date >= '2024-01-01'\n)\nORDER BY c.customer_id\nLIMIT 10;\n```",
+    "followUps": [
+      "Rewrite this with IN. Does the result change?",
+      "Why does NOT IN return no rows when the list contains a NULL?"
+    ],
+    "commonMistakes": [
+      "Using NOT IN on a column that can contain NULL, which silently returns zero rows.",
+      "Writing a correlated EXISTS without linking the outer key, so every row passes."
+    ]
+  },
+  {
+    "id": "interview-sql-039",
+    "category": "sql",
+    "difficulty": "medium",
+    "question": "How would you build a monthly report in steps using CTEs?",
+    "whatInterviewerIsTesting": "Readability through named steps and keeping the right grain at each step.",
+    "modelAnswer": "I break the logic into named steps, and each CTE has one job and one grain. In this subscription example, the first CTE keeps only users who paid and extracts the start month. The second CTE counts new paid users and sums their price per month. The final SELECT only filters and orders the result. In SQLite, substr works on the ISO date text; MySQL would use DATE_FORMAT, and Postgres would use TO_CHAR.\n\n```sql\nWITH paid AS (\n  SELECT subscription_id, price_inr,\n         substr(paid_start_date, 1, 7) AS paid_month\n  FROM subscriptions\n  WHERE paid_start_date IS NOT NULL\n),\nmonthly AS (\n  SELECT paid_month,\n         COUNT(*) AS new_paid_subscriptions,\n         SUM(price_inr) AS new_price_total\n  FROM paid\n  GROUP BY paid_month\n)\nSELECT paid_month, new_paid_subscriptions, new_price_total\nFROM monthly\nWHERE paid_month >= '2024-01'\nORDER BY paid_month\nLIMIT 12;\n```",
+    "followUps": [
+      "When would a temp table be better than a CTE here?",
+      "How would you check that the monthly rows add up to the paid row count?"
+    ],
+    "commonMistakes": [
+      "Joining the CTEs before filtering, which multiplies the rows.",
+      "Using signup_date instead of paid_start_date, which counts the wrong event."
+    ]
+  },
+  {
+    "id": "interview-sql-040",
+    "category": "sql",
+    "difficulty": "hard",
+    "question": "A correlated subquery is slow on a big table. How would you rewrite it?",
+    "whatInterviewerIsTesting": "Understanding that a correlated subquery runs per row, and knowing the window rewrite and its tie behaviour.",
+    "modelAnswer": "A correlated subquery refers to the outer row, so the engine can run it once for every row. The example finds each user's largest transaction. The window version reads the table once per user and returns one row per user, while the correlated version returns every tied row. I pick the version that matches the business rule, and I compare the query plans before I claim a speed gain. Both queries run on SQLite.\n\n```sql\n-- Correlated version (returns all ties)\nSELECT t.txn_id, t.user_id, t.amount\nFROM transactions t\nWHERE t.amount = (\n  SELECT MAX(t2.amount) FROM transactions t2 WHERE t2.user_id = t.user_id\n)\nORDER BY t.user_id\nLIMIT 10;\n```\n\n```sql\n-- Window version (one row per user)\nWITH ranked AS (\n  SELECT txn_id, user_id, amount,\n         ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY amount DESC, txn_id) AS rn\n  FROM transactions\n)\nSELECT txn_id, user_id, amount\nFROM ranked\nWHERE rn = 1\nORDER BY user_id\nLIMIT 10;\n```",
+    "followUps": [
+      "How would you break ties if the business wants exactly one row per user?",
+      "Would an index on (user_id, amount) help the correlated version?"
+    ],
+    "commonMistakes": [
+      "Assuming the rewrite is always faster without checking the query plan.",
+      "Forgetting that the correlated version returns every tied row."
+    ]
+  },
+  {
+    "id": "interview-sql-041",
+    "category": "sql",
+    "difficulty": "easy",
+    "question": "What is the difference between ROW_NUMBER, RANK and DENSE_RANK?",
+    "whatInterviewerIsTesting": "Tie handling in ranking functions.",
+    "modelAnswer": "All three number rows inside a window ordered by a column. ROW_NUMBER gives every row a unique number, so ties get arbitrary order unless I add a tiebreaker. RANK gives tied rows the same number and then skips, so two rows tied at 2 are followed by 4. DENSE_RANK gives ties the same number without skipping, so the next value is 3. I use ROW_NUMBER for dedupe, and RANK or DENSE_RANK for leaderboards. All three work in SQLite 3.25 and later.\n\n```sql\nSELECT product_id, product_name, mrp,\n       ROW_NUMBER() OVER (ORDER BY mrp DESC, product_id) AS row_num,\n       RANK()       OVER (ORDER BY mrp DESC) AS rnk,\n       DENSE_RANK() OVER (ORDER BY mrp DESC) AS dense_rnk\nFROM products\nORDER BY mrp DESC, product_id\nLIMIT 12;\n```",
+    "followUps": [
+      "Which function gives exactly one row per customer?",
+      "What does RANK return after two products tie at the top?"
+    ],
+    "commonMistakes": [
+      "Using ROW_NUMBER for a ranking where tied rows must share a rank.",
+      "Skipping the tiebreaker, so the output changes between runs."
+    ]
+  },
+  {
+    "id": "interview-sql-042",
+    "category": "sql",
+    "difficulty": "medium",
+    "question": "How do you get the top 2 merchants by successful payment value in each city?",
+    "whatInterviewerIsTesting": "Top N per group: aggregate first, rank inside the group, then filter in an outer query.",
+    "modelAnswer": "I aggregate successful spend per city and merchant first. Then I rank merchants inside each city with ROW_NUMBER and a name tiebreaker. The filter on rn goes in an outer query, because a window function cannot appear in WHERE. I use ROW_NUMBER here so the answer is exactly two rows per city, and I would say that RANK could return more rows when two merchants tie at second place.\n\n```sql\nWITH merchant_sales AS (\n  SELECT UPPER(TRIM(m.city)) AS city, m.merchant_name, SUM(t.amount) AS total_amount\n  FROM transactions t\n  JOIN merchants m ON m.merchant_id = t.merchant_id\n  WHERE t.status = 'SUCCESS'\n  GROUP BY city, m.merchant_name\n),\nranked AS (\n  SELECT city, merchant_name, total_amount,\n         ROW_NUMBER() OVER (\n           PARTITION BY city\n           ORDER BY total_amount DESC, merchant_name\n         ) AS rn\n  FROM merchant_sales\n)\nSELECT city, merchant_name, ROUND(total_amount, 2) AS total_amount\nFROM ranked\nWHERE rn <= 2\nORDER BY city, rn\nLIMIT 20;\n```",
+    "followUps": [
+      "How would you return the top 3 merchants overall instead of per city?",
+      "What changes if two merchants have exactly the same total?"
+    ],
+    "commonMistakes": [
+      "Putting the window function directly in WHERE, which fails.",
+      "Ranking raw transactions instead of the aggregated totals."
+    ]
+  },
+  {
+    "id": "interview-sql-043",
+    "category": "sql",
+    "difficulty": "medium",
+    "question": "How do you find the second highest transaction amount, and which method would you pick?",
+    "whatInterviewerIsTesting": "Several solution patterns for Nth value, and awareness of duplicate values.",
+    "modelAnswer": "I can use a subquery for the highest value below the maximum, DENSE_RANK to pick rank 2, or DISTINCT with LIMIT and OFFSET. The subquery is the clearest for one value. DENSE_RANK is the best answer for the general Nth highest, because I only change the rank number. LIMIT with OFFSET is short but needs DISTINCT, otherwise a repeated top value is returned again. All three run on the successful fintech transactions below.\n\n```sql\n-- Method 1: maximum below the top value\nSELECT MAX(amount) AS second_highest\nFROM transactions\nWHERE status = 'SUCCESS'\n  AND amount < (SELECT MAX(amount) FROM transactions WHERE status = 'SUCCESS');\n```\n\n```sql\n-- Method 2: DENSE_RANK\nSELECT amount AS second_highest\nFROM (\n  SELECT amount, DENSE_RANK() OVER (ORDER BY amount DESC) AS rnk\n  FROM transactions\n  WHERE status = 'SUCCESS'\n)\nWHERE rnk = 2\nLIMIT 1;\n```\n\n```sql\n-- Method 3: DISTINCT with OFFSET\nSELECT DISTINCT amount\nFROM transactions\nWHERE status = 'SUCCESS'\nORDER BY amount DESC\nLIMIT 1 OFFSET 1;\n```",
+    "followUps": [
+      "How would you get the third highest amount?",
+      "What does Method 1 return if the top amount appears twice?"
+    ],
+    "commonMistakes": [
+      "Using LIMIT 1 OFFSET 1 without DISTINCT, which returns the top value again when it repeats.",
+      "Using MIN instead of MAX in the subquery."
+    ]
+  },
+  {
+    "id": "interview-sql-044",
+    "category": "sql",
+    "difficulty": "medium",
+    "question": "How do you calculate a running total of revenue by month?",
+    "whatInterviewerIsTesting": "Window SUM with an explicit frame, and aggregating before the window.",
+    "modelAnswer": "I aggregate revenue per month first, because a window function works on rows that already exist. Then SUM with ORDER BY month and an explicit frame from the first row to the current row gives the running total. I round only at the end, so small rounding errors do not build up. This example uses delivered ecommerce orders in SQLite, where substr on the ISO date gives the month. Postgres would use DATE_TRUNC and MySQL would use DATE_FORMAT.\n\n```sql\nWITH monthly AS (\n  SELECT substr(order_date, 1, 7) AS month,\n         SUM(total_amount) AS revenue\n  FROM orders\n  WHERE order_status = 'Delivered'\n  GROUP BY month\n)\nSELECT month,\n       ROUND(revenue, 2) AS revenue,\n       ROUND(SUM(revenue) OVER (\n         ORDER BY month\n         ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW\n       ), 2) AS running_revenue\nFROM monthly\nORDER BY month\nLIMIT 12;\n```",
+    "followUps": [
+      "How would the query change if you want a running total for each sales channel?",
+      "What happens if you run the window over raw order rows instead of monthly totals?"
+    ],
+    "commonMistakes": [
+      "Rounding each row before summing, which adds drift to the total.",
+      "Missing months with no sales, which breaks a month-by-month comparison."
+    ]
+  },
+  {
+    "id": "interview-sql-045",
+    "category": "sql",
+    "difficulty": "medium",
+    "question": "How do you compute a 7-day moving average of daily successful payments?",
+    "whatInterviewerIsTesting": "Rolling frame clause and awareness that missing days break the window.",
+    "modelAnswer": "I first total the successful payments for each day. Then I average the current day and the six days before it with ROWS BETWEEN 6 PRECEDING AND CURRENT ROW. The average is only right if every calendar day has a row, because days with no transactions are missing from the daily table. In a real report I would generate a calendar first. This query uses the fintech dataset in SQLite, where date() returns the day part of the timestamp.\n\n```sql\nWITH daily AS (\n  SELECT date(txn_datetime) AS txn_day, SUM(amount) AS day_amount\n  FROM transactions\n  WHERE status = 'SUCCESS'\n  GROUP BY txn_day\n)\nSELECT txn_day,\n       ROUND(day_amount, 2) AS day_amount,\n       ROUND(AVG(day_amount) OVER (\n         ORDER BY txn_day\n         ROWS BETWEEN 6 PRECEDING AND CURRENT ROW\n       ), 2) AS moving_7_day_avg\nFROM daily\nORDER BY txn_day\nLIMIT 10;\n```",
+    "followUps": [
+      "What do the first six rows show, and is that a problem?",
+      "How would you fill in the missing calendar days?"
+    ],
+    "commonMistakes": [
+      "Averaging only the days that have payments, which pushes the average up.",
+      "Assuming every calendar day has a row in the source table."
+    ]
+  },
+  {
+    "id": "interview-sql-046",
+    "category": "sql",
+    "difficulty": "medium",
+    "question": "How do you calculate month-over-month revenue growth with LAG?",
+    "whatInterviewerIsTesting": "LAG for the previous row, NULL handling for the first period, and division by zero.",
+    "modelAnswer": "I aggregate revenue to months first. LAG then returns the previous month's value on the same row, so the growth formula can sit in one SELECT. The first month has no previous value, so its growth is NULL, which is correct. I use NULLIF to avoid a division by zero if a month has no revenue. This query uses delivered ecommerce orders in SQLite.\n\n```sql\nWITH monthly AS (\n  SELECT substr(order_date, 1, 7) AS month,\n         SUM(total_amount) AS revenue\n  FROM orders\n  WHERE order_status = 'Delivered'\n  GROUP BY month\n),\nwith_prev AS (\n  SELECT month, revenue,\n         LAG(revenue) OVER (ORDER BY month) AS prev_revenue\n  FROM monthly\n)\nSELECT month,\n       ROUND(revenue, 2) AS revenue,\n       ROUND(100.0 * (revenue - prev_revenue) / NULLIF(prev_revenue, 0), 1) AS mom_pct\nFROM with_prev\nORDER BY month\nLIMIT 12;\n```",
+    "followUps": [
+      "How would you change this to year-over-year growth?",
+      "What happens to the result if a month is missing from the data?"
+    ],
+    "commonMistakes": [
+      "Using the current row's value in place of the previous one.",
+      "Forgetting ORDER BY inside LAG, so the comparison uses an arbitrary row."
+    ]
+  },
+  {
+    "id": "interview-sql-047",
+    "category": "sql",
+    "difficulty": "hard",
+    "question": "What is the difference between ROWS and RANGE in a window frame?",
+    "whatInterviewerIsTesting": "Frame semantics with tied ORDER BY values, and the default frame.",
+    "modelAnswer": "ROWS counts physical rows, so each row adds its own value to the running total in turn. RANGE groups peers, which are rows with the same ORDER BY value, so tied rows get the same total. When you give ORDER BY and no frame, SQL uses RANGE UNBOUNDED PRECEDING AND CURRENT ROW by default. So orders placed on the same date get the total of the whole date. The query below shows both on ecommerce orders from 1 January 2023.\n\n```sql\nSELECT order_id, order_date,\n       ROUND(total_amount, 2) AS total,\n       ROUND(SUM(total_amount) OVER (\n         ORDER BY order_date\n         ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW\n       ), 2) AS rows_running,\n       ROUND(SUM(total_amount) OVER (\n         ORDER BY order_date\n         RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW\n       ), 2) AS range_running\nFROM orders\nWHERE order_date = '2023-01-01'\nORDER BY order_date, order_id;\n```",
+    "followUps": [
+      "What frame does a window use if you give no ORDER BY?",
+      "Why do you need UNBOUNDED FOLLOWING to get a true last value?"
+    ],
+    "commonMistakes": [
+      "Assuming ROWS and RANGE give the same running total when dates repeat.",
+      "Relying on the default frame in a report without writing it out."
+    ]
+  },
+  {
+    "id": "interview-sql-048",
+    "category": "sql",
+    "difficulty": "medium",
+    "question": "How do you find the event users most often do right after signing up?",
+    "whatInterviewerIsTesting": "LEAD for next-row analysis, plus cleaning mixed-case event names.",
+    "modelAnswer": "LEAD returns a value from the next row inside the same user partition, ordered by time. Here I use it to see what each user did right after SIGNUP. The events table has mixed case such as 'SIGNUP' and 'signup', so I normalise with UPPER before counting. I order by event_time and then event_id so the result is stable when two events share a timestamp. Duplicate event rows in this dataset should be removed first, or they will show a user's own event as the next one.\n\n```sql\nWITH ordered AS (\n  SELECT user_id, event_id,\n         UPPER(event_name) AS event_name,\n         LEAD(UPPER(event_name)) OVER (\n           PARTITION BY user_id ORDER BY event_time, event_id\n         ) AS next_event\n  FROM events\n)\nSELECT next_event, COUNT(*) AS times\nFROM ordered\nWHERE event_name = 'SIGNUP'\n  AND next_event IS NOT NULL\nGROUP BY next_event\nORDER BY times DESC\nLIMIT 10;\n```",
+    "followUps": [
+      "How would you use LAG to find the event just before a PAYMENT_SUCCESS?",
+      "How do you handle two events with the same timestamp?"
+    ],
+    "commonMistakes": [
+      "Forgetting to normalise case, so lowercase 'signup' rows are missed.",
+      "Ordering only by event_time, which gives unstable results when times tie."
+    ]
+  },
+  {
+    "id": "interview-sql-049",
+    "category": "sql",
+    "difficulty": "hard",
+    "question": "Why does LAST_VALUE often return the current row, and how do you fix it?",
+    "whatInterviewerIsTesting": "Knowledge of the default window frame and its effect on LAST_VALUE.",
+    "modelAnswer": "When a window has ORDER BY and no frame, the default frame ends at the current row. So LAST_VALUE returns the current row's value, not the final value of the partition. The fix is an explicit frame, ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING. FIRST_VALUE works with the default frame because that frame always starts at the first row. The query below shows both on two ecommerce customers.\n\n```sql\nSELECT customer_id, order_id, order_date, order_status,\n       FIRST_VALUE(order_status) OVER (\n         PARTITION BY customer_id ORDER BY order_date, order_id\n       ) AS first_status,\n       LAST_VALUE(order_status) OVER (\n         PARTITION BY customer_id ORDER BY order_date, order_id\n       ) AS last_status_default_frame,\n       LAST_VALUE(order_status) OVER (\n         PARTITION BY customer_id ORDER BY order_date, order_id\n         ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING\n       ) AS last_status_full_frame\nFROM orders\nWHERE customer_id IN (452, 718)\nORDER BY customer_id, order_date, order_id;\n```",
+    "followUps": [
+      "Where would you set a frame in a rolling 3-month average?",
+      "What does LAST_VALUE return with no ORDER BY in the window?"
+    ],
+    "commonMistakes": [
+      "Expecting LAST_VALUE to return the final row without setting the frame.",
+      "Ordering by a non-unique column with no tiebreaker."
+    ]
+  },
+  {
+    "id": "interview-sql-050",
+    "category": "sql",
+    "difficulty": "medium",
+    "question": "How do you calculate each category's share of total revenue in one query?",
+    "whatInterviewerIsTesting": "Window SUM over all rows, and keeping the numerator and total on the same filter.",
+    "modelAnswer": "I aggregate revenue per category first, then use SUM(revenue) OVER () to get the grand total on every row. Dividing by that total gives each share without a second query or self join. I multiply by 100.0 so the division does not become an integer division when both inputs are whole numbers. The numerator and the total must use the same filter, or the shares will not add up to 100. This example uses delivered order lines from the ecommerce dataset.\n\n```sql\nWITH category_sales AS (\n  SELECT p.category, SUM(oi.line_total) AS revenue\n  FROM order_items oi\n  JOIN orders o ON o.order_id = oi.order_id\n  JOIN products p ON p.product_id = oi.product_id\n  WHERE o.order_status = 'Delivered'\n  GROUP BY p.category\n)\nSELECT category,\n       ROUND(revenue, 0) AS revenue,\n       ROUND(100.0 * revenue / SUM(revenue) OVER (), 1) AS pct_of_total\nFROM category_sales\nORDER BY revenue DESC;\n```",
+    "followUps": [
+      "How would you show each sub-category's share within its own category?",
+      "What does a separate subquery for the total cost you compared with a window?"
+    ],
+    "commonMistakes": [
+      "Dividing two integer columns and getting zero.",
+      "Using a different filter for the total than for the numerator, so shares do not add to 100."
+    ]
+  },
+  {
+    "id": "interview-sql-051",
+    "category": "sql",
+    "difficulty": "hard",
+    "question": "How do you split customers into spend quartiles?",
+    "whatInterviewerIsTesting": "NTILE bucketing and the two-step shape needed to group on a window result.",
+    "modelAnswer": "NTILE(4) divides the ordered rows into four buckets of nearly equal size. I compute each customer's delivered spend first, assign the bucket in a CTE, and then group by bucket. GROUP BY cannot use a window function in the same SELECT, so the two-step shape is required. Quartile 1 holds the highest spenders. Customers with no delivered orders are not in the buckets, and I would say so in the report.\n\n```sql\nWITH spend AS (\n  SELECT customer_id, SUM(total_amount) AS total_spend\n  FROM orders\n  WHERE order_status = 'Delivered'\n  GROUP BY customer_id\n),\nbuckets AS (\n  SELECT customer_id, total_spend,\n         NTILE(4) OVER (ORDER BY total_spend DESC) AS quartile\n  FROM spend\n)\nSELECT quartile,\n       COUNT(*) AS customers,\n       ROUND(MIN(total_spend), 0) AS min_spend,\n       ROUND(MAX(total_spend), 0) AS max_spend,\n       ROUND(SUM(total_spend), 0) AS total_spend\nFROM buckets\nGROUP BY quartile\nORDER BY quartile;\n```",
+    "followUps": [
+      "How would you change this to deciles?",
+      "What does NTILE do when there are fewer rows than buckets?"
+    ],
+    "commonMistakes": [
+      "Trying to GROUP BY the NTILE expression in the same query.",
+      "Forgetting that customers with no delivered orders are left out of the buckets."
+    ]
+  },
+  {
+    "id": "interview-sql-052",
+    "category": "sql",
+    "difficulty": "hard",
+    "question": "Why can't you filter on ROW_NUMBER in WHERE, and how do you fix it?",
+    "whatInterviewerIsTesting": "Logical order of query execution and wrapping window results in a CTE.",
+    "modelAnswer": "Window functions run after WHERE, GROUP BY and HAVING, so the row number does not exist yet when WHERE runs. The usual fix is to compute the number in a CTE or derived table and filter in the outer query. The query below keeps each customer's latest delivered order. The pattern is the same in SQLite, MySQL 8 and Postgres, so it is a safe one to know.\n\n```sql\nWITH ranked AS (\n  SELECT customer_id, order_id, order_date, total_amount,\n         ROW_NUMBER() OVER (\n           PARTITION BY customer_id\n           ORDER BY order_date DESC, order_id DESC\n         ) AS rn\n  FROM orders\n  WHERE order_status = 'Delivered'\n)\nSELECT customer_id, order_id, order_date, total_amount\nFROM ranked\nWHERE rn = 1\nORDER BY customer_id\nLIMIT 10;\n```",
+    "followUps": [
+      "Is QUALIFY available in SQLite, and which databases support it?",
+      "Why does the ORDER BY inside the window need a tiebreaker?"
+    ],
+    "commonMistakes": [
+      "Writing WHERE rn = 1 in the same SELECT, which fails with a missing column error.",
+      "Filtering rows before the window runs, which changes the ranking."
+    ]
+  },
+  {
+    "id": "interview-sql-053",
+    "category": "sql",
+    "difficulty": "hard",
+    "question": "How many customers make up 80 per cent of delivered revenue, and how do you compute it?",
+    "whatInterviewerIsTesting": "Cumulative window sums compared against a grand total.",
+    "modelAnswer": "I sort customers by spend and compute a running total with a window. A customer is needed to reach 80 per cent if the total before adding that customer is still below 80 per cent of the grand total. Subtracting the customer's own spend from the running total gives that before-value. I use an explicit ROWS frame so tied customers do not share one running total. The query runs on the delivered ecommerce orders.\n\n```sql\nWITH spend AS (\n  SELECT customer_id, SUM(total_amount) AS total_spend\n  FROM orders\n  WHERE order_status = 'Delivered'\n  GROUP BY customer_id\n),\nrunning AS (\n  SELECT customer_id, total_spend,\n         SUM(total_spend) OVER (\n           ORDER BY total_spend DESC\n           ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW\n         ) AS cum_spend,\n         SUM(total_spend) OVER () AS grand_total\n  FROM spend\n)\nSELECT COUNT(*) AS customers_for_80_pct,\n       (SELECT COUNT(*) FROM spend) AS all_customers\nFROM running\nWHERE cum_spend - total_spend < 0.8 * grand_total;\n```",
+    "followUps": [
+      "How would you express the answer as a percentage of all customers?",
+      "Why subtract total_spend before comparing with 80 per cent?"
+    ],
+    "commonMistakes": [
+      "Comparing cum_spend alone, which includes the customer who crosses the line.",
+      "Leaving out the ROWS frame, so tied customers share one running total."
+    ]
+  },
+  {
+    "id": "interview-sql-054",
+    "category": "sql",
+    "difficulty": "hard",
+    "question": "How do you find the top category in each month when the ranking needs monthly totals first?",
+    "whatInterviewerIsTesting": "Layering aggregation, ranking and filtering in the right order, and handling ties.",
+    "modelAnswer": "I aggregate revenue by month and category first, then rank categories inside each month. Window functions run after GROUP BY, so the ranking sees one row per month and category. I use RANK, not ROW_NUMBER, so a tie at the top shows up as two rows instead of being hidden. The outer query keeps rank 1. This example covers 2024 delivered sales from the ecommerce dataset.\n\n```sql\nWITH monthly_category AS (\n  SELECT substr(o.order_date, 1, 7) AS month,\n         p.category,\n         SUM(oi.line_total) AS revenue\n  FROM order_items oi\n  JOIN orders o ON o.order_id = oi.order_id\n  JOIN products p ON p.product_id = oi.product_id\n  WHERE o.order_status = 'Delivered'\n    AND o.order_date >= '2024-01-01'\n    AND o.order_date < '2025-01-01'\n  GROUP BY month, p.category\n),\nranked AS (\n  SELECT month, category, ROUND(revenue, 0) AS revenue,\n         RANK() OVER (PARTITION BY month ORDER BY revenue DESC) AS rnk\n  FROM monthly_category\n)\nSELECT month, category, revenue\nFROM ranked\nWHERE rnk = 1\nORDER BY month;\n```",
+    "followUps": [
+      "How would you show the top three categories each month?",
+      "Why is RANK safer than ROW_NUMBER here?"
+    ],
+    "commonMistakes": [
+      "Ranking before aggregating, which ranks individual order lines.",
+      "Expecting exactly one row per month when two categories tie at rank 1."
+    ]
+  },
+  {
+    "id": "interview-sql-055",
+    "category": "sql",
+    "difficulty": "easy",
+    "question": "How do you get monthly revenue in SQLite, and how does it differ in Postgres or MySQL?",
+    "whatInterviewerIsTesting": "Knowing the date functions of each engine and using a half-open date range.",
+    "modelAnswer": "In SQLite, strftime('%Y-%m', date) returns the year and month as text, which groups cleanly. Postgres uses DATE_TRUNC('month', order_date) or TO_CHAR, and MySQL uses DATE_FORMAT(order_date, '%Y-%m'). The grouping idea is the same in all three. I filter with a half-open range, so the year includes every day up to 31 December. This query shows delivered ecommerce orders for 2024.\n\n```sql\nSELECT strftime('%Y-%m', order_date) AS month,\n       COUNT(*) AS orders,\n       ROUND(SUM(total_amount), 2) AS revenue\nFROM orders\nWHERE order_status = 'Delivered'\n  AND order_date >= '2024-01-01'\n  AND order_date < '2025-01-01'\nGROUP BY month\nORDER BY month;\n```",
+    "followUps": [
+      "Why is order_date < '2025-01-01' safer than BETWEEN for timestamps?",
+      "How would you handle a date column stored as DD/MM/YYYY text?"
+    ],
+    "commonMistakes": [
+      "Wrapping the date column in a function in WHERE, which stops index use.",
+      "Mixing DD/MM/YYYY and YYYY-MM-DD values in one column, as the raw signup dates in this dataset do."
+    ]
+  },
+  {
+    "id": "interview-sql-056",
+    "category": "sql",
+    "difficulty": "easy",
+    "question": "How do you extract the email domain from a customer's email in SQL?",
+    "whatInterviewerIsTesting": "String functions and the NULL and case checks that a careful analyst adds.",
+    "modelAnswer": "I find the position of the @ sign with INSTR and take everything after it with SUBSTR. SQLite has no SPLIT_PART, so this form is the portable one for SQLite. Postgres has SPLIT_PART(email, '@', 2), and MySQL has SUBSTRING_INDEX(email, '@', -1). I lowercase the email first so Gmail.com and gmail.com count as one domain. I filter out NULL emails, but I would report how many there are.\n\n```sql\nSELECT SUBSTR(LOWER(email), INSTR(email, '@') + 1) AS email_domain,\n       COUNT(*) AS customers\nFROM customers\nWHERE email IS NOT NULL\nGROUP BY email_domain\nORDER BY customers DESC\nLIMIT 10;\n```",
+    "followUps": [
+      "What does INSTR return when there is no @ sign, and what does the query do then?",
+      "How would you count the customers with no email at all?"
+    ],
+    "commonMistakes": [
+      "Forgetting that INSTR counts from 1, so the plus one is needed.",
+      "Dropping NULL emails without counting them."
+    ]
+  },
+  {
+    "id": "interview-sql-057",
+    "category": "sql",
+    "difficulty": "medium",
+    "question": "How would you count users per signup cohort, and how many of them started a paid plan?",
+    "whatInterviewerIsTesting": "Cohort construction with a LEFT JOIN and distinct counts.",
+    "modelAnswer": "A cohort is a group of users who joined in the same month. I group users by the month of signup and left join to subscriptions where paid_start_date is present. Counting DISTINCT user_id keeps the cohort size correct, because the users table has a few exact duplicate rows. The paid condition belongs in the ON clause, so users who never paid still show up in the cohort. The dates are ISO text in this dataset, so substr works in SQLite.\n\n```sql\nSELECT substr(u.signup_date, 1, 7) AS cohort_month,\n       COUNT(DISTINCT u.user_id) AS users,\n       COUNT(DISTINCT s.user_id) AS paid_users\nFROM users u\nLEFT JOIN subscriptions s\n  ON s.user_id = u.user_id\n AND s.paid_start_date IS NOT NULL\nWHERE u.signup_date >= '2024-01-01'\n  AND u.signup_date < '2025-01-01'\nGROUP BY cohort_month\nORDER BY cohort_month;\n```",
+    "followUps": [
+      "How would you measure months since signup for each user?",
+      "Why use COUNT DISTINCT here instead of COUNT(*)?"
+    ],
+    "commonMistakes": [
+      "Putting the paid_start_date condition in WHERE, which turns the LEFT JOIN into an inner join.",
+      "Using COUNT(*) and counting duplicate user rows twice."
+    ]
+  },
+  {
+    "id": "interview-sql-058",
+    "category": "sql",
+    "difficulty": "medium",
+    "question": "How would you find which weekday has the most successful UPI payments?",
+    "whatInterviewerIsTesting": "Date-part functions, label mapping, and GROUP BY rules for CASE expressions.",
+    "modelAnswer": "In SQLite, strftime('%w', datetime) returns 0 for Sunday through 6 for Saturday. I group by that number and then label it with a CASE expression. Postgres uses EXTRACT(DOW FROM ts), which also starts at Sunday, but MySQL's DAYOFWEEK starts at 1 for Sunday, so the numbers differ between engines. I also show the average amount to see if weekday payments are bigger. The example uses the successful fintech transactions.\n\n```sql\nWITH tagged AS (\n  SELECT strftime('%w', txn_datetime) AS weekday_no, amount\n  FROM transactions\n  WHERE status = 'SUCCESS'\n)\nSELECT CASE weekday_no\n         WHEN '0' THEN 'Sunday'\n         WHEN '1' THEN 'Monday'\n         WHEN '2' THEN 'Tuesday'\n         WHEN '3' THEN 'Wednesday'\n         WHEN '4' THEN 'Thursday'\n         WHEN '5' THEN 'Friday'\n         ELSE 'Saturday'\n       END AS weekday,\n       COUNT(*) AS txns,\n       ROUND(AVG(amount), 2) AS avg_amount\nFROM tagged\nGROUP BY weekday_no\nORDER BY txns DESC;\n```",
+    "followUps": [
+      "How would you group Saturday and Sunday into one weekend flag?",
+      "Why does the weekday number differ between SQLite and MySQL?"
+    ],
+    "commonMistakes": [
+      "Assuming %w starts on Monday.",
+      "Selecting a CASE label built from a column that is not in the GROUP BY, which fails in Postgres."
+    ]
+  },
+  {
+    "id": "interview-sql-059",
+    "category": "sql",
+    "difficulty": "medium",
+    "question": "How do you measure the number of days between order and delivery in SQLite?",
+    "whatInterviewerIsTesting": "Date arithmetic in SQLite and filtering by order status before measuring.",
+    "modelAnswer": "In SQLite, julianday() converts a date to a day number, so subtracting two of them gives the difference in days, including fractions. Postgres subtracts dates directly to give an integer, and MySQL uses DATEDIFF(delivery_date, order_date). I only use delivered orders with a delivery date, because cancelled or returned orders would distort the delivery time. I round to one decimal to keep the report readable. Delivery time is a common SLA metric for Indian e-commerce teams.\n\n```sql\nSELECT sales_channel,\n       COUNT(*) AS delivered_orders,\n       ROUND(AVG(julianday(delivery_date) - julianday(order_date)), 1) AS avg_days\nFROM orders\nWHERE order_status = 'Delivered'\n  AND delivery_date IS NOT NULL\nGROUP BY sales_channel\nORDER BY avg_days;\n```",
+    "followUps": [
+      "How would you find orders that took more than seven days?",
+      "What changes if delivery_date is stored with a time part?"
+    ],
+    "commonMistakes": [
+      "Subtracting text dates directly, which gives a number with no meaning.",
+      "Forgetting to filter by status, so cancelled or returned orders distort the delivery time."
+    ]
+  },
+  {
+    "id": "interview-sql-060",
+    "category": "sql",
+    "difficulty": "hard",
+    "question": "How do you report transactions by IST day when the timestamp is stored in UTC?",
+    "whatInterviewerIsTesting": "Timezone awareness: converting before truncating the date.",
+    "modelAnswer": "If timestamps are stored in UTC, a payment at 11 pm IST on 5 March is stored as 17:30 UTC on 5 March, and a payment at 1 am IST on 6 March is stored as 19:30 UTC on 5 March. Grouping by the stored date puts the second one on the wrong day for an Indian report. I convert first with two modifiers, plus 5 hours and plus 30 minutes, and then take the date. The fintech dataset does not state its timezone, so I would confirm it with the data team before relying on this query.\n\n```sql\nSELECT date(txn_datetime, '+5 hours', '+30 minutes') AS ist_day,\n       COUNT(*) AS successful_txns\nFROM transactions\nWHERE status = 'SUCCESS'\nGROUP BY ist_day\nORDER BY ist_day DESC\nLIMIT 5;\n```\n\nIn Postgres the same step uses AT TIME ZONE 'Asia/Kolkata'. IST has no daylight saving, so a fixed offset is safe.",
+    "followUps": [
+      "Where should the timezone conversion live in a data pipeline?",
+      "Does IST change for daylight saving time?"
+    ],
+    "commonMistakes": [
+      "Assuming the stored timestamp is already in IST without checking.",
+      "Hardcoding the offset in each dashboard, so every report converts differently."
+    ]
+  },
+  {
+    "id": "interview-sql-061",
+    "category": "sql",
+    "difficulty": "easy",
+    "question": "What is the difference between UNION and UNION ALL?",
+    "whatInterviewerIsTesting": "Cost of duplicate removal in set operations.",
+    "modelAnswer": "UNION stacks two result sets and removes duplicate rows, which needs a sort or hash step. UNION ALL stacks them and keeps every row, so it is faster. I use UNION ALL when I know the sets cannot overlap, and UNION when I want a distinct list. The example builds one distinct list of cities from the merchant and user tables for a city filter. Both queries must return the same number of columns with compatible types.\n\n```sql\nSELECT UPPER(TRIM(city)) AS city FROM merchants WHERE city IS NOT NULL\nUNION\nSELECT UPPER(TRIM(city)) FROM users WHERE city IS NOT NULL\nORDER BY city\nLIMIT 20;\n```",
+    "followUps": [
+      "When would UNION ALL give a wrong answer?",
+      "How does UNION treat a NULL city value?"
+    ],
+    "commonMistakes": [
+      "Using UNION on large tables when duplicates are not a concern, which slows the query.",
+      "Matching columns by position when their order differs between the two queries."
+    ]
+  },
+  {
+    "id": "interview-sql-062",
+    "category": "sql",
+    "difficulty": "easy",
+    "question": "How do you find duplicate email addresses in a table?",
+    "whatInterviewerIsTesting": "GROUP BY with HAVING, normalising values, and excluding NULLs first.",
+    "modelAnswer": "I group by a normalised email, lowercase and trimmed, and keep groups with more than one row using HAVING COUNT(*) > 1. NULL emails are not duplicates, so I filter them out first. GROUP_CONCAT lists the user IDs in each group so I can investigate. In this subscription dataset more than 100 emails are shared, which can happen when one person signs up twice.\n\n```sql\nSELECT TRIM(LOWER(email)) AS email_key,\n       COUNT(*) AS row_count,\n       GROUP_CONCAT(user_id) AS user_ids\nFROM users\nWHERE email IS NOT NULL\nGROUP BY email_key\nHAVING COUNT(*) > 1\nORDER BY row_count DESC, email_key\nLIMIT 10;\n```",
+    "followUps": [
+      "How would you return every row for those emails, not only the group summary?",
+      "Why should NULL emails be excluded before grouping?"
+    ],
+    "commonMistakes": [
+      "Comparing emails without lowercasing, which misses duplicates that differ only in case.",
+      "Counting NULL emails as one duplicate group."
+    ]
+  },
+  {
+    "id": "interview-sql-063",
+    "category": "sql",
+    "difficulty": "medium",
+    "question": "How would you remove duplicate rows and keep only the latest one?",
+    "whatInterviewerIsTesting": "ROW_NUMBER dedupe pattern and choosing a deterministic tiebreaker.",
+    "modelAnswer": "I number the rows within each user_id, newest first, and keep row 1. The newest is decided by signup_time, and rowid breaks any remaining tie, so the result is the same on every run. I select the clean rows first and check the count before writing them to a new table. The users table has eight user IDs that appear twice, so the result should have 5,200 rows.\n\n```sql\nWITH ranked AS (\n  SELECT rowid AS row_ref, user_id, email, signup_date, signup_time,\n         ROW_NUMBER() OVER (\n           PARTITION BY user_id\n           ORDER BY signup_time DESC, rowid DESC\n         ) AS rn\n  FROM users\n)\nSELECT user_id, email, signup_date, signup_time\nFROM ranked\nWHERE rn = 1\nORDER BY user_id\nLIMIT 10;\n```",
+    "followUps": [
+      "Why not just use DISTINCT here?",
+      "How would you keep the latest row when the date column contains NULLs?"
+    ],
+    "commonMistakes": [
+      "Using DISTINCT, which fails when only some columns differ between duplicates.",
+      "Ordering by a column with ties and no tiebreaker, so the kept row changes on each run."
+    ]
+  },
+  {
+    "id": "interview-sql-064",
+    "category": "sql",
+    "difficulty": "medium",
+    "question": "How do you find customers who ordered in both January and February 2024?",
+    "whatInterviewerIsTesting": "INTERSECT semantics and knowing the join or EXISTS alternative.",
+    "modelAnswer": "INTERSECT returns the rows that appear in both result sets and removes duplicates. Each side selects one month's customer IDs, so the result is the customers who bought in both months. EXISTS checks give the same answer and are easier to extend when I need more columns. INTERSECT works in SQLite and Postgres, and in MySQL from version 8.0.31.\n\n```sql\nSELECT customer_id FROM orders\nWHERE order_date >= '2024-01-01' AND order_date < '2024-02-01'\nINTERSECT\nSELECT customer_id FROM orders\nWHERE order_date >= '2024-02-01' AND order_date < '2024-03-01'\nORDER BY customer_id\nLIMIT 20;\n```",
+    "followUps": [
+      "How would you find customers who ordered in January but not February?",
+      "Does INTERSECT return duplicate customer IDs?"
+    ],
+    "commonMistakes": [
+      "Using UNION instead, which returns customers from either month.",
+      "Listing columns in a different order on the two sides of the set operation."
+    ]
+  },
+  {
+    "id": "interview-sql-065",
+    "category": "sql",
+    "difficulty": "medium",
+    "question": "How do you find customers who ordered in January but not in February, and what should you watch for?",
+    "whatInterviewerIsTesting": "EXCEPT semantics, NULL behaviour in set operators, and the NOT IN trap.",
+    "modelAnswer": "EXCEPT returns rows from the first query that do not appear in the second, and it removes duplicates. This gives a simple lapsed-customer list for the month. In a set operator, NULLs match each other, which is different from a join or a WHERE comparison. NOT IN gives a different and risky result if the subquery contains a NULL. On large tables I compare the plans of EXCEPT and NOT EXISTS, because either can be faster depending on the engine.\n\n```sql\nSELECT customer_id FROM orders\nWHERE order_date >= '2024-01-01' AND order_date < '2024-02-01'\nEXCEPT\nSELECT customer_id FROM orders\nWHERE order_date >= '2024-02-01' AND order_date < '2024-03-01'\nORDER BY customer_id\nLIMIT 20;\n```",
+    "followUps": [
+      "How would you write the same query with NOT EXISTS?",
+      "What does EXCEPT do with duplicate rows in the first query?"
+    ],
+    "commonMistakes": [
+      "Using NOT IN with a subquery that can return NULL customer IDs.",
+      "Swapping the two queries, which returns customers who are new in February."
+    ]
+  },
+  {
+    "id": "interview-sql-066",
+    "category": "sql",
+    "difficulty": "hard",
+    "question": "How do UNION and EXCEPT treat NULL values, and why might a row count look wrong?",
+    "whatInterviewerIsTesting": "NULL handling inside set operators compared with ordinary comparisons.",
+    "modelAnswer": "In set operations, two NULLs are treated as equal, so UNION keeps one NULL row and EXCEPT treats NULLs as matching. Ordinary comparison is different, because NULL = NULL is unknown. So a count of users with a missing UPI ID can look like one row after a UNION, when there are many. I check the raw count with UNION ALL before I trust a set result. The query below shows the effect on the fintech users table.\n\n```sql\nSELECT COUNT(*) AS rows_after_union\nFROM (\n  SELECT upi_id FROM users WHERE upi_id IS NULL\n  UNION\n  SELECT upi_id FROM users WHERE upi_id IS NULL\n);\n```",
+    "followUps": [
+      "How would you compare two result sets in both directions?",
+      "How would you count the NULL rows without losing them?"
+    ],
+    "commonMistakes": [
+      "Assuming UNION keeps every NULL row.",
+      "Writing WHERE upi_id = NULL, which never matches; use IS NULL."
+    ]
+  },
+  {
+    "id": "interview-sql-067",
+    "category": "sql",
+    "difficulty": "medium",
+    "question": "How do you calculate month-1 retention by signup cohort?",
+    "whatInterviewerIsTesting": "Cohort definition, the right denominator, and a date offset.",
+    "modelAnswer": "A cohort is the group of users who signed up in the same month. Month-1 retention is the share of that cohort with any event in the next calendar month. The denominator is the full cohort, not only the users who had events, so I use LEFT JOIN and count DISTINCT users. In SQLite I get the next month with date(cohort_month || '-01', '+1 month'). The query covers signups from January to June 2023.\n\n```sql\nWITH cohort AS (\n  SELECT user_id, substr(signup_date, 1, 7) AS cohort_month\n  FROM users\n),\nactivity AS (\n  SELECT DISTINCT user_id, substr(event_time, 1, 7) AS active_month\n  FROM events\n)\nSELECT c.cohort_month,\n       COUNT(DISTINCT c.user_id) AS cohort_size,\n       COUNT(DISTINCT CASE\n         WHEN a.active_month = strftime('%Y-%m', date(c.cohort_month || '-01', '+1 month'))\n         THEN c.user_id\n       END) AS retained_month_1\nFROM cohort c\nLEFT JOIN activity a ON a.user_id = c.user_id\nWHERE c.cohort_month BETWEEN '2023-01' AND '2023-06'\nGROUP BY c.cohort_month\nORDER BY c.cohort_month;\n```",
+    "followUps": [
+      "How would you show months 1 to 3 retention in one table?",
+      "Why must the denominator be the whole cohort?"
+    ],
+    "commonMistakes": [
+      "Dividing by only the users who appear in events, which inflates retention.",
+      "Counting event rows instead of distinct users."
+    ]
+  },
+  {
+    "id": "interview-sql-068",
+    "category": "sql",
+    "difficulty": "hard",
+    "question": "How would you build a signup, trial and payment funnel in SQL?",
+    "whatInterviewerIsTesting": "Ordered funnel logic that only counts a step after the earlier step, and deduplicating events.",
+    "modelAnswer": "I first take the earliest time each user hit each event, after normalising names to upper case. MIN also removes the duplicate event rows in this dataset. Then I left join the trial start to a signup that happened earlier, and the payment to a trial that happened earlier. A user counts at a step only if the earlier steps happened before it. Counting the non-null step times gives the funnel.\n\n```sql\nWITH first_seen AS (\n  SELECT user_id, UPPER(event_name) AS ev, MIN(event_time) AS t\n  FROM events\n  GROUP BY user_id, ev\n),\nfunnel AS (\n  SELECT s.user_id, tr.t AS trial_t, pay.t AS paid_t\n  FROM first_seen s\n  LEFT JOIN first_seen tr\n    ON tr.user_id = s.user_id\n   AND tr.ev = 'TRIAL_START'\n   AND tr.t >= s.t\n  LEFT JOIN first_seen pay\n    ON pay.user_id = s.user_id\n   AND pay.ev = 'PAYMENT_SUCCESS'\n   AND pay.t >= tr.t\n  WHERE s.ev = 'SIGNUP'\n)\nSELECT COUNT(*) AS signed_up,\n       COUNT(trial_t) AS started_trial,\n       COUNT(paid_t) AS paid_after_trial\nFROM funnel;\n```",
+    "followUps": [
+      "How would you show the conversion rate between each step?",
+      "What changes if a user signs up twice?"
+    ],
+    "commonMistakes": [
+      "Counting each event type on its own, so a payment counts with no trial before it.",
+      "Skipping the time checks, so later events count as earlier steps."
+    ]
+  },
+  {
+    "id": "interview-sql-069",
+    "category": "sql",
+    "difficulty": "hard",
+    "question": "How do you find streaks of consecutive active days?",
+    "whatInterviewerIsTesting": "Gaps and islands technique and date arithmetic.",
+    "modelAnswer": "This is the gaps and islands pattern. I keep one row per user per active day, then number those days. For consecutive days, the date minus its row number stays constant, so that value labels each streak. Grouping by user and label gives each streak's start, end and length. In SQLite I build the label as date(day, '-n days'), which is a text key and avoids float maths. The query uses app_open events from the subscription dataset.\n\n```sql\nWITH days AS (\n  SELECT DISTINCT user_id, date(event_time) AS d\n  FROM events\n  WHERE UPPER(event_name) = 'APP_OPEN'\n),\nnumbered AS (\n  SELECT user_id, d,\n         ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY d) AS rn\n  FROM days\n),\nislands AS (\n  SELECT user_id, d, date(d, '-' || rn || ' days') AS island_key\n  FROM numbered\n)\nSELECT user_id,\n       MIN(d) AS streak_start,\n       MAX(d) AS streak_end,\n       COUNT(*) AS streak_days\nFROM islands\nGROUP BY user_id, island_key\nORDER BY streak_days DESC, user_id\nLIMIT 10;\n```",
+    "followUps": [
+      "How would you find the longest streak across all users?",
+      "How would you allow one missed day inside a streak?"
+    ],
+    "commonMistakes": [
+      "Forgetting DISTINCT, so two app opens on the same day break the streak count.",
+      "Comparing raw timestamps instead of dates, which splits one day into many islands."
+    ]
+  },
+  {
+    "id": "interview-sql-070",
+    "category": "sql",
+    "difficulty": "hard",
+    "question": "How do you split a user's events into sessions using a 30-minute inactivity rule?",
+    "whatInterviewerIsTesting": "LAG for gap detection and a running SUM to create session numbers.",
+    "modelAnswer": "I compare each event with the user's previous event using LAG. If there is no previous event, or the gap is more than 30 minutes, the row starts a new session. A running SUM of that flag gives each session a number. The final GROUP BY returns the start, end and event count for each session. I order by event_time and then event_id, so ties in time are handled the same way every run. This runs on the subscription events table.\n\n```sql\nWITH ordered AS (\n  SELECT user_id, event_id, event_time,\n         LAG(event_time) OVER (\n           PARTITION BY user_id ORDER BY event_time, event_id\n         ) AS prev_time\n  FROM events\n),\nflagged AS (\n  SELECT user_id, event_id, event_time,\n         CASE\n           WHEN prev_time IS NULL\n             OR (julianday(event_time) - julianday(prev_time)) * 1440 > 30\n           THEN 1 ELSE 0\n         END AS new_session\n  FROM ordered\n),\nnumbered AS (\n  SELECT user_id, event_time,\n         SUM(new_session) OVER (\n           PARTITION BY user_id\n           ORDER BY event_time, event_id\n           ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW\n         ) AS session_no\n  FROM flagged\n)\nSELECT user_id, session_no,\n       COUNT(*) AS events,\n       MIN(event_time) AS session_start,\n       MAX(event_time) AS session_end\nFROM numbered\nGROUP BY user_id, session_no\nORDER BY user_id, session_no\nLIMIT 20;\n```",
+    "followUps": [
+      "How would you change the rule to a 45-minute gap?",
+      "How do duplicate event rows affect the event count per session?"
+    ],
+    "commonMistakes": [
+      "Forgetting that the first event of each user has no previous row, so it must start a session.",
+      "Numbering sessions across all users instead of partitioning by user."
+    ]
+  }
+]

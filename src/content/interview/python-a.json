@@ -1,0 +1,642 @@
+[
+  {
+    "id": "interview-python-001",
+    "category": "python",
+    "question": "What is the difference between a list, a tuple, a set and a dict?",
+    "whatInterviewerIsTesting": "Core containers; ordering, mutability, uniqueness and key-value storage.",
+    "modelAnswer": "A **list** is an ordered, changeable collection: `[450, 1200, 3000]`. A **tuple** is ordered but fixed after creation: `(12.97, 77.59)`. A **set** holds unique items with no guaranteed order: `{'Pune', 'Nagpur'}`. A **dict** stores key-value pairs: `{'city': 'Pune', 'orders': 12}`.\n\nI use a list for a column of values, a tuple for a fixed record such as a latitude and longitude pair, a set to find unique cities, and a dict to map each city to its order count. Lists and tuples keep duplicates, but a set does not.",
+    "followUps": [
+      "Which of these can hold duplicate values?",
+      "How would you get the unique cities from a list of orders?"
+    ],
+    "commonMistakes": [
+      "Saying a set keeps insertion order, which it does not guarantee.",
+      "Writing a one-item tuple as `(5)`, which is just the number 5; it needs a trailing comma, `(5,)`."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-python-002",
+    "category": "python",
+    "question": "What does mutable mean in Python? Give an example of a mutable and an immutable type.",
+    "whatInterviewerIsTesting": "Understanding object mutability and its effect on shared references.",
+    "modelAnswer": "A **mutable** object can change in place after it is created. Lists, dicts and sets are mutable, so `cart.append('Phone')` changes the same list object. An **immutable** object cannot change. Integers, strings and tuples are immutable, so `name = name.upper()` creates a new string and leaves the old one alone.\n\nThis matters when two names point to the same list. If I change one name, the other name sees the change too. When I want an independent copy, I use `list(original)` or `original.copy()`.",
+    "followUps": [
+      "Why does changing a list inside a function change the caller's list?",
+      "Is a tuple fully immutable if it holds a list?"
+    ],
+    "commonMistakes": [
+      "Saying a tuple can never change, even when it holds a mutable list inside.",
+      "Thinking `x = x + 1` changes the integer object in place."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-python-003",
+    "category": "python",
+    "question": "What is the difference between `is` and `==`?",
+    "whatInterviewerIsTesting": "Value equality versus identity; the correct use of `is` with None.",
+    "modelAnswer": "`==` checks whether two values are equal. `is` checks whether two names point to the same object in memory.\n\n```python\na = [1, 2]\nb = [1, 2]\nprint(a == b)  # True, same values\nprint(a is b)  # False, two different lists\n```\n\nI use `is` mainly for `None`, as in `if value is None:`. For numbers, text and lists, I use `==`. Python sometimes reuses small integers and short strings, so `is` can return True by accident and should never be used to compare them.",
+    "followUps": [
+      "Why is `if x is None` preferred over `if x == None`?",
+      "What does the `id()` function return?"
+    ],
+    "commonMistakes": [
+      "Using `is` to compare two numbers or two strings.",
+      "Believing `is` compares the contents of the objects."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-python-004",
+    "category": "python",
+    "question": "Why can a list not be a dictionary key, but a tuple can?",
+    "whatInterviewerIsTesting": "Hashability and why keys must not change.",
+    "modelAnswer": "A dictionary key must be **hashable**. Python computes a hash number from the key, and that number must stay the same for the key's whole life, because the dict uses it to find the value. A list can change its contents, so its hash would change, and Python blocks it with `TypeError: unhashable type: 'list'`.\n\nA tuple of text and numbers is immutable, so it is hashable:\n\n```python\nroute_orders = {}\nroute_orders[('Pune', 'Mumbai')] = 14\n```\n\nI use a tuple as a composite key when I need two fields together, such as city and month.",
+    "followUps": [
+      "Is a tuple hashable if it contains a list inside it?",
+      "Why does a set also need hashable items?"
+    ],
+    "commonMistakes": [
+      "Saying lists are unhashable only because they are slow.",
+      "Assuming every tuple is hashable, even when it holds a list."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-005",
+    "category": "python",
+    "question": "How do you use f-strings to format numbers for a sales report?",
+    "whatInterviewerIsTesting": "Formatting numbers and percentages cleanly; knowing a common Indian formatting gap.",
+    "modelAnswer": "An f-string puts a variable inside a string with an `f` before the quotes. Format specs go after a colon:\n\n```python\nrevenue = 1245000\ngrowth = 0.125\nprint(f\"Revenue: ₹{revenue:,.0f}\")   # Revenue: ₹1,245,000\nprint(f\"Growth: {growth:.1%}\")       # Growth: 12.5%\n```\n\nThe `%` format multiplies by 100 for you, so 0.125 becomes 12.5%. Python uses western comma grouping, so it shows 1,245,000 and not 12,45,000. For lakh grouping, I write a short helper function that splits the digits. I keep the raw number for calculations and round only when I display it.",
+    "followUps": [
+      "How would you write a helper that shows lakh grouping, such as 12,45,000?",
+      "How do you format a date inside an f-string?"
+    ],
+    "commonMistakes": [
+      "Forgetting the `f` prefix, so the braces print as plain text.",
+      "Formatting a percentage as `:.1f` on a value like 12.5, which then shows 1250.0%."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-python-006",
+    "category": "python",
+    "question": "What do *args and **kwargs mean in a function definition?",
+    "whatInterviewerIsTesting": "Variable arguments and passing options through wrapper functions.",
+    "modelAnswer": "`*args` collects extra positional arguments into a tuple. `**kwargs` collects extra keyword arguments into a dict.\n\n```python\ndef total(*args):\n    return sum(args)\n\ndef show(**kwargs):\n    return kwargs\n\nprint(total(100, 250, 80))        # 430\nprint(show(city='Pune', orders=12))  # {'city': 'Pune', 'orders': 12}\n```\n\nI often see this in wrapper functions that pass options on, such as `def load(path, **kwargs): return pd.read_csv(path, **kwargs)`. The names `args` and `kwargs` are only a convention. The stars are what matter. At the call site, the same stars unpack a list or dict into separate arguments.",
+    "followUps": [
+      "What is the usual order of parameters: positional, *args, keyword-only, **kwargs?",
+      "What does `total(*[1, 2, 3])` do?"
+    ],
+    "commonMistakes": [
+      "Thinking `*args` is a list, when it is a tuple.",
+      "Passing a dict to a function without `**`, so the whole dict goes into one argument."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-007",
+    "category": "python",
+    "question": "Which basic data types do you use most, and what happens when you add a string and an integer?",
+    "whatInterviewerIsTesting": "Basic types, type conversion, and a money-precision pitfall.",
+    "modelAnswer": "The types I use most are `int`, `float`, `str`, `bool` and `None`. Adding a string and an integer raises `TypeError`, because Python does not guess the intent:\n\n```python\nprint(int('1250') + 5)   # 1255\nprint('1250' + 5)        # TypeError\n```\n\nData read from a CSV arrives as text, so I convert it first. For rupee amounts, I avoid `float` for exact totals, because `0.1 + 0.2` gives `0.30000000000000004`. For money, I round for display or use `Decimal` when exact paise matter.",
+    "followUps": [
+      "When would you use `Decimal` instead of `float`?",
+      "What does `bool('False')` return?"
+    ],
+    "commonMistakes": [
+      "Storing rupee totals as floats and comparing them with `==`.",
+      "Assuming text from a CSV is already a number."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-python-008",
+    "category": "python",
+    "question": "How does Python find a variable name? Explain scope with the LEGB rule.",
+    "whatInterviewerIsTesting": "Name resolution, local versus global variables, and why globals make code hard to test.",
+    "modelAnswer": "Python looks up a name in this order: **L**ocal, **E**nclosing, **G**lobal, **B**uilt-in. A name assigned inside a function is local to that function.\n\n```python\ntax_rate = 0.18\n\ndef price_with_tax(base):\n    return base * (1 + tax_rate)   # reads the global name: fine\n```\n\nIf the function tried `tax_rate += 0.02`, Python would raise `UnboundLocalError`, because assigning makes the name local. The fix is to pass the rate in as an argument. In analysis code, I avoid changing global variables inside functions, so each function is easy to test with different inputs.",
+    "followUps": [
+      "What does the `nonlocal` keyword do?",
+      "Does a `for` loop create a new scope?"
+    ],
+    "commonMistakes": [
+      "Changing global state inside functions with `global`, which makes bugs hard to trace.",
+      "Thinking an `if` block or a `for` loop creates its own scope."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-python-009",
+    "category": "python",
+    "question": "When would you choose a list comprehension over a for loop?",
+    "whatInterviewerIsTesting": "Readable Python for simple transformations; judgement about clarity.",
+    "modelAnswer": "A list comprehension builds a new list in one line. For example, `[round(p * 1.18, 2) for p in prices]` adds 18 percent GST to each price. I use it when the logic is one expression with at most one filter:\n\n```python\npune_cities = [c for c in cities if c.startswith('Pu')]\n```\n\nIf the logic needs several steps, print statements or nested ifs, I use a normal `for` loop. A long comprehension is hard to read in code review. Clear code matters more than a one-line trick.",
+    "followUps": [
+      "Can a comprehension include an if-else choice for each item?",
+      "Write a comprehension that gives the squares of the even numbers up to 10."
+    ],
+    "commonMistakes": [
+      "Writing a nested comprehension that nobody on the team can read.",
+      "Using a comprehension only to call functions for side effects, such as printing."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-python-010",
+    "category": "python",
+    "question": "What is a lambda function, and where do analysts use it?",
+    "whatInterviewerIsTesting": "Small anonymous functions and their proper use as key functions.",
+    "modelAnswer": "A lambda is a small unnamed function written in one line, such as `lambda x: x * 1.18`. It is useful when another function needs a short rule. For example, `sorted(orders, key=lambda o: o['amount'])` sorts orders by amount.\n\nIn pandas, `df['amount'].apply(lambda x: x * 1.18)` works, but `df['amount'] * 1.18` is faster and easier to read. A lambda should hold one short expression. When the logic needs a name, a docstring or several steps, I write a normal `def` function.",
+    "followUps": [
+      "Can a lambda contain more than one statement?",
+      "Why is `df['amount'] * 1.18` better than `apply` with a lambda?"
+    ],
+    "commonMistakes": [
+      "Putting a long if-else chain inside a lambda.",
+      "Using `apply` with a lambda for plain arithmetic that a column expression handles."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-python-011",
+    "category": "python",
+    "question": "What do map and filter return, and why do you often wrap them in list()?",
+    "whatInterviewerIsTesting": "Lazy iterators and when a comprehension is clearer.",
+    "modelAnswer": "Both `map` and `filter` return lazy iterator objects, not lists. `map(str.upper, cities)` applies a function to each item. `filter` keeps the items where the function returns True. Nothing runs until you loop over the result or wrap it in `list()`:\n\n```python\namounts = [450, 1200, 3000]\nprint(list(filter(lambda x: x > 1000, amounts)))  # [1200, 3000]\n```\n\nPrinting the object shows something like `<filter object at ...>`, which surprises many beginners. In analysis code, a list comprehension is usually easier to read, so I use `map` and `filter` less often.",
+    "followUps": [
+      "What happens if you loop over the same map object twice?",
+      "Write the same filter as a list comprehension."
+    ],
+    "commonMistakes": [
+      "Printing a map object and expecting to see the values.",
+      "Assuming `map` runs right away and changes the original list."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-python-012",
+    "category": "python",
+    "question": "Why use a generator instead of a list?",
+    "whatInterviewerIsTesting": "Memory efficiency and the trade-off of single-pass iteration.",
+    "modelAnswer": "A generator makes values one at a time and does not keep them all in memory. Compare these two lines:\n\n```python\nsquares_list = [x * x for x in range(10_000_000)]   # stores 10 million numbers\nsquares_gen = (x * x for x in range(10_000_000))    # stores almost nothing\n```\n\nThe generator computes each value only when it is asked. This helps when I stream a large log file or sum a long sequence. The trade-off is that a generator can be used only once, and it has no `len()` or indexing. If I need to reuse the data, I keep a list.",
+    "followUps": [
+      "What is the difference between a generator expression and a list comprehension?",
+      "What does `sum()` do with a generator?"
+    ],
+    "commonMistakes": [
+      "Looping over a generator twice and getting nothing the second time.",
+      "Calling `len()` on a generator and expecting a count."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-013",
+    "category": "python",
+    "question": "How does a function with yield work?",
+    "whatInterviewerIsTesting": "Generator functions, lazy execution and resource handling.",
+    "modelAnswer": "A function that contains `yield` is a generator function. Calling it returns a generator and runs none of the body yet. Each `next()` call runs the code up to the next `yield`, returns that value, and pauses with its local state saved.\n\n```python\ndef read_order_lines(path):\n    with open(path, encoding='utf-8') as f:\n        for line in f:\n            yield line.strip()\n```\n\nThe file is read one line at a time. When the function ends, the for loop stops without an error. I use this pattern to feed large files into a pipeline before any data reaches pandas.",
+    "followUps": [
+      "What happens if you call the function but never iterate over the result?",
+      "What does `yield from` do?"
+    ],
+    "commonMistakes": [
+      "Expecting a generator function to return a full list.",
+      "Opening a file inside a generator without `with`, so it may stay open."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-014",
+    "category": "python",
+    "question": "What is a decorator? Write a simple one that times a function.",
+    "whatInterviewerIsTesting": "Functions as objects, wrapping behaviour, and *args/**kwargs forwarding.",
+    "modelAnswer": "A decorator is a function that takes another function and returns a new one with extra behaviour. The `@timed` line is shorthand for `load_orders = timed(load_orders)`.\n\n```python\nimport time\nfrom functools import wraps\n\ndef timed(func):\n    @wraps(func)\n    def wrapper(*args, **kwargs):\n        start = time.perf_counter()\n        result = func(*args, **kwargs)\n        print(f\"{func.__name__} took {time.perf_counter() - start:.3f}s\")\n        return result\n    return wrapper\n\n@timed\ndef load_orders():\n    return [450, 1200]\n```\n\nThe wrapper passes all arguments through, so the decorator works with any signature. I use decorators for timing, logging and caching. `functools.lru_cache` is a built-in example.",
+    "followUps": [
+      "Why use `functools.wraps` inside a decorator?",
+      "What does `@lru_cache` change about a function?"
+    ],
+    "commonMistakes": [
+      "Forgetting to return the result from the wrapper, so callers get None.",
+      "Writing `@timed()` with brackets when `timed` takes the function directly."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-015",
+    "category": "python",
+    "question": "What is the mutable default argument trap?",
+    "whatInterviewerIsTesting": "A common bug in helper functions and how to fix it.",
+    "modelAnswer": "Default values are evaluated once, when the function is defined. A mutable default, such as an empty list, is then shared by every call:\n\n```python\ndef add_order(order, basket=[]):\n    basket.append(order)\n    return basket\n\nprint(add_order('A1'))  # ['A1']\nprint(add_order('B2'))  # ['A1', 'B2']  surprising\n```\n\nThe fix is a `None` default with a fresh list inside the function:\n\n```python\ndef add_order(order, basket=None):\n    if basket is None:\n        basket = []\n    basket.append(order)\n    return basket\n```\n\nI look for this pattern during code review, because it causes wrong totals that do not raise any error.",
+    "followUps": [
+      "Is a tuple default safe, and why?",
+      "How would you write a test that catches this bug?"
+    ],
+    "commonMistakes": [
+      "Thinking the default list is reset on every call.",
+      "Using `basket=None` but forgetting the `is None` check inside the function."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-016",
+    "category": "python",
+    "question": "What is a closure, and how does a decorator with arguments work?",
+    "whatInterviewerIsTesting": "Advanced function behaviour: captured variables and the extra layer for decorator arguments.",
+    "modelAnswer": "A closure is an inner function that remembers variables from its outer function, even after the outer function has finished.\n\n```python\ndef make_threshold(limit):\n    def check(amount):\n        return amount > limit\n    return check\n\nhigh_value = make_threshold(5000)\nprint(high_value(6200))  # True\n```\n\nA decorator with arguments needs one more layer. `@retry(times=3)` first calls `retry(3)`, which returns the real decorator, which then wraps the function. So there are three levels: a factory, the decorator and the wrapper. Analysts rarely write these, but they help when reading library code.",
+    "followUps": [
+      "How can you see the value that a closure has saved?",
+      "When would you use `nonlocal` inside a closure?"
+    ],
+    "commonMistakes": [
+      "Writing `@retry(times=3)` as if `retry` received the function directly.",
+      "Expecting a closure created in a loop to capture each loop value. Late binding makes all closures see the last value."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-python-017",
+    "category": "python",
+    "question": "How do you handle a missing file without crashing the script?",
+    "whatInterviewerIsTesting": "Exception handling with specific errors and useful messages.",
+    "modelAnswer": "I wrap only the risky step in `try`, and I catch the specific error:\n\n```python\nfrom pathlib import Path\nimport pandas as pd\n\npath = Path('data/raw/orders.csv')\ntry:\n    df = pd.read_csv(path)\nexcept FileNotFoundError:\n    print(f'File not found: {path}. Check the download step.')\n    raise\n```\n\nA bare `except:` hides real bugs, such as a typo in a column name. Here I print a clear message and re-raise, so the pipeline still stops. Silently creating an empty DataFrame could produce wrong reports without anyone noticing.",
+    "followUps": [
+      "What is the difference between `except Exception` and a bare `except`?",
+      "What do the `else` and `finally` blocks do?"
+    ],
+    "commonMistakes": [
+      "Using a bare `except:` that hides a KeyError caused by a wrong column name.",
+      "Putting the whole script inside one large `try` block."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-python-018",
+    "category": "python",
+    "question": "Why use the with statement when opening a file?",
+    "whatInterviewerIsTesting": "Resource management and the context manager idea.",
+    "modelAnswer": "`with open(...) as f:` closes the file automatically when the block ends, even if an error happens in the middle. Without it, a crash can skip `f.close()`, which leaves the file open or the last writes unsaved.\n\n```python\nimport json\n\nwith open('config.json', encoding='utf-8') as f:\n    settings = json.load(f)\n```\n\nPandas closes files it opens, so I rarely write `with` for CSV reads. I use it for JSON, plain text and log files, and when writing reports to disk. A simple rule: if a resource opens, it should close, and `with` does that for you.",
+    "followUps": [
+      "What is a context manager, in simple words?",
+      "Does `with` close the file if an exception is raised inside the block?"
+    ],
+    "commonMistakes": [
+      "Opening a file without `with` and forgetting to close it.",
+      "Leaving out `encoding`, so results change between Windows and Linux machines."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-python-019",
+    "category": "python",
+    "question": "How do you read a CSV with Hindi or other non-English text without errors?",
+    "whatInterviewerIsTesting": "File encodings, the UTF-8 BOM, and checking the result after loading.",
+    "modelAnswer": "Files exported from Excel on Windows often use a different encoding from UTF-8. I first try:\n\n```python\ndf = pd.read_csv('data/raw/customers.csv', encoding='utf-8-sig')\n```\n\nThe `utf-8-sig` option removes the hidden byte-order mark (BOM) that otherwise attaches to the first column name. If pandas still raises `UnicodeDecodeError`, I try `encoding='cp1252'`, which is Windows-1252. After loading, I print `df.columns` and a few text values to check the characters look right. Guessing with `latin-1` never raises an error, but it can garble Hindi text silently.",
+    "followUps": [
+      "What is a BOM, and why does it appear in a column name?",
+      "How would you find the encoding of an unknown file?"
+    ],
+    "commonMistakes": [
+      "Using `latin-1` for every file, which loads without error but shows wrong characters.",
+      "Not checking the first column name, which may carry a hidden character and break a later lookup."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-020",
+    "category": "python",
+    "question": "Why use pathlib instead of plain string paths?",
+    "whatInterviewerIsTesting": "Portable file paths and reproducible project structure.",
+    "modelAnswer": "`pathlib` builds paths with the `/` operator, so the same code works on Windows and Linux. Hard-coded strings with backslashes break on other machines.\n\n```python\nfrom pathlib import Path\n\nraw_dir = Path('data') / 'raw'\nfor file in sorted(raw_dir.glob('*.csv')):\n    print(file.name, file.stat().st_size)\n```\n\n`Path` objects also give useful parts, such as `.suffix`, `.stem` and `.parent`, and checks like `.exists()`. In a script, I anchor the path to the project with `Path(__file__).resolve().parent`. In Jupyter, `__file__` does not exist, so I use `Path.cwd()`. I keep the project paths in one variable at the top of the notebook, so changes stay easy.",
+    "followUps": [
+      "How do you list all CSV files in a folder with pathlib?",
+      "Why does `__file__` fail in a Jupyter notebook?"
+    ],
+    "commonMistakes": [
+      "Hard-coding a path such as `C:\\Users\\...` in shared code.",
+      "Joining path strings with `+` or `os.path` in new code instead of `Path`."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-021",
+    "category": "python",
+    "question": "How is a NumPy array different from a Python list?",
+    "whatInterviewerIsTesting": "Homogeneous typed storage and vectorised operations.",
+    "modelAnswer": "A NumPy array holds values of one data type in one block of memory. A Python list holds references to objects, which can be of any mix of types.\n\n```python\nimport numpy as np\nprices = np.array([450.0, 1200.0, 3000.0])\nprint(prices * 1.18)   # every item multiplied at once\nprint(prices.dtype)    # float64\n```\n\nA list needs a loop or a comprehension for the same result. Arrays also have a fixed shape, such as 3 rows by 4 columns. Pandas uses NumPy arrays under the hood for most numeric columns.",
+    "followUps": [
+      "What does `arr.dtype` tell you, and why does it matter?",
+      "Can one NumPy array hold text and numbers together?"
+    ],
+    "commonMistakes": [
+      "Expecting `[1, 2, 3] * 2` to multiply each value; for a list it repeats the list.",
+      "Assuming `np.append` adds to an array cheaply; it creates a new array."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-python-022",
+    "category": "python",
+    "question": "Why is NumPy faster than a Python loop?",
+    "whatInterviewerIsTesting": "Understanding of compiled code, memory layout and when speed matters.",
+    "modelAnswer": "NumPy runs the loop in compiled C code, not in the Python interpreter. The values sit next to each other in memory, so the CPU reads them quickly. Each step of a Python loop also checks types and creates objects, which costs time.\n\n```python\nqty = np.array([2, 5, 1])\nprice = np.array([450.0, 1200.0, 3000.0])\nrevenue = qty * price   # one vectorised call, no Python loop\n```\n\nOn a million rows, this kind of code is often many times faster. Speed is only one reason, though. Clear code and correct results come first, and for a small daily report a clear loop is fine.",
+    "followUps": [
+      "What is vectorisation?",
+      "Give one case where a loop is still the right choice."
+    ],
+    "commonMistakes": [
+      "Thinking NumPy makes every kind of code faster.",
+      "Looping over DataFrame rows to do arithmetic that one column expression handles."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-python-023",
+    "category": "python",
+    "question": "What is broadcasting in NumPy? Show an example.",
+    "whatInterviewerIsTesting": "Shape rules for combining arrays without manual copying.",
+    "modelAnswer": "Broadcasting lets NumPy combine arrays of different shapes. Here, a price row of shape `(3,)` is stretched across two store rows of shape `(2, 3)`:\n\n```python\nimport numpy as np\n\nsales = np.array([[120, 80, 150],\n                  [200, 90, 110]])   # 2 stores x 3 products\nprice = np.array([10, 20, 30])       # one price per product\nprint(sales * price)\n# [[1200 1600 4500]\n#  [2000 1800 3300]]\n```\n\nThe rule compares shapes from the right. Each pair of dimensions must match, or one of them must be 1. So `(2, 3)` with `(3,)` works, but `(2, 3)` with `(2,)` fails. For that case, I reshape to `(2, 1)`. I use this to subtract column means from a whole matrix in one line.",
+    "followUps": [
+      "What happens with shapes `(2, 3)` and `(2,)`?",
+      "How would you add one value per row to every column of a matrix?"
+    ],
+    "commonMistakes": [
+      "Expecting `(2, 3)` and `(2,)` to broadcast; NumPy raises a shape error.",
+      "Reading the shape from left to right, which gives the wrong result for the rule."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-024",
+    "category": "python",
+    "question": "What do axis=0 and axis=1 mean in a NumPy sum?",
+    "whatInterviewerIsTesting": "Axis reasoning, which is a frequent source of wrong totals.",
+    "modelAnswer": "The axis you name is the one that gets collapsed.\n\n```python\nimport numpy as np\nm = np.array([[120, 80, 150],\n              [200, 90, 110]])\nprint(m.sum(axis=0))  # [320 170 260]  one total per column\nprint(m.sum(axis=1))  # [350 400]      one total per row\n```\n\n`axis=0` moves down the rows, so each column is summed. `axis=1` moves across each row. In pandas, `df.sum()` uses `axis=0` by default, which also sums each column. To get the total per store, I sum across products with `axis=1`.",
+    "followUps": [
+      "What does `keepdims=True` change in the result?",
+      "How would you get the average per store?"
+    ],
+    "commonMistakes": [
+      "Using `axis=1` when you wanted column totals.",
+      "Forgetting that the result shape changes, then indexing it as if it were the original shape."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-025",
+    "category": "python",
+    "question": "How do you count and replace values with a boolean mask, and why must you use & instead of and?",
+    "whatInterviewerIsTesting": "Boolean logic on arrays; the ambiguous truth value error.",
+    "modelAnswer": "A comparison such as `amounts > 0` returns a boolean array. True counts as 1, so `.sum()` counts the matches. `np.where(condition, a, b)` picks values element by element:\n\n```python\nimport numpy as np\namounts = np.array([450, 1200, -80, 3000, 0])\nvalid = amounts > 0\nprint(valid.sum())                    # 3\nprint(np.where(valid, amounts, 0))    # [ 450 1200    0 3000    0]\nmid = (amounts > 100) & (amounts < 2000)\n```\n\nFor two conditions, I use `&` for and and `|` for or, and I put each comparison in parentheses. Python's `and` needs one True or False value, so with arrays it raises `ValueError: truth value of an array ... is ambiguous`. Parentheses are also needed, because `&` binds more tightly than `>`.",
+    "followUps": [
+      "What does `~mask` do?",
+      "How do you select only the rows where the mask is True?"
+    ],
+    "commonMistakes": [
+      "Using `and` between two arrays and getting a truth value error.",
+      "Dropping the parentheses, so the operators run in the wrong order."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-python-026",
+    "category": "python",
+    "question": "What is the difference between a Series and a DataFrame?",
+    "whatInterviewerIsTesting": "Basic pandas structures and how selection returns each type.",
+    "modelAnswer": "A **Series** is one labelled column: a sequence of values with an index. A **DataFrame** is a table made of Series that share the same index.\n\n```python\ndf['amount']         # Series\ndf[['amount', 'city']]  # DataFrame\n```\n\nIn a file of daily orders, the DataFrame holds every row, while `df['amount'].sum()` works on one Series. Most operations on a Series return a Series, and most operations on a DataFrame return a DataFrame. Each column keeps its own dtype. Knowing this difference helps when a function expects one kind and receives the other.",
+    "followUps": [
+      "Why does `df['city']` return a Series but `df[['city']]` return a DataFrame?",
+      "What is the index, and what happens to it after a filter?"
+    ],
+    "commonMistakes": [
+      "Passing a tuple such as `df['amount', 'city']` instead of a list of names.",
+      "Assuming all columns in a DataFrame must share one dtype."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-python-027",
+    "category": "python",
+    "question": "How do you check the types and memory of a DataFrame, and what does object dtype mean?",
+    "whatInterviewerIsTesting": "Reading dtypes and spotting numbers stored as text.",
+    "modelAnswer": "`df.dtypes` lists the type of each column. `df.info(memory_usage='deep')` also shows the non-null counts and the real memory use.\n\n```python\ndf.dtypes\ndf.info(memory_usage='deep')\n```\n\n`int64` and `float64` are numbers. In pandas 3, text columns get a dedicated string dtype by default, so text no longer shows as `object`. A column that still shows `object` often holds mixed values, such as `'1,200'` next to `1200`. That usually means the raw data has commas or rupee signs, so I clean the text before converting with `astype`.",
+    "followUps": [
+      "How would you convert a column to integers when it has missing values?",
+      "Why does a numeric column with NaN stay a float?"
+    ],
+    "commonMistakes": [
+      "Assuming `object` always means text.",
+      "Skipping the memory check, so a large file is slow to load and process."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-python-028",
+    "category": "python",
+    "question": "What does df.query do, and when is it a good choice?",
+    "whatInterviewerIsTesting": "Readable filtering with query strings, including variables and column-name rules.",
+    "modelAnswer": "`DataFrame.query` filters rows with a string expression that reads close to plain English:\n\n```python\nhigh_pune = df.query(\"amount > 5000 and city == 'Pune'\")\n```\n\nTo use a Python variable, I prefix it with `@`: `df.query('amount > @min_amount')`. Column names with spaces need backticks, such as `` df.query('`order amount` > 5000') ``. I use `query` for short, readable filters. For complex logic, a boolean mask with `loc` is easier to debug. I still check the row count after a filter, so a wrong expression is caught early.",
+    "followUps": [
+      "How do you pass a variable into a query?",
+      "What can `df.loc[mask]` do that `query` cannot?"
+    ],
+    "commonMistakes": [
+      "Using a column name with spaces without backticks.",
+      "Mixing up single and double quotes inside the query string."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-python-029",
+    "category": "python",
+    "question": "What is the difference between loc and iloc?",
+    "whatInterviewerIsTesting": "Label-based versus position-based selection and the slice end rule.",
+    "modelAnswer": "`loc` selects by label, which means index names and column names. `iloc` selects by position, starting at 0.\n\n```python\ndf.loc[df['city'] == 'Pune', ['order_id', 'amount']]\ndf.iloc[0:5, 0:3]\n```\n\nWith a fresh index of 0, 1, 2, the two look the same, which hides bugs. After a filter or a sort, the labels stay with their rows, so `iloc[0]` may not be the same row as `loc[0]`. Also, `loc` includes the end label in a slice, but `iloc` excludes the end. So `df.loc[0:5]` gives 6 rows and `df.iloc[0:5]` gives 5. I use `loc` when I assign values by name.",
+    "followUps": [
+      "How do you set a single value by label?",
+      "What are `at` and `iat`, and when are they useful?"
+    ],
+    "commonMistakes": [
+      "Using `iloc` after a filter and getting a different row than expected.",
+      "Expecting the end value in a `loc` slice to be excluded."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-030",
+    "category": "python",
+    "question": "How do you filter rows that match two conditions, and why do you need parentheses?",
+    "whatInterviewerIsTesting": "Combining boolean conditions correctly in pandas.",
+    "modelAnswer": "Use `&` for and, `|` for or, and `~` for not. Put each condition in its own parentheses:\n\n```python\npune_big = df[(df['city'] == 'Pune') & (df['amount'] > 5000)]\nmetro = df[df['city'].isin(['Pune', 'Mumbai', 'Chennai'])]\n```\n\nWithout parentheses, `df['city'] == 'Pune' & df['amount'] > 5000` is read in the wrong order and gives an error or a wrong result. Python's plain `and` does not work on a Series, because a Series has no single True or False value. For a list of allowed values, `isin` is the clearest option. I check the row count after a filter to confirm the logic.",
+    "followUps": [
+      "How would you filter rows where the city is not in a list?",
+      "Why does `df[df['x'] > 0 and df['y'] > 0]` fail?"
+    ],
+    "commonMistakes": [
+      "Using `and` and then reading the error 'truth value of a Series is ambiguous' as a data problem.",
+      "Leaving out parentheses and not noticing that the result is wrong."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-031",
+    "category": "python",
+    "question": "Why should you avoid inplace=True in pandas?",
+    "whatInterviewerIsTesting": "Method chaining, return values and clear step-by-step code.",
+    "modelAnswer": "With `inplace=True`, a method changes the DataFrame and returns `None`. So `df = df.dropna(inplace=True)` sets `df` to `None`, and the next line fails.\n\n```python\nclean = df.dropna(subset=['amount'])          # preferred: a new frame\ndf.dropna(subset=['amount'], inplace=True)    # returns None\n```\n\n`inplace` also breaks method chaining, and it does not save memory, which is a common belief. I write each step to a clear variable name. The raw frame stays available if I need to compare before and after. A reviewer can then read the code from top to bottom and see each change.",
+    "followUps": [
+      "How would you chain three cleaning steps without inplace?",
+      "Does inplace=True save memory?"
+    ],
+    "commonMistakes": [
+      "Writing `df = df.dropna(inplace=True)`, which makes `df` None.",
+      "Believing that inplace saves memory."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-032",
+    "category": "python",
+    "question": "How do you add a new column based on several conditions?",
+    "whatInterviewerIsTesting": "Choosing between np.select, np.where and pd.cut; ordering of conditions.",
+    "modelAnswer": "With three or more bands, I use `np.select`. The first condition that is True wins, so the most specific condition goes first:\n\n```python\nimport numpy as np\n\nconditions = [df['amount'] >= 10000, df['amount'] >= 2000]\nlabels = ['High', 'Medium']\ndf['band'] = np.select(conditions, labels, default='Low')\n```\n\nFor a single yes-or-no split, `np.where(cond, 'Yes', 'No')` is enough. Nested `np.where` calls become hard to read. For numeric ranges with fixed edges, such as age groups, `pd.cut` is a good fit. I check the result with `df['band'].value_counts()`.",
+    "followUps": [
+      "What happens if two conditions are True for the same row?",
+      "When would you pick pd.cut instead?"
+    ],
+    "commonMistakes": [
+      "Listing the conditions from lowest to highest, so the first band always wins.",
+      "Leaving out `default`, which fills the unmatched rows with 0."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-033",
+    "category": "python",
+    "question": "When would you set an index on a DataFrame, and what does reset_index do?",
+    "whatInterviewerIsTesting": "Index purpose, label lookups and exporting clean tables.",
+    "modelAnswer": "An index is a label for each row. I set one when I need label lookups or time-based operations, such as indexing by order date before a `resample`.\n\n```python\nby_city = df.set_index('city')\nprint(by_city.loc['Pune', 'amount'])\nflat = by_city.reset_index()\n```\n\n`reset_index()` moves the index back into a normal column, which is what most charts and CSV exports need. Many `groupby` results come back with a grouped index, so I call `reset_index()` before saving. I also check `df.index.is_unique` before a lookup, because duplicate labels make `loc` return several rows.",
+    "followUps": [
+      "What does `drop=True` do in `reset_index`?",
+      "What is a MultiIndex, and where do you see one?"
+    ],
+    "commonMistakes": [
+      "Saving a grouped result to CSV with the index still set, so the group columns are missing.",
+      "Assuming an index is always unique."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-034",
+    "category": "python",
+    "question": "What is chained assignment, and why does df[df['amount'] > 5000]['status'] = 'Big' fail?",
+    "whatInterviewerIsTesting": "Copy versus view behaviour and the single-step loc fix.",
+    "modelAnswer": "Chained assignment means two indexing steps in one line. The first step, `df[mask]`, returns a new object, so the second step writes into that object and not into `df`.\n\n```python\n# does not update df\ndf[df['amount'] > 5000]['status'] = 'Big'\n\n# correct: one step\ndf.loc[df['amount'] > 5000, 'status'] = 'Big'\n```\n\nIn pandas 3, the first form does not change `df` at all, and it raises a `ChainedAssignmentError` warning. Older pandas versions gave a `SettingWithCopyWarning` and sometimes did change the data, so the results could depend on the version. The single `loc` step is the clear and safe way in every version.",
+    "followUps": [
+      "What does copy-on-write mean in pandas 3?",
+      "How would you make a copy of a slice before changing it?"
+    ],
+    "commonMistakes": [
+      "Ignoring the warning because the printed output looks right.",
+      "Adding `.copy()` everywhere as a fix when one `loc` step is enough."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-python-035",
+    "category": "python",
+    "question": "What is copy-on-write in pandas 3, and how does it change the way you slice data?",
+    "whatInterviewerIsTesting": "Current pandas semantics: a derived frame behaves like a copy; the source changes only through explicit assignment.",
+    "modelAnswer": "With copy-on-write, a slice or a derived DataFrame acts like a separate copy. Changing it does not change the source. Before pandas 3, some slices shared memory with the source, so a change could leak back silently.\n\n```python\ntop = df[df['amount'] > 5000]\ntop['flag'] = 1       # changes top only, not df\ndf.loc[df['amount'] > 5000, 'flag'] = 1   # explicit write to df\n```\n\nCopy-on-write also reduces memory use, because data stays shared until someone writes to it. Older tutorials that rely on chained assignment can give different results now, so I check the pandas version when I read sample code.",
+    "followUps": [
+      "When does pandas actually copy the data?",
+      "How do you check your pandas version in code?"
+    ],
+    "commonMistakes": [
+      "Expecting a change to a slice to update the original DataFrame.",
+      "Using code from pandas 1.x tutorials without checking the new behaviour."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-python-036",
+    "category": "python",
+    "question": "How do you find missing values in each column, and what do you do next?",
+    "whatInterviewerIsTesting": "Profiling nulls before deciding on a fix.",
+    "modelAnswer": "I count missing values per column, and then the share of missing values:\n\n```python\ndf.isna().sum().sort_values(ascending=False)\ndf.isna().mean().round(3)   # share of rows missing\n```\n\nNext I think about what a blank means. A blank `coupon_code` may just mean no coupon was used, so I fill it with `'None'`. A blank `amount` on a paid order is a real data problem, so I check the source before I drop any rows. I write each decision in a data-quality note, so the report can be explained later.",
+    "followUps": [
+      "What is the difference between `isna()` and `isnull()`?",
+      "How do you list the rows that have any missing value?"
+    ],
+    "commonMistakes": [
+      "Dropping every row with any missing value without checking how many rows that removes.",
+      "Filling every column with 0, which makes an unknown amount look like a real zero."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-python-037",
+    "category": "python",
+    "question": "How do you find and remove duplicate orders?",
+    "whatInterviewerIsTesting": "Choosing the right key for duplicates and checking the effect before deleting.",
+    "modelAnswer": "First I decide the key. A repeated order has the same `order_id`, even when a timestamp differs slightly. I list all copies, so I can compare them before deleting anything:\n\n```python\ndupes = df[df.duplicated(subset=['order_id'], keep=False)]\nclean = df.drop_duplicates(subset=['order_id'], keep='first')\nprint(len(df), len(clean))\n```\n\nThe `keep=False` option shows every copy. I log the row count before and after. Full-row duplicates and key duplicates need different fixes, so I check which one the data has. I also save the list of duplicate rows to a file, so the team can review it.",
+    "followUps": [
+      "How would you decide which copy to keep?",
+      "What is the difference between checking all columns and checking one key?"
+    ],
+    "commonMistakes": [
+      "Dropping duplicates on all columns when timestamps differ, so the duplicates stay.",
+      "Deleting duplicates without checking whether repeated rows are real repeat purchases."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-python-038",
+    "category": "python",
+    "question": "How do you clean a rupee column like '₹1,250' into a number?",
+    "whatInterviewerIsTesting": "String cleaning with pandas str methods and safe numeric conversion.",
+    "modelAnswer": "I remove the rupee sign and the commas, strip spaces, and then convert the type:\n\n```python\ndf['amount'] = (\n    df['amount_text']\n    .str.replace('₹', '', regex=False)\n    .str.replace(',', '', regex=False)\n    .str.strip()\n    .astype('float64')\n)\n```\n\nI use `regex=False` for plain symbols, so characters such as a dot are not read as patterns. If a value such as `'N/A'` remains, `astype` raises `ValueError`, which shows me the bad rows. When I want bad values to become NaN instead, I use `pd.to_numeric(..., errors='coerce')`, and then I count how many values were lost.",
+    "followUps": [
+      "What does `pd.to_numeric` do differently from `astype`?",
+      "How would you find which values failed to convert?"
+    ],
+    "commonMistakes": [
+      "Forgetting `regex=False`, so a dot or bracket changes the meaning of the pattern.",
+      "Converting to an integer when the values have paise, which loses the decimals."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-039",
+    "category": "python",
+    "question": "What does errors='coerce' do in pd.to_datetime, and why not let it crash?",
+    "whatInterviewerIsTesting": "Date parsing with explicit formats and counting failed conversions.",
+    "modelAnswer": "Indian files often use day-first dates such as `05-03-2026`, which means 5 March. Without a format, pandas may read it as May 3. So I give the exact format:\n\n```python\ndf['order_date'] = pd.to_datetime(\n    df['order_date_text'], format='%d-%m-%Y', errors='coerce'\n)\nprint(df['order_date'].isna().sum(), 'bad dates')\n```\n\nWith `errors='coerce'`, a value that does not match becomes `NaT`, which is a missing date, and the run continues. I then count the `NaT` values and print a few bad rows. A crash is helpful while I develop, so I use `coerce` only together with a count check.",
+    "followUps": [
+      "What does `dayfirst=True` do, and how is it different from `format`?",
+      "Why is an explicit format safer than letting pandas guess?"
+    ],
+    "commonMistakes": [
+      "Using `coerce` and never counting the NaT values, so bad dates disappear silently.",
+      "Letting pandas guess the format when the column mixes day-first and month-first dates."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-python-040",
+    "category": "python",
+    "question": "How do you handle missing values when the missing is not random?",
+    "whatInterviewerIsTesting": "Judgement about bias from missingness, choosing imputation and reporting uncertainty.",
+    "modelAnswer": "First I ask why the values are missing. If high-value customers skip the income field, filling the gap with the overall median makes that group look poorer than it is.\n\nMy options are these:\n- Add a flag column such as `income_missing`, so the gap stays visible.\n- Fill with a group median, such as by city or segment, and name the method in the report.\n- Keep the blanks and show results with and without those rows.\n\nFor a small gap in a stable column, a simple fill is fine. For a key KPI, I show the range, so stakeholders see how much the choice matters. I never hide the choice from the report.",
+    "followUps": [
+      "What do MCAR, MAR and MNAR mean?",
+      "When is dropping rows acceptable?"
+    ],
+    "commonMistakes": [
+      "Filling every gap with the mean, which pulls the average toward the middle.",
+      "Presenting an imputed number as if it were measured data."
+    ],
+    "difficulty": "hard"
+  }
+]

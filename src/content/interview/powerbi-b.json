@@ -1,0 +1,485 @@
+[
+  {
+    "id": "interview-powerbi-031",
+    "category": "power-bi",
+    "question": "What is the difference between SUM and SUMX in DAX?",
+    "whatInterviewerIsTesting": "Whether the candidate knows that SUMX is a row iterator and when a per-row calculation is needed.",
+    "modelAnswer": "**SUM** adds up one column as it is. It takes a column and returns the total of the visible rows. **SUMX** is an iterator. It walks a table row by row, evaluates an expression on each row, and then adds the results. I use SUMX when each row needs its own maths. For example, an order sheet for a grocery chain in Pune has Quantity and Unit_Price columns:\n\n```dax\nSales Amount =\nSUMX ( Orders, Orders[Quantity] * Orders[Unit_Price] )\n```\n\nSUM cannot multiply two columns row by row, so SUMX is the right tool here. SUMX is slower on very large tables, so for a plain column total I would still use SUM.",
+    "followUps": [
+      "Can SUMX work on a table that is not a fact table?",
+      "How would you write a plain total of the Quantity column?"
+    ],
+    "commonMistakes": [
+      "Using SUM on an expression that needs row-level maths.",
+      "Using SUMX for every total, even when SUM gives the same answer.",
+      "Passing a column to SUMX instead of a table as the first argument."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-powerbi-032",
+    "category": "power-bi",
+    "question": "Why should you use DIVIDE instead of the / operator in DAX?",
+    "whatInterviewerIsTesting": "Safe division and handling of zero denominators in measures.",
+    "modelAnswer": "The `/` operator returns an error when the denominator is zero, and that error can break a card or a total. **DIVIDE** handles this. Its third argument is the value to show when the denominator is zero or blank. For a margin percent on a store with no sales in a month:\n\n```dax\nMargin % =\nDIVIDE ( [Profit], [Sales], 0 )\n```\n\nHere the result is 0 when there are no sales. Some teams return BLANK() instead, so the chart shows a gap rather than a zero. When the denominator is not zero, DIVIDE returns the same answer as `/`. In SQL, the same protection is written with NULLIF(denominator, 0), which SQLite supports.",
+    "followUps": [
+      "Why might BLANK() be better than 0 for a margin on a store with no sales?",
+      "How would you write the same logic in SQLite?"
+    ],
+    "commonMistakes": [
+      "Using / and getting an error on a total row.",
+      "Using 0 as the default for every measure, which can hide missing data.",
+      "Forgetting that the third argument is optional, and leaving the error case unhandled."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-powerbi-033",
+    "category": "power-bi",
+    "question": "How do you handle blank values in a DAX measure?",
+    "whatInterviewerIsTesting": "Understanding BLANK() and how empty values affect totals, counts, and visuals.",
+    "modelAnswer": "In DAX, **BLANK()** is the empty value, similar to NULL in SQL. SUM ignores blanks, so totals work normally. Blanks cause problems in counts and in charts. For a net sales measure that should show nothing when there are no gross sales:\n\n```dax\nNet Sales =\nIF ( [Gross Sales] = 0, BLANK(), [Gross Sales] - [Returns] )\n```\n\nReturning BLANK() hides the point on the visual. Returning 0 shows a zero label, which can mislead a reader when a month had no data. COUNTROWS counts every row, including blank ones. COUNTA counts non-blank values. In SQL, the same idea is NULL, and COALESCE replaces it with a value. Always check how a line chart looks for months with no data, not only the total.",
+    "followUps": [
+      "What is the difference between BLANK() and 0 on a line chart?",
+      "How would you count only the non-blank Returns values?"
+    ],
+    "commonMistakes": [
+      "Replacing every blank with 0 and then averaging, which pulls the average down.",
+      "Using COUNTROWS when the question asks for non-blank values, where COUNTA is the right choice."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-powerbi-034",
+    "category": "power-bi",
+    "question": "What does VAR and RETURN do in a DAX measure, and why use them?",
+    "whatInterviewerIsTesting": "Writing readable measures and knowing how variables are evaluated.",
+    "modelAnswer": "**VAR** stores a value under a name, and **RETURN** gives the final result. Variables make a measure easier to read and debug. A variable is also calculated once, even if it is used several times. For a year-on-year growth measure:\n\n```dax\nSales Growth % =\nVAR CurrentSales = [Total Sales]\nVAR PriorSales = CALCULATE ( [Total Sales], SAMEPERIODLASTYEAR ( 'Date'[Date] ) )\nRETURN\n    DIVIDE ( CurrentSales - PriorSales, PriorSales )\n```\n\nWithout VAR, the same Total Sales expression appears three times. A variable holds the value from the place where it was defined. So it does not change when a later CALCULATE adds a new filter. This is the trap candidates often miss.",
+    "followUps": [
+      "Can a variable hold a table instead of a single value?",
+      "How would you debug a measure with five variables?"
+    ],
+    "commonMistakes": [
+      "Expecting a variable to recalculate inside a later CALCULATE with a new filter.",
+      "Writing the RETURN part before the VAR lines.",
+      "Repeating the same expression in several places instead of storing it once."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-powerbi-035",
+    "category": "power-bi",
+    "question": "What are the memory and refresh costs of a calculated column compared with a measure?",
+    "whatInterviewerIsTesting": "Understanding where DAX work happens and how it affects model size and refresh time.",
+    "modelAnswer": "A **calculated column** is computed row by row during refresh and then stored in the model. Every row adds data, so a column on a 40 lakh row sales table adds 40 lakh stored values. It also increases file size and refresh time. A **measure** is computed when a visual asks for it, using the filters on that visual. It stores nothing. For a Profit column, a measure does the same job with no storage cost. I use a column only when I need a value for a slicer, an axis, or a relationship key, because a measure cannot be used there. For totals, ratios, and anything that depends on what the user selected, I use a measure.",
+    "followUps": [
+      "When would you use a calculated column on purpose?",
+      "What is a calculated table, and how is it different from a calculated column?"
+    ],
+    "commonMistakes": [
+      "Creating a column for a total that should be a measure.",
+      "Using a column for a value that changes with every slicer selection."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-powerbi-036",
+    "category": "power-bi",
+    "question": "How does CALCULATE work in DAX?",
+    "whatInterviewerIsTesting": "Core understanding of filter context and how CALCULATE changes it.",
+    "modelAnswer": "**CALCULATE** evaluates an expression in a changed filter context. It takes an expression, such as a sum of sales, and one or more filter arguments. The filters change the context the expression runs in. For a card that always shows Mumbai sales:\n\n```dax\nMumbai Sales =\nCALCULATE ( [Total Sales], Stores[City] = \"Mumbai\" )\n```\n\nIf the visual is by city, this measure still shows Mumbai in every row, because the boolean filter on City replaces the city filter from the visual. A filter on a different column adds to the existing filters. CALCULATE is the most important function in DAX, because almost every real measure uses it.",
+    "followUps": [
+      "What is the difference between a boolean filter and a table filter in CALCULATE?",
+      "Why does the Mumbai measure ignore the city on each row?"
+    ],
+    "commonMistakes": [
+      "Thinking CALCULATE only sums values, when it recomputes with new filters.",
+      "Assuming a filter on one column removes every other slicer."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-powerbi-037",
+    "category": "power-bi",
+    "question": "How do you calculate percent of total in a Power BI visual?",
+    "whatInterviewerIsTesting": "Using ALL to remove visual-level filters from the denominator.",
+    "modelAnswer": "Divide the current measure by the same measure with the axis filter removed. **ALL** removes filters from a table or column. For share of sales by state:\n\n```dax\nSales % of Total =\nDIVIDE ( [Total Sales], CALCULATE ( [Total Sales], ALL ( Stores ) ) )\n```\n\nIn a visual by State, each row shows its share of the country. The denominator ignores the state filter, but it keeps the date slicer, because ALL only clears filters on the Stores table. In SQL, the same share comes from SUM(...) OVER () in a window function, which SQLite supports from version 3.25.",
+    "followUps": [
+      "What changes if you use ALLSELECTED instead of ALL?",
+      "How would you show each city's share of its own state?"
+    ],
+    "commonMistakes": [
+      "Dividing by the total without removing the visual's filter, which gives 100% on every row.",
+      "Using ALL on the fact table when only the dimension filter should be removed."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-powerbi-038",
+    "category": "power-bi",
+    "question": "What is the difference between ALL, ALLEXCEPT, and REMOVEFILTERS?",
+    "whatInterviewerIsTesting": "Choosing the right function to clear filters in a denominator.",
+    "modelAnswer": "**ALL** returns every row of a table, or every value of a column, and ignores the filters on it. **ALLEXCEPT** removes all filters on a table except the columns you name. **REMOVEFILTERS** works like ALL inside CALCULATE, but it only clears filters and does not return a table. It reads more clearly. For share of sales within the selected brand:\n\n```dax\nShare of Brand =\nDIVIDE ( [Total Sales], CALCULATE ( [Total Sales], ALLEXCEPT ( Products, Products[Brand] ) ) )\n```\n\nThe brand filter stays, while the category and product filters are removed. The denominator is the brand total, so the shares of the brand's products add up to 100%.",
+    "followUps": [
+      "Why would ALL on one column differ from ALL on a whole table?",
+      "Is there any practical difference between ALL and REMOVEFILTERS inside CALCULATE?"
+    ],
+    "commonMistakes": [
+      "Using ALL in a measure that should keep the year filter.",
+      "Using ALLEXCEPT with a column that is not on the table in the first argument."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-powerbi-039",
+    "category": "power-bi",
+    "question": "What does KEEPFILTERS do in CALCULATE?",
+    "whatInterviewerIsTesting": "Knowing how CALCULATE replaces versus intersects existing filters.",
+    "modelAnswer": "By default, a CALCULATE filter on a column replaces any existing filter on that column. **KEEPFILTERS** changes this. It keeps the existing filter and intersects it with the new one. For a measure that counts premium products:\n\n```dax\nPremium Sales =\nCALCULATE ( [Total Sales], KEEPFILTERS ( Products[Tier] = \"Premium\" ) )\n```\n\nIf the user selects the Budget tier on a slicer, the default behaviour would replace that selection and show Premium sales anyway. With KEEPFILTERS, no product is both Budget and Premium, so the result is blank. That is correct logic, but the report should explain it. In SQL, this is like adding a second WHERE condition instead of dropping the first one.",
+    "followUps": [
+      "Does KEEPFILTERS work with a table argument as well as a boolean one?",
+      "How would you show the premium share of the selected tier?"
+    ],
+    "commonMistakes": [
+      "Thinking KEEPFILTERS is needed in every CALCULATE.",
+      "Expecting a number when the intersection of two selections is empty."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-powerbi-040",
+    "category": "power-bi",
+    "question": "Why is FILTER inside CALCULATE sometimes slower than a simple column filter?",
+    "whatInterviewerIsTesting": "Understanding the cost of row-by-row table filters on large fact tables.",
+    "modelAnswer": "A simple condition on one column, such as Stores[City] = \"Pune\", is a **boolean filter**. The engine applies it to the column quickly. **FILTER** scans the whole table row by row. On a big fact table, that can be slow.\n\n```dax\n-- Faster: boolean filter on a single column\nLarge Orders =\nCALCULATE ( [Total Sales], Sales[Amount] > 5000 )\n\n-- Slower for no gain: row-by-row scan of the whole table\nLarge Orders Slow =\nCALCULATE ( [Total Sales], FILTER ( Sales, Sales[Amount] > 5000 ) )\n```\n\nI use FILTER only when the condition needs several columns or a measure. Both versions give the same answer for a single-column condition, so I pick the faster one.",
+    "followUps": [
+      "When is FILTER required rather than a boolean filter?",
+      "What is the SQL equivalent of the boolean filter above?"
+    ],
+    "commonMistakes": [
+      "Using FILTER on a whole fact table for a simple equals condition.",
+      "Using FILTER(ALL(...)) and expecting the slicer selection to stay."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-powerbi-041",
+    "category": "power-bi",
+    "question": "What is context transition, and when does it happen?",
+    "whatInterviewerIsTesting": "Understanding how row context becomes filter context.",
+    "modelAnswer": "**Context transition** turns the current row into a filter. It happens when CALCULATE runs inside a row context, such as a calculated column, or when a measure is referenced inside an iterator like SUMX. Here is a calculated column on the Products table that shows each product's total sales:\n\n```dax\nProduct Sales =\nCALCULATE ( SUM ( Sales[Amount] ) )\n```\n\nEach product row becomes a filter on the Sales table, so the sum covers only that product. Without CALCULATE, SUM(Sales[Amount]) inside a Products column adds up the whole Sales table for every row. Referencing a measure inside SUMX does this transition too, which can be costly on large tables.",
+    "followUps": [
+      "Why does SUM alone in a Products column return the whole table total?",
+      "What is the difference between row context and filter context?"
+    ],
+    "commonMistakes": [
+      "Expecting SUM in a calculated column to filter by the current row.",
+      "Calling many measures inside a large SUMX without checking the cost."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-powerbi-042",
+    "category": "power-bi",
+    "question": "What is the difference between ALL and ALLSELECTED for a share KPI?",
+    "whatInterviewerIsTesting": "Knowing which filters a percent-of-total should respect.",
+    "modelAnswer": "**ALL** ignores every filter on the column, including the slicer. **ALLSELECTED** keeps the filters the user applied through slicers, and it removes only the filter from the visual's own axis. Suppose the user has selected three states on a slicer and the card shows each state's share:\n\n```dax\nShare of Selected =\nDIVIDE ( [Total Sales], CALCULATE ( [Total Sales], ALLSELECTED ( Stores ) ) )\n```\n\nWith ALL, the denominator is the full country total, so the three selected states add up to less than 100%. With ALLSELECTED, the denominator is the total of the three selected states, so their shares add up to 100%. I choose based on what the viewer should compare against.",
+    "followUps": [
+      "When would ALL be the correct choice for a share KPI?",
+      "How would a card show the share of the whole country even when a slicer is set?"
+    ],
+    "commonMistakes": [
+      "Using ALL when the viewer expects shares within the slicer selection.",
+      "Assuming ALLSELECTED also ignores the date slicer."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-powerbi-043",
+    "category": "power-bi",
+    "question": "What is the difference between VALUES and DISTINCT in a measure?",
+    "whatInterviewerIsTesting": "Knowing that VALUES can add a virtual blank row when fact rows have no matching dimension row.",
+    "modelAnswer": "Both return a single column of unique values. The difference shows up with unmatched keys. **VALUES** can return an extra blank row when some fact rows have no matching row in the dimension table. This is the virtual blank row. **DISTINCT** on the same column does not add that row. For a count of stores that had sales:\n\n```dax\nStores With Sales =\nCOUNTROWS ( VALUES ( Sales[Store_ID] ) )\n```\n\nIf one sale has a Store_ID that is missing in the Stores table, VALUES counts one more than the real number of stores. I check the count against the dimension table before trusting it. In SQL, COUNT(DISTINCT Store_ID) on the fact table does not add that blank row.",
+    "followUps": [
+      "How would you find fact rows that have no matching dimension row?",
+      "When is SELECTEDVALUE a better choice than VALUES?"
+    ],
+    "commonMistakes": [
+      "Getting one extra row in a count without checking for unmatched keys.",
+      "Confusing DISTINCT, which returns a table, with DISTINCTCOUNT, which returns a number."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-powerbi-044",
+    "category": "power-bi",
+    "question": "How do you calculate year-over-year growth in DAX?",
+    "whatInterviewerIsTesting": "Applying time intelligence functions on a proper date table.",
+    "modelAnswer": "Compare the current total with the same period one year earlier, then divide the difference by the prior value. The date table must be continuous and marked as a date table:\n\n```dax\nSales Last Year =\nCALCULATE ( [Total Sales], DATEADD ( 'Date'[Date], -1, YEAR ) )\n\nSales YoY % =\nDIVIDE ( [Total Sales] - [Sales Last Year], [Sales Last Year] )\n```\n\nIf last year had no sales, DIVIDE returns BLANK() rather than an error. I check the result for a single month and for a full year, because the two can differ when the date table has gaps.",
+    "followUps": [
+      "What happens to the YoY measure if the date table has a missing month?",
+      "How would you show YoY as a rupee difference as well as a percent?"
+    ],
+    "commonMistakes": [
+      "Using the date column from the fact table instead of a marked date table.",
+      "Dividing without DIVIDE, so a zero prior year gives an error."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-powerbi-045",
+    "category": "power-bi",
+    "question": "How do you calculate year-to-date sales for an Indian financial year that starts in April?",
+    "whatInterviewerIsTesting": "Setting the year-end date for TOTALYTD and knowing the Indian fiscal year.",
+    "modelAnswer": "The Indian financial year runs from 1 April to 31 March. **TOTALYTD** takes an optional third argument, the year-end date, as a text literal in month/day form:\n\n```dax\nSales FYTD =\nTOTALYTD ( [Total Sales], 'Date'[Date], \"3/31\" )\n```\n\nWith this measure, the April to March year restarts each April. Using \"12/31\" would give calendar year-to-date, which is wrong for Indian reports. I also check the locale of the model, because the text date format depends on it. In SQL, the same view needs a WHERE clause on a fiscal year column, since SQLite has no TOTALYTD.",
+    "followUps": [
+      "How would you show Q1 of an April to March year?",
+      "What does the FY label on the axis need to say for an April to March year?"
+    ],
+    "commonMistakes": [
+      "Using 12/31 for an Indian financial year.",
+      "Labelling the year as calendar 2026 when it is FY 2026-27."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-powerbi-046",
+    "category": "power-bi",
+    "question": "How do you build a rolling 3-month total measure?",
+    "whatInterviewerIsTesting": "Using DATESINPERIOD for moving windows.",
+    "modelAnswer": "Use **DATESINPERIOD** to take the three months that end on the last date in the current filter context:\n\n```dax\nRolling 3M Sales =\nCALCULATE (\n    [Total Sales],\n    DATESINPERIOD ( 'Date'[Date], LASTDATE ( 'Date'[Date] ), -3, MONTH )\n)\n```\n\nOn a monthly line chart, each point then shows the current month plus the two months before it. The first two points only have partial windows, so I often hide them with an IF check on the number of months available. The date table must be continuous, or months with no sales drop out of the window.",
+    "followUps": [
+      "How would you hide the first two months of a rolling average?",
+      "What is the difference between a rolling window and a month-to-date total?"
+    ],
+    "commonMistakes": [
+      "Using DATEADD with -3 months and expecting a full three-month window.",
+      "Using a date column that is not continuous, so months disappear from the chart."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-powerbi-047",
+    "category": "power-bi",
+    "question": "Why must the date table be continuous, and what goes wrong if it has gaps?",
+    "whatInterviewerIsTesting": "Understanding the requirements of time intelligence functions.",
+    "modelAnswer": "Time intelligence functions such as DATEADD and SAMEPERIODLASTYEAR move dates by a fixed interval. They need one row for every day in the range, without gaps. If the date table skips a day, a function that moves back one year can land on a missing date and return a blank or a wrong total. This often shows up as a YoY value that is blank for some months but not others. The fix is a separate calendar table built from a start and an end date. It is then marked as the date table in the model. Fact tables should join to it by date, not hold their own date table.",
+    "followUps": [
+      "How would you generate a continuous date table in Power Query?",
+      "What happens if two date tables exist in the same model?"
+    ],
+    "commonMistakes": [
+      "Building the date table from only the dates that have sales.",
+      "Using the transaction date column as a date table without marking it."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-powerbi-048",
+    "category": "power-bi",
+    "question": "How would you handle a 52-week retail calendar where weeks do not match months?",
+    "whatInterviewerIsTesting": "Adapting time intelligence to non-standard calendars.",
+    "modelAnswer": "A 52-week calendar, such as one used by a retail chain with weeks ending on a Saturday, does not match calendar months. Standard functions like SAMEPERIODLASTYEAR assume a Gregorian calendar, so they can give wrong prior-year figures. I would add a separate week table with columns for Week Number, Week Ending, and Retail Year. Then I compare the same week number in the prior retail year using a measure that filters on those columns. The main fact table joins to the week table, and I test a few weeks by hand against the store's own report.",
+    "followUps": [
+      "How would you handle the 53rd week in a retail year?",
+      "Why not just use DATEADD with a week interval?"
+    ],
+    "commonMistakes": [
+      "Using SAMEPERIODLASTYEAR on a retail calendar without testing it.",
+      "Mixing calendar months and retail weeks on the same chart."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-powerbi-049",
+    "category": "power-bi",
+    "question": "How do you choose between a line chart and a bar chart?",
+    "whatInterviewerIsTesting": "Matching chart type to the question the visual answers.",
+    "modelAnswer": "I use a **line chart** to show a trend over time, such as monthly revenue for the last two years. I use a **bar chart** to compare categories at one point in time, such as revenue by city for this quarter. A bar chart should start at zero, because a bar's length is the value. A line chart can use a wider range. I avoid pie charts when there are more than four or five slices, because the eye cannot compare the sizes well.",
+    "followUps": [
+      "When is a column chart better than a bar chart?",
+      "When would you use a scatter plot instead?"
+    ],
+    "commonMistakes": [
+      "Using a pie chart for twelve months of data.",
+      "Starting a bar chart axis above zero, which exaggerates small differences."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-powerbi-050",
+    "category": "power-bi",
+    "question": "What is the difference between a slicer and the filter pane?",
+    "whatInterviewerIsTesting": "Knowing when to expose filters to viewers and when to hide them.",
+    "modelAnswer": "A **slicer** sits on the report canvas, so viewers can see and change it. It is good for the choices a viewer makes often, such as a year, a region, or a store. The **filter pane** is hidden by default. It holds visual-level, page-level, and report-level filters. I use it for fixed rules, such as excluding test stores or showing only completed orders. Filters in the filter pane are not a security control. Anyone who can edit the report can change them.",
+    "followUps": [
+      "How do you make one slicer work across several report pages?",
+      "Which filter type would you use to hide the Other category from one chart only?"
+    ],
+    "commonMistakes": [
+      "Putting every filter in a slicer, which clutters the page.",
+      "Using a report-level filter as a security rule."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-powerbi-051",
+    "category": "power-bi",
+    "question": "What is drill-through in Power BI, and how do you set it up?",
+    "whatInterviewerIsTesting": "Understanding drill-through as a way to move from summary to detail.",
+    "modelAnswer": "**Drill-through** lets a viewer right-click a value on a summary page and open a detail page already filtered to that value. For example, right-clicking a store name opens a page with that store's orders. To set it up, I add the field, such as Store Name, to the Drill-through well on the target page. I then add a back button, so the viewer can return to the summary. The detail page should show only the fields needed for the drill, because a heavy page is slow to open.",
+    "followUps": [
+      "How would you make a drill-through page show a measure as well as a field?",
+      "How do you add a back button to a drill-through page?"
+    ],
+    "commonMistakes": [
+      "Forgetting to add the drill-through field to the target page, so it does not appear in the menu.",
+      "Putting many unrelated visuals on the detail page, which makes it slow."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-powerbi-052",
+    "category": "power-bi",
+    "question": "How do you use conditional formatting and tooltips to make a visual clearer?",
+    "whatInterviewerIsTesting": "Using colour and extra detail carefully, with accessibility in mind.",
+    "modelAnswer": "I use conditional formatting so the viewer can spot a problem quickly. For example, a sales achievement column can turn red below 90% of target. I drive the colour from a measure rather than setting each cell by hand:\n\n```dax\nAchievement Colour =\nIF ( [Achievement %] < 0.9, \"#C0392B\", \"#1E8449\" )\n```\n\nRed and green alone can confuse colour-blind viewers, so I also add an icon or a label. A **tooltip** page shows extra detail, such as the month's target and last year's value, when the viewer hovers over a point. This keeps the main page simple.",
+    "followUps": [
+      "How would you set a font colour from a measure?",
+      "What other design choices help colour-blind viewers?"
+    ],
+    "commonMistakes": [
+      "Using only red and green with no icon or label.",
+      "Setting colours cell by cell, so the colours do not update when the data changes."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-powerbi-053",
+    "category": "power-bi",
+    "question": "How do you avoid clutter on a sales dashboard page?",
+    "whatInterviewerIsTesting": "Designing for a clear message on each page.",
+    "modelAnswer": "I aim for five to seven visuals per page, and each visual should answer one question. I start with a row of KPI cards, such as revenue, margin, and out-of-stock items. Then I add one trend chart and one comparison chart. Detail goes to a drill-through page or a tooltip. I remove gridlines, 3D effects, and gradient fills, because they distort the values. For a pharmacy chain in Hyderabad, this layout lets a regional manager see the main points in under a minute. I also ask a stakeholder to read the page without help and say what it shows.",
+    "followUps": [
+      "How many visuals is too many on one page?",
+      "How would you test a dashboard with a business user?"
+    ],
+    "commonMistakes": [
+      "Putting fifteen visuals on one page with no clear title.",
+      "Using 3D or gradient effects that change how the values look."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-powerbi-054",
+    "category": "power-bi",
+    "question": "What is row-level security in Power BI, and why use it?",
+    "whatInterviewerIsTesting": "Basic understanding of RLS and its purpose.",
+    "modelAnswer": "**Row-level security (RLS)** limits which rows a user can see in a dataset. It uses roles, and each role has a DAX filter on one or more tables. For example, a branch manager in Pune should see only Pune branch rows. I define the roles in Power BI Desktop under Modeling, then assign the people to the roles in the Power BI Service. RLS protects the data that the report shows, so it is the right tool for sales data that must be split by branch.",
+    "followUps": [
+      "What is the difference between a role and a user in RLS?",
+      "How do you test a role before publishing?"
+    ],
+    "commonMistakes": [
+      "Using a report-level filter as the only protection for sensitive rows.",
+      "Publishing without testing with View as role in Desktop."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-powerbi-055",
+    "category": "power-bi",
+    "question": "How would you set up RLS so each regional manager sees only their own region?",
+    "whatInterviewerIsTesting": "Writing a static RLS role and assigning it correctly.",
+    "modelAnswer": "I create one role for each region, such as East, West, North, and South. The filter for the East role goes on the Stores table:\n\n```dax\n[Region] = \"East\"\n```\n\nFilters on the Stores table flow to the Sales table through the single-direction relationship, so East managers see only East sales. In the Service, I add each manager's email address to the East role. I test each role with View as role in Desktop. I also check that the Store Name list in a slicer shows only the East stores, because RLS on the fact table alone would still show other regions' store names.",
+    "followUps": [
+      "What happens when a user belongs to two roles?",
+      "Why must the relationship filter direction flow from Stores to Sales?"
+    ],
+    "commonMistakes": [
+      "Putting RLS only on the fact table, so dimension lists still show other regions.",
+      "Forgetting to assign managers to the role in the Service."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-powerbi-056",
+    "category": "power-bi",
+    "question": "Why might a user still see all rows even after you set up RLS?",
+    "whatInterviewerIsTesting": "Knowing the limits of RLS and how workspace roles and dynamic RLS work.",
+    "modelAnswer": "Users with **Admin**, **Member**, or **Contributor** roles in a workspace are not restricted by RLS. They can edit content, so they see the unfiltered data. Business users should get the **Viewer** role, or they should open the report through an app. For a single report with many users, I use dynamic RLS. A user-to-region mapping table holds the email and the region. The role filter uses `USERPRINCIPALNAME()` to match the signed-in user:\n\n```dax\n[Email] = USERPRINCIPALNAME()\n```\n\nDynamic RLS needs one role, not many, and the mapping table is updated when staff change.",
+    "followUps": [
+      "What does USERPRINCIPALNAME return in Power BI Desktop?",
+      "How would you handle a manager who manages two regions in dynamic RLS?"
+    ],
+    "commonMistakes": [
+      "Giving business users the Member role and expecting RLS to apply.",
+      "Matching on a user name in the mapping table, rather than on the email the Service sees."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-powerbi-057",
+    "category": "power-bi",
+    "question": "What is Performance Analyzer, and how do you use it?",
+    "whatInterviewerIsTesting": "Knowing the built-in tool for finding slow visuals.",
+    "modelAnswer": "**Performance Analyzer** is a built-in tool in Power BI Desktop, on the View tab. I start a recording, refresh the visuals or click a slicer, and then look at the time each visual took. Each result splits into DAX query time, visual display time, and other time. If the DAX query is the slow part, I copy the query and open it in DAX Studio for a closer look at the query plan. I run each test a few times, because the first run can differ from later runs.",
+    "followUps": [
+      "What do the DAX query and visual display columns mean?",
+      "When would you open a query in DAX Studio?"
+    ],
+    "commonMistakes": [
+      "Changing several things at once, so you cannot tell which change helped.",
+      "Judging speed from one run only."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-powerbi-058",
+    "category": "power-bi",
+    "question": "A report loads slowly. What steps would you follow to find and fix the problem?",
+    "whatInterviewerIsTesting": "A structured approach to performance tuning.",
+    "modelAnswer": "I measure before I change anything. First, I use Performance Analyzer to find the slowest visuals. Second, I check the model for size: unused columns, unused tables, and large text columns. Third, I replace calculated columns with measures where I can. Fourth, I look at high-cardinality columns. Fifth, I check the DAX of the slow measures, using DAX Studio when needed. Last, I reduce the number of visuals on the page. After each change, I measure again, so I know which fix made the difference.",
+    "followUps": [
+      "Which of these steps usually gives the biggest gain?",
+      "How do you know a visual is the real cause of the slowness?"
+    ],
+    "commonMistakes": [
+      "Adding more memory before checking the model.",
+      "Removing visuals without measuring how much time each one takes."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-powerbi-059",
+    "category": "power-bi",
+    "question": "Why is a high-cardinality column expensive, and how do you reduce its cost?",
+    "whatInterviewerIsTesting": "Understanding how the in-memory engine stores distinct values.",
+    "modelAnswer": "A **high-cardinality** column has many distinct values, such as a transaction ID or a timestamp to the second. The in-memory engine keeps a dictionary of distinct values for each column. A large dictionary compresses poorly, so the model grows, and refresh, relationships, and slicers all get slower. I fix this in three ways. I remove ID columns the report does not need. I split a timestamp into a Date column and a Time column, since a time column has only about 1,440 values in a day. I round decimals to the precision the report needs. For a UPI payments table, this change can cut the model size a lot.",
+    "followUps": [
+      "Why does splitting a timestamp into date and time help?",
+      "How would you still count unique customers if you remove the customer ID?"
+    ],
+    "commonMistakes": [
+      "Keeping the full timestamp to the second in a fact table.",
+      "Importing a GUID column that the report only uses for a count."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-powerbi-060",
+    "category": "power-bi",
+    "question": "What are aggregation tables in Power BI, and when would you use them?",
+    "whatInterviewerIsTesting": "Knowing how to speed up DirectQuery models on very large fact tables.",
+    "modelAnswer": "**Aggregation tables** store pre-summarised data, such as sales by day and store, in Import mode. The detailed fact table stays in DirectQuery. When a visual needs only the summary, Power BI answers it from the aggregate. When a viewer drills to transaction level, Power BI goes to the detailed table. I set this up in the Manage aggregations dialog, and I map each aggregate column to the detail column. The trade-off is that I must keep the aggregate table refreshed, or totals from the two tables will differ.",
+    "followUps": [
+      "What happens when a viewer drills down to transaction level?",
+      "How do aggregations interact with RLS?"
+    ],
+    "commonMistakes": [
+      "Building aggregates on columns that users never group by.",
+      "Forgetting to refresh the aggregate table, so totals differ between pages."
+    ],
+    "difficulty": "hard"
+  }
+]

@@ -1,0 +1,482 @@
+[
+  {
+    "id": "interview-dw-001",
+    "category": "data-warehousing",
+    "question": "What is the difference between OLTP and OLAP? Use a UPI payment as an example.",
+    "whatInterviewerIsTesting": "Knows the two workload types and why they need different designs.",
+    "modelAnswer": "**OLTP** systems handle many small, quick transactions, such as one UPI payment being debited and credited. **OLAP** systems answer big questions over many rows, such as total UPI value by state for the last year. The payment app's database is OLTP, so it is tuned for fast inserts and updates on single rows. The analytics team copies that data into an OLAP warehouse, where reads are large and scans are fast. Running heavy reports on the live payment database would slow down real customer payments.",
+    "followUps": [
+      "Why do OLTP tables usually have normalised designs?",
+      "Can one database do both workloads well? What are the trade-offs?"
+    ],
+    "commonMistakes": [
+      "Saying OLAP is only for big data, when the real difference is the query pattern.",
+      "Running month-end reports directly on the production database without mentioning load on live users."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-dw-002",
+    "category": "data-warehousing",
+    "question": "In plain words, what is a data warehouse, a data lake, and a lakehouse?",
+    "whatInterviewerIsTesting": "Clear one-line definitions and the reason each exists.",
+    "modelAnswer": "A **data warehouse** stores cleaned, structured data in fixed tables built for reporting, like sales by store by day. A **data lake** stores raw files of any shape, such as CSVs, JSON logs and images, at low cost, but it can become messy. A **lakehouse** keeps data in the lake but adds warehouse features, such as table formats, schema checks and SQL access. As a data analyst, I usually query the warehouse or the curated layer of the lakehouse. I rarely need the raw lake files, except when I investigate a data issue.",
+    "followUps": [
+      "Why is a data lake called a schema-on-read system?",
+      "Which of the three would you choose for a small startup with one reporting team?"
+    ],
+    "commonMistakes": [
+      "Saying a lake is always cheaper, without mentioning the cost of cleaning messy data later.",
+      "Treating the three as competing products rather than storage patterns."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-dw-003",
+    "category": "data-warehousing",
+    "question": "Where does a data analyst sit in a company's data setup, and who do they work with?",
+    "whatInterviewerIsTesting": "Understands the data team chain from source systems to dashboards.",
+    "modelAnswer": "Source systems such as the billing app, CRM and payment gateway produce the raw data. Data engineers move that data into the warehouse through pipelines. Analysts use the clean tables and build the metrics, reports and dashboards that business teams read. So I work at the end of the chain, but I also depend on the data engineers for fresh and correct tables. In a fintech I would work with the risk team, the product team and the finance team. My job is to turn the clean tables into clear answers and to flag gaps to the engineers. Over two to three years, many analysts move closer to the pipeline side and become Analytics Engineers.",
+    "followUps": [
+      "What would you do if a source table you depend on arrives late every Monday?",
+      "How is an analytics engineer different from a data engineer?"
+    ],
+    "commonMistakes": [
+      "Saying the analyst builds the pipelines from scratch, which is usually the engineer's job.",
+      "Not mentioning who owns the data definitions and who you ask when a number looks wrong."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-dw-004",
+    "category": "data-warehousing",
+    "question": "What is an operational data store (ODS), and how is it different from a data warehouse?",
+    "whatInterviewerIsTesting": "Knows the ODS is a near-live, integrated copy of operational data, not a history store.",
+    "modelAnswer": "An **operational data store** holds current, cleaned data pulled from several live systems, usually updated every few minutes or hours. It answers questions like 'what is the open order status for this customer right now'. A data warehouse keeps long history, often years, and is organised for analysis. An ODS keeps mostly the latest state, while a warehouse keeps how things changed over time. In a bank, a customer-360 ODS can feed the call centre, while the warehouse feeds monthly risk reports.",
+    "followUps": [
+      "Do you need an ODS if you already have a warehouse with hourly loads?",
+      "How does an ODS handle a record that is deleted in the source?"
+    ],
+    "commonMistakes": [
+      "Calling an ODS a backup of the production database.",
+      "Saying an ODS replaces the warehouse for long-term trend analysis."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-dw-005",
+    "category": "data-warehousing",
+    "question": "What is a data mart, and when would a team build one instead of using the main warehouse?",
+    "whatInterviewerIsTesting": "Understands subject-focused subsets and the trade-off of speed and ownership against duplication.",
+    "modelAnswer": "A **data mart** is a smaller, subject-focused part of the warehouse, such as a sales mart or a marketing mart. It holds only the tables and columns one team needs, which makes queries simpler and faster. A team builds a mart when the full warehouse is too big or too complex for them, or when they need their own refresh schedule. The risk is that each mart can define 'revenue' differently, so numbers stop matching. I would keep marts built from the same conformed dimensions, so the totals still tie back to the warehouse.",
+    "followUps": [
+      "How is a data mart different from a data warehouse in size and scope?",
+      "How would you check that a sales mart total matches the warehouse?"
+    ],
+    "commonMistakes": [
+      "Building a mart with its own copy of the customer table, then wondering why counts differ.",
+      "Describing a mart as a separate database that never needs to match anything."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-dw-006",
+    "category": "data-warehousing",
+    "question": "What is a fact table, and what is a dimension table?",
+    "whatInterviewerIsTesting": "Basic modelling vocabulary and what each table stores.",
+    "modelAnswer": "A **fact table** stores measurable events, such as each order line with quantity, amount and discount. A **dimension table** stores the descriptive context for those events, such as the customer's name, city, the product's category, or the date. Facts usually have many rows and mostly numeric columns, while dimensions have fewer rows and many text columns. In a report, I join a fact to its dimensions to slice the numbers by city or by month. For example, a sales fact can join to a store dimension to show revenue by store in Pune.",
+    "followUps": [
+      "Can a fact table contain text columns? Give an example.",
+      "What is a degenerate dimension?"
+    ],
+    "commonMistakes": [
+      "Putting descriptive text such as customer name inside the fact table.",
+      "Calling every table with a date column a fact table."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-dw-007",
+    "category": "data-warehousing",
+    "question": "What is the difference between a star schema and a snowflake schema?",
+    "whatInterviewerIsTesting": "Knows both shapes and why star is the default for analysts.",
+    "modelAnswer": "A **star schema** has one fact table in the middle and simple, flat dimension tables around it. A **snowflake schema** splits the dimensions into more tables, such as product, then category, then brand. Snowflake saves some storage and keeps data normalised, but queries need more joins. Star is usually easier for analysts and BI tools, so it is my default. I would choose snowflake only when a dimension is very large or changes in many separate ways. In most Indian retail reporting setups, a star with one product dimension works well.",
+    "followUps": [
+      "Which schema gives faster dashboards and why?",
+      "Give an example of a dimension where snowflaking makes sense."
+    ],
+    "commonMistakes": [
+      "Saying snowflake is always wrong, when it is a valid choice for large dimensions.",
+      "Mixing up which one has the extra joins."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-dw-008",
+    "category": "data-warehousing",
+    "question": "What is the grain of a fact table, and why should you decide it first?",
+    "whatInterviewerIsTesting": "Understands grain as the one-line description of a fact row, and how it controls every later choice.",
+    "modelAnswer": "The **grain** is what one row in the fact table represents, such as one order line, or one store per day. You must decide it first, because every measure and dimension must fit that row. If the grain is one order, you cannot store item-level discounts without changing it. Mixing grains in one table gives double counting. For example, if order-level freight is added to every item row, the freight total becomes too high. I always write the grain in one sentence before I write any SQL.",
+    "followUps": [
+      "What happens if you load daily sales and monthly targets into one fact table?",
+      "How would you describe the grain of a payment transactions table?"
+    ],
+    "commonMistakes": [
+      "Adding a column without checking which grain it belongs to.",
+      "Choosing a grain that is too coarse, which removes details the business later asks for."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-dw-009",
+    "category": "data-warehousing",
+    "question": "What is a surrogate key, and why not use the natural key, such as a customer's email, as the primary key in the warehouse?",
+    "whatInterviewerIsTesting": "Knows surrogate keys protect the warehouse from source changes and support history.",
+    "modelAnswer": "A **surrogate key** is a warehouse-generated number, such as 1, 2, 3, that has no business meaning. A **natural key** is a value from the source, such as an email or a mobile number. Natural keys change: a customer changes email, or a phone number is reused by another person. A surrogate key stays fixed, so the fact table joins stay stable. It also lets us keep several versions of the same customer when we track history. The source key can still be stored as a normal column for lookups.",
+    "followUps": [
+      "How do you generate surrogate keys in a SQLite practice table?",
+      "Can a mobile number ever be a good natural key? When?"
+    ],
+    "commonMistakes": [
+      "Saying surrogate keys are random, when they are usually sequential numbers assigned during load.",
+      "Dropping the source ID completely, which makes it hard to match back to the source."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-dw-010",
+    "category": "data-warehousing",
+    "question": "Give an example of a slowly changing dimension Type 2. A customer moves from Pune to Bengaluru.",
+    "whatInterviewerIsTesting": "Can explain adding a new row with validity dates and keeping old history for correct past reports.",
+    "modelAnswer": "With **SCD Type 2**, we keep the old row and add a new row for the new city. The dimension has columns such as customer_key, customer_id, city, valid_from, valid_to and is_current. Before the move, the Pune row has valid_to set to the move date and is_current set to 0. The new Bengaluru row has valid_from set to the move date and is_current set to 1. Sales from before the move still join to the Pune row, so last year's Pune revenue stays correct. In the query, I filter on is_current = 1 only when I want today's view.",
+    "followUps": [
+      "How would you write the query for today's city of each customer?",
+      "What value do you use for valid_to on the current row?"
+    ],
+    "commonMistakes": [
+      "Overwriting the city in place, which is Type 1 and loses history.",
+      "Forgetting to close the old row, so two rows show as current."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-dw-011",
+    "category": "data-warehousing",
+    "question": "What is the difference between SCD Type 1 and SCD Type 3, and when would you pick Type 3?",
+    "whatInterviewerIsTesting": "Knows overwrite, versus adding a column for the previous value, and the limits of Type 3.",
+    "modelAnswer": "**SCD Type 1** overwrites the old value, so only the current value remains, such as correcting a spelling mistake in a city name. **SCD Type 3** adds a column for the previous value, such as current_region and previous_region. Type 3 keeps one step of history without new rows. I would use it when a business wants to compare this quarter with the last quarter's assignment, such as a sales territory. It breaks down when a value changes many times, because you only keep one previous value.",
+    "followUps": [
+      "When would Type 1 be the right choice for a phone number?",
+      "How would you report sales using the previous territory from Type 3?"
+    ],
+    "commonMistakes": [
+      "Saying Type 3 keeps full history, which is only true for one previous value.",
+      "Using Type 1 for fields where the business needs past reporting."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-dw-012",
+    "category": "data-warehousing",
+    "question": "What is a conformed dimension, and why do two fact tables need the same one?",
+    "whatInterviewerIsTesting": "Understands shared dimensions as the way to make several marts agree on totals.",
+    "modelAnswer": "A **conformed dimension** is a dimension that means the same thing and has the same keys and values in every fact table that uses it. A common example is a date dimension or a store dimension used by both sales and inventory facts. If sales and inventory each have their own store table, the same store can get two different names or region codes. Then a report that joins both facts gives wrong or mismatched results. With one shared store dimension, the two facts can be compared store by store. In practice, I check the distinct keys in both facts against the shared dimension to confirm they match.",
+    "followUps": [
+      "How do you check that every store_id in a fact exists in the store dimension?",
+      "Who should own a conformed dimension in a large company?"
+    ],
+    "commonMistakes": [
+      "Building a separate dimension copy for each mart and assuming the numbers will still tie.",
+      "Saying conformed means the table is copied, when it means it is shared and consistent."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-dw-013",
+    "category": "data-warehousing",
+    "question": "What is a factless fact table, and when would you use one?",
+    "whatInterviewerIsTesting": "Knows event-only facts record that something happened, such as coverage or attendance, with no measure column.",
+    "modelAnswer": "A **factless fact table** records that an event happened, but it has no numeric measure. For example, a coverage table can store one row for each student who attended each class, with keys for the student, class and date. Another example is a table of which customers were shown a campaign offer. To answer 'how many students did not attend', you count the rows in the dimension that have no matching row in the fact. Such tables often hold just keys and a few flags. I use them when the business question is about presence or absence, not amounts.",
+    "followUps": [
+      "How would you find customers who were eligible for an offer but never received it?",
+      "Can you add a count column to a factless fact table? Should you?"
+    ],
+    "commonMistakes": [
+      "Adding a fake measure column of 1s and calling it a normal fact without need.",
+      "Forgetting that absence queries need a left join from the dimension, not an inner join."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-dw-014",
+    "category": "data-warehousing",
+    "question": "What is the difference between ETL and ELT, and why is ELT common now?",
+    "whatInterviewerIsTesting": "Knows where transformation happens and why cheap cloud compute changed the order.",
+    "modelAnswer": "In **ETL**, data is extracted, transformed in a separate tool, and then loaded into the warehouse. In **ELT**, raw data is loaded first, and transformation runs inside the warehouse using SQL. ELT is common now because cloud warehouses have cheap, scalable compute. It also keeps the raw data, so we can fix a transformation and rebuild without asking the source team again. Analysts can read the transformation SQL directly. ETL still makes sense for sensitive data that must be masked before it lands in the warehouse.",
+    "followUps": [
+      "What kind of data would you mask before loading it?",
+      "What are the risks of ELT when the warehouse bill is not watched?"
+    ],
+    "commonMistakes": [
+      "Saying ELT is always better, without mentioning PII and cost.",
+      "Confusing the order of steps, with load coming before transform in ELT."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-dw-015",
+    "category": "data-warehousing",
+    "question": "What is batch processing, and when is streaming worth the extra effort?",
+    "whatInterviewerIsTesting": "Can match the speed of data to the business need instead of choosing streaming by default.",
+    "modelAnswer": "**Batch** processing runs on a schedule, such as every night at 2 AM, and processes all the data that arrived since the last run. **Streaming** processes each event within seconds or minutes as it arrives. Most management reports only need daily or hourly data, so batch is simpler and cheaper. Streaming is worth it for fraud alerts on UPI payments or live stock levels on an app. I would ask the business how fast the number must be right before choosing. Batch is also easier to rerun when something goes wrong.",
+    "followUps": [
+      "What is a micro-batch, and where does it fit?",
+      "Which of your current analysis tasks would you move to streaming? Why?"
+    ],
+    "commonMistakes": [
+      "Asking for real-time data when a daily report is enough.",
+      "Saying batch is outdated, without considering its cost and reliability."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-dw-016",
+    "category": "data-warehousing",
+    "question": "What is an incremental load, and how do you find the rows that are new or changed since the last run?",
+    "whatInterviewerIsTesting": "Uses a watermark column and understands the risk of missing late updates.",
+    "modelAnswer": "An **incremental load** moves only new or changed rows, instead of reloading the whole table. The usual method is a watermark, such as the maximum updated_at value from the last successful run. The next run picks rows where updated_at is greater than that watermark. A small overlap window, such as the last two hours, catches rows that were committed late. The job then merges those rows into the target by the business key. This keeps daily runs fast on tables with millions of rows.",
+    "followUps": [
+      "What happens if the source does not have an updated_at column?",
+      "Why would you store the watermark in a control table?"
+    ],
+    "commonMistakes": [
+      "Using the current system time as the watermark, which can skip rows still being written.",
+      "Using a strict greater-than with no overlap, which misses late commits."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-dw-017",
+    "category": "data-warehousing",
+    "question": "What is idempotency in a data pipeline, and why does it matter?",
+    "whatInterviewerIsTesting": "Knows that rerunning a job must not duplicate or change results beyond the intended.",
+    "modelAnswer": "A pipeline is **idempotent** when running it twice for the same date gives the same final table. This matters because jobs fail and get retried, and people rerun them by hand. If the job only inserts rows, a retry doubles the revenue for that day. A safer pattern is to delete the partition for that date and reload it, or to merge by a unique key. I check idempotency by rerunning one day and comparing row counts and totals. Without it, numbers in dashboards slowly drift and nobody trusts them.",
+    "followUps": [
+      "How would you make a simple INSERT job idempotent?",
+      "What is a unique key, and where would you enforce it?"
+    ],
+    "commonMistakes": [
+      "Assuming a successful run cannot be run again.",
+      "Using append-only inserts for a daily table that a retry can duplicate."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-dw-018",
+    "category": "data-warehousing",
+    "question": "What is orchestration in a data pipeline, and what does a tool such as Airflow do?",
+    "whatInterviewerIsTesting": "Understands scheduling, dependencies and retries as separate from the SQL itself.",
+    "modelAnswer": "**Orchestration** means running pipeline steps in the right order, at the right time, with retries and alerts. A tool such as Airflow describes this as a DAG, which is a graph of tasks and their dependencies. For example, the orders load must finish before the sales mart rebuild starts. If one task fails, the tool can retry it and notify the team. The SQL and Python steps still do the actual work; the orchestrator only controls when and in what order they run. As an analyst, I mostly read run logs and check that my tables were ready on time.",
+    "followUps": [
+      "What is a DAG in simple words?",
+      "What would you check first if a daily mart is empty on Monday morning?"
+    ],
+    "commonMistakes": [
+      "Putting business logic inside the scheduler instead of in the SQL or code steps.",
+      "Assuming a scheduled job means the data is correct, without a check step."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-dw-019",
+    "category": "data-warehousing",
+    "question": "What is change data capture (CDC), and how does it differ from a timestamp-based incremental load?",
+    "whatInterviewerIsTesting": "Knows CDC reads the database change log, which catches deletes that a timestamp load misses.",
+    "modelAnswer": "**Change data capture** reads the source database's transaction log and streams every insert, update and delete as events. A timestamp-based incremental load only sees rows whose updated_at changed, so it usually cannot see hard deletes. CDC can also capture changes that happen in a short window between two batch runs. The cost is more setup, such as access to the log and a tool that reads it. For a small analytics team, a timestamp load is often enough. I would ask the engineers for CDC when the business needs accurate deleted-order counts.",
+    "followUps": [
+      "How does a soft delete flag help a timestamp-based load?",
+      "What is the difference between a full snapshot and a change stream?"
+    ],
+    "commonMistakes": [
+      "Claiming a timestamp load always catches deletes.",
+      "Describing CDC as a simple query on the production table."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-dw-020",
+    "category": "data-warehousing",
+    "question": "What is dbt, and what does it add over writing plain SQL views in the warehouse?",
+    "whatInterviewerIsTesting": "Understands dbt as SQL models with version control, tests, documentation and dependency order.",
+    "modelAnswer": "**dbt** lets you write each transformation as a SQL file called a model, and it builds the table or view in the warehouse. It works out the order of models from the references between them, so you do not manage it by hand. You can add tests, such as not_null and unique on a key, and it produces documentation from the same files. The SQL lives in Git, so changes can be reviewed before they go live. I see dbt as a good step towards the Analytics Engineer role, because it joins SQL, testing and version control. A plain view has none of these built-in checks.",
+    "followUps": [
+      "What is the difference between a dbt view and a dbt table materialisation?",
+      "What would you test first in a new orders model?"
+    ],
+    "commonMistakes": [
+      "Calling dbt a database or a replacement for the warehouse.",
+      "Skipping tests and thinking dbt makes the data correct by default."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-dw-021",
+    "category": "data-warehousing",
+    "question": "How would you plan a backfill to reload six months of data after a bug fix in a sales pipeline?",
+    "whatInterviewerIsTesting": "Plans safe, idempotent reruns by date, with checks and a rollback path.",
+    "modelAnswer": "First I would confirm the fix and the exact date range, and I would test the fixed logic on a single day. Then I would rerun the pipeline one day or one week at a time, using the same idempotent load for each partition. Running in small chunks keeps the load on the warehouse small and makes failures easy to restart. Before the run, I would take a copy of the old tables so I can compare old and new totals. After each chunk, I check row counts and revenue against the source and the finance report. Dashboards should show a note saying the numbers are being reloaded until the backfill ends.",
+    "followUps": [
+      "How do you compare old and new totals to explain the change to finance?",
+      "What would you do if one week fails halfway through?"
+    ],
+    "commonMistakes": [
+      "Running the whole six months in one big job that is hard to restart.",
+      "Changing the logic and the data at the same time with no way to compare."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-dw-022",
+    "category": "data-warehousing",
+    "question": "How do you check a table for duplicate rows in SQL?",
+    "whatInterviewerIsTesting": "Writes a GROUP BY and HAVING query to find repeated keys, and knows what a duplicate means.",
+    "modelAnswer": "I group by the business key and count the rows, then keep only the groups with a count above one. For example: `SELECT order_id, COUNT(*) AS cnt FROM orders GROUP BY order_id HAVING COUNT(*) > 1;`. If this returns rows, the key is not unique and joins will multiply the totals. I then check whether the rows are exact copies or only differ in a timestamp, because that decides how to fix them. This query works the same in SQLite, MySQL and Postgres. I always run it after a load and on the key columns I plan to join on.",
+    "followUps": [
+      "How would you keep only the latest row for each order_id?",
+      "How do you check duplicates across two columns, such as order_id and line_no?"
+    ],
+    "commonMistakes": [
+      "Checking duplicates with DISTINCT on all columns, which misses the same key with different values.",
+      "Deleting duplicates before finding out why they appeared."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-dw-023",
+    "category": "data-warehousing",
+    "question": "How do you check that a pipeline loaded correctly?",
+    "whatInterviewerIsTesting": "Uses reconciliation against the source: row counts, control totals and freshness.",
+    "modelAnswer": "I compare the row count in the target with the count in the source for the same date range. Then I compare one control total, such as the sum of order amount, and accept only a small, explained difference. I also check the latest load timestamp, so I know the table is fresh. For example, if the source has 1,20,000 UPI transactions for yesterday, the target should match that count. If the numbers do not match, I stop and investigate before the dashboard refreshes. These checks run as SQL after every load, and they write results to a log table.",
+    "followUps": [
+      "What is a control total, and how do you choose one?",
+      "What would you do if the source count keeps changing after you check it?"
+    ],
+    "commonMistakes": [
+      "Checking only that the job finished, without checking row counts or totals.",
+      "Comparing all-time totals, which hides a missing day."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-dw-024",
+    "category": "data-warehousing",
+    "question": "What is data lineage, and why does a business analyst care about it?",
+    "whatInterviewerIsTesting": "Understands lineage as the traceable path from source to report, used for debugging and trust.",
+    "modelAnswer": "**Data lineage** is the map of where a number came from, from the source system, through each table and transformation, to the dashboard. When a revenue figure looks wrong, lineage tells me which upstream table to check first. It also helps with audits, because finance can see how a figure was calculated. Some tools draw lineage automatically, and dbt docs show model dependencies. Even without a tool, I keep a short note for each dashboard listing its source tables and the filters applied. That note saves hours when a stakeholder asks why a number changed.",
+    "followUps": [
+      "How would you trace a dashboard number back to its source table?",
+      "What is the difference between lineage and a data dictionary?"
+    ],
+    "commonMistakes": [
+      "Thinking lineage is only for engineers and skipping it in analysis work.",
+      "Saying lineage is the same as a backup."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-dw-025",
+    "category": "data-warehousing",
+    "question": "How do you protect personal data such as phone numbers when you build an analytics table?",
+    "whatInterviewerIsTesting": "Knows masking, hashing and access control, and keeps raw PII out of wide analytics tables.",
+    "modelAnswer": "I keep raw phone numbers and emails only in the restricted source or a secure table. In the analytics table, I mask them, for example showing only the last four digits, such as XXXXXX1234. For joins, I use a salted hash of the number, not the number itself, so two tables can still match. Access is limited by role, so most analysts see only the masked columns. I also ask whether each field is needed for the report at all. In India, the DPDP Act makes this a legal duty, not just good practice.",
+    "followUps": [
+      "What is the difference between masking and hashing?",
+      "Why is a plain hash of a phone number still risky?"
+    ],
+    "commonMistakes": [
+      "Keeping full phone numbers in a wide analytics table because it is convenient.",
+      "Saying hashing makes data anonymous, when a short phone number can be guessed."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-dw-026",
+    "category": "data-warehousing",
+    "question": "A source team renames a column without telling anyone, and your dashboards break. How do you protect against this?",
+    "whatInterviewerIsTesting": "Uses data contracts, schema checks and alerts to catch breaking changes before users see them.",
+    "modelAnswer": "First I would fix the broken model and confirm the old name and the new name. To prevent it next time, I would agree a data contract with the source team, listing the columns, types and meanings they promise to keep. I would add a schema check in the pipeline that fails fast when an expected column is missing. Automated tests, such as not_null on key columns, also flag changes early. The source team should give notice before any breaking change, such as through a shared channel. This turns a surprise outage into a planned change.",
+    "followUps": [
+      "What should a minimal data contract include?",
+      "How would you tell the business that a dashboard is stale while you fix it?"
+    ],
+    "commonMistakes": [
+      "Quietly editing the query without telling the source team or the dashboard users.",
+      "Adding a schema check but no alert, so the failure is still found by a manager."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-dw-027",
+    "category": "data-warehousing",
+    "question": "Why are columnar stores fast for analytics queries?",
+    "whatInterviewerIsTesting": "Explains reading only needed columns and compression, which suits aggregates over many rows.",
+    "modelAnswer": "A **columnar store** saves each column together, so a query that needs two columns out of forty reads only those two. Columns of the same type also compress very well, because similar values sit together. Aggregates such as SUM and AVG run quickly over one column at a time. The trade-off is that a single-row update or insert is slower than in a row store. SQLite stores data by row, so it is slower for big scans, but the SQL is the same. For a practice project, the row layout is fine for the data size.",
+    "followUps": [
+      "Why are row stores better for single-customer lookups?",
+      "What is run-length encoding, and which column would compress well?"
+    ],
+    "commonMistakes": [
+      "Saying columnar stores are faster for every query.",
+      "Thinking a columnar store is just a spreadsheet with columns."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-dw-028",
+    "category": "data-warehousing",
+    "question": "What is partitioning, and why should a query filter on the partition column?",
+    "whatInterviewerIsTesting": "Knows partitions let the engine skip data, and that a filter on a function of the column can stop that skipping.",
+    "modelAnswer": "**Partitioning** splits a large table into parts, usually by date, such as one part per day or per month. When a query filters on the partition column, the engine reads only the matching parts. This saves time and, on many cloud warehouses, money, because you pay for data scanned. For example, filtering on order_date for last month reads about one month of data. If you wrap the column in a function, such as month of order_date, many engines cannot skip parts and scan everything. Always filter on the raw column with a range.",
+    "followUps": [
+      "Why is a range filter better than wrapping the date in a function?",
+      "What is a good partition key for a daily transactions table?"
+    ],
+    "commonMistakes": [
+      "Partitioning on a column with thousands of values, such as customer_id, which creates too many small parts.",
+      "Filtering on a function of the date column and expecting a fast scan."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-dw-029",
+    "category": "data-warehousing",
+    "question": "What is a materialised view, and when would you use one instead of a normal view?",
+    "whatInterviewerIsTesting": "Knows a materialised view stores results, trading freshness for speed, and needs refreshing.",
+    "modelAnswer": "A **normal view** is a saved query that runs each time someone reads it. A **materialised view** stores the result table and refreshes it on a schedule. I use one when a heavy aggregate, such as daily sales by store, is read by many dashboards. It makes those reads fast, but the numbers are only as fresh as the last refresh. I always show the refresh time on the dashboard. SQLite does not have materialised views, so in practice I use CREATE TABLE AS SELECT and rebuild it in the pipeline.",
+    "followUps": [
+      "How would you decide the refresh schedule for a materialised view?",
+      "What are the risks of using a materialised view on a table that changes all day?"
+    ],
+    "commonMistakes": [
+      "Expecting a materialised view to update instantly on every source change.",
+      "Using a materialised view for a small, fast query where it adds no benefit."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-dw-030",
+    "category": "data-warehousing",
+    "question": "What is a semantic layer, and why should metric definitions live there instead of in each dashboard?",
+    "whatInterviewerIsTesting": "Understands a single governed definition of metrics such as revenue or active customer, reused by all tools.",
+    "modelAnswer": "A **semantic layer** sits between the warehouse tables and the BI tools, and it defines metrics once, such as revenue, active customer or repeat rate. Each dashboard then asks for the metric by name, instead of rewriting the SQL. This stops the common problem where two teams report different revenue numbers for the same month. It also makes changes safer, because you change the definition in one place. Some teams do this with a metrics layer in dbt or a BI tool's modelling layer. As an analyst, I write the metric definition in a document, and then build it in the layer.",
+    "followUps": [
+      "How would you agree a single definition of active customer with two teams?",
+      "What are the downsides of a semantic layer for a small team?"
+    ],
+    "commonMistakes": [
+      "Copying the revenue formula into every dashboard and calling it one definition.",
+      "Making the semantic layer so complex that nobody can change a metric."
+    ],
+    "difficulty": "hard"
+  }
+]

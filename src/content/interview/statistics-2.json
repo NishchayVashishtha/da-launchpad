@@ -1,0 +1,562 @@
+[
+  {
+    "id": "interview-stats-026",
+    "category": "statistics",
+    "question": "What is the mode, and when is it more useful than the mean or median?",
+    "whatInterviewerIsTesting": "Knowing the mode and when a category-level summary is the right choice.",
+    "modelAnswer": "The **mode** is the value that appears most often in a dataset. It is the only average that works for categorical data, such as the most common payment method at a store. For numbers, it helps when one value clearly dominates, like the most ordered pack size in a grocery app. A dataset can have no mode, one mode, or several. I would report the mode with its count and share, because a mode alone can hide how spread out the data is.",
+    "followUps": [
+      "Can a dataset have more than one mode?",
+      "Why is the mode a poor summary for continuous values like order amounts?"
+    ],
+    "commonMistakes": [
+      "Saying the mode is always the middle value.",
+      "Using the mode on a numeric column where almost every value is unique."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-stats-027",
+    "category": "statistics",
+    "question": "What is skewness, and how does it affect the mean and median?",
+    "whatInterviewerIsTesting": "Reading the shape of a distribution before picking a summary statistic.",
+    "modelAnswer": "Skewness measures how lopsided a distribution is. Right skew means a long tail of very high values, as with monthly salaries or order values in Rs. In a right-skewed dataset, the mean sits above the median because the big values pull it up. Left skew does the opposite, as with exam scores where most students score high and a few score very low. When skew is strong, I report the median with the 25th and 75th percentiles, and I still show the mean. A histogram is the quickest check before choosing a summary.",
+    "followUps": [
+      "Which way does the mean move for a left-skewed distribution?",
+      "Does a large sample remove the effect of skew on the mean?"
+    ],
+    "commonMistakes": [
+      "Saying skew means the data has errors.",
+      "Comparing mean and median without first looking at the shape of the data."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-stats-028",
+    "category": "statistics",
+    "question": "How would you tell if order values follow a normal or a lognormal distribution?",
+    "whatInterviewerIsTesting": "Recognising that money-like metrics are often lognormal and that normal-based methods need a transform.",
+    "modelAnswer": "Order values are usually lognormal, which means their logarithm is roughly normal. A lognormal shape is right-skewed, with many small orders and a thin tail of very large ones. I would plot a histogram and a Q-Q plot of the log values, and look for a straight line. If the logs look normal, I would analyse `log(order_value)` and report results back on the rupee scale. In SQLite I would compute `LN(order_value)` for the natural log, because `LOG(x)` there is base 10.",
+    "followUps": [
+      "Why do many A/B tests on revenue use a log transform?",
+      "What would you do if the log transform still shows a heavy tail?"
+    ],
+    "commonMistakes": [
+      "Assuming any positive, skewed metric is lognormal without checking.",
+      "Running a t-test on raw skewed revenue and ignoring the outliers."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-stats-029",
+    "category": "statistics",
+    "question": "What is the difference between percentiles and quartiles? Why use p95 for API latency?",
+    "whatInterviewerIsTesting": "Using percentiles to describe tails, not just averages.",
+    "modelAnswer": "A **percentile** is the value below which a given share of data falls. Quartiles are three special percentiles: the 25th, 50th and 75th. The p95 latency is the response time that 95 percent of requests beat. Average latency can look fine while a small group of users waits many seconds. So a team tracks p95 or p99 to see the slow tail. In a report, I would show p50, p95 and p99 together for each day.",
+    "followUps": [
+      "How do you calculate the 90th percentile in SQL?",
+      "Why can a mean latency look good while p99 is bad?"
+    ],
+    "commonMistakes": [
+      "Calling the p95 the maximum value.",
+      "Reporting only the average response time for an app that has slow outliers."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-stats-030",
+    "category": "statistics",
+    "question": "How are variance and standard deviation related, and which one do you report to a business user?",
+    "whatInterviewerIsTesting": "Understanding that the two measure the same spread in different units.",
+    "modelAnswer": "**Variance** is the average of the squared distances from the mean. **Standard deviation** is the square root of variance, so it is in the same unit as the data. For example, if order values have a variance of 900 square rupees, the standard deviation is Rs 30. Variance is useful in formulas, but it is hard to read because of the squared unit. For a business user, I report the standard deviation, and I say it in rupees.",
+    "followUps": [
+      "If the variance is 2,500 square rupees, what is the standard deviation?",
+      "Why do we square the distances instead of taking absolute values?"
+    ],
+    "commonMistakes": [
+      "Quoting variance in rupees, which has the wrong unit.",
+      "Saying variance and standard deviation measure different kinds of spread."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-stats-031",
+    "category": "statistics",
+    "question": "What does a box plot tell you, and what does it hide?",
+    "whatInterviewerIsTesting": "Reading quartiles, whiskers and outliers, and knowing the limits of the plot.",
+    "modelAnswer": "A box plot shows the median as a line, the box as the middle 50 percent of data from Q1 to Q3, and whiskers that reach toward the extremes. Points beyond the whiskers, usually 1.5 times the IQR from the box, are shown as outliers. It is useful for comparing groups side by side, such as delivery times across three cities. It hides the shape of the distribution, so two very different datasets can look alike. I would pair it with a histogram or a strip plot when the sample is small or when the shape matters.",
+    "followUps": [
+      "How is the IQR calculated, and what is the 1.5 IQR rule?",
+      "When would a box plot mislead you about bimodal data?"
+    ],
+    "commonMistakes": [
+      "Saying the whiskers always show the minimum and maximum.",
+      "Treating every point beyond the whisker as an error, without checking the cause."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-stats-032",
+    "category": "statistics",
+    "question": "What is conditional probability, and how do you tell if two events are independent?",
+    "whatInterviewerIsTesting": "Basic probability vocabulary and the test for independence.",
+    "modelAnswer": "Conditional probability is the chance of event A given that event B has happened, written P(A given B) = P(A and B) / P(B). Two events are independent when knowing B does not change the chance of A. Suppose 300 of 1,000 customers used a coupon, and 120 of the 400 new customers used one. Then P(coupon given new) = 120/400 = 30 percent, and P(coupon) = 300/1,000 = 30 percent, so the two are independent here. In real data I check this with a cross-tab rather than assume it.",
+    "followUps": [
+      "Can two events be mutually exclusive and independent at the same time?",
+      "How would you compute P(A given B) from a table in SQL?"
+    ],
+    "commonMistakes": [
+      "Confusing P(A given B) with P(B given A).",
+      "Assuming two events are independent because they look unrelated, without checking the counts."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-stats-033",
+    "category": "statistics",
+    "question": "How do you calculate the expected value of a Rs 50 cashback promo, and how do you decide if it pays?",
+    "whatInterviewerIsTesting": "Expected value thinking and comparing cost with incremental gain.",
+    "modelAnswer": "Expected value is the sum of each outcome times its probability. If 10 percent of offered users redeem a Rs 50 cashback, the expected cost per offered user is 0.10 x Rs 50 = Rs 5. The promo only pays if it brings extra profit. Suppose 3 percent of offered users place an extra order with Rs 80 contribution margin. The expected gain is 0.03 x Rs 80 = Rs 2.40. The net is Rs 2.40 minus Rs 5, which is a loss of Rs 2.60 per offered user, so I would not run it as designed.",
+    "followUps": [
+      "How would you measure the 3 percent extra orders without bias?",
+      "How would the answer change if the promo only applies to first orders?"
+    ],
+    "commonMistakes": [
+      "Comparing the cashback cost with revenue instead of contribution margin.",
+      "Counting every order from promo users as extra orders, even orders that would have happened anyway."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-stats-034",
+    "category": "statistics",
+    "question": "In a group of 30 people, what is the chance that two share a birthday? How do you handle 'at least one' problems?",
+    "whatInterviewerIsTesting": "Using the complement rule and stating independence assumptions.",
+    "modelAnswer": "Use the complement: P(at least one match) = 1 - P(all birthdays different). For 30 people, P(all different) is about 0.294, so the chance of at least one shared birthday is about 70.6 percent. The same idea works in business. If each UPI payment has a 2 percent chance of failing, the chance that at least one of 10 payments fails is 1 - 0.98^10, which is about 18 percent. This assumes the payments are independent, and I would say so in the answer.",
+    "followUps": [
+      "Why is the complement easier to calculate than the direct probability?",
+      "What happens to the answer if failures are clustered during an outage?"
+    ],
+    "commonMistakes": [
+      "Adding the individual probabilities, which overcounts the chance.",
+      "Forgetting to state the independence assumption."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-stats-035",
+    "category": "statistics",
+    "question": "What is the Law of Large Numbers, and how is it different from the Central Limit Theorem?",
+    "whatInterviewerIsTesting": "Separating two ideas that are often mixed up in interviews.",
+    "modelAnswer": "The **Law of Large Numbers** says that the sample average gets closer to the true population mean as the sample grows. It tells you the average becomes accurate. The **Central Limit Theorem** says the distribution of sample means becomes roughly normal as the sample grows, even if the population is skewed. Its spread shrinks by the square root of n. The LLN explains why a large sample is reliable, and the CLT lets us build confidence intervals and tests. For example, the average delivery time from 10,000 orders is very close to the true average, and the CLT lets us say how far off it might be.",
+    "followUps": [
+      "Does the CLT need the population to be normal?",
+      "Why does a heavy-tailed population need a larger sample for the CLT to work well?"
+    ],
+    "commonMistakes": [
+      "Saying the LLN makes the data itself normal.",
+      "Using the two terms as if they mean the same thing."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-stats-036",
+    "category": "statistics",
+    "question": "When would you model failed payments with a binomial distribution, and when with a Poisson distribution?",
+    "whatInterviewerIsTesting": "Choosing the right count model from the process, and checking the assumption against data.",
+    "modelAnswer": "Use a **binomial** model when there is a fixed number of trials, each with the same chance of success. For example, 500 payment attempts today, each failing with p = 0.02, gives failures that follow Binomial(500, 0.02), with a mean of 10. Use a **Poisson** model when you count events over a time or area, the events are random and fairly rare, and the rate is steady. For example, failures per hour with an average of 12 would follow Poisson(12). When n is large and p is small, the Poisson is a good approximation to the binomial with lambda = np. A variance much larger than the mean suggests clustering, such as an outage, and then neither model fits well.",
+    "followUps": [
+      "How would you check whether real hourly failure counts fit a Poisson model?",
+      "What does a variance much larger than the mean suggest?"
+    ],
+    "commonMistakes": [
+      "Using a Poisson model when the number of attempts is fixed and known.",
+      "Fitting a model without checking whether the variance is close to the mean."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-stats-037",
+    "category": "statistics",
+    "question": "Compare simple random, stratified and cluster sampling with an example from a household survey.",
+    "whatInterviewerIsTesting": "Knowing the sampling designs and when each one is used.",
+    "modelAnswer": "**Simple random sampling** picks households at random from the full list, so every household has the same chance. **Stratified sampling** splits the list into groups, such as urban and rural districts, and samples from each group, which ensures each group is represented. **Cluster sampling** picks a few villages at random and surveys every household in them, which is cheaper to visit. Stratified sampling gives the most precise estimate for the same size when the groups differ. Cluster sampling is more practical in the field, but its margin of error is usually wider.",
+    "followUps": [
+      "When would you choose stratified sampling over simple random sampling?",
+      "Why does cluster sampling usually need a bigger sample for the same precision?"
+    ],
+    "commonMistakes": [
+      "Saying stratified sampling and cluster sampling are the same thing.",
+      "Assuming a random sample is always representative, even when the list is incomplete."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-stats-038",
+    "category": "statistics",
+    "question": "An app survey got answers from only 8 percent of users. What is non-response bias, and what do you do?",
+    "whatInterviewerIsTesting": "Recognising that a large sample can still be biased.",
+    "modelAnswer": "Non-response bias happens when the people who answer differ from those who do not. In an app survey, happy users or very unhappy users may answer more often, so the average score moves away from the truth. A big number of responses does not fix this. I would compare the responders with the full user base on known traits, such as city, plan and order count. Then I would weight the answers to match the user base, and I would report the response rate with the result. A short follow-up to a random sample of non-responders also helps.",
+    "followUps": [
+      "How would you use weighting to correct for non-response?",
+      "What extra data would you need to check whether bias exists?"
+    ],
+    "commonMistakes": [
+      "Treating a 10,000-response survey as unbiased without checking who answered.",
+      "Hiding the response rate in the final report."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-stats-039",
+    "category": "statistics",
+    "question": "How many respondents do you need for a survey with a 3 percent margin of error at 95 percent confidence?",
+    "whatInterviewerIsTesting": "Using the sample size formula for a proportion and the worst-case value of p.",
+    "modelAnswer": "For a proportion, use n = z squared x p(1 - p) / E squared. With z = 1.96, p = 0.5 for the worst case, and E = 0.03, we get n = 1.96 x 1.96 x 0.25 / 0.0009, which is about 1,067. So I would aim for 1,068 completed responses. If the population is small, such as 5,000 employees, a finite population correction reduces the number. In practice, I would add 10 to 20 percent for drop-offs and incomplete answers.",
+    "followUps": [
+      "What changes if the margin of error is 5 percent?",
+      "Does a survey of 1,068 people from one city give the same margin for the whole country?"
+    ],
+    "commonMistakes": [
+      "Using p = 0.5 without saying it is the worst case.",
+      "Ignoring that the margin of error does not remove bias."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-stats-040",
+    "category": "statistics",
+    "question": "What is the difference between a sampling frame and a target population, and why does the gap matter?",
+    "whatInterviewerIsTesting": "Thinking about coverage error, not only random error.",
+    "modelAnswer": "The **target population** is the group you want to learn about, such as all smartphone users in India. The **sampling frame** is the list you can actually sample from, such as users who logged in to the app in the last 90 days. The gap between them is coverage error. Users who installed the app and never logged in, or who use the web only, are missing from the frame. A random sample from the frame cannot represent them, however large it is. I would state the frame in every report and compare it with census or panel data where possible.",
+    "followUps": [
+      "How would you estimate the size of the coverage gap?",
+      "Can weighting fix a missing group in the sampling frame?"
+    ],
+    "commonMistakes": [
+      "Calling the app user list the population without saying what is missing.",
+      "Thinking a bigger sample from the same frame reduces coverage error."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-stats-041",
+    "category": "statistics",
+    "question": "What is the difference between a one-tailed and a two-tailed test? When would you pick one?",
+    "whatInterviewerIsTesting": "Knowing the default choice and the risk of changing it after seeing data.",
+    "modelAnswer": "A **two-tailed** test checks for a difference in either direction. A **one-tailed** test checks for a difference in one direction only. At alpha = 0.05, the z critical value is 1.96 for two-tailed and 1.645 for one-tailed. I use two-tailed by default, because a new checkout banner could also hurt conversion. A one-tailed test is only valid if I decided the direction before seeing the data, and I do not care about the other direction. Switching to one-tailed after the result looks good is not allowed.",
+    "followUps": [
+      "Why does a one-tailed test have more power for the same effect?",
+      "What would you do if the team wants to switch to one-tailed after the test?"
+    ],
+    "commonMistakes": [
+      "Picking one-tailed because it gives a smaller p-value.",
+      "Forgetting to use the critical value that matches the test type."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-stats-042",
+    "category": "statistics",
+    "question": "What are degrees of freedom, and why does the t-distribution depend on them?",
+    "whatInterviewerIsTesting": "Understanding why small samples need a wider t-distribution.",
+    "modelAnswer": "Degrees of freedom are the number of values that can vary freely after the estimates are fixed. For a one-sample t-test, df = n - 1. The t-distribution has heavier tails when df is small, so the critical value is larger. For example, with 12 orders, df = 11 and the 95 percent two-tailed critical value is 2.201, while the z value is 1.96. As df grows, the t-distribution gets close to the normal. Tools such as SciPy and Excel's T.INV.2T take the df as an input.",
+    "followUps": [
+      "Why is the t critical value 2.201 for df = 11?",
+      "What df does Welch's t-test use?"
+    ],
+    "commonMistakes": [
+      "Using 1.96 for every sample size, even with 12 observations.",
+      "Saying degrees of freedom are the same as the sample size."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-stats-043",
+    "category": "statistics",
+    "question": "When would you use the Mann-Whitney U test instead of a t-test?",
+    "whatInterviewerIsTesting": "Choosing a non-parametric test when the data is skewed, ranked or small.",
+    "modelAnswer": "The Mann-Whitney U test compares two independent groups using ranks, not the raw values. It does not assume a normal distribution, so it suits skewed data, small samples, or ordinal scores like 1 to 5 app ratings. It tests whether one group tends to have higher values, not exactly whether the means differ. For example, I would compare the ratings from two onboarding flows with it. In Python, I would use `scipy.stats.mannwhitneyu(a, b)`. I would still report the medians and the effect direction, not only the p-value.",
+    "followUps": [
+      "What assumption does the Mann-Whitney test still need?",
+      "Why does a t-test often work fine with large samples, even when the data is skewed?"
+    ],
+    "commonMistakes": [
+      "Saying Mann-Whitney tests whether the medians are equal, in every case.",
+      "Choosing the test after looking at which one gives a smaller p-value."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-stats-044",
+    "category": "statistics",
+    "question": "Explain the bootstrap confidence interval. When would you use it?",
+    "whatInterviewerIsTesting": "Intuition for resampling and when a formula is hard to find.",
+    "modelAnswer": "The **bootstrap** estimates uncertainty by resampling the observed data with replacement. I draw a new sample of the same size, compute the statistic, and repeat this about 5,000 times. The 2.5th and 97.5th percentiles of the results form a 95 percent interval. It works well for medians, ratios, and skewed metrics, where a simple formula is hard to write. It does not fix a small or biased sample, because it only reuses what was observed. With NumPy, a loop of `np.random.choice(x, size=len(x), replace=True)` is enough.",
+    "followUps": [
+      "When would the bootstrap give a poor interval?",
+      "How would you bootstrap a ratio metric by user instead of by session?"
+    ],
+    "commonMistakes": [
+      "Believing the bootstrap creates new data.",
+      "Using too few resamples, such as 50, and calling the result stable."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-stats-045",
+    "category": "statistics",
+    "question": "Explain the z-test for two proportions. What goes into the formula?",
+    "whatInterviewerIsTesting": "Working a proportion test by hand and reading the result correctly.",
+    "modelAnswer": "Use the pooled proportion p = (x1 + x2) / (n1 + n2), then SE = sqrt(p(1 - p)(1/n1 + 1/n2)), and z = (p2 - p1) / SE. For example, control converts 480 of 10,000 users (4.8 percent) and treatment converts 540 of 10,000 (5.4 percent). The pooled p is 1,020 / 20,000 = 0.051, the SE is about 0.0031, and z is about 1.93. The two-tailed p-value is about 0.054, so the result is not significant at 0.05. I would say the lift is promising but not yet proven.",
+    "followUps": [
+      "Why do we use the pooled proportion for the standard error?",
+      "What sample size would give significance for the same 0.6 point lift?"
+    ],
+    "commonMistakes": [
+      "Using the unpooled standard error for the hypothesis test.",
+      "Saying a p-value of 0.054 proves no effect."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-stats-046",
+    "category": "statistics",
+    "question": "How would you test whether churn depends on the plan type, using a chi-square test of independence?",
+    "whatInterviewerIsTesting": "Setting up a contingency table and checking the test's assumptions.",
+    "modelAnswer": "Build a contingency table with plan type in rows and churned or retained in columns. For each cell, the expected count is row total x column total / grand total. The statistic is the sum of (observed - expected) squared / expected, with df = (rows - 1) x (columns - 1). Each expected count should be at least 5. In SQLite, I would start with `SELECT plan, SUM(churned) AS churned, COUNT(*) AS total FROM subscriptions GROUP BY plan`. A significant result shows an association, not a cause, so I would also check the churn rate per plan.",
+    "followUps": [
+      "What do you do if one expected count is below 5?",
+      "How is a chi-square test of independence different from a goodness-of-fit test?"
+    ],
+    "commonMistakes": [
+      "Using a chi-square test on percentages instead of counts.",
+      "Stating that the plan causes churn because the test is significant."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-stats-047",
+    "category": "statistics",
+    "question": "Why is a p-value not enough to report an A/B test? Explain Cohen's d and relative lift with an example.",
+    "whatInterviewerIsTesting": "Reporting effect size and direction in terms a business owner can act on.",
+    "modelAnswer": "A p-value only says whether the difference is unlikely to be noise. It does not say how big the change is. **Cohen's d** is the difference in means divided by the pooled standard deviation. A d of 0.2 is small, 0.5 medium and 0.8 large, by common convention. For business use, **relative lift** is more useful: (treatment - control) / control. If average order value goes from Rs 400 to Rs 412, the absolute lift is Rs 12 and the relative lift is 3 percent. I would report the lift, its confidence interval, and the Rs value per month.",
+    "followUps": [
+      "How do you convert a relative lift into monthly revenue?",
+      "Why is Cohen's d scale only a rough guide?"
+    ],
+    "commonMistakes": [
+      "Reporting only the p-value and the word significant.",
+      "Mixing up absolute and relative lift in the same slide."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-stats-048",
+    "category": "statistics",
+    "question": "What is the Benjamini-Hochberg procedure, and how does it differ from Bonferroni?",
+    "whatInterviewerIsTesting": "Choosing between controlling the family-wise error rate and the false discovery rate.",
+    "modelAnswer": "Bonferroni divides alpha by the number of tests. It controls the chance of any false positive, but it is strict and loses power when many metrics are tested. The **Benjamini-Hochberg** procedure controls the **false discovery rate**, which is the expected share of false positives among the discoveries. You sort the p-values, compare the k-th smallest to (k/m) x alpha, and keep all hypotheses up to the largest one that passes. I would use BH for screening many metrics or segments, and Bonferroni when even one false positive is very costly.",
+    "followUps": [
+      "For 20 metrics with alpha 0.05, what is the Bonferroni threshold?",
+      "Why do both methods need the tests to be chosen before looking at results?"
+    ],
+    "commonMistakes": [
+      "Saying BH controls the chance of any false positive.",
+      "Applying the correction only to the metrics that look significant."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-stats-049",
+    "category": "statistics",
+    "question": "What is a sample ratio mismatch in an A/B test, and what do you do when you see one?",
+    "whatInterviewerIsTesting": "Treating a broken traffic split as a data quality failure.",
+    "modelAnswer": "A **sample ratio mismatch** (SRM) happens when the observed split between variants differs from the planned split. For a 50/50 test, 50,000 users in control and 47,600 in treatment is far from the expected 49,300 each. A chi-square test gives a tiny p-value, so the split is not random. I would stop trusting the lift and look for causes, such as a redirect that drops users, a bucketing bug, or bots that only hit one variant. The test should be fixed and rerun before any decision.",
+    "followUps": [
+      "How would you run the SRM check in a query?",
+      "Could an SRM come from users who opt out of tracking?"
+    ],
+    "commonMistakes": [
+      "Ignoring the SRM because the conversion result looks good.",
+      "Removing users from one variant until the split looks right."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-stats-050",
+    "category": "statistics",
+    "question": "What are guardrail metrics in an A/B test, and how do they differ from the primary metric?",
+    "whatInterviewerIsTesting": "Protecting the business from wins that cause harm elsewhere.",
+    "modelAnswer": "The **primary metric** is the one the test is designed to move, such as checkout conversion. **Guardrail metrics** are things that must not get worse, such as order cancellations, refunds, page load time, and support tickets. A banner that lifts conversion but doubles cancellations is not a win. I would define the guardrails and the decision rule before the test starts. If a guardrail moves in a bad direction, the team stops or investigates before shipping.",
+    "followUps": [
+      "How do you set the threshold for a guardrail metric?",
+      "What would you do if the primary metric wins but a guardrail loses?"
+    ],
+    "commonMistakes": [
+      "Adding guardrails after seeing the results.",
+      "Treating a guardrail with no significant change as proof that the change is safe."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-stats-051",
+    "category": "statistics",
+    "question": "Why can interference between users break a standard A/B test? Give an example from a ride or delivery app.",
+    "whatInterviewerIsTesting": "Understanding that the stable unit treatment value assumption can fail in marketplaces.",
+    "modelAnswer": "A standard A/B test assumes one user's treatment does not affect another user's outcome. In a ride app, cheaper fares for treatment riders can pull drivers away from control riders in the same zone, so control looks worse. This biases the lift, often by a lot. The fix is to randomise at a higher level, such as city or zone, or use a switchback design that flips the treatment over time. The trade-off is fewer independent units, so the test needs more time and a larger sample.",
+    "followUps": [
+      "How would you choose the cluster for randomisation?",
+      "What is a switchback test and when does it help?"
+    ],
+    "commonMistakes": [
+      "Assuming more users always fixes interference.",
+      "Ignoring spill-over because the results look clean."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-stats-052",
+    "category": "statistics",
+    "question": "What is CUPED, and why does it make an A/B test more sensitive?",
+    "whatInterviewerIsTesting": "Understanding variance reduction with pre-experiment data.",
+    "modelAnswer": "**CUPED** stands for Controlled-experiment Using Pre-Experiment Data. It adjusts each user's outcome Y using a covariate X measured before the test, such as last month's spend. The adjusted value is Y - theta x (X - mean of X), where theta = cov(X, Y) / var(X). The variance falls by about the factor (1 - rho squared), where rho is the correlation between X and Y. A correlation of 0.6 cuts the variance by about 36 percent, so the test needs fewer users. The covariate must come from before the test, or the estimate becomes biased.",
+    "followUps": [
+      "What goes wrong if the covariate is measured during the test?",
+      "How would you pick a covariate for a new user cohort with no history?"
+    ],
+    "commonMistakes": [
+      "Using a covariate that the treatment itself can change.",
+      "Believing CUPED changes the expected lift, rather than only the noise."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-stats-053",
+    "category": "statistics",
+    "question": "What is a ratio metric such as revenue per session, and why does the delta method matter for its variance?",
+    "whatInterviewerIsTesting": "Knowing that the analysis unit must match the randomisation unit, and that ratio variance needs a linear approximation.",
+    "modelAnswer": "A ratio metric like revenue per session is total revenue divided by total sessions. Its variance is not the simple variance of the per-user values, because both the numerator and the denominator are random. The **delta method** approximates the variance of a ratio with a first-order Taylor expansion, which gives a usable standard error. The key rule is that users are randomised, so the analysis should use per-user totals. Comparing per-session averages across users with unequal session counts gives a misleading test.",
+    "followUps": [
+      "Why is the ratio of two sample means not an unbiased estimate in general?",
+      "How would you check the variance estimate with a bootstrap by user?"
+    ],
+    "commonMistakes": [
+      "Running a t-test on per-session values when the randomisation unit is the user.",
+      "Assuming the ratio is normal because the sample is large, without checking the variance method."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-stats-054",
+    "category": "statistics",
+    "question": "When would you not run an A/B test?",
+    "whatInterviewerIsTesting": "Judging whether an experiment is worth running at all.",
+    "modelAnswer": "I would not run an A/B test when traffic is too low to detect a useful effect. For example, 500 visitors a month cannot detect a 3 percent lift in a reasonable time. I would also skip it for changes that must reach everyone, such as a regulatory notice, a legal fix, or a critical bug. Another case is an irreversible change, or a metric that takes a year to show up. In those cases, I would use a before-and-after comparison with a clear caveat, a holdout, or a qualitative study, and I would say the limits out loud.",
+    "followUps": [
+      "How do you calculate the minimum detectable effect before deciding?",
+      "What would you do for a long-term metric like customer lifetime value?"
+    ],
+    "commonMistakes": [
+      "Running a test on a tiny sample and calling a null result proof of no effect.",
+      "Testing a change that is legally required, as if the team could choose not to ship it."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-stats-055",
+    "category": "statistics",
+    "question": "What is overfitting and underfitting? How would you spot them?",
+    "whatInterviewerIsTesting": "Using train and test errors to judge a model.",
+    "modelAnswer": "**Overfitting** means the model learns noise in the training data, so it does well on training data and poorly on new data. **Underfitting** means the model is too simple, so it does poorly on both. I spot them by comparing training and test errors. For example, a churn model with 80 features built on 500 customers may reach 98 percent on training and 62 percent on test. I would use cross-validation, fewer features, or a simpler model, and I would check the errors on a holdout period.",
+    "followUps": [
+      "How does cross-validation help with overfitting?",
+      "Why can a large model still work well with millions of rows?"
+    ],
+    "commonMistakes": [
+      "Judging a model only on the data it was trained on.",
+      "Thinking a more complex model is always better."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-stats-056",
+    "category": "statistics",
+    "question": "What is multicollinearity, and how does it affect a regression model?",
+    "whatInterviewerIsTesting": "Explaining unstable coefficients without overstating the problem.",
+    "modelAnswer": "**Multicollinearity** happens when two or more predictors are strongly correlated, such as TV spend and digital spend that always rise together. The model can still predict well, but the individual coefficients become unstable, with large standard errors and sometimes the wrong sign. I check the variance inflation factor (VIF), and I treat VIF above about 5 to 10 as a warning. I can drop one of the predictors, combine them, or use ridge regression. If the goal is prediction, I often leave it alone.",
+    "followUps": [
+      "Does multicollinearity affect predictions or only the coefficients?",
+      "How would you calculate VIF in Python?"
+    ],
+    "commonMistakes": [
+      "Dropping a variable just because it has a correlation of 0.4.",
+      "Interpreting each coefficient as if the others did not exist."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-stats-057",
+    "category": "statistics",
+    "question": "Explain logistic regression for churn. What do odds and odds ratios mean in plain words?",
+    "whatInterviewerIsTesting": "Interpreting a classification model without confusing odds and probability.",
+    "modelAnswer": "Logistic regression predicts a probability by passing a linear score through a sigmoid curve. The model says the log of the odds of churn is b0 + b1 x 1 + b2 x 2. **Odds** are p / (1 - p), so a 20 percent churn chance means odds of 0.25. An **odds ratio** is exp(b). If the coefficient for support tickets is 0.4, exp(0.4) = 1.49, so each extra ticket raises the odds of churn by about 49 percent. It does not mean the probability rises by 49 percent, especially when the base probability is high.",
+    "followUps": [
+      "Why can a doubled odds not mean a doubled probability?",
+      "How would you check the calibration of the churn model?"
+    ],
+    "commonMistakes": [
+      "Saying an odds ratio of 1.49 means a 49 percent higher probability.",
+      "Interpreting a coefficient without asking whether the feature is on a similar scale."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-stats-058",
+    "category": "statistics",
+    "question": "For a fraud flag model, when do you care more about precision, and when about recall?",
+    "whatInterviewerIsTesting": "Linking model metrics to business costs and the cost of false alarms.",
+    "modelAnswer": "**Precision** is the share of flagged cases that are real fraud: TP / (TP + FP). **Recall** is the share of real fraud that gets flagged: TP / (TP + FN). Suppose 1,000 transactions are flagged, 300 are real fraud, and 500 real frauds exist in total. Precision is 30 percent and recall is 60 percent. When blocking a payment causes a lot of customer anger, I favour precision. When a missed fraud costs a lot, as with large transfers, I favour recall. Accuracy is misleading here, because if fraud is 0.5 percent of traffic, a model that never flags anything is 99.5 percent accurate.",
+    "followUps": [
+      "How would you choose the threshold between precision and recall?",
+      "What extra review step could balance the two?"
+    ],
+    "commonMistakes": [
+      "Quoting accuracy for a rare-event model.",
+      "Choosing a threshold without looking at the cost of each error type."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-stats-059",
+    "category": "statistics",
+    "question": "Ad spend and sales have a correlation of 0.8. What would you check next before recommending more spend?",
+    "whatInterviewerIsTesting": "Moving from correlation to a causal check with a sensible plan.",
+    "modelAnswer": "A correlation of 0.8 is strong, but it does not show that ad spend causes sales. Both may rise in festive months, so seasonality is a likely confounder. I would plot the two series over time, check for outliers, and test a lag, since ads may work a week later. Then I would run a holdout or geo test, where some cities get less spend, to see the real effect. Only after that would I recommend more spend, with the expected return and a range.",
+    "followUps": [
+      "How would you control for seasonality in a regression?",
+      "What is a geo holdout test?"
+    ],
+    "commonMistakes": [
+      "Telling the team that the correlation proves the ads work.",
+      "Recommending a budget increase from one scatter plot."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-stats-060",
+    "category": "statistics",
+    "question": "How would you explain a confidence interval to a CEO who wants one number?",
+    "whatInterviewerIsTesting": "Communicating uncertainty simply and avoiding a wrong interpretation.",
+    "modelAnswer": "I would give the estimate first, then the range. For example, I would say: average order value is about Rs 412, and the range we are fairly confident about is Rs 398 to Rs 426. I would avoid saying there is a 95 percent chance the true value is inside this range, because that is not what a confidence interval means in the usual method. I would add a short line on what the range means for the decision, such as whether a Rs 20 rise is likely real. Then I would stop, so the CEO can ask questions.",
+    "followUps": [
+      "How would you explain why the interval is wider for a small sample?",
+      "What would you say if the CEO asks whether the number is final?"
+    ],
+    "commonMistakes": [
+      "Giving only the point estimate and no range.",
+      "Using too much statistical language, such as standard errors and p-values, in a CEO summary."
+    ],
+    "difficulty": "medium"
+  }
+]

@@ -1,0 +1,402 @@
+[
+  {
+    "id": "interview-hybrid-001",
+    "category": "hybrid",
+    "question": "How would you explain an analysis to a non-technical manager in two minutes?",
+    "whatInterviewerIsTesting": "Leads with the answer and the decision, and keeps the method short.",
+    "modelAnswer": "I start with the answer, such as 'Repeat orders fell 8 percent in Chennai after the price change'. Then I give the one number that matters and what it means for the next step. I skip the SQL and the model details unless the manager asks. For example, a student on a bike rental demand project used this format: one answer, one chart, one recommendation. My manager then asked only about the recommendation, which shows the message landed. I keep the method for a second meeting, in case someone wants the detail.",
+    "followUps": [
+      "What do you do if the manager asks how you got the number?",
+      "How do you handle a manager who wants only a yes or no?"
+    ],
+    "commonMistakes": [
+      "Walking through the query steps before saying what the result is.",
+      "Giving the answer with no number, so the manager cannot judge its size."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-hybrid-002",
+    "category": "hybrid",
+    "question": "How do you build a one-slide summary of a long analysis?",
+    "whatInterviewerIsTesting": "Chooses one headline, one chart and a clear ask, and cuts the rest to an appendix.",
+    "modelAnswer": "I write the headline first as a full sentence with a number, then choose one chart that proves it. I add a single line for the risk or caveat and one line for the next step. The rest of the analysis goes into an appendix or a backup file. For example, in a course project on hostel mess feedback, my first draft had six charts. I cut it to one bar chart of average rating by week, with a headline and a next step, and the team understood it in under a minute. I test the slide by asking a friend to explain it back to me.",
+    "followUps": [
+      "How do you choose which chart goes on the slide?",
+      "What do you do when the stakeholder wants every detail on the slide?"
+    ],
+    "commonMistakes": [
+      "Putting every chart from the analysis on one slide.",
+      "Writing a topic title, such as 'Sales analysis', instead of a headline with a finding."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-hybrid-003",
+    "category": "hybrid",
+    "question": "A manager wants a number that the data does not support. What do you do?",
+    "whatInterviewerIsTesting": "Holds the line on accuracy while staying helpful, and offers a supportable alternative.",
+    "modelAnswer": "First I would ask why the manager wants that number, because the goal often has a better answer. I would show what the data does support, such as a range or the trend, with the sample and the date. I would explain in one sentence why the requested figure cannot be shown, for example that the target includes unpaid orders. Then I would offer a clear way to get the figure, such as a definition change or a new data pull. In a college project, a teammate wanted a 90 percent success rate that the survey could not show, so we reported the real 72 percent with a note on sample size.",
+    "followUps": [
+      "What do you say if the manager still insists on the number?",
+      "When would you escalate this to a senior leader?"
+    ],
+    "commonMistakes": [
+      "Quietly reporting the requested number to avoid conflict.",
+      "Refusing outright with no alternative or no number to offer."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hybrid-004",
+    "category": "hybrid",
+    "question": "You have to give a sales head bad news using data. How do you do it?",
+    "whatInterviewerIsTesting": "Delivers bad news clearly, with the evidence and a path forward, without blaming people.",
+    "modelAnswer": "I would first tell the main point in one sentence, such as 'Q3 collections are 12 percent below plan in three cities'. Then I would show the chart that proves it, and the two causes the data points to, such as delayed invoices and a drop in repeat customers. I would not hide the size of the gap, and I would say what I am not yet sure about. Last, I would propose two next steps with owners and dates. For example, a student on a fee payments project used this order with the finance head, and the team agreed on reminders the same week. The aim is to move to a fix, not to find fault.",
+    "followUps": [
+      "What if the sales head asks you to delay the report?",
+      "How do you handle a case where the cause is still unknown?"
+    ],
+    "commonMistakes": [
+      "Burying the bad number under many charts before saying it.",
+      "Blaming a named team instead of describing the pattern in the data."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hybrid-005",
+    "category": "hybrid",
+    "question": "How do you explain uncertainty, such as a margin of error, to business users who want one clear number?",
+    "whatInterviewerIsTesting": "Communicates a range plainly and explains how the range changes the decision.",
+    "modelAnswer": "I give the best estimate first, then the range, in plain words, such as 'about 4.1 lakh users, probably between 3.9 and 4.3 lakh'. I explain that the range comes from the sample size and the spread of the data. I also say whether the decision would change if the number were at the low end. For example, in a course project on survey results, the analyst showed that a 3-point gap was within the error margin, so the team did not claim a win. The team then ran a bigger test instead of changing the product. Business users accept a range when they can see what it means for the choice.",
+    "followUps": [
+      "How do you calculate a simple margin of error for a survey proportion?",
+      "What do you say when a stakeholder says the range is too wide to be useful?"
+    ],
+    "commonMistakes": [
+      "Dropping the range entirely, which makes a small gap look certain.",
+      "Using statistical terms such as confidence interval with no plain meaning."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hybrid-006",
+    "category": "hybrid",
+    "question": "A leader asks why customer churn rose last quarter, but the data points to three possible causes. How do you present this?",
+    "whatInterviewerIsTesting": "Separates evidence from guesses, ranks causes by data support, and proposes a test to settle it.",
+    "modelAnswer": "I would say that the data shows churn rose 15 percent, and that it is concentrated in customers who joined through one offer. I would list the three causes the data supports: the offer's end date, a delayed app update, and higher prices in two cities. For each cause, I would show what the data does and does not prove. I would then propose a quick test, such as keeping the offer for one city, to see which cause matters most. In a college project on gym membership, we did the same and found that only one cause held when we split the group. The message is clear: here is what we know, and here is how we will find out.",
+    "followUps": [
+      "How would you rank the three causes if the evidence is equal?",
+      "What if the leader asks you to pick one cause today?"
+    ],
+    "commonMistakes": [
+      "Presenting one cause as the answer when the data supports several.",
+      "Mixing guesses into the chart so the leader cannot tell evidence from opinion."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-hybrid-007",
+    "category": "hybrid",
+    "question": "You need a column for a report, but it has many missing values. What do you do before you share the report?",
+    "whatInterviewerIsTesting": "Measures the gap, decides a clear rule, and states the impact on the result.",
+    "modelAnswer": "First I would measure how many values are missing and whether they are random or clustered in one group. I would check the source with the data owner and see if the blank means zero, not known or not applicable. In SQL, I can count nulls with a simple SUM of CASE WHEN column IS NULL THEN 1 ELSE 0 END. Then I would choose a rule, such as excluding those rows or showing them as a separate group, and write it on the report. For example, in a college project on student attendance, 9 percent of rows had no roll number, so I reported those separately. I always note the share of missing values on the page.",
+    "followUps": [
+      "When would you fill missing values with the average?",
+      "What would you say if the owner says the blanks are unknown and cannot be fixed?"
+    ],
+    "commonMistakes": [
+      "Filling blanks with zero without checking what zero means.",
+      "Sharing the report without mentioning the missing share at all."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-hybrid-008",
+    "category": "hybrid",
+    "question": "You find a bug in a report that was already sent to the CEO. What do you do?",
+    "whatInterviewerIsTesting": "Acts fast and openly: tells the owner, sizes the impact, sends a corrected version and fixes the cause.",
+    "modelAnswer": "I would tell my manager at once, before the CEO reads it again, with the size of the error and the figures affected. Then I would confirm the cause with a quick check, such as a join that doubled one region's sales. I would send a short correction to the same people, with the old and new numbers side by side and one line on why. After that, I would add a check to the pipeline, such as a row count test, so the same error would be caught next time. For example, a student on a team project found a double count in a shared file and flagged it the same day. Speed and clarity protect trust more than a perfect first report.",
+    "followUps": [
+      "How do you decide whether to send the correction to the CEO directly or through your manager?",
+      "What do you do if the error changed a decision that has already been made?"
+    ],
+    "commonMistakes": [
+      "Waiting to see if anyone notices before saying anything.",
+      "Blaming the data team in the correction instead of owning the fix and the check."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-hybrid-009",
+    "category": "hybrid",
+    "question": "Two dashboards show different totals for the same month. How do you find out why?",
+    "whatInterviewerIsTesting": "Works through a systematic reconciliation: filters, grain, joins and definitions.",
+    "modelAnswer": "I would check the filters first, such as date range, time zone and status, because they are the most common cause. Next I would compare the grain: one dashboard may count orders and the other order lines. I would then run the same total from the source table and see which dashboard matches. For example, in a course project, one chart counted cancelled orders and the other did not, and the gap was exactly the cancellations. I write the reason down and agree one definition with both owners. The fix is one shared metric, not a note that the numbers differ.",
+    "followUps": [
+      "What SQL would you use to compare the two totals by day?",
+      "How do you decide which dashboard is the right one?"
+    ],
+    "commonMistakes": [
+      "Picking the dashboard that looks more correct without checking the source.",
+      "Blaming the tool instead of checking the filter and grain."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hybrid-010",
+    "category": "hybrid",
+    "question": "The source data for your weekly report is due on Monday but arrives on Wednesday. What do you do?",
+    "whatInterviewerIsTesting": "Manages the deadline with clear communication and a flagged, partial or deferred output.",
+    "modelAnswer": "I would tell the stakeholder today that the data is late, and when I expect it. I would ask whether a partial report with last week's data and a clear label is useful, or whether they can wait. I would prepare the report logic now on last week's data, so the final run takes minutes on Wednesday. I would also set an alert so I know the moment the file lands. For example, a student on a reporting project used this approach, and the manager accepted a one-day delay with a note. Stakeholders prefer a known delay to a surprise.",
+    "followUps": [
+      "What would you do if the data never arrives?",
+      "How do you check the late data before publishing it?"
+    ],
+    "commonMistakes": [
+      "Waiting silently until Wednesday and then sending a report with no notice.",
+      "Publishing the partial data without a label that says it is partial."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hybrid-011",
+    "category": "hybrid",
+    "question": "How do you validate a new SQL query before you trust its output for a decision?",
+    "whatInterviewerIsTesting": "Uses sanity checks, a small known case and an independent total to test the logic.",
+    "modelAnswer": "I start by checking the row count against the source, and I check that the key is unique after the joins. Then I pick one customer or one store that I know well, and I trace the numbers by hand. I compare the total with a simple independent query, such as a sum straight from the raw table. I also check that the totals look plausible for the size of the business. For example, in a college project on canteen sales, a join doubled the totals for one item, and the sample check caught it. I only share the number after these checks pass.",
+    "followUps": [
+      "Which check would catch a join that multiplies rows?",
+      "How do you test a query that uses a date window?"
+    ],
+    "commonMistakes": [
+      "Trusting the query because it runs without errors.",
+      "Checking only the total without checking the row count or a single known case."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hybrid-012",
+    "category": "hybrid",
+    "question": "A KPI changed its definition last month without notice, and now the trend looks different. How do you decide what to show?",
+    "whatInterviewerIsTesting": "Keeps the metric honest by showing both definitions, a note and a plan to align the history.",
+    "modelAnswer": "I would confirm the change with the metric owner and get the old and new definitions in writing. I would then recalculate the last six months under the new definition, so the trend is comparable. On the dashboard, I would show both lines for one period, with a note on the date of the change. I would not hide the old numbers, because past reports used them. In a course project on attendance, we restated history the same way and the trend story changed in a useful way. I would ask for the definition to be stored in one place, so future changes are visible.",
+    "followUps": [
+      "How do you restate history when the old data is not available?",
+      "Who should approve a KPI definition change?"
+    ],
+    "commonMistakes": [
+      "Comparing the new KPI with old numbers without any note.",
+      "Choosing one definition silently and not telling the users."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-hybrid-013",
+    "category": "hybrid",
+    "question": "A stakeholder sends a vague request such as 'make the sales report better'. What do you do first?",
+    "whatInterviewerIsTesting": "Turns a vague ask into a specific question with a user, a decision and a deadline.",
+    "modelAnswer": "I would ask what decision the report should support and who will use it. I would ask what 'better' means to them, such as faster, simpler, or with a new metric. I would also check how often they use it and what they did with the last version. I write the answer as one sentence and confirm it before I start. In a college project, a vague request for a 'better' attendance view became a clear need for a weekly list of students below 75 percent. The clear version took half an hour to agree and saved days of rework.",
+    "followUps": [
+      "What if the stakeholder does not know what they want?",
+      "How would you show a draft to get faster feedback?"
+    ],
+    "commonMistakes": [
+      "Starting to build before the decision and the user are clear.",
+      "Asking many questions at once, which the stakeholder finds tiring."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-hybrid-014",
+    "category": "hybrid",
+    "question": "Three stakeholders each want their report first, and the team can only do one this week. How do you decide?",
+    "whatInterviewerIsTesting": "Prioritises using business impact and deadlines, and makes the trade-off visible to the people who asked.",
+    "modelAnswer": "I would list each request with its decision, its deadline and the cost of a delay. I would ask my manager to rank them if the impact is close, because that is a business call, not mine. I would tell the other two stakeholders the new date for their work, so nobody is surprised. For example, in a course project with three clubs asking for event data, we ranked by the date of their next planning meeting. Each club knew its date, and no one felt ignored. I avoid choosing silently based on who asks loudest.",
+    "followUps": [
+      "What if two requests have the same deadline?",
+      "How do you say no to a request that is low impact?"
+    ],
+    "commonMistakes": [
+      "Picking the easiest request first without telling the others.",
+      "Letting the most senior person decide without checking the impact."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hybrid-015",
+    "category": "hybrid",
+    "question": "How do you handle scope creep when a project grows halfway through?",
+    "whatInterviewerIsTesting": "Keeps the original goal, logs new asks, and agrees a phase two instead of silently expanding.",
+    "modelAnswer": "I would restate the original goal and the agreed deadline, then list the new requests as one document. For each request, I would estimate the time and say what it would delay. The stakeholder then decides which items go in this version and which go in a second phase. I would not quietly add the work, because that would miss the deadline and make the first version harder to check. In a college project, a team asked for three extra charts in week four, and we moved two to phase two with the team's agreement. The first deliverable shipped on time.",
+    "followUps": [
+      "How do you estimate how long a new request will take?",
+      "What do you do if the stakeholder insists everything is urgent?"
+    ],
+    "commonMistakes": [
+      "Adding every request without checking the effect on the deadline.",
+      "Refusing all new requests and losing the trust of the stakeholder."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hybrid-016",
+    "category": "hybrid",
+    "question": "The deadline is tomorrow, but you have not checked the numbers fully. Do you send a fast answer or wait?",
+    "whatInterviewerIsTesting": "Balances speed and accuracy by labelling the confidence and checking the parts that matter most.",
+    "modelAnswer": "I would check the numbers that drive the decision first, such as the total and the main segment. If those pass, I would send the answer with a clear label that the review of the rest is in progress. I would give a time for the full check, such as tomorrow noon. If the key numbers do not pass, I would tell the stakeholder now and ask for more time. For example, a student sent a draft with two checks done and the full check the next morning, and the final numbers matched. Stakeholders accept a labelled draft more than a late answer.",
+    "followUps": [
+      "What would make you refuse to send any number before the check?",
+      "How do you label a draft number clearly?"
+    ],
+    "commonMistakes": [
+      "Sending an unchecked number with no label, as if it were final.",
+      "Waiting until the last minute and missing the deadline with no warning."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hybrid-017",
+    "category": "hybrid",
+    "question": "You are one analyst with a backlog of twenty requests. How do you manage it?",
+    "whatInterviewerIsTesting": "Uses a visible backlog, clear intake rules and regular reprioritisation with stakeholders.",
+    "modelAnswer": "I would put every request in one shared list with the owner, the decision it supports and the due date. I would group similar requests, because one clean data table can answer five of them. I would review the list with the stakeholders each week, so they can see what is next and what is waiting. For example, in a course project with a small club team, we reduced twenty asks to six real tasks by merging duplicates. The list also made it clear when a new request would push another one out. A visible queue reduces pressure more than working late.",
+    "followUps": [
+      "How do you stop new requests arriving by chat, outside the list?",
+      "What do you do with requests that have no owner?"
+    ],
+    "commonMistakes": [
+      "Keeping the backlog in your head, so requests get lost.",
+      "Accepting every request without asking what decision it supports."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-hybrid-018",
+    "category": "hybrid",
+    "question": "You need to learn a new BI tool in a week for a project. How do you go about it?",
+    "whatInterviewerIsTesting": "Learns by building a small real task, uses official docs and asks for help early.",
+    "modelAnswer": "I would start with the official tutorial for the basic data model and the two or three functions I need most. Then I would rebuild a small report I already know the answer to, so I can check my work. I would keep a short note of the steps that confused me and ask a colleague or a forum after one hour of being stuck. For example, when a student learned a dashboard tool in a course project, the first step was to rebuild last semester's chart. By day five I could build the real report without help. The key is a known answer to check against.",
+    "followUps": [
+      "How do you check that the new tool gives the same numbers as the old one?",
+      "What would you do if the tool does not support a calculation you need?"
+    ],
+    "commonMistakes": [
+      "Watching many videos without building anything.",
+      "Being stuck for days without asking for help."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-hybrid-019",
+    "category": "hybrid",
+    "question": "You need a table that the data engineers have not built yet. How do you work with them?",
+    "whatInterviewerIsTesting": "Writes a clear, specific request with the grain and the use case, and builds a temporary version to show the need.",
+    "modelAnswer": "I would write a short request that names the table, its grain, the columns and the reports that need it. I would attach a sample query that shows what I would do today without the table, so the engineer sees the effort. In the meantime, I could build a temporary extract from the raw data, clearly marked as temporary. I would check with the engineer on the agreed definition, such as what counts as an active order. In a course project, this approach got the team a clean table in two days instead of two weeks of back and forth. Clear requests save everyone time.",
+    "followUps": [
+      "What do you do if the engineers say the table will take a month?",
+      "How do you check that the temporary extract matches the final table later?"
+    ],
+    "commonMistakes": [
+      "Asking for a table with no grain or use case, which leads to rework.",
+      "Building a long-term report on a temporary extract without saying so."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hybrid-020",
+    "category": "hybrid",
+    "question": "What do you document in an analysis so that someone else can rerun it next year?",
+    "whatInterviewerIsTesting": "Writes down the source, the definitions, the filters and the checks, not just the final query.",
+    "modelAnswer": "I document the source tables and the date they were pulled, the definition of each metric, and every filter with its reason. I keep the final query in version control with a short header that explains the purpose. I also record the checks I ran and the numbers they produced, so the next person can compare. For example, in a course project, a student wrote a one-page readme for the survey analysis, and a classmate reran it in an hour without asking questions. Good documentation is a gift to your future self.",
+    "followUps": [
+      "How much detail is too much in a readme?",
+      "Where would you store the documentation in a team?"
+    ],
+    "commonMistakes": [
+      "Documenting only the final number, so nobody can see how it was made.",
+      "Writing a long document that nobody opens, with no quick start."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hybrid-021",
+    "category": "hybrid",
+    "question": "A colleague's Git merge overwrote your recent query changes. How do you recover, and how do you prevent it next time?",
+    "whatInterviewerIsTesting": "Recovers safely from history, then uses branches, pull requests and review to prevent a repeat.",
+    "modelAnswer": "I would first check the Git history with git log and find the last commit that had my changes. I would restore those changes on a new branch, and compare the file to make sure nothing else was lost. Then I would ask the colleague what happened, without blaming, so we learn the cause. To prevent it, we work on separate branches and open a pull request for each change. The reviewer checks the diff before merging, and the main branch stays protected. In a team project, this rule stopped the same problem from happening again. Recovery is quick when the history is clean.",
+    "followUps": [
+      "What is the difference between a merge and a rebase in this case?",
+      "What would you put in a pull request description for a SQL change?"
+    ],
+    "commonMistakes": [
+      "Force pushing over the shared branch to fix the problem quickly.",
+      "Blaming the colleague in the team chat instead of fixing the process."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-hybrid-022",
+    "category": "hybrid",
+    "question": "What counts as personal data in a customer dataset, and what do you do with it in an analysis?",
+    "whatInterviewerIsTesting": "Identifies direct and indirect identifiers and uses only what the analysis needs.",
+    "modelAnswer": "Personal data includes direct identifiers such as name, phone number, email, PAN and Aadhaar number. It also includes indirect ones, such as a pin code plus a date of birth, which can identify a person when combined. In an analysis, I use only the fields the question needs, and I mask or remove the rest. I do not copy raw personal data into my own files or chat messages. For example, in a course project, a student used age group instead of date of birth, and the result was the same. Less personal data means less risk.",
+    "followUps": [
+      "Why is a pin code plus date of birth risky even without a name?",
+      "What would you do if you accidentally saved a file with phone numbers?"
+    ],
+    "commonMistakes": [
+      "Thinking data is safe because the name column was removed.",
+      "Saving a full customer export to a personal laptop for convenience."
+    ],
+    "difficulty": "easy"
+  },
+  {
+    "id": "interview-hybrid-023",
+    "category": "hybrid",
+    "question": "A product manager asks you to show only the good months in a trend chart for the leadership review. What do you do?",
+    "whatInterviewerIsTesting": "Refuses cherry-picking, keeps the full period, and offers an honest way to show the story.",
+    "modelAnswer": "I would explain that the full trend must be shown, because hiding months would mislead the leadership team. I would offer to show the full period with the good months highlighted and the reason for the dip in a note. If the product manager wants to focus on a recent win, I can show a separate chart with the same scale and the date range labelled. I would keep the full data in the backup file, so anyone can check. In a college project, a similar request was resolved this way, and the presentation was still positive and accurate. Honesty and a good story can go together.",
+    "followUps": [
+      "What do you do if the product manager insists on the short chart?",
+      "How do you label a chart that shows a selected period?"
+    ],
+    "commonMistakes": [
+      "Quietly dropping the weak months to avoid conflict.",
+      "Refusing the request without offering any honest way to highlight the win."
+    ],
+    "difficulty": "medium"
+  },
+  {
+    "id": "interview-hybrid-024",
+    "category": "hybrid",
+    "question": "Your credit scoring model gives lower scores to applicants from one region. How do you check whether the model is fair?",
+    "whatInterviewerIsTesting": "Checks group-level error rates and proxy variables, and escalates the decision rather than deciding alone.",
+    "modelAnswer": "I would first compare approval and error rates across the regions, and check whether the gap remains after I account for income and repayment history. I would look for proxy variables, such as pin code, that can stand in for caste or religion, even if those are not in the model. I would test whether applicants with similar repayment records get similar scores in each region. If the gap is real and unexplained, I would escalate to the risk head and the compliance team with the evidence. I would not change the model myself without that review. Fairness checks are a shared decision, not an analyst's sole call.",
+    "followUps": [
+      "What is a proxy variable, and how would you find one?",
+      "Would removing the region column from the model fix the problem?"
+    ],
+    "commonMistakes": [
+      "Saying the model is fair because the region column was removed.",
+      "Changing the model alone and not telling the risk team why."
+    ],
+    "difficulty": "hard"
+  },
+  {
+    "id": "interview-hybrid-025",
+    "category": "hybrid",
+    "question": "A colleague asks you to share a customer list with a partner for a campaign, and the list includes phone numbers. How do you handle this?",
+    "whatInterviewerIsTesting": "Checks consent and purpose, minimises the data shared, and routes the decision to the data protection owner.",
+    "modelAnswer": "I would ask what the campaign needs and whether the partner needs phone numbers at all. I would check whether customers gave consent for this kind of sharing, as the DPDP Act expects a clear purpose. If sharing is allowed, I would send only the fields needed, with a secure transfer and a signed data sharing agreement. I would then escalate the request to the data protection or legal owner before anything leaves the company. In a college project on a shared club list, we did the same and removed all personal fields except the event code. Saying no to a risky share is part of the job.",
+    "followUps": [
+      "What is data minimisation, and how does it apply here?",
+      "What do you do if the campaign deadline is tomorrow and the approval is slow?"
+    ],
+    "commonMistakes": [
+      "Sending the full list because the colleague asked and the deadline is close.",
+      "Deciding alone that the sharing is allowed, with no consent check or owner sign-off."
+    ],
+    "difficulty": "hard"
+  }
+]
