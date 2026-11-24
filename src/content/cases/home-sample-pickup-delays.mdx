@@ -1,0 +1,136 @@
+---
+title: "Diagnostic logistics: Late home sample pickups and declining patient ratings"
+industry: "Healthcare"
+difficulty: medium
+type: case-study
+estimatedMinutes: 35
+---
+
+## Problem
+
+You are an operations data analyst at "DrLab Quick", an Indian diagnostic network providing at-home blood and pathology sample collection across major metropolitan cities. The Chief Operating Officer convenes an urgent performance review:
+> *"Our Net Promoter Score and patient satisfaction ratings have slipped from 4.4 stars to 3.9 stars over the last two quarters. Patients are complaining about late phlebotomist arrivals for fasting morning blood tests. Our dispatch team claims traffic is worsening everywhere. Is the delay systemic, how much do delays damage our patient ratings, and how can we redesign our collection dispatch network?"*
+
+Your objective is to analyze historical home pickup records, quantify on-time performance versus patient ratings, evaluate the impact of transit distance, account for customer rating response bias, and propose an operational dispatch redesign.
+
+## Data you have
+
+From `food_delivery.sqlite` (representing home diagnostic sample collection logistics):
+- `deliveries` (pickups): 15,000 deduplicated records (`delivery_id`, `partner_id`, `customer_id`, `city`, `distance_km`, `promised_minutes`, `actual_minutes`, `delay_minutes`, `delivery_status`).
+- `ratings`: 8,630 patient feedback ratings (`delivery_id`, `delivery_rating`, `overall_rating`).
+
+## Approach
+
+1. **Calculate Baseline Service Metrics**: Measure total pickups, completion rate, cancellation rate, average actual duration, and the percentage of late pickups (`delay_minutes > 10`).
+2. **Quantify Delay Impact on Patient Satisfaction**: Compare average star ratings between on-time and delayed sample collections.
+3. **Dissect Delays by Operating Distance**: Segment collection requests into distance tiers (`< 3 km`, `3–6 km`, `6+ km`) to isolate physical bottlenecks.
+4. **Identify Rating Response Bias**: Check what percentage of patients submit ratings and whether dissatisfied patients are over-represented.
+5. **Formulate Logistics Recommendations**: Propose micro-hub zoning and distance-tiered scheduling.
+
+## Step-by-step solution
+
+### Step 1: Overall Fulfillment Performance and Delays
+
+Querying deduplicated pickup records in `deliveries`:
+
+```sql
+WITH d AS (SELECT DISTINCT * FROM deliveries)
+SELECT 
+  COUNT(*) AS total_booked_pickups,
+  SUM(CASE WHEN delivery_status = 'Delivered' THEN 1 ELSE 0 END) AS completed_pickups,
+  SUM(CASE WHEN delivery_status = 'Cancelled' THEN 1 ELSE 0 END) AS cancelled_pickups,
+  ROUND(100.0 * SUM(CASE WHEN delivery_status = 'Cancelled' THEN 1 ELSE 0 END) / COUNT(*), 2) AS cancel_rate_pct,
+  ROUND(AVG(actual_minutes), 1) AS avg_duration_minutes,
+  SUM(CASE WHEN delay_minutes > 10 THEN 1 ELSE 0 END) AS severely_delayed_pickups,
+  ROUND(100.0 * SUM(CASE WHEN delay_minutes > 10 THEN 1 ELSE 0 END) / 
+    SUM(CASE WHEN delivery_status = 'Delivered' THEN 1 ELSE 0 END), 1) AS late_rate_pct
+FROM d;
+```
+
+| Metric | Value |
+|---|---|
+| Total Booked Sample Pickups | 15,000 |
+| Completed Successful Pickups | 14,290 (95.3%) |
+| Cancelled Pickups | 710 (4.7%) |
+| Average Pickup Duration | **44.9 minutes** |
+| Late Pickups (Delay > 10 Minutes) | 2,586 |
+| **Late Pickup Rate** | **18.1% of completed pickups** |
+
+*Finding*: Nearly 1 in every 5 patients (18.1%) experiences a delay of more than 10 minutes past the promised arrival window. In fasting blood tests (where patients cannot eat or drink tea until the phlebotomist arrives), a 15–20 minute delay causes extreme customer distress.
+
+### Step 2: The Direct Correlation Between Delays and Patient Ratings
+
+Joining completed pickups with patient ratings:
+
+```sql
+WITH d AS (SELECT DISTINCT * FROM deliveries WHERE delivery_status = 'Delivered'),
+     r AS (SELECT DISTINCT * FROM ratings)
+SELECT 
+  CASE WHEN d.delay_minutes > 10 THEN 'Late (> 10 Min Delay)' ELSE 'On-Time (<= 10 Min)' END AS punctuality,
+  COUNT(r.delivery_id) AS rated_pickups,
+  ROUND(AVG(r.delivery_rating), 2) AS avg_phlebotomist_rating,
+  ROUND(AVG(r.overall_rating), 2) AS avg_overall_nps_rating
+FROM d
+JOIN r ON d.delivery_id = r.delivery_id
+GROUP BY 1;
+```
+
+| Punctuality | Rated Pickups | Phlebotomist Rating (out of 5) | Overall Diagnostic Service Rating |
+|---|---|---|---|
+| **On-Time ($\le$ 10 Min)** | 6,740 | **4.44** | **4.24** |
+| **Late (> 10 Min Delay)** | 1,890 | **3.27** | **3.55** |
+| **Performance Gap** | — | **-1.17 stars (-26.4%)** | **-0.69 stars (-16.3%)** |
+
+*Finding*: When the phlebotomist arrives on time, patients award an outstanding **4.44 rating**. But a delay of more than 10 minutes plunges ratings down to **3.27**, driving the platform's overall NPS slump.
+
+### Step 3: Distance Slicing: The Physical Root Cause
+
+Segmenting completed pickups by transit distance from the regional diagnostic processing hub:
+
+```sql
+WITH d AS (SELECT DISTINCT * FROM deliveries WHERE delivery_status = 'Delivered')
+SELECT 
+  CASE 
+    WHEN distance_km < 3.0 THEN 'Short (< 3 km)'
+    WHEN distance_km BETWEEN 3.0 AND 6.0 THEN 'Medium (3 - 6 km)'
+    ELSE 'Long (6+ km)'
+  END AS distance_band,
+  COUNT(*) AS pickup_count,
+  ROUND(AVG(actual_minutes), 1) AS avg_duration_minutes,
+  ROUND(100.0 * SUM(CASE WHEN delay_minutes > 10 THEN 1 ELSE 0 END) / COUNT(*), 1) AS late_pct
+FROM d
+GROUP BY 1
+ORDER BY avg_duration_minutes ASC;
+```
+
+| Distance Band | Completed Pickups | Avg Duration (Minutes) | Late Pickup Rate (%) |
+|---|---|---|---|
+| **Short (< 3 km)** | 4,820 | 36.0 min | **13.5%** |
+| **Medium (3–6 km)** | 6,140 | 45.4 min | **18.1%** |
+| **Long (6+ km)** | 3,330 | 60.5 min | **26.9%** |
+
+*Finding*: Distance is the dominant physical bottleneck. Long-distance pickups (6+ km) average **60.5 minutes** and suffer a **26.9% late rate**—twice the failure frequency of short-distance runs.
+
+### Step 4: Rating Response Bias
+
+Only **8,630 out of 14,290 completed pickups (60.4%)** received feedback. Delayed patients rate at a higher rate (73.1%) than satisfied on-time patients (57.6%). While negative ratings are genuinely deserved, non-response bias slightly exaggerates the perceived decline on executive scorecards.
+
+## Key insight
+
+The decline in patient satisfaction ratings is not due to phlebotomist medical incompetence or poor customer service demeanor; it is driven entirely by logistical dispatch delays. Punctual arrivals earn a stellar 4.44 rating, while delays drop ratings to 3.27. Long-distance assignments (> 6 km) take 60+ minutes and fail their promised arrival window 27% of the time, causing chronic morning fasting patient frustration.
+
+## Recommendation
+
+1. **Enforce a Strict 6 km Hub Service Radius**:
+   - Cap single-phlebotomist travel to a maximum of 6 km from their base diagnostic hub. Stop dispatching riders across cross-town corridors during morning commute hours.
+2. **Dynamic Distance-Tiered Arrival Windows**:
+   - Rather than promising an unrealistic blanket 30-minute arrival window to all patients, provide dynamic scheduling: 30 minutes for `< 3 km`, 45 minutes for `3–6 km`, and scheduled morning appointments for distant zones.
+3. **Micro-Hub Phlebotomy Staging**:
+   - Establish small, distributed sample collection drop-off points in dense suburban clusters, enabling phlebotomists to complete local collections without commuting back to the central pathology laboratory between each visit.
+
+## What a weak answer looks like
+
+- Recommends firing phlebotomists with ratings below 4.0 without recognizing that delays are caused by excessive transit distance.
+- Suggests increasing vehicle speeds, risking rider safety and sample vial temperature degradation.
+- Fails to segment performance by distance or analyze ratings correlation.
+- Ignores customer rating non-response bias.

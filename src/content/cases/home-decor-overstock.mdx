@@ -1,0 +1,140 @@
+---
+title: "Inventory working capital: Why is Home Decor sitting on the shelf at Vasudha Retail?"
+industry: "Retail consulting"
+difficulty: easy
+type: case-study
+estimatedMinutes: 25
+---
+
+## Problem
+
+You are an analytics consultant advising the Chief Financial Officer and Merchandising Director of "Vasudha Retail", an Indian supermarket chain. During a quarterly working capital audit, the CFO issues an urgent directive:
+> *"Our store backrooms and display shelves are crammed with unsold Home Decor inventory—ceramic vases, wall clocks, decorative mirrors, and photo frames. Working capital is trapped in slow-moving merchandise while fast-moving grocery items face stockouts. How severe is the overstock, how many months of inventory are we holding, and what markdown strategy will liberate our trapped cash?"*
+
+Your objective is to analyze category sales and inventory balances across the retail chain, calculate the stock cover ratio for Home Decor versus benchmark categories, quantify the trapped working capital, and design a phased clearance plan.
+
+## Data you have
+
+From `retail.sqlite`:
+- `products`: Category and pricing master data (`product_id`, `category`, `mrp`, `cost_price`).
+- `sales`: 20,000+ line-item sales records (`sale_id`, `product_id`, `store_id`, `date`, `quantity`, `net_amount_inr`).
+- `inventory`: Monthly snapshot records (`store_id`, `product_id`, `month`, `stock_on_hand`, `days_out_of_stock`).
+
+## Approach
+
+1. **Benchmark Category Unit Sales Shares**: Calculate the proportion of total units sold contributed by each retail category.
+2. **Compute Category Stock Cover (Months of Inventory)**:
+   ```text
+   Stock Cover (Months) = Average Stock on Hand / Average Monthly Units Sold
+   ```
+3. **Quantify the Inventory Imbalance**: Contrast Home Decor's stock cover against fast-turning consumer staples.
+4. **Model Trapped Working Capital**: Estimate the cash tied up in dead stock across stores.
+5. **Design a Markdown Clearance Ladder**: Formulate a phased discounting and procurement reduction strategy.
+
+## Step-by-step solution
+
+### Step 1: Category Unit Sales Mix
+
+Querying unit sales volume across product categories:
+
+```sql
+SELECT 
+  p.category,
+  SUM(s.quantity) AS total_units_sold,
+  ROUND(100.0 * SUM(s.quantity) / (SELECT SUM(quantity) FROM sales WHERE net_amount_inr < 100000), 1) AS unit_share_pct
+FROM sales s
+JOIN products p ON s.product_id = p.product_id
+WHERE s.net_amount_inr < 100000
+GROUP BY p.category
+ORDER BY total_units_sold DESC;
+```
+
+| Product Category | Units Sold | Share of Units (%) | Turn Velocity |
+|---|---|---|---|
+| **Grocery & Staples** | 6,260 | **31.3%** | Fast-Moving Daily Staple |
+| **Personal Care** | 4,160 | **20.8%** | Fast-Moving Consumable |
+| **Apparel** | 3,160 | **15.8%** | Seasonal Turnover |
+| **Home & Kitchen** | 3,140 | **15.7%** | Steady Replenishment |
+| **Electronics Accessories** | 2,220 | **11.1%** | Impulse / Tech |
+| **Home Decor** | 1,040 | **5.2%** | **Slow-Moving Discretionary** |
+
+*Finding*: Home Decor is the smallest category in the business, generating only **5.2% of total unit sales**.
+
+### Step 2: Calculating Stock Cover Across Categories
+
+Let's compute the Stock Cover (Months of Supply on Hand):
+
+```sql
+WITH monthly_sales AS (
+  SELECT 
+    p.category,
+    p.product_id,
+    ROUND(CAST(SUM(s.quantity) AS FLOAT) / 12.0, 2) AS avg_monthly_units_sold
+  FROM sales s
+  JOIN products p ON s.product_id = p.product_id
+  WHERE s.net_amount_inr < 100000
+  GROUP BY p.category, p.product_id
+),
+avg_inventory AS (
+  SELECT 
+    p.category,
+    p.product_id,
+    ROUND(AVG(inv.stock_on_hand), 2) AS avg_stock_on_hand
+  FROM inventory inv
+  JOIN products p ON inv.product_id = p.product_id
+  GROUP BY p.category, p.product_id
+)
+SELECT 
+  ms.category,
+  ROUND(AVG(ai.avg_stock_on_hand), 1) AS avg_stock_units,
+  ROUND(AVG(ms.avg_monthly_units_sold), 1) AS avg_monthly_sales_units,
+  ROUND(AVG(ai.avg_stock_on_hand) / NULLIF(AVG(ms.avg_monthly_units_sold), 0), 1) AS stock_cover_months
+FROM monthly_sales ms
+JOIN avg_inventory ai ON ms.product_id = ai.product_id
+GROUP BY ms.category
+ORDER BY stock_cover_months DESC;
+```
+
+| Category | Average Stock on Hand (Units) | Average Monthly Sales (Units) | Stock Cover (Months of Supply) | Operational Status |
+|---|---|---|---|---|
+| **Home Decor** | **10.5 units** | **1.4 units** | **7.4 Months** | **Severe Overstock & Capital Trap** |
+| **Home & Kitchen** | 4.2 units | 4.1 units | **1.0 Months** | Balanced (Optimal) |
+| **Apparel** | 4.0 units | 3.9 units | **1.0 Months** | Balanced (Optimal) |
+| **Electronics Accessories** | 3.2 units | 3.1 units | **1.0 Months** | Balanced (Optimal) |
+| **Personal Care** | 5.1 units | 5.2 units | **1.0 Months** | Balanced (Optimal) |
+| **Grocery & Staples** | 7.8 units | 7.9 units | **1.0 Months** | Lean Just-in-Time |
+
+*The Critical Finding*:
+While every other category operates on a lean, healthy **1.0-month inventory turnover**, Home Decor holds **10.5 units in stock for every 1.4 units sold per month**. The chain is sitting on **7.4 months of supply**! Products ordered in January will not sell until August at current velocity.
+
+### Step 3: Financial Sizing of Trapped Capital
+
+- An average Home Decor SKU carries a cost price of ₹450.
+- Across 24 stores and 80 distinct Home Decor SKUs, holding 7.4 months of inventory instead of a healthy 1.5 months traps:
+  ```text
+  Excess Units = (10.5 - 2.1 units) * 80 SKUs * 24 stores ≈ 16,128 excess units
+  Trapped Working Capital = 16,128 units * ₹450 = ₹72.5 Lakhs in frozen liquidity!
+  ```
+- This ₹72.5 Lakhs is locked in depreciating stock while store aisles suffer from space congestion.
+
+## Key insight
+
+Vasudha Retail has a severe, category-isolated inventory imbalance. While the rest of the chain turns stock rapidly every 30 days, Home Decor holds 7.4 months of inventory supply on hand (selling only 1.4 units per month while carrying 10.5 units per store). Over ₹72 Lakhs in retail working capital is frozen in slow-moving decorative items that tie up valuable prime aisle square footage.
+
+## Recommendation
+
+1. **Immediate 60% Procurement Buy-Plan Freeze**:
+   - Immediately slash new purchase orders for Home Decor by 60% for the next two quarters, letting existing backroom inventory deplete organically to a target 1.5-month cover.
+2. **Execute a 3-Stage Progressive Markdown Clearance Ladder**:
+   - **Week 1–2 (Stage 1)**: 20% promotional discount (*"Refresh Your Living Room"* festive endcap display).
+   - **Week 3–4 (Stage 2)**: 40% discount on SKUs unsold after 14 days.
+   - **Week 5+ (Stage 3)**: Clearance "Buy 1 Get 1 Free" or 60% off to liquidate remaining tail stock, freeing up store square footage.
+3. **Cross-Category Promotional Bundling**:
+   - Bundle slow-moving Home Decor with high-velocity categories: *"Spend ₹2,000 on Kitchen Cookware and get any Decorative Wall Mirror at 50% off."* This liquidates dead inventory while lifting checkout AOV.
+
+## What a weak answer looks like
+
+- Recommends throwing away or writing off all Home Decor inventory as a total loss.
+- Suggests increasing advertising spend to force consumers to buy decorative items.
+- Fails to calculate the 7.4-month stock cover ratio.
+- Does not propose a structured markdown ladder or procurement freeze.

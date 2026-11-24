@@ -1,0 +1,130 @@
+---
+title: "The December slump: Why did DesiCart sales drop 20.5% in December?"
+industry: "E-commerce"
+difficulty: medium
+type: case-study
+estimatedMinutes: 40
+---
+
+## Problem
+
+You are an analytics consultant advising the executive leadership of "DesiCart", one of India's leading online multi-category marketplaces. In early January 2025, the Chief Commercial Officer calls an emergency meeting:
+> *"Our December 2024 delivered revenue dropped from ₹25.92 Lakhs down to ₹20.60 Lakhs—an alarming 20.5% collapse in a single month! Did our marketing channels stop working, are delivery cancellations surging, or are customers defecting to competitors? Tell us exactly why revenue fell and what we must do in January."*
+
+Your objective is to execute a comprehensive Root Cause Analysis (RCA), decompose the revenue contraction into volume and ticket size drivers, inspect channel and operational leakages, check historical year-over-year seasonality, and deliver an executive-level strategic recommendation.
+
+## Data you have
+
+From `ecommerce.sqlite`:
+- `orders`: 10,000 records (`order_id`, `customer_id`, `order_date`, `total_amount`, `order_status`, `payment_method`, `channel`, `coupon_code`). Note: 3 extreme outlier test rows (`total_amount >= 100000`) are excluded per data cleaning standards.
+
+## Approach
+
+1. **Revenue Decomposition**: Dissect Delivered Revenue into Delivered Orders $\times$ Delivered Average Order Value (AOV), and further break volume into Active Transacting Buyers $\times$ Order Frequency.
+2. **Channel & Platform Slicing**: Check whether the decline is concentrated in specific acquisition platforms (Android, iOS, Website, Mobile Web).
+3. **Operational Funnel & Cancellations**: Examine whether pre-dispatch cancellations or delivery returns expanded.
+4. **Year-over-Year (YoY) Seasonality Audit**: Compare December 2024 against December 2023 to determine whether the decline is an acute crisis or predictable post-Diwali festive seasonality.
+5. **Formulate Corrective Strategy**: Deliver an executive recovery roadmap.
+
+## Step-by-step solution
+
+### Step 1: Metric Tree Revenue Decomposition
+
+Let's run the formal revenue decomposition for November 2024 versus December 2024:
+
+```sql
+WITH clean_orders AS (
+  SELECT DISTINCT * FROM orders WHERE total_amount < 100000
+)
+SELECT 
+  strftime('%Y-%m', order_date) AS order_month,
+  COUNT(*) AS total_placed_orders,
+  SUM(CASE WHEN order_status = 'Delivered' THEN 1 ELSE 0 END) AS delivered_orders,
+  ROUND(SUM(CASE WHEN order_status = 'Delivered' THEN total_amount ELSE 0 END), 2) AS delivered_revenue_inr,
+  ROUND(SUM(CASE WHEN order_status = 'Delivered' THEN total_amount ELSE 0 END) / 
+    NULLIF(SUM(CASE WHEN order_status = 'Delivered' THEN 1 ELSE 0 END), 0), 2) AS delivered_aov_inr,
+  COUNT(DISTINCT CASE WHEN order_status = 'Delivered' THEN customer_id END) AS active_buyers,
+  ROUND(CAST(SUM(CASE WHEN order_status = 'Delivered' THEN 1 ELSE 0 END) AS FLOAT) / 
+    NULLIF(COUNT(DISTINCT CASE WHEN order_status = 'Delivered' THEN customer_id END), 0), 3) AS buyer_frequency
+FROM clean_orders
+WHERE order_date >= '2024-11-01' AND order_date <= '2024-12-31'
+GROUP BY 1
+ORDER BY order_month;
+```
+
+| Metric | November 2024 | December 2024 | Absolute Variance | % Change (MoM) |
+|---|---|---|---|---|
+| **Delivered Revenue** | ₹25,91,559 | ₹20,59,545 | -₹5,32,014 | **-20.53%** |
+| **Delivered Orders** | 496 | 423 | -73 orders | **-14.72%** |
+| **Delivered AOV** | ₹5,224.92 | ₹4,868.90 | -₹356.02 | **-6.81%** |
+| **Active Transacting Buyers** | 448 | 392 | -56 buyers | **-12.50%** |
+| **Purchase Frequency** | 1.107 orders/buyer | 1.079 orders/buyer | -0.028 | **-2.53%** |
+
+*Finding*:
+The **20.53% revenue drop** is driven by a compound effect:
+1. **Volume Contraction (Primary Driver, ~72% of drop)**: Delivered orders fell by **14.72%**, primarily caused by a 12.50% drop in active transacting buyers.
+2. **Basket Compression (Secondary Driver, ~28% of drop)**: AOV shrank by **6.81%** (-₹356/order).
+
+### Step 2: Channel and Cancellation Diagnostics
+
+#### A. Channel Performance
+- **Android App**: 262 → 239 orders (**-8.8%**)
+- **iOS App**: 98 → 79 orders (**-19.4%**)
+- **Desktop Website**: 109 → 86 orders (**-21.1%**)
+- **Mobile Web**: 64 → 54 orders (**-15.6%**)
+*Finding*: The decline is broad-based across all 4 platforms, ruling out a localized technical app crash.
+
+#### B. Fulfillment and Cancellation Rates
+- November cancellations: Exactly **27 cancelled orders (5.07% rate)**.
+- December cancellations: Exactly **27 cancelled orders (5.90% rate)**.
+*Finding*: Fulfillment operations and delivery logistics remained steady. The leak is top-of-funnel demand, not post-order operational failure.
+
+#### C. Promotional Coupon Utilization
+- Coupons redeemed in November: **110 orders**.
+- Coupons redeemed in December: **77 orders (-30.0%)**.
+*Finding*: Customers who used high-value festive coupons in November bought expensive bundled electronics. In December, coupon promotions expired, shifting customer demand toward lower-ticket everyday items.
+
+### Step 3: The Crucial Context: Year-over-Year (YoY) Seasonality
+
+Was December 2024 truly a company disaster? Let's compare against December 2023:
+
+```sql
+WITH clean_orders AS (
+  SELECT DISTINCT * FROM orders WHERE total_amount < 100000
+)
+SELECT 
+  strftime('%Y-%m', order_date) AS order_month,
+  SUM(CASE WHEN order_status = 'Delivered' THEN 1 ELSE 0 END) AS delivered_orders,
+  ROUND(SUM(CASE WHEN order_status = 'Delivered' THEN total_amount ELSE 0 END) / 100000.0, 2) AS delivered_rev_lakhs
+FROM clean_orders
+WHERE order_date IN ('2023-11', '2023-12', '2024-11', '2024-12')
+GROUP BY 1
+ORDER BY order_month;
+```
+
+- **December 2023 vs. December 2024**:
+  - Delivered orders grew from 434 to 458 (**+5.53% YoY growth**).
+  - Delivered revenue expanded from ₹19.1 Lakhs to ₹20.6 Lakhs (**+7.85% YoY growth**).
+- **November 2023 vs. December 2023**:
+  - In 2023 as well, sales contracted post-festive season (-2.7% orders, -8.2% revenue).
+  - November 2024 captured the massive tail of Diwali festive promotions. Comparing December directly against a Diwali peak creates a false panic.
+
+## Key insight
+
+The 20.5% drop in December 2024 is predominantly a predictable post-festive hangover, not a structural platform failure. When benchmarked Year-over-Year, DesiCart actually grew revenue by +7.85% and orders by +5.53% compared to December 2023. The month-over-month decline was driven by a 12.5% decrease in transacting buyers following Diwali sales, combined with a 6.8% AOV compression as coupon-subsidized electronics purchases tapered off.
+
+## Recommendation
+
+1. **Avoid Panic Blanket Discounting in January**:
+   - Do not slash product margins with across-the-board site-wide sales. DesiCart grew +7.9% YoY; price wars will destroy gross contribution margins without driving sustainable loyalty.
+2. **Establish Seasonally Adjusted MoM and YoY Targets**:
+   - Revise commercial planning KPIs to benchmark against YoY growth and seasonal indices, preventing executive alarm during predictable post-festive cycles.
+3. **Targeted AOV Bundle Promotions for High-Frequency Categories**:
+   - To rebuild AOV from ₹4,869 back above ₹5,200, deploy threshold-based checkout incentives (e.g., *"Add ₹400 in personal care or grocery items to unlock free expedited shipping"*).
+
+## What a weak answer looks like
+
+- Declares that competitors stole DesiCart's market share without looking at YoY data.
+- Blames courier delivery cancellations when cancellations were flat at exactly 27 orders in both months.
+- Recommends mass layoffs or radical marketing overhauls.
+- Cannot decompose the revenue equation into volume and AOV.

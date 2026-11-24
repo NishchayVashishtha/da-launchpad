@@ -1,0 +1,430 @@
+[
+  {
+    "id": "business-unitecon-001",
+    "module": "business",
+    "topic": "unitecon",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "The marketing finance director wants an audit of clean ad spend by channel. From distinct `campaigns` joined with distinct `ad_spend`, filter out corrupt outlier records where `spend_inr >= 3000` (which represent 100x logging errors like the 99,637 anomaly). Return `channel` and total ad spend in rupees rounded to the nearest integer as `spend`. Order by `spend` descending.",
+    "dataset": "marketing",
+    "hint": "Filter WHERE spend_inr < 3000 in a CTE of distinct ad_spend rows and join with campaigns.",
+    "solutionSql": "WITH c AS (\n  SELECT DISTINCT * FROM campaigns\n),\ns AS (\n  SELECT DISTINCT * FROM ad_spend WHERE spend_inr < 3000\n)\nSELECT\n  c.channel,\n  CAST(ROUND(SUM(s.spend_inr)) AS INTEGER) AS spend\nFROM s\nJOIN c ON s.campaign_id = c.campaign_id\nGROUP BY c.channel\nORDER BY spend DESC;",
+    "expectedOutput": {
+      "columns": [
+        "channel",
+        "spend"
+      ],
+      "rows": [
+        [
+          "Google Search",
+          95526
+        ],
+        [
+          "Influencer",
+          45602
+        ],
+        [
+          "Meta Ads",
+          44958
+        ],
+        [
+          "YouTube",
+          14861
+        ],
+        [
+          "Google Display",
+          11164
+        ],
+        [
+          "Affiliate",
+          2677
+        ],
+        [
+          "WhatsApp",
+          1520
+        ],
+        [
+          "Email",
+          836
+        ]
+      ]
+    },
+    "explanation": "Filtering out the 100x logging outlier (ad_spend_id 1867 with Rs 99,637) prevents severe distortion in channel economics. Clean spend is led by Google Search (Rs 95,526), Influencer (Rs 45,602), and Meta Ads (Rs 44,958).",
+    "commonMistake": "Summing raw ad spend without the spend_inr < 3000 outlier filter, which inflates Influencer ad spend from Rs 45,602 to Rs 134,880.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "unit-economics",
+      "ad-spend",
+      "cleaning"
+    ]
+  },
+  {
+    "id": "business-unitecon-002",
+    "module": "business",
+    "topic": "unitecon",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Calculate Customer Acquisition Cost (CAC) for each marketing channel. For clean ad spend (`spend_inr < 3000`) and distinct conversions with `conversion_type = 'Purchase'`, compute total spend divided by total purchase conversions. Return `channel`, total purchase conversions as `purchases`, and CAC in rupees rounded to one decimal place as `cac`. Order from lowest CAC to highest CAC.",
+    "dataset": "marketing",
+    "hint": "Aggregate spend and conversions in separate CTEs by channel before joining, to avoid Cartesian join row fan-out.",
+    "solutionSql": "WITH c AS (\n  SELECT DISTINCT * FROM campaigns\n),\ns AS (\n  SELECT c.channel, SUM(a.spend_inr) AS spend\n  FROM (SELECT DISTINCT * FROM ad_spend WHERE spend_inr < 3000) a\n  JOIN c ON a.campaign_id = c.campaign_id\n  GROUP BY c.channel\n),\nconv AS (\n  SELECT c.channel, COUNT(*) AS purchases\n  FROM (SELECT DISTINCT * FROM conversions WHERE conversion_type = 'Purchase') cv\n  JOIN c ON cv.campaign_id = c.campaign_id\n  GROUP BY c.channel\n)\nSELECT\n  s.channel,\n  conv.purchases,\n  ROUND(s.spend / conv.purchases, 1) AS cac\nFROM s\nJOIN conv ON s.channel = conv.channel\nORDER BY cac ASC;",
+    "expectedOutput": {
+      "columns": [
+        "channel",
+        "purchases",
+        "cac"
+      ],
+      "rows": [
+        [
+          "Email",
+          56,
+          14.9
+        ],
+        [
+          "WhatsApp",
+          46,
+          33
+        ],
+        [
+          "Affiliate",
+          24,
+          111.5
+        ],
+        [
+          "Google Search",
+          375,
+          254.7
+        ],
+        [
+          "Meta Ads",
+          141,
+          318.9
+        ],
+        [
+          "YouTube",
+          23,
+          646.1
+        ],
+        [
+          "Google Display",
+          12,
+          930.3
+        ],
+        [
+          "Influencer",
+          21,
+          2171.5
+        ]
+      ]
+    },
+    "explanation": "Owned channels like Email (Rs 14.9) and WhatsApp (Rs 33.0) have negligible CAC. Paid acquisition is led efficiently by Google Search (Rs 254.7) and Meta Ads (Rs 318.9), whereas Influencer marketing generates an unsustainable CAC of Rs 2,171.5.",
+    "commonMistake": "Directly joining ad_spend and conversions in a single query, which creates a Cartesian product fan-out that multiplies spend and conversion counts.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "cac",
+      "marketing-efficiency",
+      "fan-out-trap"
+    ]
+  },
+  {
+    "id": "business-unitecon-003",
+    "module": "business",
+    "topic": "unitecon",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Compute Return on Ad Spend (ROAS = Revenue / Ad Spend) for each marketing channel. For clean ad spend (`spend_inr < 3000`) and distinct conversions with `conversion_type = 'Purchase'`, return `channel` and the ROAS ratio rounded to two decimal places as `roas`. Order from highest ROAS to lowest.",
+    "dataset": "marketing",
+    "hint": "Aggregate conversion revenue and ad spend in separate CTEs, then divide revenue by spend.",
+    "solutionSql": "WITH c AS (\n  SELECT DISTINCT * FROM campaigns\n),\ns AS (\n  SELECT c.channel, SUM(a.spend_inr) AS spend\n  FROM (SELECT DISTINCT * FROM ad_spend WHERE spend_inr < 3000) a\n  JOIN c ON a.campaign_id = c.campaign_id\n  GROUP BY c.channel\n),\nconv AS (\n  SELECT c.channel, SUM(cv.revenue_inr) AS rev\n  FROM (SELECT DISTINCT * FROM conversions WHERE conversion_type = 'Purchase') cv\n  JOIN c ON cv.campaign_id = c.campaign_id\n  GROUP BY c.channel\n)\nSELECT\n  s.channel,\n  ROUND(conv.rev / s.spend, 2) AS roas\nFROM s\nJOIN conv ON s.channel = conv.channel\nORDER BY roas DESC;",
+    "expectedOutput": {
+      "columns": [
+        "channel",
+        "roas"
+      ],
+      "rows": [
+        [
+          "Email",
+          109.41
+        ],
+        [
+          "WhatsApp",
+          48.96
+        ],
+        [
+          "Affiliate",
+          11.94
+        ],
+        [
+          "Google Search",
+          5.76
+        ],
+        [
+          "Meta Ads",
+          3.96
+        ],
+        [
+          "YouTube",
+          1.64
+        ],
+        [
+          "Google Display",
+          0.94
+        ],
+        [
+          "Influencer",
+          0.64
+        ]
+      ]
+    },
+    "explanation": "Google Search achieves a healthy 5.76 ROAS and Meta Ads delivers 3.96 ROAS. In contrast, Influencer marketing yields an abysmal 0.64 ROAS (losing 36 paise on every rupee spent) and Google Display yields 0.94 ROAS.",
+    "commonMistake": "Treating ROAS as net profit instead of top-line revenue divided by ad spend.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "roas",
+      "marketing-roi",
+      "sql"
+    ]
+  },
+  {
+    "id": "business-unitecon-004",
+    "module": "business",
+    "topic": "unitecon",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Analyze order basket sizes across sales channels. In the `orders` table (excluding `total_amount >= 100000` and filtering for `order_status = 'Delivered'`), return `sales_channel`, total delivered orders as `orders`, and the Average Order Value (AOV) rounded to two decimal places as `aov`. Order by `aov` descending.",
+    "dataset": "ecommerce",
+    "hint": "Filter status='Delivered' and total_amount < 100000 on distinct orders, group by sales_channel, and sort by AVG(total_amount) DESC.",
+    "solutionSql": "WITH o AS (\n  SELECT DISTINCT * FROM orders\n  WHERE total_amount < 100000 AND order_status = 'Delivered'\n)\nSELECT\n  sales_channel,\n  COUNT(*) AS orders,\n  ROUND(AVG(total_amount), 2) AS aov\nFROM o\nGROUP BY sales_channel\nORDER BY aov DESC;",
+    "expectedOutput": {
+      "columns": [
+        "sales_channel",
+        "orders",
+        "aov"
+      ],
+      "rows": [
+        [
+          "iOS App",
+          1545,
+          5339.5
+        ],
+        [
+          "Mobile Web",
+          1185,
+          5264.1
+        ],
+        [
+          "Android App",
+          4606,
+          5247.61
+        ],
+        [
+          "Website",
+          1930,
+          5168.79
+        ]
+      ]
+    },
+    "explanation": "iOS App users spend the highest per purchase (Rs 5,339.50 across 1,545 orders), followed by Mobile Web (Rs 5,264.10), Android App (Rs 5,247.61), and Desktop Website (Rs 5,168.79).",
+    "commonMistake": "Failing to filter for Delivered orders, which includes cancelled and RTO orders.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "ecommerce",
+      "aov",
+      "channels"
+    ]
+  },
+  {
+    "id": "business-unitecon-005",
+    "module": "business",
+    "topic": "unitecon",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Calculate click-to-purchase conversion rates across marketing channels. Aggregate distinct `clicks` and distinct `conversions` with `conversion_type = 'Purchase'`. Return `channel`, total clicks as `clicks`, purchase conversions as `purchases`, and the conversion rate percentage rounded to two decimal places as `cvr_pct`. Order by `cvr_pct` descending.",
+    "dataset": "marketing",
+    "hint": "Aggregate clicks and conversions in separate CTEs by channel before joining, then compute purchases * 100.0 / clicks.",
+    "solutionSql": "WITH c AS (\n  SELECT DISTINCT * FROM campaigns\n),\nclk AS (\n  SELECT c.channel, COUNT(*) AS clicks\n  FROM (SELECT DISTINCT * FROM clicks) ck\n  JOIN c ON ck.campaign_id = c.campaign_id\n  GROUP BY c.channel\n),\nconv AS (\n  SELECT c.channel, COUNT(*) AS purchases\n  FROM (SELECT DISTINCT * FROM conversions WHERE conversion_type = 'Purchase') cv\n  JOIN c ON cv.campaign_id = c.campaign_id\n  GROUP BY c.channel\n)\nSELECT\n  clk.channel,\n  clk.clicks,\n  conv.purchases,\n  ROUND(conv.purchases * 100.0 / clk.clicks, 2) AS cvr_pct\nFROM clk\nJOIN conv ON clk.channel = conv.channel\nORDER BY cvr_pct DESC;",
+    "expectedOutput": {
+      "columns": [
+        "channel",
+        "clicks",
+        "purchases",
+        "cvr_pct"
+      ],
+      "rows": [
+        [
+          "Email",
+          686,
+          56,
+          8.16
+        ],
+        [
+          "Google Search",
+          6270,
+          375,
+          5.98
+        ],
+        [
+          "WhatsApp",
+          858,
+          46,
+          5.36
+        ],
+        [
+          "Affiliate",
+          683,
+          24,
+          3.51
+        ],
+        [
+          "Meta Ads",
+          4855,
+          141,
+          2.9
+        ],
+        [
+          "YouTube",
+          2715,
+          23,
+          0.85
+        ],
+        [
+          "Google Display",
+          1729,
+          12,
+          0.69
+        ],
+        [
+          "Influencer",
+          3688,
+          21,
+          0.57
+        ]
+      ]
+    },
+    "explanation": "High-intent channels exhibit superior click-to-purchase rates: Email (8.16%) and Google Search (5.98%) significantly outperform top-of-funnel discovery channels like YouTube (0.85%) and Influencer (0.57%).",
+    "commonMistake": "Joining clicks directly to conversions without pre-aggregating, multiplying rows.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "marketing",
+      "conversion-rate",
+      "cvr"
+    ]
+  },
+  {
+    "id": "business-unitecon-006",
+    "module": "business",
+    "topic": "unitecon",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "An online retail brand generates Rs 360,000 in delivered revenue across 800 delivered orders. Calculate the Average Order Value (AOV) in rupees.",
+    "dataset": "none",
+    "hint": "Divide delivered revenue by delivered orders (360,000 / 800).",
+    "solution": "Average Order Value (AOV):\n\n$$\\text{AOV} = \\frac{\\text{Delivered Revenue}}{\\text{Delivered Orders}} = \\frac{360000}{800} = 450$$\n\nAverage Order Value is Rs 450.",
+    "explanation": "AOV represents basket size. If the brand wishes to grow revenue without acquiring more traffic, lifting AOV through cross-selling and bundling is a primary lever.",
+    "commonMistake": "Dividing orders by revenue instead of revenue by orders.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 2,
+    "tags": [
+      "aov",
+      "unit-economics",
+      "simple-math"
+    ],
+    "expectedOutput": {
+      "value": 450
+    }
+  },
+  {
+    "id": "business-unitecon-007",
+    "module": "business",
+    "topic": "unitecon",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "A direct-to-consumer lifestyle brand spends Rs 90,000 on paid social media ads during November and acquires exactly 300 first-time purchasing customers. Calculate the Customer Acquisition Cost (CAC) in rupees.",
+    "dataset": "none",
+    "hint": "Divide total marketing spend by newly acquired customers (90,000 / 300).",
+    "solution": "Customer Acquisition Cost (CAC):\n\n$$\\text{CAC} = \\frac{\\text{Total Marketing Ad Spend}}{\\text{New Customers Acquired}} = \\frac{90000}{300} = 300$$\n\nThe brand spent exactly Rs 300 to acquire each new customer.",
+    "explanation": "Paid CAC measures campaign efficiency. If the customer only generates Rs 200 in gross margin over their entire lifetime, a Rs 300 CAC represents value destruction.",
+    "commonMistake": "Dividing new customers by spend, yielding 0.0033.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 2,
+    "tags": [
+      "cac",
+      "marketing-spend",
+      "unit-economics"
+    ],
+    "expectedOutput": {
+      "value": 300
+    }
+  },
+  {
+    "id": "business-unitecon-008",
+    "module": "business",
+    "topic": "unitecon",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "A SaaS subscription business offers a Standard plan priced at Rs 299 per month with an operating gross margin of 70.0%. If the monthly customer churn rate is 8.0%, calculate the customer Lifetime Value (LTV) in rupees using the simple margin churn formula ($\\text{LTV} = \\frac{\\text{Monthly Margin per User}}{\\text{Monthly Churn Rate}}$).",
+    "dataset": "none",
+    "hint": "First calculate monthly gross margin per user (299 * 0.70 = 209.30), then divide by the churn rate (0.08).",
+    "solution": "Customer Lifetime Value (LTV) calculation:\n\n$$\\text{Monthly Gross Margin per User} = 299 \\times 0.70 = 209.30$$\n$$\\text{Customer Lifetime (Months)} = \\frac{1}{\\text{Monthly Churn}} = \\frac{1}{0.08} = 12.5 \\text{ months}$$\n$$\\text{LTV} = 209.30 \\times 12.5 = 2616.25$$\n\nCustomer Lifetime Value is Rs 2,616.25.",
+    "explanation": "LTV must always be computed on gross profit margin, never gross top-line revenue. Dividing full revenue (Rs 299 / 0.08 = Rs 3,737.50) dangerously overstates customer value by ignoring servicing and cloud hosting costs.",
+    "commonMistake": "Using full revenue rather than gross margin (299 / 0.08 = 3737.50), ignoring operating costs.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "ltv",
+      "gross-margin",
+      "saas-economics"
+    ],
+    "expectedOutput": {
+      "value": 2616.25
+    }
+  },
+  {
+    "id": "business-unitecon-009",
+    "module": "business",
+    "topic": "unitecon",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "For the same subscription business with a customer Lifetime Value (LTV) of Rs 2,616.25, the paid acquisition channel reports a Customer Acquisition Cost (CAC) of Rs 255.00. Calculate the LTV-to-CAC ratio, rounded to one decimal place.",
+    "dataset": "none",
+    "hint": "Divide LTV by CAC (2616.25 / 255.0).",
+    "solution": "LTV:CAC Ratio:\n\n$$\\text{LTV : CAC} = \\frac{2616.25}{255} = 10.259... \\approx 10.3$$\n\nThe LTV:CAC ratio is 10.3x.",
+    "explanation": "In SaaS economics, an LTV:CAC ratio above 3.0x is considered healthy. An exceptional ratio of 10.3x indicates that the business is under-spending on acquisition and could aggressively scale marketing budget to capture market share.",
+    "commonMistake": "Dividing CAC by LTV instead of LTV by CAC.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 2,
+    "tags": [
+      "ltv-cac",
+      "unit-economics",
+      "saas-benchmarks"
+    ],
+    "expectedOutput": {
+      "value": 10.3
+    }
+  },
+  {
+    "id": "business-unitecon-010",
+    "module": "business",
+    "topic": "unitecon",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "The quarterly marketing audit shows that Influencer marketing generated an unsustainable 0.64 ROAS and a CAC of Rs 2,171 (compared to Google Search with 5.76 ROAS and Rs 255 CAC). However, the Brand Director defends the channel, arguing that 'Influencer campaigns build brand awareness that lifts all organic sales.' As a senior data analyst, provide 4 data-driven recommendations to resolve this debate.",
+    "dataset": "none",
+    "hint": "Think about cutting mega-campaign outliers, testing nano-influencers, tracking coupon codes, and geo-lift holdout experiments.",
+    "solution": "Four data-driven recommendations:\n\n1. **Kill Zero-ROI Mega Campaigns**: Audit showed that 'Influencer Mega Reach Oct-24' burned Rs 35,243 of clean budget for 2,204 clicks and only 2 conversions. Immediately eliminate high-cost generic celebrity shoutouts.\n2. **Shift to Performance-Tied Micro/Nano Influencers**: Partner with niche creators on affiliate commission structures (paying per converted order rather than flat upfront booking fees) using dedicated promo codes to track true attribution.\n3. **Run a Geographic Holdout Experiment**: Select two statistically matched city clusters (e.g., Pune vs Ahmedabad). Turn off influencer marketing in Pune for 6 weeks while running it in Ahmedabad. Compare baseline organic and direct traffic lift between the two regions to measure true brand halo.\n4. **Reallocate Budget to High-Efficiency Channels with Caps**: Reallocate 50% of the influencer budget into Google Search (5.76 ROAS) and Meta Ads (3.96 ROAS) up to their marginal cost inflection points, capturing immediate profitable conversions.",
+    "explanation": "Brand halo arguments must be validated with holdout testing rather than accepted on faith. Eliminating bloated celebrity sponsorships while testing performance micro-influencers and geo-holdouts preserves capital while objectively measuring brand lift.",
+    "commonMistake": "Accepting brand awareness claims without proposing an experimental holdout test or tracking mechanism.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "marketing-strategy",
+      "attribution",
+      "holdout-testing"
+    ]
+  }
+]

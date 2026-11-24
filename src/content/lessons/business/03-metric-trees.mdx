@@ -1,0 +1,286 @@
+---
+title: "Metric trees: breaking a goal into drivers"
+description: "Split one big number into small parts you can measure and move."
+module: business
+order: 3
+estimatedMinutes: 45
+objectives:
+  - "Construct hierarchical metric trees to decompose top-line business goals into actionable levers"
+  - "Differentiate between multiplicative and additive metric tree decompositions"
+  - "Apply the MECE (Mutually Exclusive, Collectively Exhaustive) principle to prevent double counting"
+  - "Diagnose which branch moved during an unexpected revenue, profit, or volume shift"
+  - "Assign functional team accountability to terminal operational leaves"
+tags: ["business", "metric-tree", "kpi", "decomposition"]
+---
+
+## Learning objectives
+
+By the end of this lesson, you will be able to:
+- Build complete metric trees for e-commerce revenue, UPI payment volume, SaaS subscription recurring revenue, and healthcare operations.
+- Separate multiplicative driver trees (Rate $\times$ Volume) from additive segment trees (summing channels or categories).
+- Apply the MECE framework to ensure driver trees cover 100% of the metric without gaps or overlapping components.
+- Trace top-line variance down to specific operational leaves to explain why a primary business metric shifted.
+- Map terminal leaves to functional organizational owners (Marketing, Product, Engineering, Operations).
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Imagine walking into a Monday morning business review where the Head of Product announces: *"Our marketplace revenue dropped 20% in December. Marketing says traffic is fine, Engineering says the servers were fast, and Merchandising says prices didn't change. Nishchay, what happened?"*
+
+Without a structured metric tree, analysts jump straight into writing random SQL queries, guessing causes, or drowning stakeholders in twenty uncoordinated charts. With a metric tree, you immediately decompose Revenue into Orders $\times$ Average Order Value (AOV), split Orders into Transacting Buyers $\times$ Frequency, and show in under two minutes that while frequency held steady, unique active buyers contracted 12.5% because post-Diwali re-engagement campaigns stalled.
+</RealWorld>
+
+In analytics interviews, metric decomposition questions are universal: *"How would you break down Uber's revenue?"*, *"How does Swiggy analyze food delivery GMV?"*, or *"Why did clinic profitability fall?"* Building structured metric trees demonstrates mature, structured business thinking.
+
+## Concept
+
+### What is a Metric Tree?
+
+A **metric tree** is a hierarchical visual framework that places a primary organizational goal at the root (the top) and recursively decomposes it into contributing mathematical drivers (the branches and leaves) until each terminal leaf represents an operational lever that a single team can influence.
+
+<Tip>
+**The Electricity Bill Analogy:** If your monthly electricity bill surges from Rs 2,000 to Rs 3,500, you don't panic or guess. You break the bill into its multiplicative drivers: `Bill = Units Consumed (kWh) * Tariff per Unit`. If the tariff is unchanged, you decompose Units Consumed additively across appliances: Air Conditioner + Refrigerator + Water Heater. You quickly discover that the AC ran 12 hours a day during a heatwave. That is a metric tree in daily life.
+</Tip>
+
+### Multiplicative vs Additive Decompositions
+
+Metric trees split numbers using two mathematical structures:
+
+1. **Multiplicative Decompositions (Product of Drivers)**:
+   Used when top-line volume is the mathematical product of independent conversion rates and ticket sizes.
+   - `E-Commerce Revenue = Unique Visitors * Conversion Rate * AOV`
+   - `UPI TPV = Active Users * (Transactions / Active User) * Average Ticket Size * Success Rate`
+
+2. **Additive Decompositions (Sum of Parts)**:
+   Used when total volume is the sum of mutually exclusive segments or lifecycle cohorts.
+   - `Total Orders = App Orders + Website Orders + Mobile Web Orders`
+   - `Ending MRR = Starting MRR + New MRR + Expansion MRR - Churned MRR`
+
+### The MECE Principle
+
+Every sound metric tree must adhere to the **MECE** principle:
+- **Mutually Exclusive**: Branches at the same tier must not overlap or double count (e.g., do not split orders into "Credit Card Orders" and "Android Orders" at the same level).
+- **Collectively Exhaustive**: The sum or product of the branches must equal 100% of the parent metric without missing unaccounted residuals.
+
+<FormulaCard title="Percentage Change of Multiplicative Products">
+When a metric is the product of two factors (`Y = A * B`), the exact percentage change in `Y` is:
+`Change % in Y = (1 + Change % in A) * (1 + Change % in B) - 1`
+
+For example, if orders fall by `-14.72%` and AOV falls by `-6.81%`:
+`Revenue Change = (1 - 0.1472) * (1 - 0.0681) - 1 = (0.8528 * 0.9319) - 1 = -20.53%`
+
+Notice that simply adding percentages (`-14.72% + -6.81% = -21.53%`) is only a rough approximation; always compute the exact compound change.
+</FormulaCard>
+
+### Standard Metric Trees
+
+#### 1. E-Commerce Revenue Tree
+<Mermaid chart={`
+flowchart TD
+  Rev["Net Delivered Revenue"] --> Orders["Delivered Orders"]
+  Rev --> AOV["Average Order Value (AOV)"]
+  Orders --> Buyers["Unique Active Buyers"]
+  Orders --> Freq["Orders per Buyer"]
+  Buyers --> Traffic["Unique Visitors"]
+  Buyers --> CVR["Visitor Conversion Rate %"]
+  AOV --> Items["Items per Order (Basket Units)"]
+  AOV --> ItemPrice["Average Selling Price (ASP)"]
+`} caption="Multiplicative driver tree for e-commerce realized revenue" />
+
+#### 2. UPI Payments TPV Tree
+<Mermaid chart={`
+flowchart TD
+  TPV["Total Payment Volume (TPV)"] --> Users["Active Transacting Users (MAU)"]
+  TPV --> TxnPerUser["Transactions per User (Frequency)"]
+  TPV --> Ticket["Average Ticket Size (Rs)"]
+  TPV --> SR["Technical Success Rate %"]
+  Users --> NewUsers["Newly Activated Users"]
+  Users --> RetainedUsers["Retained Repeat Users"]
+`} caption="4-leaf driver tree for UPI Total Payment Volume" />
+
+## Worked examples
+
+### Example 1: Decomposing DesiCart's December Revenue Drop
+Querying the `orders` table in `public/data/sqlite/ecommerce.sqlite` for delivered orders across November and December 2024:
+
+```sql
+WITH o AS (
+  SELECT DISTINCT * FROM orders
+  WHERE total_amount < 100000 AND order_status = 'Delivered'
+)
+SELECT
+  strftime('%Y-%m', order_date) AS month,
+  COUNT(*) AS delivered_orders,
+  CAST(ROUND(SUM(total_amount)) AS INTEGER) AS revenue,
+  ROUND(AVG(total_amount), 2) AS aov
+FROM o
+WHERE strftime('%Y-%m', order_date) IN ('2024-11', '2024-12')
+GROUP BY month
+ORDER BY month ASC;
+```
+
+**Real Output from ecommerce.sqlite:**
+| month | delivered_orders | revenue | aov |
+| :--- | :--- | :--- | :--- |
+| 2024-11 | 496 | 2591559 | 5224.92 |
+| 2024-12 | 423 | 2059545 | 4868.90 |
+
+**Driver Decomposition:**
+1. **Delivered Orders**: fell from 496 to 423 ($\Delta = -14.72\%$).
+2. **Average Order Value (AOV)**: fell from Rs 5,224.92 to Rs 4,868.90 ($\Delta = -6.81\%$).
+3. **Realized Revenue**: fell from Rs 2,591,559 to Rs 2,059,545 ($\Delta = -20.53\%$).
+
+Order volume contraction accounted for approximately 70% of the revenue drop, while lower basket size explained the remaining 30%.
+
+### Example 2: Inspecting Customer Breadth vs Frequency
+To find why delivered orders fell 14.72%, we step one level deeper into the tree: `Orders = Unique Buyers * Orders per Buyer`.
+
+```sql
+WITH o AS (
+  SELECT DISTINCT * FROM orders
+  WHERE total_amount < 100000
+)
+SELECT
+  strftime('%Y-%m', order_date) AS month,
+  COUNT(DISTINCT customer_id) AS buyers,
+  ROUND(COUNT(*) * 1.0 / COUNT(DISTINCT customer_id), 3) AS orders_per_buyer
+FROM o
+WHERE strftime('%Y-%m', order_date) IN ('2024-11', '2024-12')
+GROUP BY month
+ORDER BY month ASC;
+```
+
+**Real Output from ecommerce.sqlite:**
+| month | buyers | orders_per_buyer |
+| :--- | :--- | :--- |
+| 2024-11 | 448 | 1.190 |
+| 2024-12 | 392 | 1.168 |
+
+Active buyers fell from 448 to 392 ($-12.50\%$), whereas ordering frequency per buyer barely budged from 1.190 to 1.168 ($-1.85\%$). 
+
+**The Diagnostic Finding:** The revenue drop was not caused by loyal customers buying less frequently; it was caused by a broad drop in transacting shoppers following the Diwali festive rush.
+
+## Common mistakes
+
+<CommonMistake>
+- **Overlapping branches (Violating MECE)**: Splitting revenue into "Android Sales" and "Fashion Category Sales" at the same tier, creating double counting.
+- **Stopping at vague non-actionable leaves**: Ending a tree at leaves like "Customer Satisfaction" or "Brand Perception" instead of measurable operational events like "P90 Page Load Latency" or "Coupon Redemption Rate".
+- **Simply adding percentage changes**: Stating that $-14.7\%$ and $-6.8\%$ equals $-21.5\%$. Multiplicative variables compound.
+- **Mixing time horizons**: Comparing quarterly churn against monthly acquisition cohorts within the same mathematical tree.
+- **Building trees with unmeasurable data**: Adding branches that no internal logging pipeline tracks. Every leaf must correspond to an actual queryable table column.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="metrictree" module="business" />
+
+## Mini quiz
+
+<Quiz questions={[
+  {
+    q: "What does the MECE principle require in metric tree construction?",
+    options: [
+      "Metrics must be estimated using complex econometric regression models",
+      "Branches at each tier must be mutually exclusive and collectively exhaustive",
+      "Every metric must be converted into US Dollars before decomposition",
+      "Only financial metrics may be included in the tree"
+    ],
+    answer: 1,
+    explanation: "MECE ensures that categories do not overlap (preventing double counting) and that no volume or revenue is omitted."
+  },
+  {
+    q: "If an e-commerce platform's orders decline by 10% while Average Order Value (AOV) declines by 5%, what is the exact percentage change in revenue?",
+    options: [
+      "-15.00%",
+      "-14.50%",
+      "-15.50%",
+      "-5.00%"
+    ],
+    answer: 1,
+    explanation: "Exact compound change: (1 - 0.10) * (1 - 0.05) - 1 = (0.90 * 0.95) - 1 = 0.855 - 1 = -14.50%."
+  },
+  {
+    q: "Which functional team typically owns the 'Conversion Rate %' leaf in an e-commerce metric tree?",
+    options: [
+      "Supply Chain & Warehouse Logistics",
+      "Product Management & User Experience (UX)",
+      "Financial Accounting & Tax Compliance",
+      "Human Resources & Talent Acquisition"
+    ],
+    answer: 1,
+    explanation: "Conversion rate from visitor to buyer is driven by search discoverability, product page design, site latency, and checkout flow UX—all owned by Product/UX."
+  },
+  {
+    q: "In an additive SaaS revenue bridge, what is Ending MRR if Starting MRR is Rs 400,000, New MRR is Rs 50,000, Expansion MRR is Rs 20,000, and Churned MRR is Rs 30,000?",
+    options: [
+      "Rs 420,000",
+      "Rs 440,000",
+      "Rs 500,000",
+      "Rs 360,000"
+    ],
+    answer: 1,
+    explanation: "Ending MRR = 400,000 + 50,000 + 20,000 - 30,000 = Rs 440,000."
+  },
+  {
+    q: "Why must a UPI TPV metric tree include Technical Success Rate % as a leaf?",
+    options: [
+      "Because NPCI fines apps that do not report success rate",
+      "Because user transaction attempts do not automatically convert into settled rupee volume if banking switches fail",
+      "Because success rate is required to calculate marketing ad spend",
+      "Because success rate is always equal to 100%"
+    ],
+    answer: 1,
+    explanation: "Users initiate transactions, but platform and bank downtime causes a fraction of attempts to fail. Multiplying by success rate accounts for realized settled payment value."
+  }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+In product and business analytics interviews, you will often be given a whiteboard prompt: "Decompose revenue for a food delivery platform like Zomato or Swiggy." Practice drawing the full tree in under 60 seconds while verbalizing the operational owner for each leaf.
+</InterviewAlert>
+
+<InterviewQ q="Break down food delivery marketplace revenue into a metric tree on a whiteboard.">
+I would decompose food delivery net revenue into a multiplicative and additive structure:
+- `Net Revenue = Commission Revenue + Customer Delivery Fees + Restaurant Ad Revenue`
+
+Decomposing the primary driver (Commission Revenue):
+- `Commission Revenue = Delivered Orders * AOV * Take Rate %`
+
+Stepping into Delivered Orders:
+- `Delivered Orders = Daily Active Users (DAU) * (Orders Placed / DAU) * (1 - Cancellation Rate %)`
+
+And stepping into AOV:
+- `AOV = Items per Order * Average Item Price`
+
+Each leaf has a direct team owner:
+- DAU → Marketing & CRM
+- Orders/DAU & Cancellation Rate → Product UX & Fleet Operations
+- Take Rate & Ad Revenue → Restaurant Partnerships / Monetization team.
+</InterviewQ>
+
+<InterviewQ q="How do you prioritize which branch of a metric tree to investigate when a metric moves?">
+I prioritize branches using a 3-step filter:
+1. **Mathematical Impact Sizing**: Calculate the contribution to total variance (`Variance Contribution = Delta Branch / Total Delta`). If 80% of the drop comes from Order Volume rather than AOV, I deprioritize AOV immediately.
+2. **Segment Concentration**: Check whether the move is isolated to one segment (e.g. Android only, Kaveri Co-op Bank only, or Delhi NCR only) versus systemic across all categories.
+3. **Actionability**: Focus resources on leaves the business can control (such as discount policies or app checkout crashes) rather than macro factors (like unseasonal monsoon rains).
+</InterviewQ>
+
+<InterviewQ q="What is the danger of optimizing an individual leaf in a metric tree without monitoring the root?">
+Sub-optimizing a single leaf frequently triggers unintended trade-offs that damage the overall tree:
+- If Marketing optimizes the **Visitor Traffic** leaf by buying cheap social media clicks, conversion rate collapses and blended CAC explodes.
+- If Merchandising optimizes the **AOV** leaf by raising product prices or minimum order values, checkout conversion drops so sharply that total revenue contracts.
+- If Ops cuts the **Delivery Partner Wage** leaf to reduce costs, partner churn rises, delivery latencies spike, and order cancellations surge.
+</InterviewQ>
+
+## Key takeaways
+
+- A metric tree systematically breaks an aggregate number into actionable mathematical levers until each leaf has a functional owner.
+- Multiplicative trees decompose volume and rates (Visitors $\times$ CVR $\times$ AOV); additive trees sum mutually exclusive segments or lifecycle cohorts.
+- Follow the MECE rule: branches must never overlap (double count) and must collectively explain 100% of the parent metric.
+- For small multiplicative shifts, the sum of percentage changes is an approximation; always compute the exact compound factor.
+- Terminal leaves must be actionable operational levers (such as page load latency, stockout days, or bank timeout rates) rather than vague conceptual labels.
+
+## Further reading
+
+<FurtherReading ids={["alex-the-analyst"]} />

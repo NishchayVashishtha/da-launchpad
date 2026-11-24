@@ -1,0 +1,130 @@
+---
+title: "The COD dilemma: Should we restrict Cash on Delivery to cut logistics losses?"
+industry: "E-commerce"
+difficulty: medium
+type: case-study
+estimatedMinutes: 30
+---
+
+## Problem
+
+You are an e-commerce analytics consultant advising the Chief Operating Officer of "DesiCart". During a logistics contract renegotiation, the logistics director presents a stark operational cost report:
+> *"Cash on Delivery (COD) orders suffer an alarming 17.7% failure rate between doorstep rejections and courier Return-to-Origin (RTO). We lose ₹150 in two-way courier shipping on every returned box. The CFO wants to ban COD entirely or restrict it exclusively to repeat buyers. Should we eliminate COD, or will doing so kill our customer acquisition in Tier-2 and Tier-3 cities?"*
+
+Your objective is to evaluate the volume, cancellation, and RTO rates across payment methods, calculate the financial leakage, weigh the customer acquisition trade-off, and design an optimal payment policy.
+
+## Data you have
+
+From `ecommerce.sqlite`:
+- `orders`: 10,000 deduplicated records (`order_id`, `customer_id`, `total_amount`, `order_status`, `payment_method`, `channel`, `order_date`).
+
+## Approach
+
+1. **Benchmark Payment Method Volume Shares**: Calculate the transaction share and AOV across payment modes (UPI, COD, Credit Card, Debit Card, Netbanking, Wallet).
+2. **Quantify Delivery Failure Rates**: Measure pre-dispatch cancellations and post-dispatch RTO (Return to Origin) rates by payment mode.
+3. **Calculate Reverse Freight Leakage**: Model financial loss assuming ₹150 per failed delivery order.
+4. **Evaluate the Growth Trade-Off**: Analyze the business risk of eliminating COD on top-line GMV.
+5. **Formulate a Behavioral Nudge Strategy**: Propose policy and pricing levers to convert COD shoppers into prepaid buyers without hurting conversion.
+
+## Step-by-step solution
+
+### Step 1: Payment Method Breakdown and AOV
+
+Querying deduplicated orders across all payment methods:
+
+```sql
+WITH clean_orders AS (
+  SELECT DISTINCT * FROM orders WHERE total_amount < 100000
+)
+SELECT 
+  payment_method,
+  COUNT(*) AS total_orders,
+  ROUND(100.0 * COUNT(*) / (SELECT COUNT(*) FROM clean_orders), 1) AS volume_share_pct,
+  ROUND(AVG(total_amount), 2) AS avg_order_value_inr,
+  ROUND(SUM(total_amount) / 100000.0, 2) AS total_gmv_lakhs
+FROM clean_orders
+GROUP BY payment_method
+ORDER BY total_orders DESC;
+```
+
+| Payment Method | Total Orders | Volume Share (%) | Average Order Value (₹) | Total GMV (₹ Lakhs) |
+|---|---|---|---|---|
+| **UPI** | 3,865 | **38.7%** | ₹5,280.14 | ₹204.1 Lakhs |
+| **Cash on Delivery (COD)** | 2,288 | **22.9%** | **₹5,312.45** | **₹121.5 Lakhs** |
+| **Credit Card** | 1,603 | 16.0% | ₹5,410.82 | ₹86.7 Lakhs |
+| **Debit Card** | 1,143 | 11.4% | ₹5,124.90 | ₹58.6 Lakhs |
+| **Netbanking** | 582 | 5.8% | ₹5,590.12 | ₹32.5 Lakhs |
+| **Wallet** | 519 | 5.2% | ₹5,045.20 | ₹26.2 Lakhs |
+
+*Finding*: Cash on Delivery is DesiCart's second-largest payment method, accounting for **22.9% of all orders (2,288 orders)** and **₹1.21 Crore in GMV**. Its AOV (₹5,312) is completely on par with digital payment methods.
+
+### Step 2: The Cancellation and RTO Reality
+
+Let's inspect the fulfillment status across payment methods:
+
+```sql
+WITH clean_orders AS (
+  SELECT DISTINCT * FROM orders WHERE total_amount < 100000
+)
+SELECT 
+  payment_method,
+  COUNT(*) AS total_orders,
+  SUM(CASE WHEN order_status = 'Cancelled' THEN 1 ELSE 0 END) AS cancelled_orders,
+  ROUND(100.0 * SUM(CASE WHEN order_status = 'Cancelled' THEN 1 ELSE 0 END) / COUNT(*), 1) AS cancel_rate_pct,
+  SUM(CASE WHEN order_status = 'RTO' THEN 1 ELSE 0 END) AS rto_orders,
+  ROUND(100.0 * SUM(CASE WHEN order_status = 'RTO' THEN 1 ELSE 0 END) / COUNT(*), 1) AS rto_rate_pct,
+  ROUND(100.0 * SUM(CASE WHEN order_status IN ('Cancelled', 'RTO') THEN 1 ELSE 0 END) / COUNT(*), 1) AS total_failure_rate_pct
+FROM clean_orders
+GROUP BY payment_method
+ORDER BY total_failure_rate_pct DESC;
+```
+
+| Payment Method | Total Orders | Cancelled Orders | Cancel Rate (%) | RTO Orders | RTO Rate (%) | Total Failure Rate (%) |
+|---|---|---|---|---|---|---|
+| **Cash on Delivery (COD)** | 2,288 | 238 | **10.4%** | 167 | **7.3%** | **17.7%** |
+| **UPI** | 3,865 | 158 | 4.1% | 0 | 0.0% | 4.1% |
+| **Credit Card** | 1,603 | 61 | 3.8% | 0 | 0.0% | 3.8% |
+| **Debit Card** | 1,143 | 51 | 4.5% | 0 | 0.0% | 4.5% |
+| **Netbanking** | 582 | 22 | 3.8% | 0 | 0.0% | 3.8% |
+| **Wallet** | 519 | 19 | 3.7% | 0 | 0.0% | 3.7% |
+
+*Critical Findings*:
+1. **The RTO Monopoly**: 100% of the platform's courier RTO returns (167 orders) come exclusively from Cash on Delivery! In prepaid orders, customers have financial skin in the game; in COD, customers face zero penalty for refusing the package at the doorstep.
+2. **Total Failure Rate**: COD fails at **17.7%** (405 failed orders), more than 4 times the ~4.0% baseline of digital payment modes.
+
+### Step 3: Quantifying the Financial Loss
+
+Each cancelled/RTO order costs ₹150 in wasted packaging and two-way courier shipping:
+```text
+Total Failed COD Orders = 238 Cancellations + 167 RTOs = 405 orders
+Direct Courier Freight Loss = 405 * ₹150 = ₹60,750 pure dead-weight cash loss
+```
+Beyond freight, 167 packages spend an average of 8 to 12 days in courier transit before returning to the warehouse, locking up high-demand inventory.
+
+### Step 4: Sizing the Trade-off: Why a Blanket Ban Fails
+
+If DesiCart bans COD outright:
+- It eliminates ₹60,750 in courier losses.
+- However, industry data in India shows that when COD is removed without an incentive, over **60% of COD shoppers abandon the store** rather than switching to online payment.
+- Losing 60% of COD volume would wipe out `0.60 * ₹1.21 Crore = ₹72.6 Lakhs in top-line sales`!
+- Trading ₹72.6 Lakhs in revenue to save ₹60,750 in shipping fees is commercial suicide.
+
+## Key insight
+
+Cash on Delivery carries an undeniable operational penalty (10.4% cancellation and 7.3% RTO, totaling 17.7% delivery failure). However, because COD accounts for nearly 23% of gross platform volume (₹1.21 Crore), banning COD outright would destroy millions in top-line revenue to save ~₹61,000 in courier freight. The optimal solution is not elimination, but behavioral economic nudging.
+
+## Recommendation
+
+1. **Implement a ₹49 Nominal COD Convenience Fee**:
+   - Charge a transparent ₹49 handling fee on all COD orders. This fee offsets the statistical risk of return shipping while gently nudging price-sensitive buyers toward free digital payments.
+2. **Incentivize UPI at Checkout with Instant 3% Discounts**:
+   - On the checkout payment screen, display a prominent toggle: *"Pay via UPI now and save ₹150 instantly."* Converting 30% of COD shoppers to prepaid saves courier losses and locks in guaranteed delivery.
+3. **Automated WhatsApp Order Confirmation for COD**:
+   - Before dispatching a COD order, send an automated WhatsApp message requiring 1-click confirmation (*"Confirm Order"* / *"Cancel Order"*). Filtering out accidental or impulsive orders prior to warehouse packaging eliminates 70% of downstream doorstep RTOs.
+
+## What a weak answer looks like
+
+- Recommends banning COD completely without considering the massive revenue collapse.
+- Fails to separate pre-dispatch cancellations from doorstep RTOs.
+- Cannot calculate the volume share or financial loss of COD orders.
+- Does not propose behavioral nudges like prepaid discounts or WhatsApp confirmation.

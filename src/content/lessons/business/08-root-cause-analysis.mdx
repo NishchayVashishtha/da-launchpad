@@ -1,0 +1,293 @@
+---
+title: "Root cause analysis: why did sales drop 15%?"
+description: "A step-by-step framework to find why a number moved, without guessing."
+module: business
+order: 8
+estimatedMinutes: 65
+objectives:
+  - "Apply a structured 6-step Root Cause Analysis (RCA) framework to diagnose metric drops"
+  - "Differentiate data tracking pipeline errors from genuine consumer behavior shifts"
+  - "Deconstruct top-line movement using multiplicative metric trees and additive segment cuts"
+  - "Formulate testable business hypotheses and evaluate them using empirical SQL queries"
+  - "Synthesize analytical findings into executive-ready recommendations with quantified impact"
+tags: ["business", "rca", "root-cause", "interview", "sql"]
+---
+
+## Learning objectives
+
+By the end of this lesson, you will be able to:
+- Execute a repeatable 6-step diagnostic protocol when investigating metric shifts: Clarify, Validate Data, Context/Seasonality, Decompose, Test Hypotheses, and Conclude.
+- Rule out data pipeline defects, tracking webhook drops, and duplicate logging errors before sounding business alarms.
+- Isolate whether a metric drop is systemic across the entire market or concentrated in specific channels, categories, or partner endpoints.
+- Calculate segment contribution to change (`Variance Contribution = Delta Segment / Total Delta`) to size driver impacts.
+- Deliver a concise, professional 6-sentence response during high-stakes leadership reviews and case interview rounds.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+At 9:30 AM on a Monday, an e-commerce country manager sends an all-caps message in Slack: *"Sales dropped 20% in December! Marketing is burning money, our app must be crashing, and competitors are eating our lunch. I need answers by lunch."*
+
+Inexperienced analysts panic. They query random tables, pull thirty different charts, and guess possible reasons: *"Maybe people don't like our new logo?"* or *"Maybe our prices are too high?"* 
+
+A skilled data analyst does not guess. They calmly open a terminal, confirm that December revenue actually grew 7.8% Year-over-Year, demonstrate that every single channel fell identically due to post-Diwali seasonal hangover, and show that cancellations and app crashes remained completely flat. Root Cause Analysis (RCA) is what separates junior dashboard builders from trusted strategic advisors.
+</RealWorld>
+
+In virtually every data analyst interview in India, you will face this exact prompt: *"Metric X dropped Y% last week. How would you investigate?"* Interviewers do not care about the final answer; they evaluate your diagnostic discipline.
+
+## Concept
+
+### The 6-Step RCA Diagnostic Framework
+
+When any primary business metric moves unexpectedly, follow this disciplined sequence:
+
+```
+[1. Clarify & Define] → [2. Validate Data] → [3. External Context] → [4. Decompose Tree] → [5. Test Hypotheses] → [6. Conclude & Act]
+```
+
+#### Step 1: Clarify and Define
+Before running a single query, pin down the exact boundaries of the problem:
+- **Which specific metric moved?** Does "sales" mean Gross Merchandise Value (GMV) or net delivered revenue?
+- **What is the comparison baseline?** Is the drop Week-over-Week (WoW), Month-over-Month (MoM), or Year-over-Year (YoY)?
+- **What is the magnitude and timeline?** Did the drop happen overnight on a single Tuesday (incident), or drift downward over 6 weeks (trend)?
+
+#### Step 2: Validate Data Pipeline Hygiene
+Never assume the data is correct. Over 40% of sudden metric drops are tracking bugs:
+- Did an analytics ingestion job fail or log late-arriving data?
+- Was a tracking webhook dropped during a Friday evening deployment?
+- Did an anomaly logging error (such as a 100x outlier) corrupt the baseline?
+
+#### Step 3: Check External Context & Seasonality
+Determine whether the shift was driven by external environmental factors:
+- **Festivals & Holidays**: Did Diwali, Eid, or New Year create an artificial surge in the prior period?
+- **Weather & Disruptions**: Did monsoon flooding paralyze home deliveries or clinic visits?
+- **Competitor Actions**: Did a major competitor run a 50% cashback flash sale?
+
+#### Step 4: Decompose via Metric Tree
+Deconstruct the metric using structured trees:
+- **Multiplicative Driver Cut**: Did Revenue fall because Orders dropped, or because Average Order Value (AOV) contracted?
+- **Additive Segment Cuts**: Cut across Platforms (Android, iOS, Web), Payment Methods (COD, UPI, Cards), Product Categories, and Geographies.
+
+#### Step 5: Formulate and Test Hypotheses
+Rank potential explanations by magnitude and test each with one targeted SQL query. Compare the explained gap against total variance.
+
+#### Step 6: Conclude, Quantify Impact, and Recommend
+Synthesize the findings into an executive summary:
+1. What happened (with numbers).
+2. Root cause identified with evidence.
+3. Recommended business remedy and revenue recovery estimate.
+
+<FormulaCard title="Contribution to Total Change">
+To evaluate whether a segment explains the bulk of a drop, calculate its contribution share:
+`Contribution to Change = (Delta Segment Volume / Total Platform Delta Volume) * 100`
+
+If total revenue fell by Rs 532,014 and Android revenue fell by Rs 150,000, Android contributed 28.2% of the drop. If no single segment accounts for more than its natural volume share, the drop is systemic across the entire market.
+</FormulaCard>
+
+## Worked examples
+
+All examples in this section query `public/data/sqlite/ecommerce.sqlite` and `fintech.sqlite` using SQLite.
+
+### Example 1: Full RCA on DesiCart's December Performance
+Leadership reports that December sales collapsed after a record November. We apply the 6-step framework.
+
+#### Step 1 & 2: Clarify & Validate Data
+We query distinct orders, filter out extreme logging outliers (`total_amount < 100000`), and check delivered performance:
+
+```sql
+WITH o AS (
+  SELECT DISTINCT * FROM orders
+  WHERE total_amount < 100000 AND order_status = 'Delivered'
+)
+SELECT
+  strftime('%Y-%m', order_date) AS month,
+  COUNT(*) AS delivered_orders,
+  CAST(ROUND(SUM(total_amount)) AS INTEGER) AS revenue,
+  ROUND(AVG(total_amount), 2) AS aov
+FROM o
+WHERE strftime('%Y-%m', order_date) IN ('2024-11', '2024-12')
+GROUP BY month
+ORDER BY month ASC;
+```
+
+**Real Output from ecommerce.sqlite:**
+| month | delivered_orders | revenue | aov |
+| :--- | :--- | :--- | :--- |
+| 2024-11 | 496 | 2591559 | 5224.92 |
+| 2024-12 | 423 | 2059545 | 4868.90 |
+
+**Finding:** Delivered revenue fell by -20.53% (-Rs 532,014), and delivered orders fell by -14.72% (-73 orders). Both volume and basket size contracted.
+
+#### Step 3: Check Seasonality & YoY Performance
+Was December 2024 genuinely weak, or was November an abnormal festive peak? We compare December YoY:
+
+```sql
+WITH o AS (
+  SELECT DISTINCT * FROM orders
+  WHERE total_amount < 100000
+)
+SELECT
+  strftime('%Y', order_date) AS year,
+  COUNT(*) AS orders,
+  CAST(ROUND(SUM(CASE WHEN order_status = 'Delivered' THEN total_amount ELSE 0 END)) AS INTEGER) AS revenue
+FROM o
+WHERE strftime('%m', order_date) = '12' AND strftime('%Y', order_date) IN ('2023', '2024')
+GROUP BY year
+ORDER BY year ASC;
+```
+
+**Real Output from ecommerce.sqlite:**
+| year | orders | revenue |
+| :--- | :--- | :--- |
+| 2023 | 434 | 1910326 |
+| 2024 | 458 | 2059545 |
+
+**Finding:** Year-over-Year, December 2024 orders grew by +5.5% (458 vs 434) and delivered revenue grew by +7.8% (Rs 20.6 Lakh vs Rs 19.1 Lakh). November 2024 was artificially elevated by Diwali shopping (which extended into the first week of November). In 2023, November to December orders also contracted (-2.7%). The drop was a normal post-festive seasonal hangover, not a business failure.
+
+#### Step 4: Decompose by Channel
+Did a technical bug break one specific app channel?
+
+```sql
+WITH o AS (
+  SELECT DISTINCT * FROM orders
+  WHERE total_amount < 100000
+)
+SELECT
+  sales_channel,
+  SUM(CASE WHEN strftime('%Y-%m', order_date) = '2024-11' THEN 1 ELSE 0 END) AS nov_orders,
+  SUM(CASE WHEN strftime('%Y-%m', order_date) = '2024-12' THEN 1 ELSE 0 END) AS dec_orders,
+  ROUND((SUM(CASE WHEN strftime('%Y-%m', order_date) = '2024-12' THEN 1 ELSE 0 END) - SUM(CASE WHEN strftime('%Y-%m', order_date) = '2024-11' THEN 1 ELSE 0 END)) * 100.0 / SUM(CASE WHEN strftime('%Y-%m', order_date) = '2024-11' THEN 1 ELSE 0 END), 1) AS change_pct
+FROM o
+WHERE strftime('%Y-%m', order_date) IN ('2024-11', '2024-12')
+GROUP BY sales_channel
+ORDER BY change_pct ASC;
+```
+
+**Real Output from ecommerce.sqlite:**
+| sales_channel | nov_orders | dec_orders | change_pct |
+| :--- | :--- | :--- | :--- |
+| Website | 109 | 86 | -21.1 |
+| iOS App | 98 | 79 | -19.4 |
+| Mobile Web | 64 | 54 | -15.6 |
+| Android App | 262 | 239 | -8.8 |
+
+**Finding:** Every single channel fell between -8.8% and -21.1%. Order cancellations remained completely flat (27 in November vs 27 in December). The drop was market-wide demand contraction, completely ruling out an isolated mobile app release bug.
+
+#### Step 5 & 6: Conclude and Recommend
+- **Conclusion**: The MoM revenue drop of -20.5% was driven by natural post-Diwali festive hangover coupled with fewer promotional coupon redemptions (110 in Nov vs 77 in Dec). YoY growth remains healthy at +7.8%.
+- **Action**: Calibrate financial targets to Year-over-Year growth benchmarks rather than festive peaks. For December 2025, plan targeted year-end clearance campaigns to stimulate post-festive buying.
+
+## Common mistakes
+
+<CommonMistake>
+- **Jumping to conclusions before sizing the problem**: Suggesting an expensive loyalty revamp before verifying whether the drop is Rs 50,000 or Rs 50 Lakh.
+- **Comparing against an abnormal festive baseline**: Treating a post-Diwali month as a normal operational period without checking annual seasonality.
+- **Skipping data pipeline validation**: Spending three days diagnosing a customer churn spike when an engineering team simply deployed an unverified tracking tag.
+- **Single-segment tunnel vision**: Focusing exclusively on a 15% drop in Bangalore while missing that the entire national market fell 18%.
+- **Delivering observations without recommendations**: Presenting 15 charts showing that sales dropped, without telling leadership what concrete action to take.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="rca" module="business" />
+
+## Mini quiz
+
+<Quiz questions={[
+  {
+    q: "What is the very first step in a disciplined Root Cause Analysis (RCA)?",
+    options: [
+      "Writing a complex multi-table SQL join query",
+      "Clarifying the exact definition, time window, and magnitude of the metric drop",
+      "Calling an emergency meeting with the executive leadership team",
+      "Proposing an immediate 20% discount promotion"
+    ],
+    answer: 1,
+    explanation: "Before querying data or proposing fixes, an analyst must confirm the exact definition, baseline comparison, and magnitude of the problem."
+  },
+  {
+    q: "Why is Year-over-Year (YoY) comparison essential when analyzing retail and e-commerce performance in India?",
+    options: [
+      "Because the RBI mandates annual financial reporting",
+      "Because annual festive events like Diwali create massive month-over-month volume spikes that distort sequential comparisons",
+      "Because Year-over-Year queries run faster in database engines",
+      "Because customer account IDs are reset every twelve months"
+    ],
+    answer: 1,
+    explanation: "Festive shopping creates extreme temporary surges. Comparing a post-Diwali month to a festive month falsely indicates a crisis unless benchmarked YoY."
+  },
+  {
+    q: "If an e-commerce platform's orders decline uniformly across Android, iOS, Desktop Web, and Mobile Web, what can you conclude?",
+    options: [
+      "A software crash occurred in the latest Android APK release",
+      "Apple rejected the latest iOS app update in the App Store",
+      "The decline is driven by systemic customer demand or macro factors, ruling out an isolated client software bug",
+      "Database servers completely failed to record web orders"
+    ],
+    answer: 2,
+    explanation: "When a decline is distributed evenly across all disparate platforms, it reflects broad consumer demand rather than a platform-specific software defect."
+  },
+  {
+    q: "Total revenue dropped by Rs 500,000. Segment X accounted for Rs 200,000 of the drop. What is Segment X's contribution to the decline?",
+    options: [
+      "25.0%",
+      "40.0%",
+      "60.0%",
+      "20.0%"
+    ],
+    answer: 1,
+    explanation: "Contribution to change is (200,000 / 500,000) * 100 = 40.0%."
+  },
+  {
+    q: "What was the true root cause of NammaPay's elevated 5.10% failure rate on 2023-09-21 in the fintech dataset?",
+    options: [
+      "A uniform increase in customer PIN entry errors throughout the day",
+      "A discrete server outage between 18:00 and 21:00 where failure rates spiked up to 58.3%",
+      "A surge in international wire transfers exceeding limits",
+      "A total nationwide failure of all UPI banking switches"
+    ],
+    answer: 1,
+    explanation: "Hourly segmentation showed that outside the 18:00–21:00 outage window, failures were 0.0%, proving a discrete server crash rather than chronic failure."
+  }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+"Sales dropped 15%—how would you investigate?" is the most common diagnostic case question in tech interviews. Frame your answer using the structured 6-step framework rather than rattling off random guesses.
+</InterviewAlert>
+
+<InterviewQ q="Sales dropped 15% last week. How would you investigate?">
+I investigate metric drops using a structured 6-step diagnostic protocol:
+1. **Clarify & Define**: Confirm whether sales means gross orders or delivered revenue, verify the exact dates, and check whether the 15% drop is Week-over-Week or Year-over-Year.
+2. **Validate Data Pipeline**: Check with data engineering whether tracking webhooks, payment logs, or attribution pipelines experienced downtime or data loss.
+3. **External & Seasonal Context**: Check the calendar for public holidays, festive hangovers, severe weather disruptions, or competitor promotional campaigns.
+4. **Decompose via Metric Tree**: Decompose Sales into Orders $\times$ Average Order Value. Then segment additively by platform (Android vs iOS vs Web), channel, and product category.
+5. **Formulate & Test Hypotheses**: If orders fell, test whether checkout payment failure rates spiked, bestselling SKUs were out of stock, or ad spend was paused.
+6. **Synthesize & Recommend**: Quantify the verified root cause in rupees and deliver an action plan to restore volume.
+</InterviewQ>
+
+<InterviewQ q="Payment success rate dropped from 97.5% to 96.5% overnight. How do you triage the issue in SQL?">
+I execute an immediate 4-step triage sequence:
+1. **Cut by Issuing Bank**: Group by `bank` and compare success rates against 7-day rolling baselines. If Kaveri Co-op Bank dropped to 85%, the issue is an external banking host timeout.
+2. **Cut by Client App**: Group by `payment_app`. If only NammaPay dropped, check recent client app deployments for an SDK networking regression.
+3. **Inspect Failure Codes**: Group by `failure_code` to see if the decline is technical (`BANK_SERVER_TIMEOUT`, `UPI_SYSTEM_DOWN`) or user-side (`INSUFFICIENT_FUNDS`).
+4. **Hourly Incident Window**: Group by hour to pinpoint the exact minute the drop began and notify on-call infrastructure engineers.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between an observation and an insight in an RCA report?">
+An **observation** simply describes the raw data without context: *"December sales dropped 20.5% and fashion returns were 20.2%."*
+
+An **insight** explains the underlying mechanism, business significance, and operational action: *"December's 20.5% revenue drop was a normal post-Diwali seasonal hangover, while Year-over-Year sales expanded +7.8%. Meanwhile, fashion returns of 20.2% are driven primarily by size mismatches (53% of returns); introducing an interactive size finder will recover an estimated Rs 8 Lakh in lost margin."*
+</InterviewQ>
+
+## Key takeaways
+
+- Never guess causes; follow a structured 6-step framework from clarification to data validation, context, decomposition, testing, and action.
+- Always check Year-over-Year (YoY) benchmarks to avoid mistaking normal post-festive seasonal hangovers for operational crises.
+- Over 40% of sudden metric drops originate in broken tracking webhooks, ingestion job timeouts, or outlier logging errors.
+- If a metric drop affects all client platforms and channels uniformly, it is driven by broad consumer demand rather than a localized software defect.
+- Quantify segment impact using contribution to change (`Delta Segment / Total Delta`) to focus business remediation where leverage is highest.
+
+## Further reading
+
+<FurtherReading ids={["mode-sql", "alex-the-analyst"]} />

@@ -1,0 +1,133 @@
+---
+title: "Marketing capital allocation: Where should next quarter's advertising budget go?"
+industry: "Marketing consulting"
+difficulty: medium
+type: case-study
+estimatedMinutes: 35
+---
+
+## Problem
+
+You are an analytics consultant advising the Chief Marketing Officer (CMO) and VP of Growth at a direct-to-consumer (D2C) retail brand. During quarterly budget planning, the CMO shares their proposed ₹2.0 Lakh marketing allocation:
+> *"Last quarter, we split our primary budget across Google Search (₹95k), Meta Ads (₹45k), and Influencer Marketing (₹45k). Our brand team claims influencer campaigns build massive consumer trust and top-of-funnel buzz. However, the finance director points out that cash flow is tightening. Which marketing channels are actually delivering profitable unit economics, where are we wasting ad spend, and how should we reallocate our marketing capital next quarter?"*
+
+Your objective is to clean the marketing spend data, compute Customer Acquisition Cost (CAC) and Return on Ad Spend (ROAS) across all channels, diagnose the performance of the flagship "Mega Reach" influencer campaign, address attribution limitations, and model a high-yield budget reallocation.
+
+## Data you have
+
+From `marketing.sqlite`:
+- `ad_spend`: Deduplicated records (`ad_spend_id`, `campaign_id`, `channel`, `date`, `spend_inr`, `clicks`, `impressions`). Note: Contains duplicate rows and two test outliers (`ad_spend_id = 1867` with ₹99,637 and `id = 246` with ₹3,314) that must be filtered using `spend_inr < 3000`.
+- `conversions`: Deduplicated records (`conversion_id`, `campaign_id`, `user_id`, `conversion_type`, `revenue_inr`). Note: `revenue_inr` is populated for `'Purchase'`.
+
+## Approach
+
+1. **Clean Outliers and Deduplicate Tables**: Filter out anomalous ad spend test records (`spend_inr < 3000`) and ensure join integrity by pre-aggregating spend and conversions separately.
+2. **Benchmark CAC and ROAS by Channel**: Compute Total Spend, Total Purchases, Total Attributed Revenue, Customer Acquisition Cost (CAC), and Return on Ad Spend (ROAS).
+3. **Audit the Flagship Influencer Campaign**: Deep-dive into Campaign 25 ("Influencer Mega Reach Oct-24") to evaluate click-to-conversion efficiency.
+4. **Evaluate Scale Ceilings on Owned Channels**: Assess why Email and WhatsApp deliver 50x+ ROAS but cannot absorb large capital deployments.
+5. **Model the Budget Reallocation**: Quantify incremental revenue unlocked by reallocating capital from underperforming to high-yielding channels.
+
+## Step-by-step solution
+
+### Step 1: Channel Spend, CAC, and ROAS Benchmark
+
+To prevent Cartesian fan-out errors, we aggregate spend and conversions in separate Common Table Expressions (CTEs) before joining:
+
+```sql
+WITH clean_spend AS (
+  SELECT 
+    c.channel,
+    SUM(s.spend_inr) AS total_spend_inr,
+    SUM(s.clicks) AS total_clicks
+  FROM (SELECT DISTINCT * FROM ad_spend WHERE spend_inr < 3000) s
+  JOIN campaigns c ON s.campaign_id = c.campaign_id
+  GROUP BY c.channel
+),
+channel_conversions AS (
+  SELECT 
+    c.channel,
+    COUNT(conv.conversion_id) AS total_purchases,
+    SUM(conv.revenue_inr) AS total_revenue_inr
+  FROM (SELECT DISTINCT * FROM conversions WHERE conversion_type = 'Purchase') conv
+  JOIN campaigns c ON conv.campaign_id = c.campaign_id
+  GROUP BY c.channel
+)
+SELECT 
+  cs.channel,
+  ROUND(cs.total_spend_inr, 2) AS spend_inr,
+  COALESCE(cc.total_purchases, 0) AS purchases,
+  ROUND(COALESCE(cc.total_revenue_inr, 0), 2) AS revenue_inr,
+  ROUND(cs.total_spend_inr / NULLIF(cc.total_purchases, 0), 2) AS cac_inr,
+  ROUND(COALESCE(cc.total_revenue_inr, 0) / NULLIF(cs.total_spend_inr, 0), 2) AS roas_ratio
+FROM clean_spend cs
+LEFT JOIN channel_conversions cc ON cs.channel = cc.channel
+ORDER BY roas_ratio DESC;
+```
+
+| Channel | Spend (₹) | Purchases | Attributed Revenue (₹) | CAC (₹) | ROAS (x) | Performance Assessment |
+|---|---|---|---|---|---|---|
+| **Email** | ₹836 | 56 | ₹91,438 | ₹14.93 | **109.38x** | High-yield owned list |
+| **WhatsApp** | ₹1,520 | 46 | ₹74,391 | ₹33.04 | **48.94x** | High-yield owned list |
+| **Affiliate** | ₹2,677 | 24 | ₹31,955 | ₹111.54 | **11.94x** | Performance partner |
+| **Google Search** | **₹95,526** | **375** | **₹5,50,502** | **₹254.74** | **5.76x** | Scalable High-Intent Engine |
+| **Meta Ads** | **₹44,958** | **141** | **₹1,77,912** | **₹318.85** | **3.96x** | Scalable Visual Engine |
+| **YouTube** | ₹14,861 | 23 | ₹24,346 | ₹646.13 | **1.64x** | Marginal |
+| **Google Display** | ₹11,164 | 12 | ₹10,454 | ₹930.33 | **0.94x** | Value Destructive |
+| **Influencer** | **₹45,602** | **21** | **₹28,967** | **₹2,171.52** | **0.64x** | Severe Capital Drain |
+
+### Step 2: Critical Analytical Findings
+
+1. **Google Search is the Core Scalable Profit Engine**:
+   - Generates 375 purchases and ₹5.51 Lakhs in revenue at a **5.76x ROAS** and an efficient **₹255 CAC**.
+2. **Meta Ads Delivers Proven Scale**:
+   - Delivers 141 purchases at a **3.96x ROAS** and an attractive **₹319 CAC**.
+3. **Influencer Marketing is Severely Value-Destructive**:
+   - Despite absorbing ₹45,602 in spend, it produced only 21 purchases and ₹28,967 in revenue.
+   - **ROAS is 0.64x**: the company loses **₹0.36 on every single rupee invested**!
+   - Its CAC of **₹2,171 per customer** is nearly 9 times more expensive than Google Search!
+
+### Step 3: Deep-Dive: Campaign 25 ("Mega Reach Oct-24")
+
+Let's audit the flagship influencer campaign that leadership championed:
+- **Cleaned Spend**: ₹35,243 (raw database sum is ₹1,34,880 due to an unhandled ₹99,637 test entry).
+- **Traffic Delivered**: 2,204 ad clicks.
+- **Conversions Recorded**: Exactly **2 purchases** and **zero recognized revenue**!
+- *Mechanism*: Influencer "shoutouts" drove thousands of curious, low-intent clicks from followers who browsed the landing page for 5 seconds and bounced without purchasing.
+
+### Step 4: Scale Limits on Owned Channels (Email and WhatsApp)
+
+Why not deploy the entire ₹2.0 Lakh budget into Email (109x ROAS) and WhatsApp (49x ROAS)?
+- **List Exhaustion**: Email and WhatsApp broadcast to existing registered customers.
+- Their cost is purely software API messaging fees (₹0.10–₹0.50 per ping), yielding artificial ROAS multiples.
+- You cannot spend ₹50,000 broadcasting to a 5,000-user subscriber list without triggering mass unsubscriptions and spam complaints. Owned channels must be nurtured, not treated as scalable top-of-funnel acquisition media.
+
+### Step 5: Modeling the Budget Reallocation
+
+Let's model the impact of shifting 60% of the Influencer budget (₹27,000) into Google Search:
+```text
+Current Return on ₹27,000 in Influencer = ₹27,000 * 0.64 = ₹17,280 revenue
+Projected Return on ₹27,000 in Google Search = ₹27,000 * 5.76 = ₹1,55,520 revenue
+Net Incremental Revenue Unlocked = ₹1,55,520 - ₹17,280 = +₹1,38,240 (~+₹1.38 Lakhs)
+```
+Without spending an additional single rupee, shifting capital from a 0.64x channel to a 5.76x channel unlocks **₹1.38 Lakhs in incremental top-line revenue**.
+
+## Key insight
+
+Influencer marketing is failing on direct performance metrics, burning capital at an unsustainable 0.64x ROAS (losing ₹0.36 per rupee spent) and a ₹2,171 CAC. Conversely, Google Search (5.76x ROAS, ₹255 CAC) and Meta Ads (3.96x ROAS, ₹319 CAC) demonstrate strong unit economics and scalable intent. Reallocating ₹27,000 from Influencer to Search unlocks ₹1.38 Lakhs in incremental revenue with zero increase in total budget.
+
+## Recommendation
+
+1. **Reallocate 60% of Influencer Spend to Google Search and Meta**:
+   - Trim the Influencer quarterly budget from ₹45,600 down to ₹18,000.
+   - Allocate ₹20,000 to Google Search (capturing high-intent product keywords) and ₹7,000 to Meta Ads (retargeting abandoned carts).
+2. **Transition Influencer Contracts to Affiliate / Commission Models**:
+   - Eliminate upfront fixed retainer fees for lifestyle influencers. Transition creators to performance-based affiliate coupon codes (e.g., 10% commission on realized sales), capping customer acquisition cost at profitable levels.
+3. **Execute a Matched-Market Brand Holdout Test**:
+   - To address the brand team's argument that influencers create indirect un-attributed demand, run a 4-week geo-holdout experiment: pause influencer spend in 3 Tier-1 cities (control) while continuing in 3 matched cities (treatment), measuring whether organic search volume drops.
+
+## What a weak answer looks like
+
+- Recommends investing the entire ₹2.0 Lakh budget into WhatsApp because its ROAS is 49x, completely misunderstanding list exhaustion.
+- Fails to clean the ₹99,637 test outlier in the ad spend table, producing wildly distorted CAC numbers.
+- Advocates continuing influencer marketing without holding creators accountable for negative unit economics.
+- Performs a direct join between ad spend and conversions without pre-aggregating, inflating row counts through Cartesian product fan-outs.

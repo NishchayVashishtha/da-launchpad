@@ -1,0 +1,277 @@
+---
+title: "How to solve a written business case"
+description: "A repeatable method for case rounds and take-home business questions, with a map of our 25 cases."
+module: business
+order: 14
+estimatedMinutes: 45
+objectives:
+  - "Apply a repeatable 6-step analytical framework to solve live and take-home business case studies"
+  - "Construct Mutually Exclusive and Collectively Exhaustive (MECE) hypothesis trees prior to data extraction"
+  - "Transform quantitative query results into high-impact, trade-off-aware executive recommendations"
+  - "Navigate the 25 written case studies across Fintech, Healthcare, and E-commerce Consulting"
+tags: ["business", "case-study", "interview", "framework"]
+---
+
+## Learning objectives
+
+By the end of this lesson, you will be able to:
+- Structure any analytics case study prompt into 6 systematic steps: Clarify, Structure, Inspect, Analyze, Synthesize, and Recommend.
+- Avoid premature data querying by constructing a MECE hypothesis tree.
+- Format written and verbal case responses using the 1-Line Answer + 3 Key Findings + Recommendation structure.
+- Self-evaluate case solutions using an objective 100-point rubric across Structure, Analysis, Insight, and Recommendation.
+- Navigate our curated repository of 25 industry case studies to build real-world problem-solving fluency.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+The case study round is the ultimate filter in senior and entry-level data analyst hiring across top tech companies, product startups, and analytics consultancies. Interviewers give you a messy prompt: *"Our payment failure rate surged 30% yesterday"* or *"DesiCart sales plummeted in December. Tell us why and how to fix it."*
+
+Candidates who fail usually open SQL immediately and start writing random `GROUP BY` queries without a clear plan. They find isolated numbers, get lost in details, and run out of time. Candidates who pass act like seasoned consultants: they pause, ask clarifying questions, build a structured hypothesis tree, run targeted queries to validate or invalidate each branch, and present an executive recommendation backed by numbers.
+</RealWorld>
+
+Solving business cases is not about luck; it is a learned, repeatable engineering discipline. Once you master the 6-step framework, no ambiguous business challenge will intimidate you.
+
+## Concept
+
+### The 6-step case-solving framework
+
+Follow this 6-step workflow for every live case round, take-home challenge, and executive problem:
+
+```text
+Step 1: RESTATE & CLARIFY (3-5 minutes)
+Paraphrase the problem in your own words. Confirm the North Star metric, scope, time window, and constraints.
+
+Step 2: BUILD A MECE HYPOTHESIS TREE (5 minutes)
+Decompose the metric into Mutually Exclusive, Collectively Exhaustive branches BEFORE looking at data tables.
+
+Step 3: DATA INSPECTION & HYGIENE (5 minutes)
+Audit table schemas, check primary keys, deduplicate, trim whitespace, and verify date boundaries.
+
+Step 4: TARGETED ANALYSIS & SEGMENTATION (10-15 minutes)
+Query the database systematically to test each hypothesis branch: segment by channel, cohort, bank, or city.
+
+Step 5: SYNTHESIZE KEY INSIGHTS ("SO WHAT?") (3-5 minutes)
+Translate statistical findings into operational realities: why did this happen, and what is the business impact?
+
+Step 6: EXECUTIVE RECOMMENDATION & RISKS (3-5 minutes)
+Deliver actionable next steps with estimated revenue/cost impact, implementation timelines, and trade-offs.
+```
+
+<Tip>
+**The MECE Test: Mutually Exclusive, Collectively Exhaustive**  
+When building your hypothesis tree, ensure that:
+1. **Mutually Exclusive**: No two branches overlap or test the same underlying factor.
+2. **Collectively Exhaustive**: Together, all branches cover every reasonable explanation for the metric movement.
+</Tip>
+
+### Structuring the final response
+
+Whether presenting on a whiteboard or writing an executive memo, format your deliverable using this proven structure:
+
+1. **One-Line Executive Answer**: High-level diagnosis and total financial/operational magnitude.
+2. **Three Core Diagnostic Findings**: Quantified root-cause drivers with percentages and baseline comparisons.
+3. **Actionable Recommendation**:
+   - *Immediate Action* (Days 1–7): Quick technical or routing fix.
+   - *Medium-Term Strategy* (Weeks 2–6): Product redesign, policy adjustment, or partner SLA enforcement.
+4. **Risks and Mitigations**: Honest acknowledgement of trade-offs, potential customer friction, and guardrail metrics.
+
+### Case evaluation rubric (100 points)
+
+Interviewers and hiring managers evaluate solutions across 4 distinct dimensions:
+
+- **Structure & Problem Framing (25 pts)**: Did the candidate ask clarifying questions, define the metric, and construct a logical MECE tree?
+- **Analytical Rigor & Data Hygiene (25 pts)**: Did the candidate verify data quality, clean dirty strings, deduplicate webhooks, and calculate accurate numbers?
+- **Business Insight & 'So What?' (25 pts)**: Did the candidate move beyond stating observations to explain the underlying business mechanism?
+- **Actionable Recommendation & Communication (25 pts)**: Is the proposed solution realistic, prioritized, trade-off-aware, and clearly communicated?
+
+---
+
+### The 25 Launchpad written cases
+
+We have authored 25 comprehensive, data-backed case studies across three critical sectors. Each case includes real datasets, query walkthroughs, empirical benchmarks, and model solutions:
+
+#### 1. Fintech & Payments Cases (10 Cases)
+Explore payment rails, gateway routing, risk rules, and partner bank SLAs using `fintech.sqlite`:
+- [UPI NammaPay Outage Windows](/business/cases/upi-nammapay-outage-windows/): Medium | 35 min
+- [Kaveri Bank Peak Hour Failures](/business/cases/kaveri-bank-peak-hour-failures/): Medium | 35 min
+- [Salary Day Failures Myth](/business/cases/salary-day-failures-myth/): Easy | 20 min
+- [Night Fraud Flag Rule](/business/cases/night-fraud-flag-rule/): Hard | 45 min
+- [TPV Growth Users Not Ticket](/business/cases/tpv-growth-users-not-ticket/): Easy | 25 min
+- [Failed Payment Retry Policy](/business/cases/failed-payment-retry-policy/): Medium | 35 min
+- [KYC Tier Limits Decision](/business/cases/kyc-tier-limits-decision/): Medium | 30 min
+- [Unverified Merchants Risk](/business/cases/unverified-merchants-risk/): Medium | 30 min
+- [Diwali Peak Capacity Plan](/business/cases/diwali-peak-capacity-plan/): Medium | 35 min
+- [TPV Number Dispute](/business/cases/tpv-number-dispute/): Hard | 40 min
+
+#### 2. Healthcare & Telehealth Cases (7 Cases)
+Analyze patient funnels, diagnostic lab logistics, and cohort retention:
+- [Diagnostics Staff Attrition](/business/cases/diagnostics-staff-attrition/): Medium | 35 min
+- [Telehealth Trial-to-Paid Funnel](/business/cases/telehealth-trial-to-paid-funnel/): Easy | 25 min
+- [March 2024 Cohort Churn Spike](/business/cases/march-2024-cohort-churn-spike/): Hard | 45 min
+- [Home Sample Pickup Delays](/business/cases/home-sample-pickup-delays/): Medium | 35 min
+- [Monsoon Capacity Home Collection](/business/cases/monsoon-capacity-home-collection/): Medium | 30 min
+- [Hospital KPI Scorecard](/business/cases/hospital-kpi-scorecard/): Medium | 30 min
+- [Telehealth Market Sizing](/business/cases/telehealth-market-sizing/): Medium | 30 min
+
+#### 3. E-commerce & Marketing Consulting Cases (8 Cases)
+Solve marketing spend allocation, product returns, and revenue contractions:
+- [DesiCart December Sales Drop](/business/cases/desicart-december-sales-drop/): Medium | 40 min
+- [Fashion Returns Profit Leak](/business/cases/fashion-returns-profit-leak/): Medium | 35 min
+- [COD Cancellation Policy](/business/cases/cod-cancellation-policy/): Medium | 30 min
+- [Influencer Budget Reallocation](/business/cases/influencer-budget-reallocation/): Medium | 35 min
+- [Free Shipping Banner Ship Decision](/business/cases/free-shipping-banner-ship-decision/): Hard | 45 min
+- [Vasudha Stockout Stores](/business/cases/vasudha-stockout-stores/): Medium | 35 min
+- [Home Decor Overstock](/business/cases/home-decor-overstock/): Easy | 25 min
+- [Prime Membership Worth](/business/cases/prime-membership-worth/): Hard | 40 min
+
+## Worked examples
+
+### 1. End-to-end case walkthrough: Kaveri Bank peak failures
+
+Let's observe the 6-step framework applied to a real fintech case:
+
+```text
+Prompt: "Our overall UPI failure rate is 2.70% this month. The engineering team claims all systems are normal. Find out what is happening."
+
+Step 1: Clarify
+- Define Failure Rate: Failed Transactions / Total Initiated Attempts.
+- Scope: 22,300 total transactions across 8 partner banks.
+
+Step 2: Build MECE Tree
+- Branch 1: Platform-wide technical failures (our app/switch).
+- Branch 2: Partner bank rail failures (issuing or acquiring bank systems).
+- Branch 3: Time-windowed congestion (peak hours vs off-peak).
+
+Step 3 & 4: Inspect & Analyze
+- Platform benchmark across 7 partner banks: 2.19% to 2.49% failure rate.
+- Kaveri Co-operative Bank: 6.06% overall failure rate across 1,700 transactions.
+- Hour-by-hour segmentation: Kaveri Bank failures spike to 9.98% during rush hours (09:00, 18:00, 19:00 IST), while other banks stay stable at 2.19%.
+
+Step 5: Synthesize Insight
+The issue is not internal platform instability. Kaveri Bank's Core Banking System (CBS) suffers severe connection pool exhaustion during peak commute hours, driving 68 failed transactions.
+
+Step 6: Recommend
+1. Immediate: Implement dynamic routing to throttle Kaveri Bank traffic during peak commute hours and prompt users to select alternative linked accounts.
+2. Medium-Term: Issue formal partner SLA breach notice and mandate server connection pool expansion.
+```
+
+### 2. Weak answer vs. Strong answer side by side
+
+| Dimension | What a Weak Answer Looks Like | What a Strong Answer Looks Like |
+|---|---|---|
+| **Approach** | Dives immediately into running queries: *"I ran a query on the orders table and noticed sales were down in December."* | States framework upfront: *"I will investigate this revenue decline by decomposing revenue into Delivered Volume and AOV, then slicing across category and channel."* |
+| **Analysis** | Lists isolated observations without context: *"Electronics revenue was Rs 12 lakhs. Fashion returns were high."* | Connects volume and ticket size: *"Delivered revenue contracted 20.5% (Rs 5.32L drop), driven by a 14.7% volume drop combined with a 6.8% AOV compression."* |
+| **Recommendation** | Vague platitudes: *"We should improve marketing and provide discounts to increase sales."* | Quantified, phased actions: *"Reallocate Rs 45,000 from low-ROAS influencer spend (0.64x) to Google Search (5.76x) to recover Rs 2.1L in gross sales."* |
+
+## Common mistakes
+
+<CommonMistake>
+**Common Mistake: The 'Premature Querying' Trap**  
+Candidates frequently jump into SQL within 30 seconds of reading the prompt. Without structuring hypotheses first, they chase random red herrings, write disjointed queries, and fail to synthesize a coherent story when time runs out.
+</CommonMistake>
+
+Other frequent pitfalls:
+- **Framework vomiting**: Reciting textbook acronyms (SWOT, PESTLE, 4Ps) that have zero relevance to a quantitative data analytics case.
+- **Ignoring data hygiene**: Failing to filter out test accounts, uncleaned trailing spaces, or cancelled orders, producing inflated numbers.
+- **Leaving out recommendations**: Ending the case with *"So that is why numbers dropped"* without providing actionable business solutions.
+- **Overclaiming from tiny sample sizes**: Recommending major product overhauls based on an anomaly involving only 3 or 4 customer records.
+
+## Practice questions
+
+<PracticeSet topic="casemethod" module="business" />
+
+## Mini quiz
+
+<Quiz questions={[
+  {
+    q: "What is the very first step in solving a business case study?",
+    options: [
+      "Write a complex SQL window function query",
+      "Restate the problem in your own words and ask clarifying questions to scope the objective",
+      "Draft a 20-slide PowerPoint presentation",
+      "Recommend immediate product price cuts"
+    ],
+    answer: 1,
+    explanation: "Restating the problem and asking clarifying questions ensures you solve the right business problem before analyzing data."
+  },
+  {
+    q: "What does MECE stand for in hypothesis structuring?",
+    options: [
+      "Most Efficient Calculation Engine",
+      "Mutually Exclusive, Collectively Exhaustive",
+      "Monthly Estimated Customer Equity",
+      "Marketing Evaluation and Cost Estimation"
+    ],
+    answer: 1,
+    explanation: "MECE ensures that hypothesis branches do not overlap (mutually exclusive) and cover all potential drivers (collectively exhaustive)."
+  },
+  {
+    q: "When an e-commerce platform experiences a revenue decline, how should you first decompose the top-line number?",
+    options: [
+      "Revenue = Delivered Orders × Delivered Average Order Value (AOV)",
+      "Revenue = Number of Employees × Hours Worked",
+      "Revenue = Server Count × Database Latency",
+      "Revenue = Marketing Budget / Cost Per Click"
+    ],
+    answer: 0,
+    explanation: "Decomposing revenue into transaction volume and average ticket size isolates whether the problem is customer acquisition or purchasing basket size."
+  },
+  {
+    q: "What are the four core sections of an executive case solution summary?",
+    options: [
+      "SQL query, execution time, database CPU usage, and index recommendations",
+      "One-line answer, three quantified findings, actionable recommendations, and risk trade-offs",
+      "Company history, SWOT analysis, mission statement, and team bios",
+      "Introduction, 15 exploratory charts, regression summary, and conclusion"
+    ],
+    answer: 1,
+    explanation: "Executive communication requires a headline answer, three core findings, actionable recommendations, and explicit risk trade-offs."
+  },
+  {
+    q: "In our 100-point case study evaluation rubric, how many points are allocated to each of the four scoring dimensions?",
+    options: [
+      "50 pts Structure, 50 pts SQL",
+      "25 pts Structure, 25 pts Analysis, 25 pts Insight, 25 pts Recommendation",
+      "10 pts Structure, 90 pts Final Output",
+      "100 pts Coding speed"
+    ],
+    answer: 1,
+    explanation: "A balanced rubric awards 25 points each to Structure, Analysis, Insight, and Actionable Recommendations."
+  }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+**How interviewers evaluate case study rounds**  
+Interviewers care more about your problem-solving process than reaching a single 'correct' answer. They evaluate whether you remain calm, structure ambiguous prompts, handle real-world dirty data, and deliver clear business recommendations.
+</InterviewAlert>
+
+<InterviewQ q="You have 30 minutes to solve an unfamiliar business case. How do you allocate your time?">
+I divide a 30-minute case into four distinct time blocks:
+
+1. **Minutes 0–5 (Clarify & Structure)**: Restate the prompt, confirm the core metric, ask clarifying scoping questions, and sketch a 3-branch MECE hypothesis tree.
+2. **Minutes 5–15 (Data Hygiene & Targeted Analysis)**: Run quick hygiene checks (duplicates, date windows, string normalization) and execute targeted queries to test each hypothesis branch.
+3. **Minutes 15–22 (Synthesize Insights & Impact)**: Identify the primary driver ('So What?'), quantify the financial impact in INR or volume, and determine the operational mechanism.
+4. **Minutes 22–30 (Structure Recommendation & Present)**: Formulate a 2-part recommendation (immediate technical fix + medium-term policy), identify operational trade-off risks, and present following the 1-Line Answer + 3 Findings framework.
+</InterviewQ>
+
+<InterviewQ q="What do you do if your initial hypothesis turns out to be completely wrong when you query the data?">
+I treat a disproven hypothesis as valuable progress, not failure:
+
+1. **Acknowledge Calmly**: State clearly to the interviewer: *"The data disproves my initial hypothesis: we hypothesized that salary day volume caused the failure surge, but failure rates on the 1st of the month (2.68%) are virtually identical to mid-month baselines (2.71%)."*
+2. **Eliminate and Pivot**: Cross off that branch of the hypothesis tree transparently.
+3. **Advance to the Next Branch**: Pivot immediately to the next MECE branch: *"Having eliminated date-of-month congestion, I will now investigate partner bank rail stability and time-of-day traffic concentration."*
+</InterviewQ>
+
+## Key takeaways
+
+- Never jump straight into SQL; always execute the 6-step framework: Clarify, Structure, Inspect, Analyze, Synthesize, and Recommend.
+- Deconstruct the problem using a MECE hypothesis tree before inspecting database tables.
+- Perform rapid data hygiene checks (deduplication, string trimming, status filtering) before calculating top-line metrics.
+- Format all case deliverables using the executive framework: 1-Line Answer, 3 Quantified Findings, Phased Recommendations, and Risks.
+- Practice regularly across our 25 written case studies to build cross-industry intuition and problem-solving confidence.
+
+## Further reading
+
+<FurtherReading ids={["alex-the-analyst"]} />

@@ -1,0 +1,231 @@
+---
+title: "Dashboard requirement gathering"
+description: "Ask the right questions before you build a single chart."
+module: business
+order: 10
+estimatedMinutes: 40
+objectives:
+  - "Run a structured stakeholder interview to uncover genuine business decisions behind a dashboard request"
+  - "Transform vague requests into a concise, actionable one-page dashboard specification"
+  - "Select visual chart types systematically based on the specific analytical question"
+  - "Design role-based access, data refresh schedules, and privacy controls to prevent scope creep"
+tags: ["business", "dashboard", "requirements", "stakeholders"]
+---
+
+## Learning objectives
+
+By the end of this lesson, you will be able to:
+- Conduct an 8-question stakeholder discovery interview to extract exact operational goals.
+- Create a standardized one-page dashboard specification defining audience, KPIs, filters, refresh latency, and data ownership.
+- Select the appropriate chart visual (trend, comparison, composition, distribution) mapped to business decisions while eliminating chart junk.
+- Establish role-based access control (RBAC) and privacy masking to protect customer and patient personal data.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+A business leader or vice president approaches your desk and says: *"Hey, we need a sales dashboard. Can you build something in Power BI or Tableau by Friday?"*
+
+If you immediately open Power BI, pull 15 tables from the data warehouse, and build 20 colorful charts, your dashboard will almost certainly fail. Two weeks later, nobody uses it. The VP wanted to track regional revenue against monthly sales quotas; the operations lead wanted dispatch delays; the finance director wanted payment gateway fees. Because you didn't gather structured requirements, you built an unnavigable "everything dashboard" that answers nobody's questions.
+</RealWorld>
+
+Over 70% of wasted business intelligence engineering time is spent reworking dashboards that missed stakeholder expectations. Great data analysts act like master tailors: they take exact measurements, understand the user's specific workflow, and write a signed specification before cutting a single yard of cloth.
+
+## Concept
+
+### The 8-question requirements discovery framework
+
+Before creating a data model or dragging a chart onto a canvas, schedule a 30-minute discovery session with the primary stakeholder and ask these 8 questions:
+
+1. **Who is the primary audience?**  
+   Are they an executive (CEO/VP needing high-level summary cards on a mobile view), an operations manager (monitoring daily queues and exceptions), or an analyst (needing granular row-level data extracts)?
+2. **What specific business decision will this dashboard drive?**  
+   If a number turns red or drops by 15%, what operational action will the stakeholder take within the next 24 hours? If no decision is tied to the metric, it should not be on the primary view.
+3. **What are the top 5 to 7 core KPIs?**  
+   Enforce a hard limit of 5 to 7 headline metrics. More than 7 causes cognitive overload and dilutes accountability.
+4. **What are the benchmarks and comparison baselines?**  
+   Is a metric evaluated against a budget target, the previous month (MoM), the same month last year (YoY), or an internal SLA?
+5. **Which filters and drill-downs are genuinely required?**  
+   What dimensions will users slice by: Date range, Geographic zone (North/South/East/West), Partner bank, Product category? Avoid adding every database column as a dropdown slicer.
+6. **What is the required data refresh frequency and latency?**  
+   Does the stakeholder need real-time streaming (5-minute refresh for payment outages), daily batch updates (refreshed by 08:00 IST), or weekly executive summaries?
+7. **What are the data privacy, security, and access rules?**  
+   Who is authorized to view this data? Should customer names, phone numbers, or employee salaries be masked or restricted via Row-Level Security (RLS)?
+8. **What are the acceptance criteria and dashboard success metrics?**  
+   How will we know this dashboard is successful? (e.g., reduces weekly manual spreadsheet reporting time from 4 hours to zero, achieves weekly active usage by all 8 regional ops managers).
+
+<Tip>
+**Pushback Technique: The 'So What?' Test**  
+When a stakeholder insists on adding an extra chart or data point, ask politely: *"If this number changes from 4% to 7% tomorrow morning, what specific action will your team take?"* If they cannot name an operational decision, it belongs in an ad-hoc exploratory report or appendix, not on the executive dashboard.
+</Tip>
+
+### The one-page dashboard specification template
+
+Consolidate the discovery interview into a standardized 1-page PRD:
+
+```text
+========================================================================
+DASHBOARD SPECIFICATION: UPI Payment Gateway Reliability
+========================================================================
+1. Business Objective: Monitor banking rail performance to detect partner outages.
+2. Target Audience: Operations Support Team (Primary) & VP Payments (Secondary).
+3. Refresh Schedule: 15-minute scheduled refresh (06:00 to 23:00 IST).
+4. Core KPIs:
+   - Success Rate (%) [Target: >= 97.5%]
+   - Total Processed Volume (INR Lakhs)
+   - Failure Rate (%) by Error Category (Technical vs. Business)
+   - Active Bank Gateway Status (Uptime Status: Green/Yellow/Red)
+5. Dimension Filters: Time Window (Today, Last 7D, 30D), Partner Bank, PSP App.
+6. Layout Hierarchy:
+   - Top (Hero): 4 Headline KPI Cards with status indicator vs SLA target.
+   - Middle (Diagnostics): 24-hour hourly trend line of Success Rate.
+   - Bottom (Action Table): Ranked table of partner banks by failed volume.
+7. Access & Privacy: Role-based access; zero customer PII (no phone numbers or full account numbers).
+8. Sign-Off & Owner: Payments Ops Lead (Sign-off date: 2026-11-24).
+========================================================================
+```
+
+### Chart selection mapped to analytical questions
+
+Choose visual representations based on the cognitive task, not decorative appeal:
+
+| Analytical Question | Optimal Chart Type | Why It Works | Charts to Avoid |
+|---|---|---|---|
+| **Trend over continuous time** | Line chart | Continuous line reveals momentum, seasonality, and sudden step changes. | Bar charts with 60 thin daily bars. |
+| **Discrete category comparison** | Horizontal or vertical bar chart | Human eyes excel at comparing lengths from a common baseline. | Radar charts, 3D bar charts. |
+| **Part-to-whole composition** | Stacked bar chart or waterfall | Clearly illustrates how components build to the total. | Pie charts with more than 5 slices. |
+| **Correlation between 2 metrics** | Scatter plot | Displays distribution, clustering, and outlier anomalies. | Dual-axis line charts with mismatched zero baselines. |
+
+## Worked examples
+
+### 1. Trimming a cluttered 25-chart sales dashboard to 6 focused visuals
+
+An e-commerce regional manager requests a dashboard containing 25 disparate charts (pie charts of browser types, word clouds of review feedback, 10 separate geo-maps, etc.). Here is how to trim it to 6 high-impact visuals:
+
+```text
+Visual 1 (Top Hero): 4 KPI Cards (Delivered Revenue, Total Orders, Delivered AOV, Return Rate).
+Visual 2 (Trend): Monthly Line Chart comparing Delivered Revenue vs. Budget Target (Last 12 Months).
+Visual 3 (Comparison): Horizontal Bar Chart of Revenue by Product Category (sorted descending).
+Visual 4 (Performance Gap): Horizontal Bar Chart comparing Delivered vs. Cancelled Orders by Zone.
+Visual 5 (Channel Acquisition): Stacked Bar Chart of Order Volume by Acquisition Channel (Organic, Search, Meta).
+Visual 6 (Operational Table): Sortable Top 20 SKU table showing Inventory Stockout Risk and Units Sold.
+```
+
+*Result*: Cognitive load drops by 75%, and stakeholders can answer their 3 critical daily decisions within 10 seconds of opening the page.
+
+### 2. Privacy design for a clinic Outpatient Department (OPD) dashboard
+
+When designing an operational queue dashboard for hospital clinic managers:
+- **What to show**: Doctor Name, Specialization (Cardiology, Orthopedics), Scheduled Appointment Time, Check-In Time, Wait Time (minutes), and Consultation Status (Waiting, In-Consult, Completed).
+- **What to hide/mask**: Patient Full Name (display as Token ID `PT-8492` or initials `A. K.`), Mobile Number, Home Address, and Clinical Medical Diagnosis.
+- **Why**: Operational queue management requires monitoring flow and wait times, not diagnosing patients. Exposing medical conditions on large overhead wall displays violates patient confidentiality and data protection statutes.
+
+## Common mistakes
+
+<CommonMistake>
+**Common Mistake: The 'Kitchen Sink' Dashboard**  
+Accepting every stakeholder feature request without pushback creates a 30-chart monstrosity. Users get overwhelmed, queries slow down to 45 seconds per filter click, and leadership stops opening the report altogether.
+</CommonMistake>
+
+Other frequent mistakes:
+- **Misaligned refresh expectations**: Engineering builds an expensive real-time Kafka streaming pipeline when the executive only checks the dashboard once on Monday mornings.
+- **Ignoring mobile responsiveness**: Designing a 1920x1080 pixel dashboard that is completely unreadable when executives open it on their mobile phones while traveling.
+- **Omitting definitions and footnotes**: Presenting "Gross Revenue" without documenting whether taxes, shipping fees, or pre-dispatch cancellations are deducted.
+
+## Practice questions
+
+<PracticeSet topic="dashreq" module="business" />
+
+## Mini quiz
+
+<Quiz questions={[
+  {
+    q: "What is the most critical question to ask a stakeholder before beginning dashboard development?",
+    options: [
+      "Which color palette do you prefer for the visual theme?",
+      "What specific business decisions will you make based on this dashboard?",
+      "How many total charts would you like on the first tab?",
+      "Should we build this in Tableau, Power BI, or Looker?"
+    ],
+    answer: 1,
+    explanation: "Understanding the decision to be made ensures every visual directly supports action rather than serving as passive decoration."
+  },
+  {
+    q: "What is the recommended limit for primary headline KPI cards on an executive dashboard view?",
+    options: [
+      "15 to 20 cards",
+      "5 to 7 cards",
+      "Exactly 1 card",
+      "As many as the database schema contains"
+    ],
+    answer: 1,
+    explanation: "Cognitive science shows that humans process information best in chunks of 5 to 7 items; exceeding this creates visual clutter and decision fatigue."
+  },
+  {
+    q: "Which chart visual is best suited for displaying monthly Total Processed Volume (TPV) over a 24-month historical period?",
+    options: [
+      "A pie chart with 24 colored slices",
+      "A radar chart",
+      "A continuous line chart with chronological time on the horizontal axis",
+      "A 3D doughnut chart"
+    ],
+    answer: 2,
+    explanation: "Continuous line charts excel at displaying trends, trajectory changes, and seasonality over time along a linear axis."
+  },
+  {
+    q: "A clinical OPD dashboard is displayed on a large operations screen in the hospital lobby. How should patient identity be handled?",
+    options: [
+      "Display full patient names and diagnoses so families can find their queue position",
+      "Mask patient names as token IDs or initials and suppress all medical diagnosis fields",
+      "Display phone numbers in bold red text",
+      "Delete the patient records from the database after display"
+    ],
+    answer: 1,
+    explanation: "Hospital wall displays must protect patient privacy under healthcare data regulations by showing queue tokens and masking personal identifiers."
+  },
+  {
+    q: "After a dashboard specification is signed off, a stakeholder emails three new chart requests. What is the most professional response?",
+    options: [
+      "Immediately add all three charts before the deadline",
+      "Ignore the email and deliver the original version without responding",
+      "Acknowledge the requests, deliver the agreed V1 on schedule, and log the additions in the V2 backlog for prioritization",
+      "Accuse the stakeholder of violating company policy"
+    ],
+    answer: 2,
+    explanation: "Managing scope creep professionally requires protecting delivery commitments for V1 while prioritizing new requirements transparently in a V2 backlog."
+  }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+**How interviewers evaluate dashboard questions**  
+Interviewers don't evaluate your knowledge of specific software buttons. They test your ability to consult with non-technical stakeholders, manage conflicting requests, enforce simplicity, and say "no" constructively.
+</InterviewAlert>
+
+<InterviewQ q="A business manager tells you: 'I need a dashboard showing everything about our customers.' How do you respond?">
+I would thank the manager and schedule a 30-minute scoping workshop to translate that broad desire into a focused tool:
+
+1. **Unpack the Workflow**: I would ask: *"When you think about customer performance on a Monday morning, what are the first three questions you need answered to run your weekly standup?"*
+2. **Identify Primary User & Decisions**: I would clarify who uses the report daily versus monthly. Is this meant to identify churning enterprise accounts for customer success interventions, or tracking marketing acquisition channels?
+3. **Draft a 1-Page Spec**: Based on their answers, I would draft a mockup with 5 core KPIs (Active Accounts, Churn Rate, Expansion MRR, Net Promoter Score, and Support Ticket Backlog), get written alignment on metric formulas, and set clear acceptance criteria before building.
+</InterviewQ>
+
+<InterviewQ q="The VP of Sales and the CFO have contradictory definitions of 'Revenue'. The VP wants to include booked contracts; the CFO only wants cash received in the bank. How do you handle this in the dashboard?">
+I would not arbitrarily pick one side or allow confusion:
+
+1. **Clarify Business Context**: Both definitions are legitimate for different decisions: the VP measures forward-looking commercial pipeline velocity, while the CFO measures audited cash-flow liquidity.
+2. **Explicit Labeling**: I would explicitly separate them into two distinct, un-ambiguous metric cards labeled **'Booked Contract Value (Committed ARR)'** and **'Recognized Cash Revenue (Collected)'**.
+3. **Documentation & Alignment**: I would add an info tooltip on each visual documenting the respective data source and calculation logic, ensuring leadership speaks a unified financial language.
+</InterviewQ>
+
+## Key takeaways
+
+- Never write SQL or open a BI tool until you have completed an 8-question stakeholder discovery interview.
+- Limit executive dashboards to 5 to 7 headline KPIs placed prominently in the top hero section.
+- Use line charts for continuous trends over time and horizontal bar charts for categorical comparisons; eliminate 3D charts and pie charts with more than 5 slices.
+- Protect sensitive data by applying role-based access control and masking customer/patient identifiers in operational views.
+- Combat scope creep by delivering an agreed Version 1 on schedule and scheduling subsequent requests into a transparent Version 2 backlog.
+
+## Further reading
+
+<FurtherReading ids={["power-bi-docs", "alex-the-analyst"]} />

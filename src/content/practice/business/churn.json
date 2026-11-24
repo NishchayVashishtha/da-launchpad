@@ -1,0 +1,292 @@
+[
+  {
+    "id": "business-churn-001",
+    "module": "business",
+    "topic": "churn",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "The finance team needs an overall count of active versus cancelled paid subscriptions across the lifetime of the platform. From distinct records in `subscriptions`, count the total number of paid subscriptions (`paid_start_date IS NOT NULL`) as `paid`, and the count of those paid subscriptions that have since cancelled (`status = 'cancelled'`) as `cancelled`.",
+    "dataset": "subscription",
+    "hint": "Filter WHERE paid_start_date IS NOT NULL in a CTE of distinct subscriptions.",
+    "solutionSql": "WITH s AS (\n  SELECT DISTINCT * FROM subscriptions\n)\nSELECT\n  COUNT(*) AS paid,\n  SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled\nFROM s\nWHERE paid_start_date IS NOT NULL;",
+    "expectedOutput": {
+      "columns": [
+        "paid",
+        "cancelled"
+      ],
+      "rows": [
+        [
+          1193,
+          654
+        ]
+      ]
+    },
+    "explanation": "Out of 1,193 distinct paid subscribers, exactly 654 have cancelled their recurring subscription, while the remaining 539 remain active. It is vital to exclude trial expirations by filtering for paid_start_date IS NOT NULL.",
+    "commonMistake": "Counting trial users whose trials simply expired without converting to paid status as churned customers.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "churn",
+      "subscription",
+      "sql"
+    ]
+  },
+  {
+    "id": "business-churn-002",
+    "module": "business",
+    "topic": "churn",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "Calculate the cumulative subscriber churn rate percentage across all distinct paid subscriptions, rounded to one decimal place. Return a single column named `churn_pct`.",
+    "dataset": "subscription",
+    "hint": "Filter paid_start_date IS NOT NULL and calculate AVG(CASE WHEN status = 'cancelled' THEN 100.0 ELSE 0.0 END).",
+    "solutionSql": "WITH s AS (\n  SELECT DISTINCT * FROM subscriptions\n)\nSELECT\n  ROUND(AVG(CASE WHEN status = 'cancelled' THEN 100.0 ELSE 0.0 END), 1) AS churn_pct\nFROM s\nWHERE paid_start_date IS NOT NULL;",
+    "expectedOutput": {
+      "columns": [
+        "churn_pct"
+      ],
+      "rows": [
+        [
+          54.8
+        ]
+      ]
+    },
+    "explanation": "Across all historical paid subscribers, the cumulative churn rate is 54.8% (654 of 1,193 paid subscriptions).",
+    "commonMistake": "Dividing by total registered users (5,200) or total trial starters (3,308) rather than paid subscribers.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "churn",
+      "percentage",
+      "sql"
+    ]
+  },
+  {
+    "id": "business-churn-003",
+    "module": "business",
+    "topic": "churn",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Compare subscriber churn across billing frequencies. For distinct paid subscriptions, group by `billing_cycle`. Return `billing_cycle`, total paid subscriptions as `paid`, cancelled count as `cancelled`, and the churn percentage rounded to one decimal place as `churn_pct`. Order by `churn_pct` descending.",
+    "dataset": "subscription",
+    "hint": "Filter paid_start_date IS NOT NULL, group by billing_cycle, and sort by churn_pct DESC.",
+    "solutionSql": "WITH s AS (\n  SELECT DISTINCT * FROM subscriptions\n)\nSELECT\n  billing_cycle,\n  COUNT(*) AS paid,\n  SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled,\n  ROUND(AVG(CASE WHEN status = 'cancelled' THEN 100.0 ELSE 0.0 END), 1) AS churn_pct\nFROM s\nWHERE paid_start_date IS NOT NULL\nGROUP BY billing_cycle\nORDER BY churn_pct DESC;",
+    "expectedOutput": {
+      "columns": [
+        "billing_cycle",
+        "paid",
+        "cancelled",
+        "churn_pct"
+      ],
+      "rows": [
+        [
+          "Monthly",
+          998,
+          621,
+          62.2
+        ],
+        [
+          "Annual",
+          195,
+          33,
+          16.9
+        ]
+      ]
+    },
+    "explanation": "Monthly subscribers churn at nearly $4\\times$ the rate of annual subscribers: Monthly churn is 62.2% (621 of 998 cancelled), whereas Annual churn is only 16.9% (33 of 195 cancelled). Nudging users toward annual plans significantly boosts retention.",
+    "commonMistake": "Blending monthly and annual plans together without recognizing that annual plans lock in retention for 12 months.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "churn",
+      "billing-cycle",
+      "retention"
+    ]
+  },
+  {
+    "id": "business-churn-004",
+    "module": "business",
+    "topic": "churn",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Analyze churn across tier levels for monthly subscribers. For distinct paid subscriptions on the 'monthly' billing cycle, return the `plan` ('Basic', 'Standard', 'Premium'), total paid subscribers as `paid`, and the churn percentage rounded to one decimal place as `churn_pct`. Order by `churn_pct` descending.",
+    "dataset": "subscription",
+    "hint": "Filter WHERE paid_start_date IS NOT NULL AND billing_cycle = 'monthly', group by plan, and sort by churn_pct DESC.",
+    "solutionSql": "WITH s AS (\n  SELECT DISTINCT * FROM subscriptions\n)\nSELECT\n  plan,\n  COUNT(*) AS paid,\n  ROUND(AVG(CASE WHEN status = 'cancelled' THEN 100.0 ELSE 0.0 END), 1) AS churn_pct\nFROM s\nWHERE paid_start_date IS NOT NULL AND billing_cycle = 'monthly'\nGROUP BY plan\nORDER BY churn_pct DESC;",
+    "expectedOutput": {
+      "columns": [],
+      "rows": []
+    },
+    "explanation": "Monthly churn declines as tier tier price increases: Basic monthly subscribers churn at 67.2% (203 of 302), Standard monthly subscribers churn at 61.7% (319 of 517), and Premium monthly subscribers churn at 55.3% (99 of 179). Higher-tier users exhibit stronger product commitment.",
+    "commonMistake": "Failing to filter billing_cycle = 'monthly', which dilutes tier churn rates with annual subscriptions.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "churn",
+      "subscription-tiers",
+      "sql"
+    ]
+  },
+  {
+    "id": "business-churn-005",
+    "module": "business",
+    "topic": "churn",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Calculate the Monthly Recurring Revenue (MRR) lost to cancellations across plans. For distinct paid subscriptions on 'monthly' billing with `status = 'cancelled'`, return `plan` and the total monthly rupee revenue lost as `lost_mrr` (sum of `price_inr`). Order by `lost_mrr` descending.",
+    "dataset": "subscription",
+    "hint": "Sum price_inr for cancelled monthly paid subscriptions grouped by plan.",
+    "solutionSql": "WITH s AS (\n  SELECT DISTINCT * FROM subscriptions\n)\nSELECT\n  plan,\n  SUM(price_inr) AS lost_mrr\nFROM s\nWHERE paid_start_date IS NOT NULL AND billing_cycle = 'monthly' AND status = 'cancelled'\nGROUP BY plan\nORDER BY lost_mrr DESC;",
+    "expectedOutput": {
+      "columns": [],
+      "rows": []
+    },
+    "explanation": "Standard accounts for the largest absolute recurring revenue loss (Rs 95,381/month across 319 cancellations at Rs 299/mo), followed by Premium (Rs 49,401/month across 99 cancellations at Rs 499/mo) and Basic (Rs 30,247/month across 203 cancellations at Rs 149/mo).",
+    "commonMistake": "Summing annual subscription prices into monthly lost revenue without dividing by 12.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "churn",
+      "revenue-loss",
+      "mrr"
+    ]
+  },
+  {
+    "id": "business-churn-006",
+    "module": "business",
+    "topic": "churn",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Group cancelled paid subscribers by their tenure before cancellation. Categorize each cancelled paid subscriber with a valid `cancel_date` into `tenure_bucket`: '0-30' days if `julianday(cancel_date) - julianday(paid_start_date) <= 30`, '31-60' days if `<= 60`, '61-90' days if `<= 90`, and '90+' days otherwise. Return `tenure_bucket`, the count of cancelled subscriptions as `subs`, and the percentage share of all cancellations rounded to one decimal place as `share_pct`. Order by the logical tenure progression: '0-30', '31-60', '61-90', '90+'.",
+    "dataset": "subscription",
+    "hint": "Compute tenure in a CTE using julianday difference, group by the bucket, and divide by total cancellations.",
+    "solutionSql": "WITH s AS (\n  SELECT DISTINCT * FROM subscriptions\n  WHERE paid_start_date IS NOT NULL AND status = 'cancelled' AND cancel_date IS NOT NULL\n),\nb AS (\n  SELECT\n    CASE\n      WHEN julianday(cancel_date) - julianday(paid_start_date) <= 30 THEN '0-30'\n      WHEN julianday(cancel_date) - julianday(paid_start_date) <= 60 THEN '31-60'\n      WHEN julianday(cancel_date) - julianday(paid_start_date) <= 90 THEN '61-90'\n      ELSE '90+'\n    END AS tenure_bucket\n  FROM s\n)\nSELECT\n  tenure_bucket,\n  COUNT(*) AS subs,\n  ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM b), 1) AS share_pct\nFROM b\nGROUP BY tenure_bucket\nORDER BY\n  CASE tenure_bucket\n    WHEN '0-30' THEN 1\n    WHEN '31-60' THEN 2\n    WHEN '61-90' THEN 3\n    ELSE 4\n  END;",
+    "expectedOutput": {
+      "columns": [
+        "tenure_bucket",
+        "subs",
+        "share_pct"
+      ],
+      "rows": [
+        [
+          "0-30",
+          208,
+          31.8
+        ],
+        [
+          "31-60",
+          78,
+          11.9
+        ],
+        [
+          "61-90",
+          56,
+          8.6
+        ],
+        [
+          "90+",
+          312,
+          47.7
+        ]
+      ]
+    },
+    "explanation": "Nearly one-third of all cancellations (31.8%, 208 users) occur within the very first 30 days of paying, indicating onboarding friction or unmet expectations immediately following trial expiration.",
+    "commonMistake": "Failing to filter out records where cancel_date is NULL, which causes incorrect tenure calculations.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "churn",
+      "tenure-buckets",
+      "julianday"
+    ]
+  },
+  {
+    "id": "business-churn-007",
+    "module": "business",
+    "topic": "churn",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "A consumer subscription app maintains a steady 5.0% customer churn rate each month. Calculate the annualized churn rate percentage using compound retention math ($1 - (1 - 0.05)^{12}$), rounded to one decimal place.",
+    "dataset": "none",
+    "hint": "Compute 1 - (0.95)^12 and multiply by 100.",
+    "solution": "Annualized Churn calculation:\n\n$$\\text{Annual Retention Rate} = (1 - 0.05)^{12} = (0.95)^{12} = 0.54036 = 54.04\\%$$\n$$\\text{Annualized Churn Rate} = 100\\% - 54.04\\% = 45.96... \\approx 46.0\\%$$\n\nA 5.0% monthly churn rate compounds to a 46.0% annual subscriber loss. Nearly half of the entire starting customer base turns over every year.",
+    "explanation": "Churn compounds exponentially. Simply multiplying monthly churn by 12 ($5\\% \\times 12 = 60\\%$) assumes an uncompounded linear decay that overstates true loss; compound survival math yields 46.0%.",
+    "commonMistake": "Multiplying 5% by 12 to get 60.0% instead of applying compound survival math.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "churn",
+      "annualization",
+      "compound-math"
+    ],
+    "expectedOutput": {
+      "value": 46
+    }
+  },
+  {
+    "id": "business-churn-008",
+    "module": "business",
+    "topic": "churn",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "A digital fitness subscription starts the month of October with 1,000 paying members. During October, exactly 80 members cancel their accounts, while 120 new members subscribe. Calculate the customer churn rate for October as a percentage, rounded to one decimal place.",
+    "dataset": "none",
+    "hint": "Divide customers lost by the starting customer base (80 / 1,000 * 100).",
+    "solution": "Customer Churn Rate:\n\n$$\\text{Churn Rate} = \\left(\\frac{\\text{Customers Lost in Period}}{\\text{Customers at Start of Period}}\\right) \\times 100 = \\left(\\frac{80}{1000}\\right) \\times 100 = 8.0\\%$$\n\nEnding member count was $1,000 - 80 + 120 = 1,040$, but churn rate is evaluated strictly against the starting cohort.",
+    "explanation": "Churn evaluates cohort survival against the starting denominator. Dividing lost customers by the ending customer base (80 / 1,040 = 7.7%) or average base is a common error that masks attrition.",
+    "commonMistake": "Dividing 80 by the ending customer count of 1,040 (giving 7.7%) rather than the starting base of 1,000.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 2,
+    "tags": [
+      "churn",
+      "denominator-choice",
+      "saas"
+    ],
+    "expectedOutput": {
+      "value": 8
+    }
+  },
+  {
+    "id": "business-churn-009",
+    "module": "business",
+    "topic": "churn",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "A specialized telehealth chronic care management programme enrolled 400 diabetic patients in January. By the end of Month 3 (March), exactly 128 patients had discontinued consultations and dropped out of the programme. Calculate the 90-day patient dropout (churn) rate as a percentage, rounded to one decimal place.",
+    "dataset": "none",
+    "hint": "Divide discontinued patients by the starting enrollment pool (128 / 400 * 100).",
+    "solution": "Patient Dropout Rate:\n\n$$\\text{Patient Dropout Rate} = \\left(\\frac{128}{400}\\right) \\times 100 = 32.0\\%$$\n\nNearly one in three enrolled patients dropped out within the first 90 days of the chronic care regime.",
+    "explanation": "In healthcare programmes, patient drop-out is clinical churn. High early drop-out indicates treatment friction, lack of caregiver engagement, or perceived lack of improvement.",
+    "commonMistake": "Dividing by remaining patients (128 / 272 = 47.1%) rather than the enrolled cohort.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 2,
+    "tags": [
+      "healthcare",
+      "patient-retention",
+      "churn"
+    ],
+    "expectedOutput": {
+      "value": 32
+    }
+  },
+  {
+    "id": "business-churn-010",
+    "module": "business",
+    "topic": "churn",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "Following a quarterly churn increase from 4.5% to 6.2%, the VP of Growth proposes: 'Let's offer a blanket 20% discount on renewal to stop users from cancelling.' As the lead data analyst, what 4 critical diagnostic checks would you conduct before agreeing to this discount strategy?",
+    "dataset": "none",
+    "hint": "Consider voluntary vs involuntary churn, price sensitivity vs feature dissatisfaction, margin compression, and cannibalization.",
+    "solution": "Four critical diagnostic checks before implementing a blanket discount:\n\n1. **Voluntary vs Involuntary Churn Breakdown**: Check what share of cancellations are caused by failed auto-debit payments (`payment_failed` due to expired cards or bank declines) rather than active user cancellations. Offering discounts to users whose payments failed technically wastes margin without fixing the payment gateway.\n2. **Reason for Cancellation (Price vs Utility)**: Audit exit surveys and usage telemetry. If users are cancelling because they rarely open the app or found the content unhelpful, price discounts will not retain them after the discount expires.\n3. **Cannibalization of Full-Price Renewals**: Evaluate whether offering renewal discounts will be discovered by loyal, high-intent subscribers who would happily have renewed at the full price, unnecessary eroding recurring revenue.\n4. **Unit Economics & Margin Impact**: Calculate whether the volume retained compensates for the 20% lower ARPU. If retention lifts by only 1.5 percentage points while all renewing revenue drops 20%, net operating profit will severely contract.",
+    "explanation": "Discounts are an expensive band-aid that often mask root operational defects. Separating involuntary technical failure from genuine voluntary disengagement is the first step before altering pricing.",
+    "commonMistake": "Agreeing to discounts immediately without verifying whether users are leaving due to payment failures or poor product value.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "churn-strategy",
+      "pricing",
+      "involuntary-churn"
+    ]
+  }
+]

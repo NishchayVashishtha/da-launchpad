@@ -1,0 +1,128 @@
+---
+title: "NammaPay failure rate is double its rivals"
+industry: "Fintech"
+difficulty: medium
+type: case-study
+estimatedMinutes: 35
+---
+
+## Problem
+
+You are an analytics lead at a multi-app UPI payment gateway provider in India. During a monthly operations review, the Head of Merchant Payments pulls up a dashboard and points to a alarming discrepancy:
+> *"NammaPay has an overall transaction failure rate of 5.10% over the last two years, whereas rivals like PayZippy, QuickPaisa, and SabPay hover between 1.85% and 2.25%. Is NammaPay chronically broken, and should we deprioritize their app routing?"*
+
+Your objective is to investigate the data, determine whether NammaPay suffers from a chronic systemic defect or intermittent incident spikes, evaluate the failure codes, and deliver an actionable operational recommendation.
+
+## Data you have
+
+You have access to the production payments database (`fintech.sqlite`) with tables:
+- `transactions`: 22,300 distinct records (`txn_id`, `user_id`, `merchant_id`, `amount_inr`, `payment_app`, `bank_name`, `status`, `txn_time`, `is_flagged`).
+- `failed_transactions`: 601 distinct records detailing `failure_code`, `error_message`, `is_retried`, `retry_status`.
+
+## Approach
+
+1. **Clarify Metric & Baseline**: Compute the exact transaction failure rate by payment app across all deduplicated transactions.
+2. **Temporal Anomaly Scan**: Plot NammaPay failure rates by calendar date and hour of the day to detect whether failures are evenly distributed (chronic) or concentrated in isolated spikes (acute incidents).
+3. **Outage Window Isolation**: Quantify failure rates inside identified incident clusters versus normal operating periods.
+4. **Error Code Diagnosis**: Inspect failure codes within the `failed_transactions` table to isolate root causes.
+5. **Formulate Solution & SLA Policy**: Recommend technical monitoring, routing policies, and partner SLA terms.
+
+## Step-by-step solution
+
+### Step 1: Benchmark Failure Rate by Payment App
+
+Query distinct transactions to measure baseline failure rates across all client payment applications:
+
+```sql
+WITH t AS (SELECT DISTINCT * FROM transactions)
+SELECT 
+  payment_app,
+  COUNT(*) AS total_txns,
+  SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) AS failed_txns,
+  ROUND(100.0 * SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) / COUNT(*), 2) AS failure_rate_pct
+FROM t
+GROUP BY payment_app
+ORDER BY failure_rate_pct DESC;
+```
+
+| payment_app | total_txns | failed_txns | failure_rate_pct |
+|---|---|---|---|
+| NammaPay | 3,922 | 200 | 5.10% |
+| PayZippy | 7,190 | 162 | 2.25% |
+| QuickPaisa | 5,443 | 122 | 2.24% |
+| SabPay | 3,043 | 67 | 2.20% |
+| RupeeRocket | 2,702 | 50 | 1.85% |
+
+*Finding*: NammaPay's 5.10% failure rate is more than double the ~2.2% baseline of other apps.
+
+### Step 2: Temporal Analysis and Outage Cluster Detection
+
+Next, segment NammaPay transactions across dates and hours. Analysis reveals 4 severe, time-bounded outage windows:
+1. `2023-03-14` between 10:00 and 12:00 IST
+2. `2023-09-21` between 18:00 and 21:00 IST
+3. `2024-02-06` between 09:00 and 11:00 IST
+4. `2024-07-16` between 19:00 and 21:00 IST
+
+```sql
+WITH t AS (SELECT DISTINCT * FROM transactions)
+SELECT 
+  CASE 
+    WHEN (strftime('%Y-%m-%d', txn_time) = '2023-03-14' AND CAST(strftime('%H', txn_time) AS INT) BETWEEN 10 AND 12)
+      OR (strftime('%Y-%m-%d', txn_time) = '2023-09-21' AND CAST(strftime('%H', txn_time) AS INT) BETWEEN 18 AND 21)
+      OR (strftime('%Y-%m-%d', txn_time) = '2024-02-06' AND CAST(strftime('%H', txn_time) AS INT) BETWEEN 9 AND 11)
+      OR (strftime('%Y-%m-%d', txn_time) = '2024-07-16' AND CAST(strftime('%H', txn_time) AS INT) BETWEEN 19 AND 21)
+    THEN 'Inside 4 Outage Windows'
+    ELSE 'Normal Operating Windows'
+  END AS operating_window,
+  COUNT(*) AS total_txns,
+  SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) AS failed_txns,
+  ROUND(100.0 * SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) / COUNT(*), 2) AS failure_rate_pct
+FROM t
+WHERE payment_app = 'NammaPay'
+GROUP BY 1;
+```
+
+| operating_window | total_txns | failed_txns | failure_rate_pct |
+|---|---|---|---|
+| Inside 4 Outage Windows | 304 | 118 | 38.82% |
+| Normal Operating Windows | 3,618 | 82 | 2.27% |
+
+*Finding*: Outside of these 4 specific multi-hour outage windows, NammaPay's failure rate is **2.27%**, completely on par with PayZippy (2.25%) and SabPay (2.20%). The perceived platform deficiency is entirely driven by concentrated infrastructure incidents.
+
+### Step 3: Root Cause Error Code Verification
+
+Joining against `failed_transactions` reveals that all 118 failures during these 4 windows carry the error code `UPI_SYSTEM_DOWN`:
+
+```sql
+SELECT failure_code, COUNT(*) AS count
+FROM failed_transactions f
+JOIN transactions t ON f.txn_id = t.txn_id
+WHERE t.payment_app = 'NammaPay' 
+  AND f.failure_code = 'UPI_SYSTEM_DOWN'
+GROUP BY failure_code;
+```
+
+| failure_code | count |
+|---|---|
+| UPI_SYSTEM_DOWN | 118 |
+
+Furthermore, when users retried transactions with the `UPI_SYSTEM_DOWN` error code after a short delay, **61.0% (50 of 82 retried attempts)** settled successfully.
+
+## Key insight
+
+NammaPay is not a chronically defective application. Its day-to-day failure rate (2.27%) matches industry peers. The 5.10% overall rate is an aggregate distortion created by 4 distinct multi-hour gateway outages where failure rates surged to 38.82%. The aggregate average concealed an episodic operational incident problem.
+
+## Recommendation
+
+1. **Automated Gateway Outage Circuit-Breakers**: When an app's rolling 5-minute failure rate exceeds 15% due to `UPI_SYSTEM_DOWN`, the payment switch should automatically divert checkout prompts to alternative payment modes or show an informative advisory.
+2. **Automated Delayed Retries**: Because 61.0% of `UPI_SYSTEM_DOWN` retries succeed, configure an automated 60-second backoff retry in the background before surfacing a failure banner to the user.
+3. **Partner SLA Penalties & Reporting Split**:
+   - Establish contractual availability SLAs with NammaPay requiring 99.5% uptime during peak hours.
+   - Separate operational reporting into **Incident-Adjusted Uptime** (2.27%) versus **Unscheduled Downtime Events** so product engineering is not blamed for third-party gateway downtime.
+
+## What a weak answer looks like
+
+- Concludes that NammaPay has buggy app code and advises engineering to rewrite the mobile app.
+- Fails to segment by time or date, relying solely on the 5.10% headline number.
+- Recommends permanently dropping NammaPay from the payment options, forfeiting 3,922 transactions and over Rs 50 Lakhs in customer volume.
+- Ignores error codes and fails to distinguish between bank-side outages and user balance issues.

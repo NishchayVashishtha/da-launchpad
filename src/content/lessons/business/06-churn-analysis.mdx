@@ -1,0 +1,301 @@
+---
+title: "Churn analysis: who leaves and why"
+description: "Measure churn correctly, compare segments, and separate voluntary from payment-failure churn."
+module: business
+order: 6
+estimatedMinutes: 50
+objectives:
+  - "Calculate customer churn rate and monthly recurring revenue (MRR) churn accurately"
+  - "Segment subscriber churn across billing frequencies, pricing tiers, and tenure intervals"
+  - "Distinguish between voluntary cancellations and involuntary payment-gateway failures"
+  - "Analyze customer survival curves and identify early onboarding drop-offs"
+  - "Design targeted retention interventions based on empirical churn drivers"
+tags: ["business", "churn", "subscription", "sql"]
+---
+
+## Learning objectives
+
+By the end of this lesson, you will be able to:
+- Define customer churn and revenue churn, avoiding common denominator errors.
+- Query transactional subscription databases in SQL to calculate churn rates across billing cycles and plan tiers.
+- Separate voluntary churn (user-initiated cancellations) from involuntary churn (failed recurring card/UPI auto-debits).
+- Measure subscriber tenure at the time of cancellation to evaluate onboarding friction.
+- Convert monthly churn rates into annualized attrition figures using compound survival mathematics.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+The leadership team at a SaaS streaming app was celebrating 10,000 new subscribers acquired in Q1. But during the quarterly finance review, the CFO delivered bad news: Net Recurring Revenue was shrinking. The company had an 8% monthly churn rate. 
+
+At 8% monthly churn, more than 63% of the customer base vanishes every twelve months. The marketing team was pouring expensive ad spend into a leaky bucket, constantly acquiring new customers just to replace the ones quietly cancelling through the back door.
+</RealWorld>
+
+Reducing churn is the highest-leverage growth strategy in recurring revenue businesses. Acquiring a new customer costs 5 to 7 times more than retaining an existing one. As a data analyst, you will be called upon to diagnose: *"Why are subscribers leaving?"*, *"Is churn concentrated in monthly or annual plans?"*, and *"How much recurring revenue are we losing each month?"*
+
+## Concept
+
+### Customer Churn vs Revenue Churn
+
+In subscription businesses, churn is measured across two distinct dimensions:
+
+1. **Customer (Logo) Churn Rate**:
+   The percentage of paying customers who terminate their subscription over a defined period:
+   `Customer Churn Rate = (Customers Lost in Period / Customers at Start of Period) * 100`
+
+2. **Revenue Churn Rate**:
+   The percentage of recurring revenue lost to cancellations and plan downgrades:
+   `Gross Revenue Churn = (Churned MRR + Contraction MRR) / Starting MRR * 100`
+
+<Tip>
+**Revenue Churn vs Logo Churn:** If you have 100 customers paying Rs 100/month and 1 enterprise customer paying Rs 10,000/month, losing 5 small customers is a 5% customer churn but only a 2.5% revenue churn. Conversely, losing the single enterprise account is a 1% customer churn but a massive 50% revenue churn. Always track both.
+</Tip>
+
+### Voluntary vs Involuntary Churn
+
+Cancellations fall into two fundamentally different operational buckets:
+
+- **Voluntary Churn**: The user actively visits their account settings and clicks "Cancel Subscription." Root causes include perceived lack of value, high pricing, poor user experience, or changing customer needs. Fixes require product enhancements, onboarding tutorials, and win-back offers.
+- **Involuntary (Passive) Churn**: The customer intends to remain subscribed, but their recurring payment fails due to an expired debit/credit card, insufficient funds, or a banking auto-debit switch decline (`payment_failed` event). Fixes require dunning logic: automated email/SMS payment reminders, intelligent retry schedules, and secondary UPI mandate fallbacks.
+
+<FormulaCard title="Annualizing Monthly Churn">
+Because customers leave sequentially month after month, monthly churn compounds exponentially. The annual retention rate is `(1 - Monthly Churn)^12`:
+`Annualized Churn Rate = 100% - (1 - Monthly Churn Rate)^12`
+
+For example, a monthly churn rate of 5.0% does not equal 60% annual churn (linear math); it equals:
+`100% - (1 - 0.05)^12 = 100% - (0.95)^12 = 100% - 54.04% = 45.96% ≈ 46.0%`
+</FormulaCard>
+
+## Worked examples
+
+All examples in this section query `public/data/sqlite/subscription.sqlite` using SQLite.
+
+### Example 1: Overall Paid Customer Churn
+We audit distinct paid subscriptions (`paid_start_date IS NOT NULL`) and count how many have cancelled (`status = 'cancelled'`):
+
+```sql
+WITH s AS (
+  SELECT DISTINCT * FROM subscriptions
+)
+SELECT
+  COUNT(*) AS paid,
+  SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled,
+  ROUND(AVG(CASE WHEN status = 'cancelled' THEN 100.0 ELSE 0.0 END), 1) AS churn_pct
+FROM s
+WHERE paid_start_date IS NOT NULL;
+```
+
+**Real Output from subscription.sqlite:**
+| paid | cancelled | churn_pct |
+| :--- | :--- | :--- |
+| 1193 | 654 | 54.8 |
+
+Across the 2-year lifecycle of the platform, 654 out of 1,193 paid subscribers have cancelled, yielding a cumulative lifetime churn rate of 54.8%.
+
+### Example 2: Churn by Billing Frequency
+Comparing churn between monthly and annual billing cycles:
+
+```sql
+WITH s AS (
+  SELECT DISTINCT * FROM subscriptions
+)
+SELECT
+  billing_cycle,
+  COUNT(*) AS paid,
+  SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled,
+  ROUND(AVG(CASE WHEN status = 'cancelled' THEN 100.0 ELSE 0.0 END), 1) AS churn_pct
+FROM s
+WHERE paid_start_date IS NOT NULL
+GROUP BY billing_cycle
+ORDER BY churn_pct DESC;
+```
+
+**Real Output from subscription.sqlite:**
+| billing_cycle | paid | cancelled | churn_pct |
+| :--- | :--- | :--- | :--- |
+| monthly | 998 | 621 | 62.2 |
+| annual | 195 | 33 | 16.9 |
+
+**Key Insight:** Monthly subscribers churn at nearly $4\times$ the rate of annual subscribers (62.2% vs 16.9%). Annual subscribers make a long-term upfront commitment, bypassing monthly renewal friction.
+
+### Example 3: Monthly Revenue Lost by Tier
+Evaluating recurring monthly revenue lost to cancellations across pricing plans:
+
+```sql
+WITH s AS (
+  SELECT DISTINCT * FROM subscriptions
+)
+SELECT
+  plan,
+  COUNT(*) AS cancelled_subs,
+  SUM(price_inr) AS lost_mrr
+FROM s
+WHERE paid_start_date IS NOT NULL AND billing_cycle = 'monthly' AND status = 'cancelled'
+GROUP BY plan
+ORDER BY lost_mrr DESC;
+```
+
+**Real Output from subscription.sqlite:**
+| plan | cancelled_subs | lost_mrr |
+| :--- | :--- | :--- |
+| Standard | 319 | 95381 |
+| Premium | 99 | 49401 |
+| Basic | 203 | 30247 |
+
+Standard plan cancellations represent the largest financial leak (Rs 95,381 per month), accounting for more lost revenue than Basic and Premium combined.
+
+### Example 4: Subscriber Tenure at Cancellation
+We group cancelled paid subscribers into tenure intervals to identify when users abandon the service:
+
+```sql
+WITH s AS (
+  SELECT DISTINCT * FROM subscriptions
+  WHERE paid_start_date IS NOT NULL AND status = 'cancelled' AND cancel_date IS NOT NULL
+),
+b AS (
+  SELECT
+    CASE
+      WHEN julianday(cancel_date) - julianday(paid_start_date) <= 30 THEN '0-30'
+      WHEN julianday(cancel_date) - julianday(paid_start_date) <= 60 THEN '31-60'
+      WHEN julianday(cancel_date) - julianday(paid_start_date) <= 90 THEN '61-90'
+      ELSE '90+'
+    END AS tenure_bucket
+  FROM s
+)
+SELECT
+  tenure_bucket,
+  COUNT(*) AS subs,
+  ROUND(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM b), 1) AS share_pct
+FROM b
+GROUP BY tenure_bucket
+ORDER BY
+  CASE tenure_bucket
+    WHEN '0-30' THEN 1
+    WHEN '31-60' THEN 2
+    WHEN '61-90' THEN 3
+    ELSE 4
+  END;
+```
+
+**Real Output from subscription.sqlite:**
+| tenure_bucket | subs | share_pct |
+| :--- | :--- | :--- |
+| 0-30 | 208 | 31.8 |
+| 31-60 | 78 | 11.9 |
+| 61-90 | 56 | 8.6 |
+| 90+ | 312 | 47.7 |
+
+Nearly one-third of all churned subscribers (31.8%, 208 users) cancel within their very first month of paying. This early cliff points to buyer remorse or onboarding disappointment immediately after trial conversion.
+
+## Common mistakes
+
+<CommonMistake>
+- **Counting trial expirations as churn**: Users whose free trials expired without entering a credit card or making a payment are unconverted leads, not churned subscribers.
+- **Using the ending customer count in the denominator**: Calculating churn as `Cancellations / Ending Customers` understates attrition when the business is acquiring new users.
+- **Conflating monthly and annual plans**: Blending annual subscribers (who cannot churn until Month 12) with monthly subscribers produces an artificially depressed blended monthly churn figure.
+- **Linear annualization**: Multiplying 5% monthly churn by 12 to claim 60% annual churn, ignoring compound survival probability (actual is 46.0%).
+- **Offering blanket discounts for involuntary churn**: Offering a 20% renewal discount to a user whose card simply expired wastes margin without resolving the payment gateway error.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="churn" module="business" />
+
+## Mini quiz
+
+<Quiz questions={[
+  {
+    q: "What is the proper denominator when calculating customer churn for October?",
+    options: [
+      "The total number of paying customers at the start of October",
+      "The total number of paying customers at the end of October",
+      "The total number of new customers acquired during October",
+      "The cumulative number of registered users since the platform launched"
+    ],
+    answer: 0,
+    explanation: "Churn evaluates the survival of the existing cohort. The denominator must be the paying customer base at the beginning of the period."
+  },
+  {
+    q: "Why is an unpaid trial expiration NOT considered subscriber churn?",
+    options: [
+      "Because trial users have not entered a commercial contract or generated recurring revenue",
+      "Because trial users automatically renew into annual plans",
+      "Because trial expirations are excluded by accounting standards",
+      "Because trial users do not have user IDs in the database"
+    ],
+    answer: 0,
+    explanation: "Trial drop-off is a top-of-funnel conversion failure, whereas churn specifically measures the loss of previously paying customers."
+  },
+  {
+    q: "In the subscription dataset, how did monthly plan churn compare to annual plan churn?",
+    options: [
+      "Monthly churn was identical to annual churn",
+      "Monthly churn was nearly 4x higher (62.2% vs 16.9%)",
+      "Annual churn was higher because annual plans are more expensive",
+      "Annual churn was 0.0% across all tiers"
+    ],
+    answer: 1,
+    explanation: "Monthly subscribers cancelled at a 62.2% rate, while annual subscribers cancelled at only 16.9%, demonstrating the retention power of annual commitments."
+  },
+  {
+    q: "If a SaaS company maintains a steady 5% monthly churn rate, what is its annualized churn rate?",
+    options: [
+      "25.0%",
+      "46.0%",
+      "60.0%",
+      "50.0%"
+    ],
+    answer: 1,
+    explanation: "Compounded retention is (1 - 0.05)^12 = 0.5404. Annualized churn is 100% - 54.04% = 45.96%, or approximately 46.0%."
+  },
+  {
+    q: "What is an effective operational fix for involuntary (passive) churn?",
+    options: [
+      "Redesigning the app user interface",
+      "Implementing smart automated payment retries and dunning notifications for expired cards",
+      "Slashing the price of the basic subscription tier by 50%",
+      "Banning users who fail to open the app weekly"
+    ],
+    answer: 1,
+    explanation: "Involuntary churn is caused by payment gateway failures and expired cards. Dunning emails and smart retry schedules recover these accounts automatically."
+  }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+A classic analytics interview scenario: "Our customer churn rate increased from 4% to 6% last month. Walk me through your diagnostic game plan."
+</InterviewAlert>
+
+<InterviewQ q="Customer churn rose from 4% to 6% last month. How do you investigate?">
+I investigate churn spikes using a structured 4-step diagnostic protocol:
+1. **Voluntary vs Involuntary Decomposition**: Check the payment event logs. Did `payment_failed` events surge due to a banking auto-debit switch glitch, or did manual cancellations increase?
+2. **Cohort & Vintage Analysis**: Check whether the churn is coming from older, established subscribers (indicating a product or competitive issue) or from recently acquired cohorts (indicating a poor acquisition channel or misleading ad campaign).
+3. **Segmentation by Plan & Billing Cycle**: Isolate whether the spike is concentrated in Basic Monthly plans, or if high-value Annual/Premium accounts are cancelling.
+4. **Usage Telemetry Preceding Cancellation**: Analyze feature engagement and app opens in the 30 days prior to churn. If cancellations occurred with high prior usage, it indicates pricing dissatisfaction; if usage was zero, it reflects disengagement.
+</InterviewQ>
+
+<InterviewQ q="What is Net Revenue Retention (NRR), and why is it possible for NRR to exceed 100%?">
+Net Revenue Retention (NRR) measures the percentage of recurring revenue retained from existing customers over a period, incorporating churn, downgrades (contractions), and upgrades (expansions):
+`NRR = (Starting MRR - Churned MRR - Contraction MRR + Expansion MRR) / Starting MRR * 100`
+
+NRR can exceed 100% when **Expansion MRR** (existing customers upgrading to higher tiers or buying more seats/add-ons) surpasses the revenue lost to churn and contractions. When NRR is greater than 100%, the business grows organically even if marketing acquires zero new customers.
+</InterviewQ>
+
+<InterviewQ q="Why do annual subscription plans consistently show lower churn than monthly plans?">
+Annual plans display lower churn due to three fundamental factors:
+1. **Self-Selection**: Customers willing to pay 12 months upfront have higher intent, greater budget, and higher expected utility from the product.
+2. **Reduced Friction Points**: A monthly subscriber evaluates whether to renew 12 times a year, exposing the account to 12 potential payment failures and cancellation decisions; an annual subscriber evaluates renewal only once a year.
+3. **Onboarding Runway**: Annual subscribers have ample time to integrate the product into their workflows, overcoming initial learning curves before facing a renewal decision.
+</InterviewQ>
+
+## Key takeaways
+
+- Churn measures customer and revenue attrition; evaluate churn strictly against the starting customer denominator.
+- In our subscription data, 31.8% of all cancellations occur within the first 30 days of paying, pointing to onboarding friction.
+- Monthly subscribers churn at nearly $4\times$ the rate of annual subscribers (62.2% vs 16.9%); pushing annual plans is a powerful retention lever.
+- Separate voluntary cancellations from involuntary payment declines; never waste pricing discounts on users whose cards merely expired.
+- Monthly churn compounds exponentially: a 5% monthly churn rate equals a 46% annual customer turnover.
+
+## Further reading
+
+<FurtherReading ids={["mode-sql", "sqlite-docs"]} />

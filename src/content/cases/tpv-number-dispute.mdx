@@ -1,0 +1,153 @@
+---
+title: "The reconciliation bridge: Finance says TPV is Rs 3.10 Crore, Ops says 2.99 Crore"
+industry: "Fintech"
+difficulty: hard
+type: case-study
+estimatedMinutes: 40
+---
+
+## Problem
+
+You are the lead analytics arbitrator at a fintech payment gateway. Ahead of an audited board presentation, an executive clash breaks out between the Chief Financial Officer and the Chief Operating Officer:
+> **CFO**: *"Our finance accounting dump shows Total Processed Volume (TPV) of exactly ₹3,10,12,144 (₹3.10 Crore) across 22,389 transactions."*  
+> **COO**: *"Our merchant operations dashboard displays ₹2,98,73,883 (₹2.99 Crore). There is an unexplained discrepancy of over ₹11.38 Lakhs! Did someone miscalculate, or is money missing?"*
+
+You have 40 minutes to analyze the production tables, construct a step-by-step mathematical reconciliation bridge, identify the exact technical root causes of the discrepancy, and establish a single source of truth.
+
+## Data you have
+
+From `fintech.sqlite`:
+- `transactions`: 22,389 raw records (`txn_id`, `amount_inr`, `status`, `txn_time`, `is_flagged`).
+- Database metadata: median successful transaction is ~₹556; mean is ₹1,381.8; maximum amount observed is ₹95,484.
+
+## Approach
+
+1. **Replicate Both Queries**: Re-run the CFO's broad query and the COO's filtered query to verify the starting numbers.
+2. **Deconstruct the Discrepancy Components**:
+   - Status filtering: Check failed and pending payment amounts.
+   - Primary key uniqueness: Check for duplicate `txn_id` records caused by webhook retry fan-outs.
+   - Outlier analysis: Inspect whether extreme outlier transactions (> ₹50,000) are handled consistently.
+3. **Build the Formal Reconciliation Waterfall Bridge**: Present a step-by-step bridge explaining every single rupee of the ₹11.38 Lakh difference.
+4. **Formulate Governance Controls**: Define the canonical metric specification and implement automated CI/CD pipeline checks.
+
+## Step-by-step solution
+
+### Step 1: Replicating the Two Queries
+
+Let's inspect what each team ran in SQL:
+
+```sql
+-- Query A: CFO's Naive Top-Line Financial Export
+SELECT 
+  COUNT(*) AS row_count,
+  SUM(amount_inr) AS raw_sum_inr
+FROM transactions;
+
+-- Query B: COO's Filtered Operations View
+SELECT 
+  COUNT(DISTINCT txn_id) AS distinct_success_count,
+  SUM(amount_inr) AS distinct_success_tpv_inr
+FROM (SELECT DISTINCT * FROM transactions WHERE status = 'SUCCESS');
+```
+
+- **Query A (Finance)**: 22,389 rows | **₹3,10,12,144.00** (~₹3.10 Crore)
+- **Query B (Operations)**: 21,684 distinct successful transactions | **₹2,98,73,883.00** (~₹2.99 Crore)
+- **Discrepancy**: **₹11,38,261.00** and **705 rows**.
+
+### Step 2: Isolating the Discrepancy Components
+
+Let's break down where the ₹11,38,261 difference originates:
+
+#### Component 1: Non-Settled Transactions (Failed & Pending)
+Finance queried all rows without filtering for `status = 'SUCCESS'`. Querying failed and pending amounts:
+
+```sql
+SELECT 
+  status,
+  COUNT(*) AS count,
+  SUM(amount_inr) AS amount_inr
+FROM transactions
+WHERE status != 'SUCCESS'
+GROUP BY status;
+```
+
+| status | count | amount_inr |
+|---|---|---|
+| FAILED | 608 | ₹8,97,412.00 |
+| PENDING | 81 | ₹1,13,920.00 |
+| **Total Non-Settled** | **689** | **₹10,11,332.00** |
+
+*Deduction*: ₹10,11,332 of the discrepancy is money that was initiated but never settled into merchant accounts (`FAILED` or `PENDING`). Counting failed payment attempts as processed volume is an accounting error.
+
+#### Component 2: Duplicate Webhook Delivery Records
+Filtering for `status = 'SUCCESS'`, does the raw table equal ₹2,98,73,883?
+
+```sql
+SELECT 
+  COUNT(*) AS raw_success_count,
+  SUM(amount_inr) AS raw_success_amount
+FROM transactions
+WHERE status = 'SUCCESS';
+```
+
+- Raw successful rows: 21,700 rows | **₹3,00,00,812.00**
+- Deduplicated successful transactions: 21,684 rows | **₹2,98,73,883.00**
+- Difference: Exactly **16 duplicate successful rows (89 total duplicate rows across all statuses)** accounting for **₹1,26,929.00** in phantom volume!
+
+*Deduction*: When banking gateways send asynchronous webhook notifications, network retries occasionally write the exact same transaction ID twice. Operations deduplicated by transaction ID, while Finance ran a raw `SUM(*)`.
+
+#### Component 3: Extreme Outlier Inspection
+Let's inspect the remaining transactions to ensure no dirty test amounts exist:
+
+```sql
+WITH t AS (SELECT DISTINCT * FROM transactions WHERE status = 'SUCCESS')
+SELECT 
+  CASE WHEN amount_inr >= 50000 THEN 'Outliers (>= Rs 50k)' ELSE 'Normal (< Rs 50k)' END AS category,
+  COUNT(*) AS count,
+  SUM(amount_inr) AS total_amount,
+  AVG(amount_inr) AS avg_amount
+FROM t
+GROUP BY 1;
+```
+
+- Normal successful transactions (< ₹50,000): 21,674 txns = **₹2,92,24,601.00**
+- Large ticket transactions ($\ge$ ₹50,000): 10 txns = **₹6,49,282.00** (Max: ₹95,484).
+- *Deduction*: The 10 high-value transactions are verified legitimate B2B wholesale transfers, not test accounts. They rightfully belong in TPV.
+
+### Step 3: The Complete Reconciliation Waterfall Bridge
+
+Here is the exact mathematical bridge reconciling the CFO and COO figures:
+
+| Stage / Adjustment Line | Row Count | Amount (₹ INR) | Running Total (₹) |
+|---|---|---|---|
+| **CFO Starting Figure (Gross Raw Database Dump)** | **22,389** | **₹3,10,12,144.00** | **₹3,10,12,144.00** |
+| *Less*: Terminal Failed Transactions (`status = 'FAILED'`) | -608 | -₹8,97,412.00 | ₹3,01,14,732.00 |
+| *Less*: Unsettled In-Flight Payments (`status = 'PENDING'`) | -81 | -₹1,13,920.00 | ₹3,00,00,812.00 |
+| *Less*: Duplicate Webhook Replay Records (`txn_id` dupes) | -16 | -₹1,26,929.00 | ₹2,98,73,883.00 |
+| **COO Ending Figure (Audited Successful Unique TPV)** | **21,684** | **₹2,98,73,883.00** | **₹2,98,73,883.00** |
+
+The reconciliation matches down to the exact paisa (₹0.00 unexplained variance).
+
+## Key insight
+
+Neither executive was being dishonest; they were asking fundamentally different business questions. The CFO pulled a raw financial ledger dump that erroneously included failed attempts, pending transactions, and duplicate webhook receipts. The COO filtered for settled merchant volume and deduplicated transaction IDs. A metric is not complete until its status boundary rules and deduplication logic are formally codified in writing.
+
+## Recommendation
+
+1. **Adopt COO's Audited Number (₹2,98,73,883) for the Board Presentation**:
+   - Present the reconciled figure accompanied by the formal 4-line waterfall bridge.
+2. **Implement Database Primary Key Constraints in Data Engineering**:
+   - Enforce a strict `UNIQUE(txn_id)` database constraint on the reporting warehouse ingestion table to reject duplicate webhook replays upstream.
+3. **Publish a Formal Metric Dictionary Specification**:
+   - Define **Total Processed Volume (TPV)** formally as:
+     ```text
+     TPV = SUM(amount_inr) WHERE status = 'SUCCESS' GROUP BY DISTINCT txn_id
+     ```
+   - Codify this query in a standardized dbt model view so Finance and Operations query the exact same data asset.
+
+## What a weak answer looks like
+
+- Declares that one executive is wrong and should be reprimanded without inspecting the underlying query scripts.
+- Cannot produce an exact rupee-level bridge reconciling the ₹11.38 Lakh gap.
+- Blames "database corruption" without discovering the 16 duplicate successful rows caused by gateway webhooks.
+- Proposes arbitrarily deleting large transactions (> ₹50,000) without verifying whether they were legitimate business purchases.

@@ -1,0 +1,183 @@
+[
+  {
+    "id": "business-kpis-001",
+    "module": "business",
+    "topic": "kpis",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "The finance team at DesiCart is reviewing December 2024 performance. In that month, the platform recorded 458 total placed orders, of which 423 were successfully delivered, generating Rs 2,059,545 in delivered revenue (the rest were cancelled or returned). Calculate the Average Order Value (AOV) for delivered orders in rupees, rounded to two decimal places.",
+    "dataset": "none",
+    "hint": "Divide delivered revenue exclusively by delivered orders. Do not include cancelled or returned orders in the denominator.",
+    "solution": "Average Order Value (AOV) is defined as Delivered Revenue divided by Delivered Orders:\n\n$$\\text{AOV} = \\frac{\\text{Delivered Revenue}}{\\text{Delivered Orders}} = \\frac{2059545}{423} = 4868.8997... \\approx 4868.90$$\n\nCancelled orders generated zero net revenue and must be excluded from both the numerator and denominator.",
+    "expectedOutput": {
+      "value": 4868.9
+    },
+    "explanation": "AOV measures the average monetary value of each fulfilled purchase. Including cancelled orders in the denominator falsely dilutes the AOV to Rs 4,496.82, while including gross placed order amounts inflates it.",
+    "commonMistake": "Dividing delivered revenue by all 458 placed orders, resulting in Rs 4,496.82 instead of Rs 4,868.90.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": ["kpi", "aov", "ecommerce"]
+  },
+  {
+    "id": "business-kpis-002",
+    "module": "business",
+    "topic": "kpis",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "A product leader asks you to categorise the following 8 metrics into one of four roles: Vanity Metric, Input Metric, Output Metric, or Guardrail Metric:\n1. Total App Downloads\n2. Monthly Marketing Ad Spend\n3. Net Realised Revenue\n4. E-commerce Return Rate\n5. Page Views per Day\n6. Outbound Sales Calls Made\n7. 30-Day Customer Churn Rate\n8. Order Cancellation Rate",
+    "dataset": "none",
+    "hint": "Think about what the team directly controls (input), what business result is achieved (output), what must not degrade (guardrail), and what looks impressive but lacks business impact (vanity).",
+    "solution": "Classification of the 8 metrics:\n\n1. **Total App Downloads**: **Vanity Metric** (Users downloading an app may never register or transact; cumulative totals always increase).\n2. **Monthly Marketing Ad Spend**: **Input Metric** (Controllable lever directly invested by the growth team to acquire users).\n3. **Net Realised Revenue**: **Output Metric** (The ultimate monetary result reflecting business value and commercial performance).\n4. **E-commerce Return Rate**: **Guardrail Metric** (Must be bounded within acceptable thresholds so growth initiatives do not destroy margins through reverse logistics).\n5. **Page Views per Day**: **Vanity Metric** (High page traffic without conversion or intent yields no direct revenue).\n6. **Outbound Sales Calls Made**: **Input Metric** (Effort metric directly controllable by the business development team).\n7. **30-Day Customer Churn Rate**: **Guardrail Metric** (or key health output; guards the recurring customer base to prevent a leaky bucket during acquisition drives).\n8. **Order Cancellation Rate**: **Guardrail Metric** (Ensures operational reliability and customer satisfaction remain healthy while pushing order volume).",
+    "explanation": "Separating inputs from outputs and guardrails is fundamental to metric hierarchy. Input metrics represent operational levers teams control, output metrics measure strategic goals, guardrail metrics protect system health, and vanity metrics mislead by tracking activity without commercial value.",
+    "commonMistake": "Treating total downloads or page views as output KPIs, which leads teams to optimize for traffic rather than qualified buyers.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": ["kpi", "framework", "vanity-metrics"]
+  },
+  {
+    "id": "business-kpis-003",
+    "module": "business",
+    "topic": "kpis",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "A digital health platform records 5,200 user registrations. Out of these registered users, 3,308 start a 7-day free trial. What is the signup-to-trial conversion rate in percent, rounded to one decimal place?",
+    "dataset": "none",
+    "hint": "Divide the number of trial starters by total registrations and multiply by 100.",
+    "solution": "The conversion rate from registration to free trial is:\n\n$$\\text{Conversion Rate} = \\left(\\frac{3308}{5200}\\right) \\times 100 = 63.615... \\approx 63.6\\%$$\n\nExactly 63.6% of signups successfully activated a free trial.",
+    "expectedOutput": {
+      "value": 63.6
+    },
+    "explanation": "Step conversion measures activation efficiency at the top of the funnel. Dividing trial starts by total signups shows how well the onboarding flow nudges registered users to experience the product.",
+    "commonMistake": "Inverting numerator and denominator or calculating the drop-off percentage (36.4%) instead of the conversion percentage.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": ["kpi", "conversion", "funnel"]
+  },
+  {
+    "id": "business-kpis-004",
+    "module": "business",
+    "topic": "kpis",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "An analytics audit of a UPI payment switch dataset reveals 22,300 distinct transactions. Among these, exactly 21,619 transactions concluded with status 'SUCCESS' (the remainder ended in 'FAILED' or 'PENDING'). Calculate the UPI transaction success rate as a percentage, rounded to two decimal places.",
+    "dataset": "none",
+    "hint": "Divide successful transactions by the total volume of distinct transactions and multiply by 100.",
+    "solution": "The UPI success rate is:\n\n$$\\text{Success Rate} = \\left(\\frac{21619}{22300}\\right) \\times 100 = 96.946... \\approx 96.95\\%$$\n\nTechnical failure rate is $(100 - 96.95) = 3.05\\%$ across all distinct transaction attempts.",
+    "expectedOutput": {
+      "value": 96.95
+    },
+    "explanation": "In payments infrastructure, success rate is the primary operational reliability KPI. Total distinct transactions form the denominator; pending states remain in the denominator to avoid over-reporting platform reliability.",
+    "commonMistake": "Dividing successful transactions by failed transactions (21619 / 601 = 35.97) instead of the total transaction base.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": ["fintech", "kpi", "upi"]
+  },
+  {
+    "id": "business-kpis-005",
+    "module": "business",
+    "topic": "kpis",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "A 120-bed multi-speciality hospital in Pune operates for a 30-day month. Over this period, the hospital logs an aggregate of 1,968 inpatient patient-days. Calculate the hospital's Bed Occupancy Rate as a percentage, rounded to two decimal places.",
+    "dataset": "none",
+    "hint": "Total available capacity is beds multiplied by operating days in the month. Divide patient-days by total capacity.",
+    "solution": "Total available bed-days in the 30-day month:\n$$\\text{Total Available Bed-Days} = 120 \\times 30 = 3600$$\n\nBed Occupancy Rate:\n$$\\text{Bed Occupancy Rate} = \\left(\\frac{1968}{3600}\\right) \\times 100 = 54.666... \\approx 54.67\\%$$\n\nThe hospital operated at 54.67% of its total theoretical bed capacity.",
+    "expectedOutput": {
+      "value": 54.67
+    },
+    "explanation": "Bed occupancy reflects capacity utilisation. Patient-days represent actual occupied beds summed across all days. Comparing actual patient-days against total available bed-days (120 x 30 = 3,600) yields 54.67%.",
+    "commonMistake": "Dividing patient-days by the bed count alone (1968 / 120 = 16.4) without multiplying by the 30 operating days.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": ["healthcare", "kpi", "capacity"]
+  },
+  {
+    "id": "business-kpis-006",
+    "module": "business",
+    "topic": "kpis",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "In the same 120-bed hospital month, 410 inpatient admissions were discharged after generating the 1,968 total patient-days. Compute the Average Length of Stay (ALOS) in days, rounded to two decimal places.",
+    "dataset": "none",
+    "hint": "ALOS is total inpatient patient-days divided by total discharges in that period.",
+    "solution": "Average Length of Stay (ALOS) is:\n\n$$\\text{ALOS} = \\frac{\\text{Total Patient-Days}}{\\text{Total Discharges}} = \\frac{1968}{410} = 4.80 \\text{ days}$$\n\nOn average, each admitted patient remained hospitalized for exactly 4.80 days.",
+    "expectedOutput": {
+      "value": 4.8
+    },
+    "explanation": "ALOS is a crucial efficiency and clinical utilization metric. Shorter ALOS with low readmissions indicates effective clinical pathways and faster bed turnover.",
+    "commonMistake": "Dividing patient-days by total bed count (1968 / 120 = 16.4) rather than patient discharges.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": ["healthcare", "kpi", "operations"]
+  },
+  {
+    "id": "business-kpis-007",
+    "module": "business",
+    "topic": "kpis",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "A diagnostic lab chain operating in Mumbai sets an operational goal: 'Deliver routine blood test reports faster without sacrificing diagnostic accuracy.' Recommend 5 core KPIs and 1 critical guardrail metric to track this initiative.",
+    "dataset": "none",
+    "hint": "Think about end-to-end turnaround time steps, distribution percentiles, and quality metrics that prevent rushing errors.",
+    "solution": "Recommended 5 Core KPIs:\n1. **SLA Adherence %**: Share of routine diagnostic reports delivered within the 6-hour SLA threshold.\n2. **Median Turnaround Time (TAT)**: Minutes elapsed from sample barcode scan at collection to report validation by a pathologist.\n3. **90th Percentile (P90) TAT**: Identifies long-tail operational delays and sample routing bottlenecks.\n4. **Sample Transit Time**: Hours elapsed between phlebotomist pickup at patient home / collection centre and arrival at central testing lab.\n5. **Machine & Pathologist Utilisation %**: Running hours of clinical chemistry analysers and pathologist review throughput per shift.\n\nCritical Guardrail Metric:\n- **Report Correction / Sample Re-run Rate %**: Share of diagnostic reports recalled, re-tested, or flagged for sample hemolysis. This guards against technicians rushing procedures or bypassing verification checks to hit TAT targets.",
+    "explanation": "When incentivizing speed, teams often take shortcuts that increase diagnostic error rates. Pairing percentile TAT metrics with SLA adherence and a strict sample error guardrail maintains clinical rigor.",
+    "commonMistake": "Tracking only average TAT while ignoring P90 latency or failing to include a diagnostic error/re-run guardrail.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": ["healthcare", "diagnostics", "guardrail"]
+  },
+  {
+    "id": "business-kpis-008",
+    "module": "business",
+    "topic": "kpis",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "A dental clinic chain logs 1,250 confirmed outpatient appointments in November. On the scheduled dates, exactly 1,075 patients showed up and completed their consultation. What was the clinic's appointment no-show rate as a percentage, rounded to one decimal place?",
+    "dataset": "none",
+    "hint": "Calculate the unfulfilled appointments (booked minus attended) and divide by total booked appointments.",
+    "solution": "Calculate absent appointments:\n$$\\text{No-Show Appointments} = 1250 - 1075 = 175$$\n\nNo-Show Rate:\n$$\\text{No-Show Rate} = \\left(\\frac{175}{1250}\\right) \\times 100 = 14.0\\%$$\n\nExactly 14.0% of booked consultations resulted in patient no-shows.",
+    "expectedOutput": {
+      "value": 14.0
+    },
+    "explanation": "No-show rate represents unutilized doctor time and schedule leakage. The denominator is total confirmed bookings, and the numerator is patients who failed to arrive without prior cancellation.",
+    "commonMistake": "Dividing no-shows by attended appointments (175 / 1075 = 16.3%) rather than total bookings.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": ["healthcare", "operations", "no-show"]
+  },
+  {
+    "id": "business-kpis-009",
+    "module": "business",
+    "topic": "kpis",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "During a monthly review, an e-commerce startup's CEO notes that Gross Merchandise Value (GMV) grew by 12% MoM, but Net Operating Profit fell by 18%. List 4 specific financial and operational metrics you would investigate to pinpoint why profitability deteriorated despite top-line growth.",
+    "dataset": "none",
+    "hint": "Look for unit economics leaks: discounting, return logistics, acquisition costs, and fulfillment expenses.",
+    "solution": "Four diagnostic metrics to investigate:\n\n1. **Gross Margin % / Discount Rate %**: Heavy promotional discounting raises top-line GMV but erodes unit margins. Check whether discounts as a % of GMV increased.\n2. **Customer Acquisition Cost (CAC) by Channel**: Aggressive paid customer acquisition campaigns (e.g., low-intent social ads) may have delivered low-AOV customers with high blended CAC.\n3. **Return to Origin (RTO) and Return Rate %**: If growth was driven by Cash-on-Delivery (COD) orders with high return rates (e.g., in fashion/footwear), two-way shipping and restocking fees destroy operating profits.\n4. **Fulfillment Cost per Order**: Warehouse overtime, expedited logistics, or split-shipment rates may have increased disproportionately during the order volume surge.",
+    "explanation": "Revenue growth masking profit collapse is a classic e-commerce failure mode. The root cause typically lies in discount expansion, high return/RTO logistics costs, or inefficient marketing spend.",
+    "commonMistake": "Focusing solely on website conversion or traffic without inspecting margin after returns and variable fulfillment costs.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": ["unit-economics", "profitability", "ecommerce"]
+  },
+  {
+    "id": "business-kpis-010",
+    "module": "business",
+    "topic": "kpis",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "A diagnostic and telehealth services enterprise has an average headcount of 2,400 employees across a 2-year reporting window. Over the complete two years, HR records an aggregate of 544 employee departures. Calculate the annualized employee attrition rate as a percentage, rounded to two decimal places.",
+    "dataset": "none",
+    "hint": "First calculate the average departures per single year (544 / 2), then divide by average headcount.",
+    "solution": "To calculate the annualized attrition rate from multi-year data:\n\n$$\\text{Annual Departures} = \\frac{544}{2} = 272 \\text{ exits/year}$$\n\n$$\\text{Annualized Attrition Rate} = \\left(\\frac{272}{2400}\\right) \\times 100 = 11.333... \\approx 11.33\\%$$\n\nThe cumulative 2-year departure rate was 22.67%, but the annualized attrition rate is 11.33%.",
+    "expectedOutput": {
+      "value": 11.33
+    },
+    "explanation": "Multi-year attrition figures must be annualized when comparing against industry benchmarks. Dividing the 2-year total (22.67%) directly by standard 1-year benchmarks yields an alarmist, incorrect comparison.",
+    "commonMistake": "Dividing 544 directly by 2,400 without dividing by the 2-year duration, giving 22.67% instead of 11.33%.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": ["hr", "attrition", "annualization"]
+  }
+]

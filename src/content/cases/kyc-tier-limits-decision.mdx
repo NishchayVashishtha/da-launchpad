@@ -1,0 +1,100 @@
+---
+title: "Evaluating tier restrictions: Do Min-KYC users deserve a higher limit?"
+industry: "Fintech"
+difficulty: medium
+type: case-study
+estimatedMinutes: 30
+---
+
+## Problem
+
+You are an analytics lead on the growth and compliance strategy team at an Indian mobile wallet and payment app. Product management submits a strategic proposal:
+> *"Our 883 Minimum-KYC (Min-KYC) users are restricted to lower monthly spending limits. We believe these artificial limits are suppressing their transaction activity and reducing our TPV. We should raise their transaction limits to match Full-KYC tiers to unlock higher spending."*
+
+The Chief Risk Officer urges caution:
+> *"Min-KYC accounts haven't submitted full video-KYC or Aadhaar verification. If we increase limits, will we see higher fraud, more transaction failures, or will spending actually stay the same?"*
+
+You are asked to evaluate how Min-KYC users currently behave compared to Full-KYC users, determine whether spending is truly constrained, and recommend a data-driven policy.
+
+## Data you have
+
+From `fintech.sqlite`:
+- `users`: 4,000 deduplicated records (`user_id`, `kyc_status`, `signup_date`, `city`).
+- `transactions`: 22,300 deduplicated records (`txn_id`, `user_id`, `amount_inr`, `status`, `is_flagged`).
+
+## Approach
+
+1. **Segment User Base by KYC Status**: Group users into `FULL`, `MIN`, and `PENDING` tiers.
+2. **Benchmark Behavioral Metrics**: Calculate transactions per user, average ticket size, and payment failure rate across each tier.
+3. **Analyze Fraud Flag Rates**: Measure the proportion of flagged/suspicious transactions by KYC status.
+4. **Evaluate Intent vs. Regulatory Constraints**: Determine whether Min-KYC users are hitting current ceiling limits.
+5. **Formulate Recommendation**: Design a pilot testing program balancing regulatory compliance with user convenience.
+
+## Step-by-step solution
+
+### Step 1: Comparing Behavioral Metrics Across KYC Tiers
+
+Querying deduplicated records across KYC statuses:
+
+```sql
+WITH t AS (SELECT DISTINCT * FROM transactions),
+     u AS (SELECT DISTINCT * FROM users)
+SELECT 
+  u.kyc_status,
+  COUNT(DISTINCT u.user_id) AS total_users,
+  COUNT(t.txn_id) AS total_txns,
+  ROUND(CAST(COUNT(t.txn_id) AS FLOAT) / COUNT(DISTINCT u.user_id), 2) AS txns_per_user,
+  ROUND(AVG(t.amount_inr), 2) AS avg_ticket_inr,
+  ROUND(100.0 * SUM(CASE WHEN t.status = 'FAILED' THEN 1 ELSE 0 END) / COUNT(t.txn_id), 2) AS failure_rate_pct,
+  SUM(t.is_flagged) AS total_flagged_txns,
+  ROUND(100.0 * SUM(t.is_flagged) / COUNT(t.txn_id), 2) AS flag_rate_pct
+FROM u
+LEFT JOIN t ON u.user_id = t.user_id
+WHERE t.txn_id IS NOT NULL
+GROUP BY u.kyc_status
+ORDER BY total_users DESC;
+```
+
+| kyc_status | Active Users | Total Txns | Txns / User | Avg Ticket (₹) | Failure Rate (%) | Flag Rate (%) |
+|---|---|---|---|---|---|---|
+| **FULL** | 2,874 | 16,009 | **5.57** | ₹1,387.12 | 2.74% | 1.34% |
+| **MIN** | 883 | 4,989 | **5.65** | ₹1,369.45 | 2.46% | 1.38% |
+| **PENDING** | 243 | 1,312 | **5.40** | ₹1,419.08 | 2.97% | 1.37% |
+
+### Step 2: Critical Analytical Observations
+
+1. **Transaction Frequency is Identical**:
+   - Min-KYC users average **5.65 transactions per user**, which is actually slightly *higher* than Full-KYC users (**5.57**).
+   - Pending-KYC users average **5.40**.
+   - There is zero empirical evidence that Min-KYC users are transacting less frequently due to tier friction.
+2. **Average Ticket Sizes are Nearly Indistinguishable**:
+   - Full-KYC: ₹1,387 vs. Min-KYC: ₹1,369 (a minor ₹18 difference).
+   - Everyday consumer payment behavior (groceries, food, mobile recharges) sits well within typical Min-KYC thresholds.
+3. **Operational Quality is Superior**:
+   - Min-KYC users experience the lowest failure rate (**2.46%** vs. 2.74% for Full-KYC).
+4. **Risk Profile is Identical**:
+   - Fraud flag rates are practically identical across tiers: **1.34% for Full-KYC vs. 1.38% for Min-KYC**.
+
+### Step 3: Assessing the Product Hypothesis
+
+The product team assumed that lower limits were actively choking transaction volume. The data reveals that typical users spend ~₹1,370 per transaction and transact ~5 times a year on this platform—well below statutory Min-KYC monthly ceilings (typically ₹10,000 per month under RBI prepaid payment guidelines). The limit is not a binding constraint for the vast majority of users.
+
+## Key insight
+
+The assumption that Min-KYC status depresses customer activity is unfounded. Min-KYC users exhibit transaction frequencies (5.65 vs. 5.57) and average ticket sizes (₹1,369 vs. ₹1,387) that mirror Full-KYC users almost exactly, with identical risk profiles. Product limits are not currently binding on everyday consumer transactions. Growth will not come from arbitrarily raising limits, but from driving deeper habituation.
+
+## Recommendation
+
+1. **Do Not Rush Blanket Limit Increases**:
+   - Avoid spending engineering and legal resources attempting to relax Min-KYC limits, as standard payment patterns do not bump against existing regulatory caps.
+2. **Incentivize Video-KYC Upgrades with Practical Perks**:
+   - Rather than raising Min-KYC limits directly (which requires regulatory compliance navigation), streamline the in-app Video-KYC funnel. Offer tangible benefits: higher annual savings account interest, RuPay credit card linkage, or fee waivers.
+3. **Selective Dynamic Limit Elevation for Established Accounts**:
+   - For Min-KYC users who maintain a 6-month clean transaction history and high merchant diversity, offer automated one-click Aadhaar OTP upgrades to seamlessly transition them to Full-KYC.
+
+## What a weak answer looks like
+
+- Recommends doubling limits immediately without verifying whether users are actually hitting current caps.
+- Claims that Min-KYC users are high-risk fraudsters without checking empirical flag rates (which are 1.38% vs 1.34%).
+- Fails to join users with transactions to compare behavior across cohorts.
+- Ignores Indian regulatory frameworks governing non-bank prepaid wallets.

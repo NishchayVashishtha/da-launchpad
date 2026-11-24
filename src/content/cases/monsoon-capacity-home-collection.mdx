@@ -1,0 +1,107 @@
+---
+title: "Monsoon surge planning: How many extra staff do we need on rain days?"
+industry: "Healthcare"
+difficulty: medium
+type: case-study
+estimatedMinutes: 30
+---
+
+## Problem
+
+You are an operations planning analyst at "SwasthyaHome", a healthcare network managing at-home diagnostic blood collections and nurse visits across Mumbai and Bengaluru. The Head of Field Operations submits a seasonal dilemma:
+> *"During the annual monsoon season, waterlogging and traffic congestion slow down our field phlebotomists. Collections run late, appointment cancellations spike, and patients become angry. How much does rain actually slow down our field staff, how many additional staff-hours must we schedule on rainy days to maintain diagnostic sample throughput, and what operational policies should we deploy?"*
+
+Your objective is to analyze historical collection performance across different weather conditions, quantify the throughput degradation in collections per staff-hour, calculate the staffing buffer multiplier, and establish a monsoon operating plan.
+
+## Data you have
+
+From `food_delivery.sqlite` (modeling diagnostic home sample collection field operations):
+- `deliveries` (home pickups): 15,000 deduplicated records (`delivery_id`, `actual_minutes`, `weather`, `delivery_status`, `order_value`).
+
+## Approach
+
+1. **Segment Performance by Weather Condition**: Partition pickup records into `Clear`, `Cloudy`, `Rain`, and `Heavy Rain`.
+2. **Benchmark Transit Latency & Cancellation Rates**: Calculate average collection duration (minutes) and cancellation percentage across each weather band.
+3. **Model Phlebotomist Throughput per Staff-Hour**: Compute collections completed per operational hour (`60 / actual_minutes`) to determine productivity loss.
+4. **Calculate Sizing Capacity Multipliers**: Determine the exact percentage increase in staff required during moderate and heavy rain.
+5. **Formulate Logistics Mitigation Protocols**: Recommend weather-triggered surge rosters, localized dispatch radius adjustments, and patient communication scripts.
+
+## Step-by-step solution
+
+### Step 1: Fulfillment Metrics Across Weather Bands
+
+Querying deduplicated records in `deliveries`:
+
+```sql
+WITH d AS (SELECT DISTINCT * FROM deliveries)
+SELECT 
+  weather,
+  COUNT(*) AS total_booked_pickups,
+  ROUND(AVG(actual_minutes), 1) AS avg_duration_minutes,
+  SUM(CASE WHEN delivery_status = 'Cancelled' THEN 1 ELSE 0 END) AS cancelled_pickups,
+  ROUND(100.0 * SUM(CASE WHEN delivery_status = 'Cancelled' THEN 1 ELSE 0 END) / COUNT(*), 1) AS cancel_rate_pct
+FROM d
+GROUP BY weather
+ORDER BY avg_duration_minutes ASC;
+```
+
+| Weather Condition | Booked Pickups | Avg Duration (Minutes) | Cancelled Pickups | Cancellation Rate (%) | Latency Increase vs. Clear |
+|---|---|---|---|---|---|
+| **Clear** | 10,309 | **44.0 min** | 423 | **4.1%** | Baseline |
+| **Cloudy** | 2,653 | **43.7 min** | 133 | **5.0%** | -0.3 min (Negligible) |
+| **Rain (Moderate)** | 1,347 | **49.5 min** | 96 | **7.1%** | **+5.5 min (+12.5%)** |
+| **Heavy Rain** | 691 | **53.9 min** | 64 | **9.3%** | **+9.9 min (+22.5%)** |
+
+*Findings*:
+1. **Duration Expands Sharply**: Transit duration increases by **+5.5 minutes (+12.5%)** during moderate rain and by **+9.9 minutes (+22.5%)** during heavy rain.
+2. **Cancellations More Than Double**: Cancellation rates surge from **4.1% on clear days to 9.3% during heavy downpours**, as patients cancel appointments due to delayed transit or impassable waterlogged streets.
+
+### Step 2: The Capacity Math: Throughput per Staff-Hour
+
+Let's compute how many collections an individual field phlebotomist completes per hour of active duty:
+- **Clear Weather Throughput**:
+  ```text
+  Throughput (Clear) = 60 minutes / 44.0 minutes = 1.36 collections per staff-hour
+  ```
+- **Heavy Rain Throughput**:
+  ```text
+  Throughput (Heavy Rain) = 60 minutes / 53.9 minutes = 1.11 collections per staff-hour
+  ```
+- **Productivity Loss**:
+  ```text
+  Throughput Reduction = (1.11 - 1.36) / 1.36 = -18.38% (an ~18.4% capacity drop)
+  ```
+
+### Step 3: Calculating Extra Staffing Requirements
+
+To maintain the exact same volume of completed sample collections on a Heavy Rain day as on a normal Clear day:
+```text
+Staffing Multiplier = Throughput (Clear) / Throughput (Heavy Rain) 
+                   = 1.3636 / 1.1132 = 1.225 (a +22.5% increase)
+```
+- **Moderate Rain**: Requires `49.5 / 44.0 = 1.125` → **+12.5% extra staff-hours**.
+- **Heavy Rain**: Requires `53.9 / 44.0 = 1.225` → **+22.5% extra staff-hours**.
+
+If a metropolitan hub normally operates with 100 on-duty phlebotomists, heavy monsoon rain requires scheduling **122 to 125 active phlebotomists** just to deliver the same baseline sample volume.
+
+## Key insight
+
+Monsoon rain imposes a compound operational penalty on healthcare home collections:
+1. Slower road transit reduces phlebotomist throughput by ~18.4%, requiring **+22.5% additional staff-hours** to complete the scheduled collection volume.
+2. Appointment cancellations more than double from 4.1% to 9.3%, leaking high-margin diagnostic revenues.
+
+## Recommendation
+
+1. **Weather-Forecast Triggered Standby Rosters**:
+   - Integrate an automated weather API with the workforce scheduling software. When IMD forecasts heavy rain (> 30 mm/hr) between 06:00 and 10:00 AM, automatically activate a **+25% reserve phlebotomist pool** with guaranteed rainy-day hourly hazard allowances.
+2. **Dynamic Radius Contraction During Downpours**:
+   - On heavy rain mornings, automatically contract the dispatch radius from the standard 6.0 km down to **3.5 km per hub**. Shortening trip distances offsets road congestion delays and protects sample cold-chain stability.
+3. **Proactive In-App Patient Fasting Alerts**:
+   - For morning fasting patients scheduled during heavy downpours, dispatch automated WhatsApp updates at 06:30 AM: *"Due to heavy waterlogging, your phlebotomist is en route with an estimated arrival time of 07:45 AM. Please remain fasting."* Transparent communication reduces patient cancellations by over 35%.
+
+## What a weak answer looks like
+
+- Simply states that "rain causes delays" without calculating collections per staff-hour or staffing percentage increases.
+- Confuses duration increase (+22.5%) with required staffing adjustment.
+- Recommends canceling all home collections during rain, forfeiting critical revenue.
+- Ignores patient cancellation spikes and cold-chain sample safety.

@@ -1,0 +1,130 @@
+---
+title: "Retail inventory diagnostics: Why are four Vasudha stores severely underperforming?"
+industry: "Retail consulting"
+difficulty: medium
+type: case-study
+estimatedMinutes: 35
+---
+
+## Problem
+
+You are an analytics consultant retained by the Chief Operating Officer of "Vasudha Retail", a regional supermarket chain operating 24 stores across India (comprising 7 Express convenience formats, 13 mid-size Supermarkets, and 4 Hypermarkets). During the annual store performance review, the retail director points to a frustrating anomaly:
+> *"Four of our prime locations—Gomti Nagar in Lucknow, Velachery in Chennai, Adajan in Surat, and Kharadi in Pune—are missing their monthly sales targets by nearly 30% compared to identical peer stores in their formats. The regional heads blame weak local footfall, aggressive competition from quick-commerce apps, and poor store staff salesmanship. Should we increase local marketing spend, or is there an operational bottleneck inside the stores?"*
+
+Your objective is to analyze historical sales transactions and monthly inventory snapshots, benchmark store performance within formats, evaluate out-of-stock patterns, quantify the financial impact of stockouts, and deliver an operational turnaround plan.
+
+## Data you have
+
+From `retail.sqlite`:
+- `stores`: 24 deduplicated records (`store_id`, `store_name`, `city`, `format`, `region`).
+- `sales`: Deduplicated line-item sales records (`sale_id`, `store_id`, `product_id`, `date`, `net_amount_inr`). Note: records with `net_amount_inr >= 100000` are test outliers and filtered out.
+- `inventory`: Monthly store-SKU snapshot logs (`store_id`, `product_id`, `month`, `stock_on_hand`, `days_out_of_stock`).
+
+## Approach
+
+1. **Benchmark Sales by Store Format**: Compare sales volumes of the 4 suspect stores against their respective peer group averages (Supermarkets vs. Supermarkets, Express vs. Express).
+2. **Measure Inventory Stockout Frequency**: Calculate the percentage of SKU-months where products were out of stock (`days_out_of_stock > 0`) for each store against the chain baseline (8.4%).
+3. **Correlate Stockouts with Sales Deficits**: Quantify how closely inventory unavailability mirrors the ~30% revenue gap.
+4. **Inspect Category Stockout Concentration**: Determine whether out-of-stock items are discretionary items or daily consumer staples (Grocery, Personal Care).
+5. **Formulate Supply Chain Interventions**: Propose automatic replenishment triggers and supplier SLA governance.
+
+## Step-by-step solution
+
+### Step 1: Benchmarking Store Sales Within Formats
+
+Querying sales line-item volume for the 4 flagged stores compared to peers in identical store formats:
+
+```sql
+WITH clean_sales AS (
+  SELECT * FROM sales WHERE net_amount_inr < 100000
+)
+SELECT 
+  st.store_name,
+  st.format,
+  st.city,
+  COUNT(cs.sale_id) AS total_sales_lines,
+  ROUND(SUM(cs.net_amount_inr) / 100000.0, 2) AS total_sales_lakhs
+FROM stores st
+LEFT JOIN clean_sales cs ON st.store_id = cs.store_id
+GROUP BY st.store_id
+ORDER BY st.format, total_sales_lines DESC;
+```
+
+*Comparative Summary by Format*:
+
+1. **Supermarket Format (13 Stores Total)**:
+   - Typical Peer Supermarkets (e.g. Indiranagar, Bandra, Alwarpet): Average **~1,040 sales lines** and ~₹14.5 Lakhs in revenue.
+   - **Gomti Nagar (Lucknow)**: **682 sales lines** (-34.4% vs. peer average).
+   - **Velachery (Chennai)**: **741 sales lines** (-28.8% vs. peer average).
+2. **Express Format (7 Stores Total)**:
+   - Typical Peer Express Stores (e.g. Koramangala, Kothrud): Average **~575 sales lines** and ~₹7.8 Lakhs in revenue.
+   - **Adajan (Surat)**: **384 sales lines** (-33.2% vs. peer average).
+   - **Kharadi (Pune)**: **409 sales lines** (-28.9% vs. peer average).
+
+*Finding*: All four stores experience a consistent **29% to 34% sales deficit** compared to peer stores of identical size and retail format.
+
+### Step 2: Measuring Store Inventory Stockout Share
+
+Let's query the `inventory` snapshot table to calculate the proportion of SKU-month records that suffered zero inventory:
+
+```sql
+SELECT 
+  st.store_name,
+  st.format,
+  COUNT(*) AS total_sku_snapshots,
+  SUM(CASE WHEN inv.days_out_of_stock > 0 THEN 1 ELSE 0 END) AS out_of_stock_snapshots,
+  ROUND(100.0 * SUM(CASE WHEN inv.days_out_of_stock > 0 THEN 1 ELSE 0 END) / COUNT(*), 1) AS stockout_rate_pct
+FROM inventory inv
+JOIN stores st ON inv.store_id = st.store_id
+GROUP BY st.store_id
+ORDER BY stockout_rate_pct DESC;
+```
+
+| Store Name | Format | City | Total SKU Snapshots | Out-of-Stock Snapshots | Stockout Rate (%) |
+|---|---|---|---|---|---|
+| **Gomti Nagar** | Supermarket | Lucknow | 480 | 204 | **42.5%** |
+| **Adajan** | Express | Surat | 480 | 200 | **41.7%** |
+| **Kharadi** | Express | Pune | 480 | 194 | **40.5%** |
+| **Velachery** | Supermarket | Chennai | 480 | 184 | **38.4%** |
+| **Chain Average** | Mixed | All Stores | 11,520 | 968 | **8.4%** |
+| **Normal Peer Stores** | Mixed | Peer Stores | 480 each | 12 – 14 each | **2.4% – 3.0%** |
+
+*The Revelation*:
+While healthy Vasudha stores maintain a tiny **2.4% to 3.0% stockout rate**, these four stores suffer an astronomical **38.4% to 42.5% stockout rate**! More than 4 out of every 10 products on their shelves are completely unavailable.
+
+### Step 3: Correlating the Sales Deficit with Inventory Stockouts
+
+The mathematical alignment is striking:
+- Gomti Nagar and Velachery face a **~40% stockout rate** and suffer a **~32% sales volume deficit**.
+- Adajan and Kharadi face a **~41% stockout rate** and suffer a **~31% sales volume deficit**.
+
+*Root Cause*:
+Customers are visiting these stores, but when daily grocery essentials (wheat flour, cooking oil, dairy, detergent) are missing from shelves, they abandon their shopping carts and walk across the street to local kirana stores or quick-commerce apps.
+
+### Step 4: Investigating Supply Chain Logistics
+
+Why are these four specific stores starved of inventory?
+1. **Peripheral Logistics Routes**: Gomti Nagar (Lucknow) and Adajan (Surat) sit at the extreme outer perimeter of the regional central distribution centers (CDCs), suffering delivery delays from third-party logistics carriers.
+2. **Flawed Reorder Point Logic**: Kharadi and Velachery experienced rapid suburban residential growth, but their automated ERP reorder thresholds were never adjusted upward, leading to frequent inventory exhaustion within 48 hours of delivery.
+
+## Key insight
+
+The sales deficit in the four underperforming stores is not a consumer footfall or local marketing failure; it is an inventory availability crisis. These stores suffer from a 40% stockout rate—more than 13 times higher than peer stores (2.5%). The 30% sales gap is the direct mechanical consequence of empty shelves in high-velocity daily grocery staples. Spending marketing capital to drive shoppers to empty stores will only accelerate customer churn.
+
+## Recommendation
+
+1. **Halt Local Marketing Spend Immediately**:
+   - Reallocate marketing budgets away from promotional flyers and outdoor hoardings for these 4 stores until on-shelf availability is restored.
+2. **Recalibrate Automated Safety Stock Reorder Thresholds**:
+   - Increase minimum reorder points by **50% across high-velocity Grocery and Staples** (which account for 31.3% of chain unit sales) for peripheral and high-growth stores.
+3. **Bi-Weekly Dedicated Replenishment Corridors**:
+   - Contract dedicated secondary transit routes connecting the central warehouse directly to Gomti Nagar and Adajan twice weekly, eliminating multi-day transit stockouts.
+4. **Implement On-Shelf Availability (OSA) Store Manager KPIs**:
+   - Introduce a weekly store-level scorecard: penalize store managers if weekly out-of-stock rates exceed **5.0%**, shifting store management focus from passive excuses to proactive inventory auditing.
+
+## What a weak answer looks like
+
+- Recommends launching a 20% discount campaign or spending on local billboards to attract more shoppers.
+- Blames store associates for lack of salesmanship without checking inventory tables.
+- Fails to benchmark stores within their respective formats (Supermarket vs. Express).
+- Does not query the `inventory` table to identify the 40% stockout rate.

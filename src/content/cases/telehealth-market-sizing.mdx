@@ -1,0 +1,106 @@
+---
+title: "Market estimation: Size a telehealth consultation market for a mid-size Indian city"
+industry: "Healthcare"
+difficulty: medium
+type: case-study
+estimatedMinutes: 30
+---
+
+## Problem
+
+You are an analytics associate interviewing for a business strategy role at a major healthtech startup. The interviewer leans forward and presents an estimation challenge:
+> *"We are considering expanding our on-demand video doctor consultation service into Tier-2 Indian cities like Coimbatore, Indore, or Chandigarh. Estimate the Total Addressable Market (TAM) in annual rupees for telehealth consultations in a city of 20 lakh residents. Walk me through your structure, state your assumptions clearly, and sanity-check your answer."*
+
+You have 30 minutes to define the problem scope, build both Top-Down and Bottom-Up models, reconcile the estimates, and provide a strategic recommendation.
+
+## Data you have
+
+No direct historical database is provided (this is a market sizing and guesstimate round). You rely on standard Indian demographic and economic proxies:
+- **City Population**: 20 Lakh (2,000,000 residents).
+- **Average Urban Household Size**: 4.5 persons per household.
+- **Consultation Price Point**: ~₹400 per routine video consultation.
+
+## Approach
+
+1. **Clarify Scope and Unit of Analysis**: Bound the estimate to paid outpatient video/telephonic consultations conducted by certified MBBS/MD doctors (excluding in-person clinic visits and free triage chats).
+2. **Top-Down Model (Demand-Side)**: Funnel down from total municipal population → households → digital adoption → annual frequency × average ticket price.
+3. **Bottom-Up Model (Supply-Side)**: Estimate available consulting doctors, daily slot capacity, working days, and maximum feasible capacity.
+4. **Reconcile and Triangulate**: Compare demand-side spending against supply-side throughput, explain the gap (utilization rate), and state an estimated revenue range.
+5. **Formulate Market Entry Strategy**: Highlight customer segments with highest willingness to pay.
+
+## Step-by-step solution
+
+### Step 1: Top-Down Demand-Side Sizing Model
+
+Let's model consumer demand starting from household demographics:
+
+```text
+1. Total Municipal Population = 20,00,000 residents
+2. Household Conversion = 20,00,000 / 4.5 = 4,44,444 households (~4.44 Lakh households)
+3. Digital Healthcare Adoption:
+   - In a Tier-2 urban city, ~50% of households have smartphone and digital payment literacy.
+   - Of those, ~30% are open to video consultations for primary care (mild fever, pediatrics, skin rash, routine chronic refills).
+   - Target Addressable Penetration = 50% * 30% = 15% of total households
+   - Addressable Households = 4,44,444 * 0.15 = 66,667 households
+4. Annual Consultation Frequency:
+   - Average household experiences 3 minor illnesses or chronic checkups per year managed via telehealth.
+   - Total Annual Consultations = 66,667 * 3 = 2,00,000 consultations
+5. Monetary Market Size:
+   - Average Consultation Fee (AOV) = ₹400 per session
+   - Annual TAM (Demand-Side) = 2,00,000 * ₹400 = ₹8,00,00,000 (₹8.0 Crore)
+```
+
+Exact Top-Down Demand Sizing: **₹8.0 Crore annually** (~$1.0 Million USD).
+
+### Step 2: Bottom-Up Supply-Side Capacity Check
+
+Let's model the supply of telemedicine doctors available in the city:
+
+```text
+1. Doctor Population in a City of 20 Lakh:
+   - India has approximately 0.7 doctors per 1,000 people in urban areas (~1,400 practicing allopathic doctors).
+   - Assume 10% of local private practitioners and specialists allocate time to digital platforms = ~150 consulting doctors.
+2. Daily Telehealth Slot Capacity:
+   - Each doctor dedicates 2 hours per day to telehealth, completing 6 consultations per hour = 12 consultations/day.
+3. Annual Operating Volume:
+   - Operating days: 300 days per year (excluding Sundays and holidays).
+   - Annual Consultation Capacity = 150 doctors * 12 consults/day * 300 days = 5,40,000 consultations
+4. Monetary Market Size (Maximum Supply Capacity):
+   - Supply Capacity Value = 5,40,000 * ₹400 = ₹21,60,00,000 (₹21.6 Crore)
+```
+
+### Step 3: Triangulation and Reconciliation
+
+Notice the gap between the two approaches:
+- **Top-Down Demand**: ₹8.0 Crore (2.00 Lakh consultations).
+- **Bottom-Up Supply Capacity**: ₹21.6 Crore (5.40 Lakh consultations).
+- **Ratio**: The supply capacity is **2.7x larger** than estimated consumer demand.
+
+*Why this makes perfect business sense*:
+Doctor clinic capacity is rarely 100% utilized. In digital outpatient services, doctors maintain open booking calendars, but typical platform slot utilization hovers between **35% and 40%**:
+```text
+Realized Market Volume = Supply Capacity * Utilization Rate
+                      = ₹21.6 Crore * 37.0% ≈ ₹8.0 Crore
+```
+Both models converge cleanly: the sustainable annual addressable market for a Tier-2 Indian city is **₹8.0 to ₹10.0 Crore**.
+
+## Key insight
+
+A mid-size Tier-2 Indian city (20 Lakh population) represents a ₹8.0 to ₹10.0 Crore annual telehealth consultation market. Cross-checking top-down demand against bottom-up doctor capacity reveals that supply capacity (₹21.6 Crore) exceeds demand by 2.7x, proving that the primary growth bottleneck is patient adoption and habituation, not doctor recruitment.
+
+## Recommendation
+
+1. **Target Chronic Illness Management for Sticky Recurring Demand**:
+   - Rather than marketing general acute fever consults (which are sporadic), focus customer acquisition on chronic diabetes, hypertension, and thyroid patients who require regular 3-month prescription renewals, locking in predictable 4x annual frequency.
+2. **Partner with Local Neighborhood Diagnostic Centers**:
+   - Establish digital kiosks in local pathology sample collection centers. When a patient tests for HbA1c or lipid profile, offer an instant ₹299 video doctor consultation to interpret the report.
+3. **Price Tiering for Tier-2 Market Entry**:
+   - Introduce an introductory ₹249 plan for general physician triage, reserving the ₹499–₹699 price band for super-specialists (cardiologists, dermatologists).
+
+## What a weak answer looks like
+
+- Pulls a random number (like "₹500 Crore") out of nowhere without demographic steps.
+- Assumes all 20 Lakh citizens consult a telehealth doctor 10 times a year.
+- Fails to convert individuals to households.
+- Only uses a single approach without performing a supply-side cross-check.
+- Does not reconcile the difference between doctor availability and actual patient booking volume.

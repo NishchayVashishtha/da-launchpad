@@ -1,0 +1,285 @@
+---
+title: "Unit economics: AOV, conversion, CAC, LTV, ROAS"
+description: "Know what one customer is worth and what it costs to get them."
+module: business
+order: 7
+estimatedMinutes: 55
+objectives:
+  - "Compute core unit economic metrics: AOV, CAC, ROAS, and Conversion Rate in SQL"
+  - "Calculate Customer Lifetime Value (LTV) using gross profit margin and churn rate"
+  - "Evaluate marketing efficiency using the LTV:CAC ratio and CAC payback period"
+  - "Clean logging outliers in ad spend datasets before computing channel performance"
+  - "Identify the limitations of last-click attribution when evaluating top-of-funnel channels"
+tags: ["business", "ltv", "cac", "aov", "roas", "marketing", "sql"]
+---
+
+## Learning objectives
+
+By the end of this lesson, you will be able to:
+- Define and calculate the fundamental building blocks of unit economics: Average Order Value (AOV), Customer Acquisition Cost (CAC), and Return on Ad Spend (ROAS).
+- Compute Customer Lifetime Value (LTV) based on gross profit contribution rather than inflated gross revenue.
+- Evaluate company unit economics against standard startup benchmarks: LTV:CAC $\ge 3.0\times$ and CAC payback under 12 months.
+- Clean dirty marketing datasets containing extreme logging errors and avoid Cartesian fan-out join traps in SQL.
+- Differentiate between blended CAC and paid CAC, and articulate how last-click attribution biases channel evaluation.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+A direct-to-consumer apparel brand in Gurgaon raised Rs 20 Crore in venture funding and scaled marketing spend rapidly across Instagram and influencer campaigns. Within six months, orders tripled. But at the board meeting, the investors were furious: the company had burned through half its treasury and was losing money on every single order.
+
+The marketing team was reporting a Return on Ad Spend (ROAS) of 1.4x and celebrating profitability. An astute analyst ran the true unit economics: after accounting for a 33% product margin, 20% return logistics, and shipping costs, the brand was losing Rs 180 on every delivered box. Without sound unit economics, scaling order volume simply accelerates bankruptcy.
+</RealWorld>
+
+Every startup founder, marketing VP, and commercial finance director lives and dies by unit economics. In analytics interviews, you will frequently be asked: *"Is this customer acquisition channel profitable?"*, *"How long does it take to recover our marketing spend?"*, and *"How do you calculate customer lifetime value?"*
+
+## Concept
+
+### Core Unit Economic Formulas
+
+Unit economics evaluates the direct revenues and variable costs associated with a single customer or order:
+
+1. **Average Order Value (AOV)**:
+   `AOV = Delivered Revenue / Delivered Orders`
+
+2. **Customer Acquisition Cost (CAC)**:
+   `Paid CAC = Total Marketing Ad Spend / New Paying Customers Acquired`
+   `Blended CAC = Total Marketing Ad Spend / All New Customers (including organic)`
+
+3. **Return on Ad Spend (ROAS)**:
+   `ROAS = Gross Realized Revenue / Total Marketing Ad Spend`
+   *Crucial distinction:* ROAS evaluates top-line revenue, not profit. If gross margin is 30%, a ROAS of 2.0x is operating at a net loss (Rs 200 revenue yields Rs 60 gross profit against Rs 100 ad spend).
+
+4. **Customer Lifetime Value (LTV)**:
+   `LTV = (Average Revenue per User * Gross Margin %) / Monthly Churn Rate`
+
+5. **CAC Payback Period**:
+   The number of months of customer gross margin required to recover initial acquisition cost:
+   `Payback Period (Months) = CAC / Monthly Gross Margin per Customer`
+
+<Tip>
+**The Chai Stall Analogy:** Imagine opening a specialty chai stall in Indiranagar. You spend Rs 300 on local flyers and sample cups to acquire a regular office worker (CAC = Rs 300). Each cup costs Rs 40 with a Rs 28 gross margin (70% margin). If the customer visits 30 times before changing jobs, their lifetime gross margin is `30 * Rs 28 = Rs 840` (LTV = Rs 840). Your LTV:CAC is `840 / 300 = 2.8x`, and your payback period is `300 / 28 ≈ 11 visits`.
+</Tip>
+
+### Health Benchmarks: LTV:CAC and Payback
+
+In commercial tech businesses, investors and CFOs rely on two standard benchmark rules:
+
+- **LTV:CAC $\ge 3.0\times$**: For every rupee invested in customer acquisition, the customer should generate at least three rupees in gross profit over their lifespan. A ratio below $1.0\times$ destroys cash; a ratio above $8.0\times$ suggests the business is under-investing in marketing.
+- **CAC Payback $\le 12$ Months**: Capital should be fully recovered within one year so that cash can be recycled into acquiring subsequent cohorts.
+
+<FormulaCard title="The Revenue vs Margin LTV Trap">
+Never compute LTV using gross revenue alone!
+- Flawed Revenue LTV: `Monthly ARPU / Churn Rate`
+- True Margin LTV: `(Monthly ARPU * Gross Margin %) / Churn Rate`
+
+If a subscriber pays Rs 299/month with an 8% churn rate, their expected lifetime is `1 / 0.08 = 12.5 months`. Using revenue gives `Rs 299 * 12.5 = Rs 3,737.50`. But if cloud hosting, payment gateways, and content costs consume 30% of revenue, the actual gross profit generated is `Rs 3,737.50 * 0.70 = Rs 2,616.25`. Evaluating marketing spend against Rs 3,737 will bankrupt the business.
+</FormulaCard>
+
+## Worked examples
+
+All examples in this section query `public/data/sqlite/marketing.sqlite` using SQLite.
+
+### Example 1: Cleaning Ad Spend Outliers
+Inspection of `ad_spend` reveals corrupt outlier rows (e.g., `ad_spend_id = 1867` with Rs 99,637 for a single day on campaign 25). We filter `WHERE spend_inr < 3000` to establish clean marketing spend:
+
+```sql
+WITH c AS (
+  SELECT DISTINCT * FROM campaigns
+),
+s AS (
+  SELECT DISTINCT * FROM ad_spend WHERE spend_inr < 3000
+)
+SELECT
+  c.channel,
+  CAST(ROUND(SUM(s.spend_inr)) AS INTEGER) AS clean_spend
+FROM s
+JOIN c ON s.campaign_id = c.campaign_id
+GROUP BY c.channel
+ORDER BY clean_spend DESC;
+```
+
+**Real Output from marketing.sqlite:**
+| channel | clean_spend |
+| :--- | :--- |
+| Google Search | 95526 |
+| Influencer | 45602 |
+| Meta Ads | 44958 |
+| YouTube | 14861 |
+| Google Display | 11164 |
+| Affiliate | 2677 |
+| WhatsApp | 1520 |
+| Email | 836 |
+
+Without this filter, Influencer ad spend would falsely read as Rs 134,880 instead of Rs 45,602, severely skewing channel evaluations.
+
+### Example 2: Channel CAC and ROAS Audit
+We pre-aggregate clean spend and purchase conversions in separate CTEs to avoid Cartesian join fan-outs:
+
+```sql
+WITH c AS (
+  SELECT DISTINCT * FROM campaigns
+),
+s AS (
+  SELECT c.channel, SUM(a.spend_inr) AS spend
+  FROM (SELECT DISTINCT * FROM ad_spend WHERE spend_inr < 3000) a
+  JOIN c ON a.campaign_id = c.campaign_id
+  GROUP BY c.channel
+),
+conv AS (
+  SELECT c.channel, COUNT(*) AS purchases, SUM(cv.revenue_inr) AS rev
+  FROM (SELECT DISTINCT * FROM conversions WHERE conversion_type = 'Purchase') cv
+  JOIN c ON cv.campaign_id = c.campaign_id
+  GROUP BY c.channel
+)
+SELECT
+  s.channel,
+  conv.purchases,
+  ROUND(s.spend / conv.purchases, 1) AS cac,
+  ROUND(conv.rev / s.spend, 2) AS roas
+FROM s
+JOIN conv ON s.channel = conv.channel
+ORDER BY roas DESC;
+```
+
+**Real Output from marketing.sqlite:**
+| channel | purchases | cac | roas |
+| :--- | :--- | :--- | :--- |
+| Email | 56 | 14.9 | 109.41 |
+| WhatsApp | 46 | 33.0 | 48.96 |
+| Affiliate | 24 | 111.5 | 11.94 |
+| Google Search | 375 | 254.7 | 5.76 |
+| Meta Ads | 141 | 318.9 | 3.96 |
+| YouTube | 23 | 646.1 | 1.64 |
+| Google Display | 12 | 930.3 | 0.94 |
+| Influencer | 21 | 2171.5 | 0.64 |
+
+**The Unit Economic Findings:**
+- **Google Search** and **Meta Ads** are high-scale, profitable workhorses (ROAS of 5.76 and 3.96 with CAC under Rs 320).
+- **Influencer Marketing** is deeply underwater: a CAC of Rs 2,171.50 and a ROAS of 0.64 means the channel loses 36 paise on every rupee spent.
+- **Email & WhatsApp** exhibit astronomical ROAS (109x and 49x) because they are owned CRM channels with near-zero marginal send costs, but they cannot scale without acquiring new customer contact lists first.
+
+### Example 3: Illustrative Subscription LTV & Payback Math
+For a Standard subscription plan priced at Rs 299/month with 70% gross margin and 8% monthly churn:
+
+- `Monthly Gross Margin = Rs 299 * 0.70 = Rs 209.30`
+- `Expected Lifetime = 1 / 0.08 = 12.5 months`
+- `True LTV = Rs 209.30 * 12.5 = Rs 2,616.25`
+
+If acquired through Google Search at CAC = Rs 254.70:
+- `LTV:CAC Ratio = Rs 2,616.25 / Rs 254.70 = 10.3x` (Significantly outperforms the 3.0x benchmark)
+- `CAC Payback Period = Rs 254.70 / Rs 209.30 = 1.2 months` (Capital is recovered in just 37 days)
+
+## Common mistakes
+
+<CommonMistake>
+- **Computing LTV using gross revenue instead of gross margin**: Multiplying full revenue by lifetime without subtracting servicing and variable delivery costs.
+- **Creating Cartesian join fan-outs in SQL**: Joining `ad_spend` directly to `conversions` without pre-aggregating, which multiplies rows and inflates spend and purchases.
+- **Treating ROAS as net profit**: Forgetting that a ROAS of 1.5x on a 40% margin product loses money.
+- **Relying entirely on blended CAC**: Bragging about a Rs 150 blended CAC while ignoring that paid ad channels actually cost Rs 1,200 per user because organic word-of-mouth masked the failure.
+- **Ignoring scale limits on owned channels**: Recommending that a company "reallocate all ad budget to Email" because Email has a 100x ROAS, ignoring that you cannot email people who haven't signed up yet.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="unitecon" module="business" />
+
+## Mini quiz
+
+<Quiz questions={[
+  {
+    q: "Why must Customer Lifetime Value (LTV) be calculated using gross profit margin rather than gross revenue?",
+    options: [
+      "To comply with corporate income tax deductions",
+      "Because delivering products and services incurs variable costs that do not contribute to recovering acquisition spend",
+      "Because revenue numbers are always confidential in public companies",
+      "To artificially lower company valuation before funding rounds"
+    ],
+    answer: 1,
+    explanation: "Revenue is not cash in hand; fulfilling orders requires paying suppliers, hosting providers, and couriers. Only gross margin recovers acquisition spend."
+  },
+  {
+    q: "A direct-to-consumer brand has a 30% gross profit margin. What is the minimum ROAS required simply to break even on ad spend?",
+    options: [
+      "1.0x",
+      "3.0x",
+      "3.33x",
+      "0.30x"
+    ],
+    answer: 2,
+    explanation: "Break-even ROAS is 1 / Gross Margin %: 1 / 0.30 = 3.33x. At 3.33x ROAS, Rs 100 ad spend generates Rs 333 revenue, which yields exactly Rs 100 in gross margin."
+  },
+  {
+    q: "In the marketing dataset, which channel exhibited by far the worst unit economics?",
+    options: [
+      "Google Search (ROAS 5.76, CAC Rs 255)",
+      "Meta Ads (ROAS 3.96, CAC Rs 319)",
+      "Influencer Marketing (ROAS 0.64, CAC Rs 2,171)",
+      "Email Marketing (ROAS 109.4, CAC Rs 15)"
+    ],
+    answer: 2,
+    explanation: "Influencer marketing generated an unsustainable CAC of Rs 2,171 and a ROAS of 0.64, destroying capital on every acquisition."
+  },
+  {
+    q: "What is the difference between Paid CAC and Blended CAC?",
+    options: [
+      "Paid CAC includes marketing employee salaries, while Blended CAC does not",
+      "Paid CAC divides spend exclusively by customers acquired via paid ads; Blended CAC divides spend by all customers including free organic signups",
+      "Paid CAC is evaluated annually, while Blended CAC is evaluated daily",
+      "Blended CAC is only calculated for international exports"
+    ],
+    answer: 1,
+    explanation: "Blended CAC dilutes marketing spend across organic users. Relying on blended CAC masks that paid marketing channels may be unprofitable."
+  },
+  {
+    q: "A subscriber generates Rs 200 in monthly gross margin. If CAC is Rs 1,000, what is the CAC payback period?",
+    options: [
+      "2.0 months",
+      "5.0 months",
+      "10.0 months",
+      "12.0 months"
+    ],
+    answer: 1,
+    explanation: "Payback Period = CAC / Monthly Margin = Rs 1,000 / Rs 200 = 5.0 months."
+  }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Unit economics questions test commercial maturity: "Our Meta Ads ROAS is 2.5x and our Google Ads ROAS is 4.0x. Should we shut down Meta Ads immediately?"
+</InterviewAlert>
+
+<InterviewQ q="Our Google Search ROAS is 5.8x and Meta Ads ROAS is 4.0x. Should we reallocate all budget to Google Search?">
+Not immediately, for two strategic reasons:
+1. **Marginal Diminishing Returns**: High-intent search queries (e.g. 'buy running shoes online') have a fixed daily search volume. If you force more budget into Google Search beyond that search cap, your Cost Per Click (CPC) will surge and your marginal ROAS will plummet.
+2. **Top-of-Funnel Discovery vs Capture**: Google Search captures existing customer intent, while Meta Ads creates new demand through visual discovery. If you turn off Meta, fewer users will know your brand exists, causing Google Search volume to contract 30 days later.
+
+I would scale Google Search incrementally until its marginal ROAS matches Meta's, while maintaining Meta Ads as a demand-generation engine.
+</InterviewQ>
+
+<InterviewQ q="How do you handle the 99,637 ad spend outlier in the marketing dataset?">
+In real analytics environments, anomalous logging errors occur when an API webhook sends an unformatted currency string or a batch spend figure into a daily spend table. 
+
+My process is:
+1. **Verify the anomaly**: Confirm that `ad_spend_id = 1867` is Rs 99,637 for a single day when the campaign's total budget was only Rs 40,000.
+2. **Exclude for analysis with documentation**: Filter `WHERE spend_inr < 3000` for channel benchmarking so it does not distort CAC and ROAS.
+3. **Escalate to engineering**: Notify the data engineering team to add a schema validation constraint preventing daily spend from exceeding the parent campaign's total budget.
+</InterviewQ>
+
+<InterviewQ q="What is a good LTV:CAC ratio, and what does it mean if the ratio is 12x?">
+A standard healthy benchmark for tech businesses is **3.0x to 4.0x**. 
+
+If a company reports an astronomical LTV:CAC of **12x**, it is actually a sign of **sub-optimal growth strategy**: the company is being overly conservative with its marketing budget. By spending so little on acquisition, they are leaving high-margin market share on the table that competitors will aggressively capture. They should scale ad spend, accept a slightly higher CAC (e.g., expanding from Rs 250 to Rs 500), and accelerate customer acquisition.
+</InterviewQ>
+
+## Key takeaways
+
+- Unit economics assesses profitability at the level of a single transaction or customer; never scale volume until unit economics are proven.
+- Always calculate Customer Lifetime Value (LTV) using gross profit margin, never inflated top-line revenue.
+- Maintain a minimum LTV:CAC ratio of $3.0\times$ and keep customer acquisition payback under 12 months.
+- Avoid Cartesian join fan-outs in SQL by pre-aggregating spend and conversions in separate CTEs before joining on channel.
+- ROAS measures revenue, not profit; a channel with 1.2x ROAS loses money if product margins are below 83%.
+
+## Further reading
+
+<FurtherReading ids={["mode-sql", "alex-the-analyst"]} />

@@ -1,0 +1,120 @@
+---
+title: "Merchant risk segmentation: Are unverified merchants worth keeping?"
+industry: "Fintech"
+difficulty: medium
+type: case-study
+estimatedMinutes: 30
+---
+
+## Problem
+
+You are an analytics lead on the Merchant Onboarding and Risk Operations team. During a compliance audit, the Chief Compliance Officer notices an operational backlog:
+> *"We have 57 unverified merchants processing transactions on our platform. They haven't completed full business documentation. Unverified merchants are a major legal and fraud liability. Should we immediately suspend all unverified merchants to eliminate platform risk?"*
+
+The Merchant Partnerships Director counters:
+> *"Suspension will kill merchant acquisition in Tier-3 cities where small shops take weeks to gather GST documents. We need hard data before terminating them."*
+
+You are tasked with analyzing the actual transaction volume, payment failure rates, and fraud flag rates of unverified merchants compared to verified partners, uncovering the true risk drivers, and proposing an evidence-based merchant governance policy.
+
+## Data you have
+
+From `fintech.sqlite`:
+- `merchants`: 400 deduplicated records (`merchant_id`, `name`, `category`, `is_verified`, `city`).
+- `transactions`: 22,300 deduplicated records (`txn_id`, `merchant_id`, `amount_inr`, `status`, `is_flagged`).
+
+## Approach
+
+1. **Quantify Volume and Economic Footprint**: Compare transaction volume, TPV, and average ticket size between verified and unverified merchants.
+2. **Benchmark Operational & Risk Rates**: Measure payment failure rates and fraud flag percentages for both groups.
+3. **Investigate Confounding Factors (Simpson's Paradox)**: Analyze merchant category distribution to see if risk is driven by verification status or business type.
+4. **Formulate Recommendation**: Recommend a risk-weighted tiered onboarding framework rather than a blunt mass suspension.
+
+## Step-by-step solution
+
+### Step 1: Comparing Verified vs. Unverified Performance
+
+Querying transactions aggregated by merchant verification status:
+
+```sql
+WITH t AS (SELECT DISTINCT * FROM transactions),
+     m AS (SELECT DISTINCT * FROM merchants)
+SELECT 
+  CASE WHEN m.is_verified = 1 THEN 'Verified Merchant' ELSE 'Unverified Merchant' END AS verification_status,
+  COUNT(DISTINCT m.merchant_id) AS merchant_count,
+  COUNT(t.txn_id) AS total_txns,
+  ROUND(CAST(COUNT(t.txn_id) AS FLOAT) / COUNT(DISTINCT m.merchant_id), 1) AS txns_per_merchant,
+  ROUND(SUM(t.amount_inr) / 100000.0, 2) AS total_tpv_lakhs,
+  ROUND(AVG(t.amount_inr), 2) AS avg_ticket_inr,
+  ROUND(100.0 * SUM(CASE WHEN t.status = 'FAILED' THEN 1 ELSE 0 END) / COUNT(t.txn_id), 2) AS failure_rate_pct,
+  SUM(t.is_flagged) AS flagged_txns,
+  ROUND(100.0 * SUM(t.is_flagged) / COUNT(t.txn_id), 2) AS flag_rate_pct
+FROM m
+LEFT JOIN t ON m.merchant_id = t.merchant_id
+WHERE t.txn_id IS NOT NULL
+GROUP BY m.is_verified;
+```
+
+| Metric | Verified Merchants | Unverified Merchants | Total Platform |
+|---|---|---|---|
+| **Merchant Count** | 343 | 57 | 400 |
+| **Total Transactions** | 15,467 | 1,408 | 16,875 (P2M only) |
+| **Transactions / Merchant** | **45.1** | **24.7** | 42.2 |
+| **Total TPV (₹ Lakhs)** | ₹223.0 Lakhs | ₹20.8 Lakhs | ₹243.8 Lakhs |
+| **Average Ticket Size** | ₹1,442.18 | ₹1,480.95 | ₹1,445.42 |
+| **Payment Failure Rate** | **2.68%** | **3.20%** | 2.72% |
+| **Fraud Flag Rate (%)** | **1.56% (242 flags)** | **0.71% (10 flags)** | **1.49%** |
+
+### Step 2: The Counter-Intuitive Risk Paradox
+
+Notice the surprising finding:
+- Unverified merchants have an empirical fraud flag rate of **0.71%** (10 flagged of 1,408 txns).
+- Verified merchants have a fraud flag rate of **1.56%** (242 flagged of 15,467 txns)—more than *double* the unverified rate!
+- Why are verified merchants exhibiting higher fraud flags?
+
+### Step 3: Uncovering the Confounder: Category Distribution
+
+Examining fraud flags by merchant business category:
+
+```sql
+WITH t AS (SELECT DISTINCT * FROM transactions),
+     m AS (SELECT DISTINCT * FROM merchants)
+SELECT 
+  m.category,
+  COUNT(t.txn_id) AS total_txns,
+  SUM(t.is_flagged) AS flagged_txns,
+  ROUND(100.0 * SUM(t.is_flagged) / COUNT(t.txn_id), 2) AS flag_rate_pct
+FROM m
+JOIN t ON m.merchant_id = t.merchant_id
+GROUP BY m.category
+ORDER BY flag_rate_pct DESC;
+```
+
+*Category Flag Breakdown*:
+- **Travel**: 5.55% flag rate (60 flags / 1,082 txns)
+- **Electronics**: 4.89% flag rate (17 flags / 348 txns)
+- **Pharmacy & Healthcare**: 0.50% – 1.60% flag rate
+- **Fuel & Local Grocery**: 0.56% flag rate
+
+*The Mechanism*:
+Verified merchants represent large e-commerce platforms, airline aggregators, and electronics retailers—categories with high ticket sizes, online chargebacks, and stolen card testing. Unverified merchants, by contrast, are local neighborhood stores, tea vendors, and corner pharmacies processing everyday micro-transactions where fraud is virtually non-existent.
+
+## Key insight
+
+Suspending all unverified merchants would destroy ₹20.8 Lakhs in legitimate transaction volume while doing almost nothing to reduce platform fraud. The true driver of fraud risk is not verification status, but the underlying merchant industry category. Unverified micro-merchants in low-risk categories (groceries, food, pharmacies) operate with half the fraud rate of verified high-risk merchants (travel and electronics).
+
+## Recommendation
+
+1. **Reject Blanket Merchant Suspension**:
+   - Do not suspend unverified merchants across the board. Doing so penalizes 57 active small businesses generating over 1,400 monthly transactions.
+2. **Implement Category-Based Risk Tiering**:
+   - **High-Risk Categories (Travel, Gaming, Consumer Electronics, Jewelry)**: Enforce strict mandatory pre-transaction verification and video-KYC before processing any volume.
+   - **Low-Risk Categories (Grocery, Street Food, Bakeries, Salons)**: Allow instant paperless onboarding with progressive limits (e.g. up to ₹50,000 monthly volume) before requiring GST documentation.
+3. **Automated Documentation Nudges**:
+   - Provide in-app UPI QR nudges offering fee discounts or higher daily settlement limits once unverified merchants upload their business PAN or Udyam certificate.
+
+## What a weak answer looks like
+
+- Immediately agrees to suspend all 57 unverified merchants without checking their transaction history or volume.
+- Claims unverified merchants are causing all the platform's fraud without running the SQL query.
+- Misses the category mix confounder entirely.
+- Fails to distinguish between regulatory process risk and actual empirical transaction fraud.

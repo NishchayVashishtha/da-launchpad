@@ -238,5 +238,11 @@
     "title": "Indeed India",
     "url": "https://in.indeed.com/",
     "note": "Job portal."
+  },
+  {
+    "id": "dpdp-act",
+    "title": "Digital Personal Data Protection Act, 2023",
+    "url": "https://www.meity.gov.in/content/digital-personal-data-protection-act-2023",
+    "note": "Official text and overview of India's DPDP Act from MeitY."
   }
 ]

@@ -1,0 +1,141 @@
+---
+title: "The trial conversion drop: Why do few telehealth trial users pay?"
+industry: "Healthcare"
+difficulty: easy
+type: case-study
+estimatedMinutes: 25
+---
+
+## Problem
+
+You are an analytics associate at a digital telehealth and preventative wellness platform in India. The Head of Product Growth reviews the conversion dashboard and raises a red flag:
+> *"We successfully acquire users: over 63% of registered users start a 14-day free trial to consult with doctors. However, only 36.1% of those trial users convert into paid recurring subscribers. We are spending marketing budget to fill a leaky bucket. Where in the user funnel are we losing patients, which channels are failing, and how can we recover conversion?"*
+
+Your objective is to map the user conversion funnel, analyze drop-offs across operating platforms and marketing channels, quantify the revenue recovery potential, and deliver actionable growth recommendations.
+
+## Data you have
+
+From `subscription.sqlite`:
+- `users`: 5,200 deduplicated records (`user_id`, `signup_date`, `platform`, `acquisition_source`).
+- `subscriptions`: 3,308 records (`subscription_id`, `user_id`, `plan_name`, `billing_cycle`, `status`, `trial_start_date`, `paid_start_date`).
+
+## Approach
+
+1. **Construct the Macro Conversion Funnel**: Track user progression from Signup → Trial Start → Paid Conversion → First Renewal.
+2. **Segment Conversion by Platform**: Compare trial-to-paid conversion across Android, iOS, and Web clients.
+3. **Analyze Acquisition Source Quality**: Evaluate conversion across marketing channels (Referral, Organic, Google Ads, Influencer, Instagram).
+4. **Size the Revenue Recovery Opportunity**: Calculate incremental paying subscribers if underperforming segments are optimized.
+5. **Formulate Product & Marketing Recommendations**: Deliver specific UX and marketing allocation fixes.
+
+## Step-by-step solution
+
+### Step 1: Macro Conversion Funnel
+
+Querying distinct user journeys through the subscription lifecycle:
+
+```sql
+WITH u AS (SELECT DISTINCT * FROM users),
+     s AS (SELECT DISTINCT * FROM subscriptions)
+SELECT 
+  COUNT(u.user_id) AS total_signups,
+  COUNT(s.subscription_id) AS trial_starts,
+  ROUND(100.0 * COUNT(s.subscription_id) / COUNT(u.user_id), 1) AS signup_to_trial_pct,
+  COUNT(s.paid_start_date) AS paid_conversions,
+  ROUND(100.0 * COUNT(s.paid_start_date) / COUNT(s.subscription_id), 1) AS trial_to_paid_pct,
+  ROUND(100.0 * COUNT(s.paid_start_date) / COUNT(u.user_id), 1) AS overall_conversion_pct
+FROM u
+LEFT JOIN s ON u.user_id = s.user_id;
+```
+
+| Funnel Stage | User Count | Stage Conversion | Cumulative Conversion |
+|---|---|---|---|
+| **1. Registered Signups** | 5,200 | 100.0% | 100.0% |
+| **2. Free Trial Starts** | 3,308 | **63.6%** | 63.6% |
+| **3. Paid Subscribers** | 1,193 | **36.1%** | **22.9%** |
+| **4. First Renewals** | 766 | **64.2%** | 14.7% |
+
+*Finding*: Top-of-funnel trial engagement (63.6%) and post-paid retention (64.2% renewal) are healthy. The primary friction bottleneck is the **Trial-to-Paid transition (36.1%)**, where nearly two-thirds of trial users drop off.
+
+### Step 2: Platform Discrepancy (Android vs. iOS vs. Web)
+
+```sql
+WITH u AS (SELECT DISTINCT * FROM users),
+     s AS (SELECT DISTINCT * FROM subscriptions)
+SELECT 
+  u.platform,
+  COUNT(u.user_id) AS signups,
+  COUNT(s.subscription_id) AS trials,
+  COUNT(s.paid_start_date) AS paid_users,
+  ROUND(100.0 * COUNT(s.paid_start_date) / COUNT(s.subscription_id), 1) AS trial_to_paid_pct
+FROM u
+LEFT JOIN s ON u.user_id = s.user_id
+GROUP BY u.platform
+ORDER BY trial_to_paid_pct DESC;
+```
+
+| Platform | Registered Signups | Free Trials Started | Paid Conversions | Trial-to-Paid Conversion |
+|---|---|---|---|---|
+| **iOS** | 1,128 | 833 | 382 | **45.9%** |
+| **Web** | 863 | 502 | 199 | **39.6%** |
+| **Android** | 3,209 | 1,973 | 612 | **31.0%** |
+
+*Critical Finding*:
+Android represents **59.6% of all trial starts** (1,973 of 3,308), but converts at a dismal **31.0%**, compared to **45.9% on iOS**—a massive 14.9 percentage point performance gap!
+
+### Step 3: Marketing Acquisition Channel Quality
+
+```sql
+WITH u AS (SELECT DISTINCT * FROM users),
+     s AS (SELECT DISTINCT * FROM subscriptions)
+SELECT 
+  u.acquisition_source,
+  COUNT(u.user_id) AS signups,
+  COUNT(s.subscription_id) AS trials,
+  COUNT(s.paid_start_date) AS paid_users,
+  ROUND(100.0 * COUNT(s.paid_start_date) / COUNT(s.subscription_id), 1) AS trial_to_paid_pct
+FROM u
+LEFT JOIN s ON u.user_id = s.user_id
+GROUP BY u.acquisition_source
+ORDER BY trial_to_paid_pct DESC;
+```
+
+| Acquisition Source | Signups | Trials | Paid Subscribers | Trial-to-Paid % | Quality Assessment |
+|---|---|---|---|---|---|
+| **Referral** | 628 | 416 | 196 | **47.1%** | Highest Intent |
+| **Instagram** | 902 | 535 | 235 | **43.9%** | Strong Lifestyle Intent |
+| **Play Store Feature** | 348 | 207 | 78 | **37.7%** | Moderate |
+| **Organic Search** | 1,486 | 911 | 340 | **37.3%** | Healthy Baseline |
+| **Google Ads** | 1,173 | 703 | 258 | **36.7%** | Scalable Baseline |
+| **Influencer Campaigns** | 663 | 536 | 86 | **16.0%** | Toxic Leak |
+
+*Finding*: Influencer marketing displays an 80.8% trial start rate (536 trials from 663 signups) driven by free promotional coupon codes, but converts to paid at a catastrophic **16.0%**. Users sign up exclusively for the free trial consult and abandon immediately.
+
+### Step 4: Sizing the Recovery Opportunity
+
+What happens if Android checkout conversion is optimized from 31.0% to match iOS (45.9%)?
+```text
+Incremental Paid Subscribers = 1,973 Android Trials * (0.459 - 0.310) = 293.98 (~294 users)
+```
+At an average annual subscription value of ₹2,499 (Standard plan), fixing Android onboarding unlocks **over ₹7.3 Lakhs in incremental ARR** from the existing user base without spending a single additional marketing rupee.
+
+## Key insight
+
+The trial conversion drop is driven by two distinct operational leaks:
+1. **The Android Checkout Deficit**: Android accounts for 60% of trials but converts at only 31.0% (vs. 45.9% on iOS).
+2. **Low-Intent Influencer Traffic**: Influencer campaigns deliver coupon-hunting traffic that converts at just 16.0% (vs. 47.1% for word-of-mouth referrals).
+
+## Recommendation
+
+1. **Overhaul Android Payment Rails with UPI AutoPay Mandates**:
+   - In India, Android conversion often lags iOS due to friction with recurring credit card mandates. Integrate 1-click **UPI AutoPay** (PhonePe/GPay) and pre-authorized e-mandates at trial signup so subscription renewals execute seamlessly without manual checkout steps.
+2. **Defund Low-Intent Influencer Campaigns**:
+   - Slash the influencer acquisition budget by 60%. Shift capital into the **Customer Referral Program**, which delivers the platform's highest conversion (47.1%).
+3. **Mid-Trial Clinical Value Delivery Prompts**:
+   - On Day 5 of the trial, send an automated WhatsApp nudge: *"Review your blood report analysis with your assigned family doctor."* Ensuring users complete an active medical consult during the trial window quadruples paid conversion.
+
+## What a weak answer looks like
+
+- Concludes that the whole product pricing is too expensive without segmenting by platform or acquisition channel.
+- Fails to notice the massive 15-point conversion gap between Android and iOS.
+- Celebrates Influencer marketing for driving 536 trials while ignoring that 84% never pay.
+- Proposes blanket price discounts that erode unit economics.

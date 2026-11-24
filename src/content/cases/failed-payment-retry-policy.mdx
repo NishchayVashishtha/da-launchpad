@@ -1,0 +1,114 @@
+---
+title: "Designing a payment recovery engine: Should we auto-retry failed payments?"
+industry: "Fintech"
+difficulty: medium
+type: case-study
+estimatedMinutes: 35
+---
+
+## Problem
+
+You are a product analyst at a major UPI payments gateway. The engineering team proposes building an automated background transaction retry engine:
+> *"Whenever a customer transaction fails, our gateway should automatically retry the payment 3 times over the next 10 minutes in the background. This will rescue millions in lost GMV and improve checkout conversion."*
+
+The Head of Risk and Merchant Experience objects:
+> *"Blindly auto-retrying failed payments risks double-debiting customer accounts, triggers bank decline penalties, and exhausts API rate limits if a user simply lacks bank balance."*
+
+Your objective is to evaluate historical retry performance across different failure codes in the database, calculate recovery rates, and design a selective, risk-aware retry policy.
+
+## Data you have
+
+From `fintech.sqlite`:
+- `transactions`: 22,300 deduplicated records (`txn_id`, `amount_inr`, `status`, `txn_time`).
+- `failed_transactions`: 601 deduplicated failure records (`txn_id`, `failure_code`, `error_message`, `is_retried`, `retry_status`).
+
+## Approach
+
+1. **Calculate Baseline Retry Metrics**: Measure what proportion of failed transactions are currently retried, and what proportion of retried transactions succeed.
+2. **Segment Retry Success by Error Code**: Break down retry success rates across technical infrastructure failures versus user-side balance constraints.
+3. **Model the Business Impact of Selective Retries**: Quantify the revenue recoverable by automating technical retries while excluding unrecoverable user errors.
+4. **Design the Operating Policy**: Specify idempotency safeguards, exponential backoff timings, and user UX prompts.
+
+## Step-by-step solution
+
+### Step 1: Overall Retry Performance Baseline
+
+Querying deduplicated records in `failed_transactions`:
+
+```sql
+SELECT 
+  COUNT(*) AS total_failed_txns,
+  SUM(CASE WHEN is_retried = 1 THEN 1 ELSE 0 END) AS retried_txns,
+  ROUND(100.0 * SUM(CASE WHEN is_retried = 1 THEN 1 ELSE 0 END) / COUNT(*), 1) AS retry_attempt_rate_pct,
+  SUM(CASE WHEN retry_status = 'SUCCESS' THEN 1 ELSE 0 END) AS successful_retries,
+  ROUND(100.0 * SUM(CASE WHEN retry_status = 'SUCCESS' THEN 1 ELSE 0 END) / 
+    SUM(CASE WHEN is_retried = 1 THEN 1 ELSE 0 END), 1) AS retry_success_rate_pct
+FROM (SELECT DISTINCT * FROM failed_transactions);
+```
+
+| Metric | Empirical Value |
+|---|---|
+| Total Unique Failed Transactions | 601 |
+| Retried Attempts (Manual or System) | 291 (48.4%) |
+| Successful Retries | 168 |
+| **Overall Retry Success Rate** | **57.7%** |
+
+*Finding*: When users or systems re-attempt failed payments, nearly 58% succeed. However, this average hides massive divergence across error categories.
+
+### Step 2: Retry Success Dissected by Failure Code
+
+```sql
+SELECT 
+  failure_code,
+  COUNT(*) AS total_failures,
+  SUM(CASE WHEN is_retried = 1 THEN 1 ELSE 0 END) AS retried_count,
+  SUM(CASE WHEN retry_status = 'SUCCESS' THEN 1 ELSE 0 END) AS successful_retries,
+  ROUND(100.0 * SUM(CASE WHEN retry_status = 'SUCCESS' THEN 1 ELSE 0 END) / 
+    NULLIF(SUM(CASE WHEN is_retried = 1 THEN 1 ELSE 0 END), 0), 1) AS retry_success_pct
+FROM (SELECT DISTINCT * FROM failed_transactions)
+GROUP BY failure_code
+ORDER BY retry_success_pct DESC;
+```
+
+| failure_code | total_failures | retried_count | successful_retries | retry_success_pct | Error Classification |
+|---|---|---|---|---|---|
+| INCORRECT_PIN | 72 | 25 | 21 | **84.0%** | User Input Error |
+| BANK_SERVER_TIMEOUT | 42 | 27 | 20 | **74.1%** | Technical Infrastructure |
+| NETWORK_ERROR | 71 | 49 | 33 | **67.3%** | Technical Infrastructure |
+| BANK_DECLINED | 100 | 36 | 24 | **66.7%** | Bank Switch / Temporary |
+| LIMIT_EXCEEDED | 65 | 20 | 13 | **65.0%** | Regulatory / Bank Rule |
+| UPI_SYSTEM_DOWN | 118 | 82 | 50 | **61.0%** | Technical Infrastructure |
+| INSUFFICIENT_FUNDS | 139 | 52 | 7 | **13.5%** | User Balance Constraint |
+
+### Step 3: Key Analytical Deductions
+
+1. **The Technical Recovery Opportunity**:
+   - Technical failures (`BANK_SERVER_TIMEOUT`, `NETWORK_ERROR`, and `UPI_SYSTEM_DOWN`) account for 231 total failures.
+   - Their retry success rate averages between **61.0% and 74.1%**.
+   - These represent pure platform friction: the customer had the money, entered the right PIN, but a network packet or switch timeout interrupted settlement.
+2. **The Insufficient Funds Trap**:
+   - `INSUFFICIENT_FUNDS` is the single largest failure code (139 failures).
+   - Only **13.5% of retries succeed** (7 of 52).
+   - Automatically hammering a customer's bank account when they lack balance generates multiple automated SMS alerts, annoys users, and risks bank debit rejection fees.
+
+## Key insight
+
+A blanket auto-retry policy is counter-productive. While technical infrastructure errors recover at high rates (61% to 74%), balance-related rejections recover at only 13.5%. Automating retries must be governed by an intelligent decision engine: execute automated background retries for network and server timeouts, while steering balance and PIN failures to immediate user prompts.
+
+## Recommendation
+
+1. **Automated Background Retries for Technical Errors Only**:
+   - Configure immediate automated retries for `NETWORK_ERROR`, `BANK_SERVER_TIMEOUT`, and `UPI_SYSTEM_DOWN`.
+   - Apply an exponential backoff schedule (Attempt 1: immediate, Attempt 2: after 45 seconds, Attempt 3: after 180 seconds).
+2. **Strict Idempotency Key Architecture**:
+   - To eliminate double-debit liabilities, attach a unique cryptographic `idempotency_key` (derived from `user_id + merchant_id + order_id`) to every retry call. Banking switches receiving duplicate keys settle the original authorization rather than debiting a second time.
+3. **Interactive User Guidance for Non-Technical Errors**:
+   - For `INSUFFICIENT_FUNDS`, never auto-retry. Surface a clean UI banner: *"Insufficient bank balance. Switch to your secondary bank account or UPI Lite."*
+   - For `INCORRECT_PIN`, prompt the user to re-enter their PIN or reset via Aadhaar/debit card.
+
+## What a weak answer looks like
+
+- Recommends an indiscriminate 3x auto-retry across all transactions, ignoring insufficient balance rejections.
+- Fails to segment failure codes in SQL.
+- Ignores the critical engineering risk of double-debiting customer accounts.
+- Does not propose different UX handling for user errors versus banking gateway outages.

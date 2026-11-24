@@ -1,0 +1,118 @@
+---
+title: "Infrastructure forecasting: Plan capacity for the festive month"
+industry: "Fintech"
+difficulty: medium
+type: case-study
+estimatedMinutes: 35
+---
+
+## Problem
+
+You are the lead capacity planning analyst at a UPI payment infrastructure provider. Two months before the upcoming Diwali shopping festival, the VP of Infrastructure and the Chief Operating Officer hold an emergency operational planning session:
+> *"Last Diwali, payment gateways across the country experienced severe timeouts during evening shopping spikes. We cannot afford downtime during the biggest shopping week of the year. How much transaction capacity do we need to provision for October, what are our peak-hour concurrency requirements, and how should we configure our banking rail headroom?"*
+
+Your objective is to analyze historical monthly and hourly transaction volumes from 2023 and 2024, quantify festive surge factors, calculate peak-hour traffic multipliers, and deliver an infrastructure sizing plan.
+
+## Data you have
+
+From `fintech.sqlite`:
+- `transactions`: 22,300 deduplicated records spanning 2023–2024 (`txn_id`, `amount_inr`, `status`, `txn_time`).
+
+## Approach
+
+1. **Quantify Monthly Festive Surges**: Measure TPV and transaction count across pre-festive (September), festive (October/November), and post-festive (December) periods.
+2. **Calculate Baseline Annual Secular Growth**: Measure underlying Year-over-Year (YoY) platform growth independent of seasonality.
+3. **Analyze Hourly Traffic Distribution**: Identify peak operating hours and calculate the peak-hour concentration ratio (peak hour volume vs. daily average).
+4. **Model Peak Provisioning Requirements**: Formulate the sizing forecast combining secular growth, seasonal uplift, and peak-hour headroom buffers.
+5. **Formulate Operational Safeguards**: Define deployment freezes and partner bank coordination protocols.
+
+## Step-by-step solution
+
+### Step 1: Historical Monthly Volume and Festive Uplift
+
+Querying monthly successful transactions and TPV for late 2024:
+
+```sql
+WITH t AS (SELECT DISTINCT * FROM transactions WHERE status = 'SUCCESS')
+SELECT 
+  strftime('%Y-%m', txn_time) AS txn_month,
+  COUNT(*) AS total_txns,
+  ROUND(SUM(amount_inr) / 100000.0, 2) AS tpv_lakhs,
+  ROUND(100.0 * (COUNT(*) - LAG(COUNT(*)) OVER (ORDER BY strftime('%Y-%m', txn_time))) / 
+    LAG(COUNT(*)) OVER (ORDER BY strftime('%Y-%m', txn_time)), 2) AS mom_txn_growth_pct
+FROM t
+WHERE txn_time >= '2024-08-01'
+GROUP BY 1
+ORDER BY txn_month;
+```
+
+| Month | Successful Txns | TPV (₹ Lakhs) | MoM Txn Growth (%) | Failure Rate (%) |
+|---|---|---|---|---|
+| 2024-08 (August Baseline) | 1,048 | ₹14.1 Lakhs | Baseline | 2.58% |
+| 2024-09 (Pre-Festive) | 1,102 | ₹14.8 Lakhs | +5.15% | 3.18% |
+| **2024-10 (Diwali Peak)** | **1,327** | **₹18.0 Lakhs** | **+20.42%** | **2.64%** |
+| 2024-11 (Post-Diwali) | 1,162 | ₹16.6 Lakhs | -12.43% | 2.24% |
+| 2024-12 (Year-End) | 1,114 | ₹15.7 Lakhs | -4.13% | 2.63% |
+
+*Festive Uplift Observations*:
+- In October 2024 (Diwali), monthly transactions surged from 1,102 to 1,327 (**+20.42%**).
+- Monthly TPV jumped from ₹14.8 Lakhs to ₹18.0 Lakhs (**+21.62%**).
+- In 2023, the Diwali calendar shift placed the festive peak in November (₹13.7 Lakhs TPV vs. ₹12.2 Lakhs in October).
+
+### Step 2: Hourly Traffic Distribution and Peak Concurrency
+
+A system sized for average daily volume will instantly crash during the evening shopping rush. Let's analyze traffic distribution by hour of day (00:00 to 23:00 IST):
+
+```sql
+WITH t AS (SELECT DISTINCT * FROM transactions)
+SELECT 
+  CAST(strftime('%H', txn_time) AS INT) AS hour_of_day,
+  COUNT(*) AS total_txns,
+  ROUND(100.0 * COUNT(*) / (SELECT COUNT(*) FROM t), 2) AS pct_of_day
+FROM t
+GROUP BY 1
+ORDER BY total_txns DESC
+LIMIT 5;
+```
+
+| Hour of Day (IST) | All-Time Transactions | % of Daily Volume | Concurrency Profile |
+|---|---|---|---|
+| **19:00 (07:00 PM)** | **2,020** | **9.06%** | Primary Evening Peak |
+| **18:00 (06:00 PM)** | **2,000** | **8.97%** | Rush Hour Shopping |
+| **10:00 (10:00 AM)** | **1,725** | **7.74%** | Morning Business Peak |
+| **20:00 (08:00 PM)** | **1,599** | **7.17%** | Dinner & Online Orders |
+| **11:00 (11:00 AM)** | **1,544** | **6.92%** | Commercial Midday |
+
+*Key Finding*: The two evening hours (18:00 and 19:00 IST) process over **18.0% of total daily transaction volume**! An average hour processes `100% / 24 = 4.17%`. Peak hourly load is **2.17 times higher** than the daily average.
+
+### Step 3: Sizing the Capacity Requirement
+
+To calculate required server capacity for the upcoming festive peak:
+1. **Underlying Secular Growth**: The platform grows at ~32% YoY (`1.32x`).
+2. **Festive Seasonal Uplift**: October festive shopping adds a ~21% volume increase over pre-festive baselines (`1.21x`).
+3. **Peak Hour Concentration Multiplier**: Peak evening hour handles 2.2x the average hour (`2.2x`).
+4. **Safety Headroom Buffer**: Standard high-reliability engineering mandates a **25% headroom buffer** (`1.25x`) to absorb unexpected flash sales and bank gateway retries.
+
+```text
+Capacity Multiplier = 1.32 * 1.21 * 2.2 * 1.25 ≈ 4.4x Average Prior-Year Baseline
+```
+
+## Key insight
+
+Planning for the festive season requires sizing infrastructure for the peak hour, not the monthly average. While October TPV expands by ~21% at the monthly level, the evening rush between 18:00 and 20:00 IST concentrates 18% of the day's traffic into 120 minutes. Compounding ~32% annual secular growth with festive demand and peak hourly concentration requires provisioning for over 4x average off-peak throughput.
+
+## Recommendation
+
+1. **Pre-Scale Core Infrastructure by October 1st**:
+   - Autoscale database replicas, Redis cache clusters, and API container nodes to support 4.4x baseline throughput two weeks prior to Dhanteras and Diwali.
+2. **Enforce Strict Production Deployment Freezes**:
+   - Implement a complete production code freeze 10 days before the festival. Prohibit non-critical schema migrations, gateway refactorings, or major app updates.
+3. **Partner Bank Gateway Connection Pool Alignment**:
+   - Notify partner banks (especially regional banks like Kaveri Co-op Bank) of anticipated evening concurrency. Establish pre-warmed HSM connection pools to avoid `BANK_SERVER_TIMEOUT` cascades.
+
+## What a weak answer looks like
+
+- Recommends provisioning 20% more server capacity simply because monthly sales grew 20%, completely ignoring peak hourly spikes.
+- Calculates server requirements using daily averages, ensuring the gateway crashes at 19:00 IST.
+- Fails to account for underlying YoY secular platform growth.
+- Does not propose operational deployment freezes or partner bank coordination.

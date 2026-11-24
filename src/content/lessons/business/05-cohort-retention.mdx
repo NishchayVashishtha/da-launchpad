@@ -1,0 +1,255 @@
+---
+title: "Cohort analysis and retention"
+description: "Group users by when they started and see how many stay."
+module: business
+order: 5
+estimatedMinutes: 55
+objectives:
+  - "Define customer cohorts and map longitudinal retention curves"
+  - "Construct cohort retention matrices in SQL using relative elapsed time windows"
+  - "Interpret cohort heatmaps to distinguish product quality changes from acquisition anomalies"
+  - "Isolate outlier cohorts and conduct root-cause investigations on early drop-offs"
+  - "Differentiate classic calendar retention from rolling unbounded retention"
+tags: ["business", "cohort", "retention", "sql", "subscription"]
+---
+
+## Learning objectives
+
+By the end of this lesson, you will be able to:
+- Define an acquisition cohort and construct empirical retention curves over elapsed calendar intervals.
+- Build cohort retention tables and matrices in SQL using normalized relative month indices (Month 0, Month 1, Month 2).
+- Read and interpret cohort heatmaps to diagnose whether retention changes stem from product improvements or acquisition channel shifts.
+- Detect anomalous cohorts (such as March 2024 in our subscription dataset) and formulate data cuts to isolate the leak.
+- Understand the mathematical differences between classic retention and rolling (unbounded) retention.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+A fast-growing fitness and wellness app in Mumbai reported aggregate customer churn of 5% each month. Leadership was satisfied until an analyst built a cohort retention matrix. 
+
+The matrix revealed a disturbing pattern: users acquired in 2023 had a 60% 90-day retention rate, but users acquired in 2024 had only a 20% 90-day retention rate. The aggregate churn number looked healthy only because older loyal customers masked a collapsing experience for new joiners. By unbundling users into signup cohorts, the analyst alerted leadership to a broken onboarding flow before the company ran out of cash.
+</RealWorld>
+
+In subscription businesses, SaaS products, e-commerce loyalty programs, and fintech apps, cohort analysis is the gold standard for measuring product-market fit. In senior analytics interviews, demonstrating how to build a cohort table in SQL and interpret retention decay is an essential capability.
+
+## Concept
+
+### What is a Cohort?
+
+A **cohort** is a group of users who share a common defining characteristic or event within a specific time window. In analytics, the most common type is an **acquisition cohort**—users who signed up or made their first transaction in the same calendar month.
+
+<Tip>
+**The School Class Analogy:** Think of an engineering college class admitted in August 2023. Tracking the entire student body's average GPA over time blends freshmen, sophomores, and final-year students. But tracking the Class of 2023 semester by semester shows exactly how that specific group progresses, how many drop out each year, and whether academic changes improved their graduation rates.
+</Tip>
+
+### Retention Curves and Decay
+
+**Retention at Month N** measures the proportion of original cohort members who remain active $N$ periods after their initial start:
+`Retention Rate (Month N) = (Active Cohort Users in Month N / Total Users in Original Cohort) * 100`
+
+- **Month 0** is always 100% by definition (the acquisition baseline).
+- **Month 1** typically sees the steepest drop as low-intent or trial users churn out.
+- **The Retention Curve Plateau**: In healthy products, the retention curve eventually flattens out into a horizontal plateau. A curve that asymptotically approaches zero indicates that the product lacks retention-driven product-market fit.
+
+<FormulaCard title="Classic vs Rolling Retention">
+- **Classic Retention (Strict Window)**: Did the user perform an action specifically within Month N? (e.g., Did they open the app between Day 31 and Day 60?)
+- **Rolling / Unbounded Retention**: Did the user return on Month N *or any time after Month N*? (Useful for long-cycle products like e-commerce where users purchase every 3 to 6 months).
+</FormulaCard>
+
+### Defining "Active" Explicitly
+
+Before writing a single line of SQL, you must define what "active" means for your business:
+- **Subscription App**: Did the user hold an uncancelled paid subscription in Month N?
+- **Fintech Switch**: Did the user complete $\ge 1$ successful transaction in Month N?
+- **Healthcare Telehealth**: Did the patient attend a follow-up consultation within 90 days?
+
+## Worked examples
+
+All examples in this section query `public/data/sqlite/subscription.sqlite` using SQLite.
+
+### Example 1: 60-Day Churn Across 2023-2024 Cohorts
+We examine paid subscribers acquired between October 2023 and July 2024 and measure early drop-offs within 60 days of their initial payment:
+
+```sql
+WITH u AS (
+  SELECT DISTINCT * FROM users
+),
+s AS (
+  SELECT DISTINCT * FROM subscriptions
+)
+SELECT
+  strftime('%Y-%m', u.signup_date) AS signup_month,
+  COUNT(*) AS paid_users,
+  SUM(CASE WHEN s.status = 'cancelled' AND julianday(s.cancel_date) - julianday(s.paid_start_date) <= 60 THEN 1 ELSE 0 END) AS churned_60d,
+  ROUND(AVG(CASE WHEN s.status = 'cancelled' AND julianday(s.cancel_date) - julianday(s.paid_start_date) <= 60 THEN 100.0 ELSE 0.0 END), 1) AS churn60_pct
+FROM s
+JOIN u ON s.user_id = u.user_id
+WHERE s.paid_start_date IS NOT NULL
+  AND strftime('%Y-%m', u.signup_date) BETWEEN '2023-10' AND '2024-07'
+GROUP BY signup_month
+ORDER BY signup_month ASC;
+```
+
+**Real Output from subscription.sqlite:**
+| signup_month | paid_users | churned_60d | churn60_pct |
+| :--- | :--- | :--- | :--- |
+| 2023-10 | 58 | 10 | 17.2 |
+| 2023-11 | 47 | 12 | 25.5 |
+| 2023-12 | 51 | 12 | 23.5 |
+| 2024-01 | 55 | 11 | 20.0 |
+| 2024-02 | 39 | 10 | 25.6 |
+| 2024-03 | 50 | 27 | 54.0 |
+| 2024-04 | 52 | 12 | 23.1 |
+| 2024-05 | 72 | 16 | 22.2 |
+| 2024-06 | 50 | 10 | 20.0 |
+| 2024-07 | 66 | 13 | 19.7 |
+
+Notice the clear, glaring outlier: the **March 2024 cohort** suffered a 54.0% 60-day churn rate (27 of 50 users cancelled), whereas all surrounding cohorts maintained stable churn rates between 17% and 25%.
+
+### Example 2: Monthly Engagement Retention Matrix
+We compute relative Month 0, Month 1, and Month 2 active app users (`app_open` event) for 2024 cohorts:
+
+```sql
+WITH u AS (
+  SELECT DISTINCT * FROM users
+  WHERE strftime('%Y-%m', signup_date) BETWEEN '2024-01' AND '2024-06'
+),
+e AS (
+  SELECT DISTINCT user_id, strftime('%Y-%m', event_time) AS event_month
+  FROM events
+  WHERE LOWER(event_name) = 'app_open'
+)
+SELECT
+  strftime('%Y-%m', u.signup_date) AS cohort,
+  COUNT(DISTINCT CASE WHEN (CAST(substr(e.event_month, 1, 4) AS INT)*12 + CAST(substr(e.event_month, 6, 2) AS INT)) - (CAST(substr(u.signup_date, 1, 4) AS INT)*12 + CAST(substr(u.signup_date, 6, 2) AS INT)) = 0 THEN u.user_id END) AS m0,
+  COUNT(DISTINCT CASE WHEN (CAST(substr(e.event_month, 1, 4) AS INT)*12 + CAST(substr(e.event_month, 6, 2) AS INT)) - (CAST(substr(u.signup_date, 1, 4) AS INT)*12 + CAST(substr(u.signup_date, 6, 2) AS INT)) = 1 THEN u.user_id END) AS m1,
+  COUNT(DISTINCT CASE WHEN (CAST(substr(e.event_month, 1, 4) AS INT)*12 + CAST(substr(e.event_month, 6, 2) AS INT)) - (CAST(substr(u.signup_date, 1, 4) AS INT)*12 + CAST(substr(u.signup_date, 6, 2) AS INT)) = 2 THEN u.user_id END) AS m2
+FROM u
+LEFT JOIN e ON u.user_id = e.user_id
+GROUP BY cohort
+ORDER BY cohort ASC;
+```
+
+**Real Output from subscription.sqlite:**
+| cohort | m0 | m1 | m2 |
+| :--- | :--- | :--- | :--- |
+| 2024-01 | 119 | 57 | 17 |
+| 2024-02 | 96 | 49 | 12 |
+| 2024-03 | 130 | 65 | 13 |
+| 2024-04 | 110 | 55 | 21 |
+| 2024-05 | 144 | 82 | 19 |
+| 2024-06 | 125 | 57 | 13 |
+
+Across all cohorts, Month 1 app open retention hovers between 45% and 57%, but decays to 10% to 19% by Month 2, showing that early engagement re-activation interventions are required within the first 30 days.
+
+## Common mistakes
+
+<CommonMistake>
+- **Using calendar month instead of relative elapsed months**: Comparing January activity for both March and November cohorts mixes seasonal calendar effects with cohort lifecycle tenure.
+- **Treating recent cohorts as having zero retention**: A cohort acquired last month has not lived long enough to have Month 3 or Month 6 retention data; mark those future cells as `NULL` or unobserved, not 0%.
+- **Changing the definition of 'active' between cohorts**: Using app logins for cohort A and payment events for cohort B invalidates longitudinal comparison.
+- **Ignoring sample size volatility**: Drawing sweeping conclusions from a cohort with only 8 subscribers where 1 cancellation causes a 12.5 percentage point swing.
+- **Blending trial and paid cohorts together**: Mixing unpaid trial users with paid subscribers obscures whether retention issues stem from marketing acquisition or monetization pricing.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="cohort" module="business" />
+
+## Mini quiz
+
+<Quiz questions={[
+  {
+    q: "What defines an acquisition cohort in customer analytics?",
+    options: [
+      "All customers residing in the same geographic territory",
+      "A group of users who completed their initial registration or first purchase in the same time period",
+      "Users who share the same demographic age bracket",
+      "Subscribers who filed a customer support complaint"
+    ],
+    answer: 1,
+    explanation: "An acquisition cohort bundles users who entered the product lifecycle together within the same timeframe."
+  },
+  {
+    q: "Why is Month 0 retention always 100% in an acquisition cohort matrix?",
+    options: [
+      "Because database systems default initial values to 100",
+      "Because every member of the cohort was active by definition during the period they were acquired",
+      "Because cancellations are illegal within the first 30 days",
+      "Because churn only applies to annual subscription plans"
+    ],
+    answer: 1,
+    explanation: "Month 0 represents the baseline acquisition window. By definition, 100% of the cohort joined during Month 0."
+  },
+  {
+    q: "In our subscription dataset, what made the March 2024 cohort an anomaly?",
+    options: [
+      "It had zero signups due to server maintenance",
+      "Its 60-day churn rate spiked to 54.0%, more than double surrounding cohorts (~22%)",
+      "It had 100% trial-to-paid conversion",
+      "All users signed up on Desktop Web"
+    ],
+    answer: 1,
+    explanation: "The March 2024 cohort experienced severe early attrition with 54.0% of paid users cancelling within 60 days, compared to baseline cohort churn of ~22%."
+  },
+  {
+    q: "What is the difference between classic retention and rolling (unbounded) retention?",
+    options: [
+      "Classic retention is measured in days, while rolling retention is measured in years",
+      "Classic retention checks activity in an exact period, while rolling retention checks if the user returned in that period or any time after",
+      "Classic retention is only for mobile apps, while rolling retention is for SaaS",
+      "Rolling retention does not require user tracking IDs"
+    ],
+    answer: 1,
+    explanation: "Rolling retention captures irregular or long-tail usage by considering a user retained at Month N if they were active in Month N or at any subsequent date."
+  },
+  {
+    q: "Why should cells for future unelapsed periods in a cohort heatmap be left blank rather than filled with 0%?",
+    options: [
+      "To prevent division by zero database errors",
+      "Because the cohort has not lived long enough to experience those periods, and entering 0% falsely indicates total customer loss",
+      "To comply with international accounting standards",
+      "Because 0% turns the heatmap cells green"
+    ],
+    answer: 1,
+    explanation: "Recent cohorts are right-censored; they simply have not reached future months yet. Marking them 0% distorts longitudinal retention curves."
+  }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers regularly ask: "How would you tell whether our product retention is improving over time?" Be prepared to explain how to compare the slope and plateau of consecutive cohort retention curves.
+</InterviewAlert>
+
+<InterviewQ q="How do you know if a product is achieving product-market fit from its cohort retention curve?">
+A product demonstrates true product-market fit when its cohort retention curve **flattens into a horizontal plateau parallel to the x-axis**. 
+
+If a cohort starts at 100% in Month 0, drops to 40% by Month 2, and then remains steady at 38% across Month 6, Month 12, and Month 24, you have a sticky core of users who derive enduring value. Conversely, if the curve continues trending downward toward zero without stabilizing, the product is a leaky bucket that will deplete marketing acquisition spend.
+</InterviewQ>
+
+<InterviewQ q="How would you analyze customer retention for a UPI payment app like PhonePe?">
+For a payments switch, I would construct a first-transaction cohort table:
+1. **Cohort Definition**: Group users by their very first successful transaction month (`MIN(txn_datetime)`).
+2. **Activity Definition**: A user is retained in Month N if they completed $\ge 1$ successful transaction of any type (P2P, P2M, or bill pay) in that relative month.
+3. **Segmentation**: Cut the cohort matrix by acquisition payment type (did users acquired through P2P money transfers retain better than users acquired through mobile recharges?).
+4. **Behavioral Cohorting**: Compare retention of users who executed $\ge 3$ transactions in Month 0 versus those who completed only 1.
+</InterviewQ>
+
+<InterviewQ q="If an executive asks for overall company churn, why should you present a cohort heatmap instead?">
+Aggregate churn blends new and old customers together. If user acquisition is surging, a large influx of new users can dilute churn and make the company appear healthy even if long-term customer retention is degrading.
+
+A cohort heatmap separates vintage effects: it shows whether each new generation of customers is staying longer or leaving faster than prior cohorts, instantly identifying whether product releases and marketing campaigns are improving or degrading customer quality.
+</InterviewQ>
+
+## Key takeaways
+
+- Cohorts group users by a shared starting milestone, eliminating mix-shift distortions inherent in aggregate metrics.
+- Always track retention using relative elapsed time indices (Month 0, Month 1, Month 2) rather than static calendar months.
+- A healthy retention curve flattens into a stable horizontal plateau; continuous decay toward zero signals a lack of product-market fit.
+- The March 2024 subscription cohort experienced an isolated 54.0% 60-day churn spike, proving that cohort analysis catches localized operational and campaign failures.
+- Treat recent cohort intervals as right-censored unobserved data; never record future periods as 0% retention.
+
+## Further reading
+
+<FurtherReading ids={["mode-sql", "sqlite-docs"]} />

@@ -1,0 +1,272 @@
+---
+title: "Fintech and healthcare analytics: KPIs in practice"
+description: "Compute UPI success rate, TPV and fraud-flag rate in SQL, then apply the same thinking to hospital and telehealth numbers."
+module: business
+order: 2
+estimatedMinutes: 60
+objectives:
+  - "Compute Total Payment Volume (TPV), technical success rate, and active users using SQL"
+  - "Segment transaction failure rates by banking partner, client application, and peak operating hours"
+  - "De-duplicate raw webhook transactions and detect payment amount anomalies"
+  - "Analyze fraud-flag detection as an operational precision versus recall trade-off"
+  - "Apply KPI rigor to healthcare metrics while enforcing cell-suppression privacy thresholds"
+tags: ["business", "fintech", "healthcare", "sql", "kpi"]
+---
+
+## Learning objectives
+
+By the end of this lesson, you will be able to:
+- Compute core fintech metrics—Total Payment Volume (TPV), technical success rate, average ticket size, and annual transacting users—from raw transactional tables using SQL.
+- Isolate systemic partner failures by cutting transaction reliability across payment apps, issuing banks, and hourly time bands.
+- Clean dirty transactional records by removing webhook duplicates and auditing high-value payment outliers.
+- Evaluate automated risk rules by balancing fraud catch rates (recall) against false-positive customer friction (precision).
+- Translate fintech analytical frameworks to clinical and hospital environments while upholding strict patient privacy boundaries.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+In the Indian tech ecosystem, fintech and healthcare are two of the largest employers of data analysts. At payment giants like PhonePe, Paytm, Razorpay, or CRED, analysts monitor high-frequency switch logs processing thousands of UPI requests every minute. A 1% dip in switch success rate causes millions of rupees in failed commerce, floods customer support with double-debit tickets, and triggers regulatory scrutiny from NPCI and the RBI.
+
+Similarly, at digital health enterprises like Practo, Tata 1mg, Apollo 24|7, or diagnostic chains like Dr Lal PathLabs, analysts track outpatient slot fulfillment, phlebotomist transit latency, and lab turnaround times. In both domains, analysts must calculate numbers with strict precision: mixing up a denominator or treating pending transactions as settled revenue leads to flawed operational decisions.
+</RealWorld>
+
+Mastering SQL-based KPI calculation on real, messy transaction tables is the single most valuable technical skill for product and operations analyst interviews in India.
+
+## Concept
+
+### Fintech KPI Terminology & Rules
+
+When analyzing payment ledgers, standard accounting principles govern metric calculation:
+
+1. **Total Payment Volume (TPV)**: Represents settled monetary value. Only transactions with `status = 'SUCCESS'` contribute to TPV. Failed or pending transactions generate zero realized value.
+2. **Technical Success Rate**:
+   `Success Rate = (Count of Successful Transactions / Count of All Attempted Transactions) * 100`
+   `PENDING` transactions remain in the denominator because an unsettled attempt still represents system load and customer wait time.
+3. **Transaction Categories**:
+   - **P2P (Person-to-Person)**: Transfers between consumer bank accounts (typically zero-fee).
+   - **P2M (Person-to-Merchant)**: Retail purchases generating Merchant Discount Rate (MDR) revenue.
+   - **Bill Pay & Recharge**: High-frequency utility and telecom payments.
+4. **Data Hygiene First**: Payment logs frequently suffer from webhook retry duplication. Before aggregating, always execute `SELECT DISTINCT *` or group by the unique `txn_id`.
+
+<FormulaCard title="The Precision vs Recall Trade-Off in Fraud Rules">
+When automated risk engines flag suspicious transactions, risk analysts evaluate two metrics:
+- `Precision = True Flagged Fraud / Total Transactions Flagged`
+- `Recall = True Flagged Fraud / All Actual Fraud in Population`
+
+A blunt rule like "block all midnight transactions" catches 9.6% of fraud (recall), but 95% of blocked transactions are innocent consumers (precision = 5.03%). High-friction false positives destroy customer retention.
+</FormulaCard>
+
+### Healthcare Analytics: KPIs and Privacy Guardrails
+
+Healthcare data mirrors fintech operational mechanics, but with specialized terminology and regulatory privacy constraints:
+
+| Domain Dimension | Fintech Switch Analogy | Healthcare Analogy |
+| :--- | :--- | :--- |
+| **Capacity** | Switch throughput limit (TPS) | Total staffed hospital beds (Bed-Days) |
+| **Utilization** | Server CPU load | Bed Occupancy Rate % |
+| **Fulfillment** | Settled payment rate % | Consultation completion % |
+| **Latency** | Bank API response time | Lab turnaround time (TAT) |
+| **Churn / Defect** | Merchant churn | 30-day patient readmission rate % |
+
+<Tip>
+**The Privacy Rule ($n < 10$ Suppression):** Under India's Digital Personal Data Protection (DPDP) Act, 2023, health metrics must never expose identifiable individuals. When reporting clinical metrics by demographic cuts (such as specialty, age band, or pin code), any reporting cell with fewer than 10 patients (`n < 10`) must be masked or suppressed to eliminate re-identification risks.
+</Tip>
+
+## Worked examples
+
+All examples in this section query the `public/data/sqlite/fintech.sqlite` database using SQLite.
+
+### Example 1: Annual TPV and Success Rate
+We query the `transactions` table, de-duplicate rows, and evaluate annual performance across 2023 and 2024:
+
+```sql
+WITH t AS (
+  SELECT DISTINCT * FROM transactions
+)
+SELECT
+  strftime('%Y', txn_datetime) AS year,
+  COUNT(*) AS total_txns,
+  SUM(CASE WHEN status = 'SUCCESS' THEN 1 ELSE 0 END) AS success_txns,
+  ROUND(AVG(CASE WHEN status = 'SUCCESS' THEN 100.0 ELSE 0.0 END), 2) AS success_rate_pct,
+  CAST(ROUND(SUM(CASE WHEN status = 'SUCCESS' THEN amount ELSE 0 END)) AS INTEGER) AS tpv_inr
+FROM t
+GROUP BY year
+ORDER BY year ASC;
+```
+
+**Real Output from fintech.sqlite:**
+| year | total_txns | success_txns | success_rate_pct | tpv_inr |
+| :--- | :--- | :--- | :--- | :--- |
+| 2023 | 9613 | 9332 | 97.08 | 12828210 |
+| 2024 | 12687 | 12344 | 97.30 | 17045673 |
+
+Total payment volume expanded by 32.9% (from Rs 1.28 crore to Rs 1.70 crore), while platform technical reliability improved from 97.08% to 97.30%.
+
+### Example 2: Client Application Reliability Breakdown
+We isolate failure rates across client payment apps:
+
+```sql
+WITH t AS (
+  SELECT DISTINCT * FROM transactions
+)
+SELECT
+  payment_app,
+  COUNT(*) AS txns,
+  SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) AS failures,
+  ROUND(AVG(CASE WHEN status = 'FAILED' THEN 100.0 ELSE 0.0 END), 2) AS failure_pct
+FROM t
+GROUP BY payment_app
+ORDER BY failure_pct DESC;
+```
+
+**Real Output from fintech.sqlite:**
+| payment_app | txns | failures | failure_pct |
+| :--- | :--- | :--- | :--- |
+| NammaPay | 3922 | 200 | 5.10 |
+| PayZippy | 7190 | 162 | 2.25 |
+| QuickPaisa | 5443 | 122 | 2.24 |
+| SabPay | 3043 | 67 | 2.20 |
+| RupeeRocket | 2702 | 50 | 1.85 |
+
+Notice the clear outlier: NammaPay's failure rate of 5.10% is more than double all other applications (~1.85% to 2.25%). Deep-dive inspection reveals that NammaPay suffered 4 discrete infrastructure outages where failure rates surged to 38.82%, whereas outside those incident windows, its baseline failure rate was 2.25%.
+
+### Example 3: Banking Partner Peak-Hour Stress
+We evaluate Kaveri Co-op Bank's failure rate during evening peak hours (18:00–19:59) versus non-peak hours:
+
+```sql
+WITH t AS (
+  SELECT DISTINCT * FROM transactions
+  WHERE bank = 'Kaveri Co-op Bank'
+)
+SELECT
+  CASE
+    WHEN CAST(strftime('%H', txn_datetime) AS INTEGER) IN (9, 18, 19) THEN 'peak'
+    ELSE 'regular'
+  END AS hour_type,
+  COUNT(*) AS txns,
+  ROUND(AVG(CASE WHEN status = 'FAILED' THEN 100.0 ELSE 0.0 END), 2) AS failure_pct
+FROM t
+GROUP BY hour_type;
+```
+
+**Real Output from fintech.sqlite:**
+| hour_type | txns | failure_pct |
+| :--- | :--- | :--- |
+| peak | 421 | 9.98 |
+| regular | 1279 | 4.77 |
+
+Kaveri Co-op Bank fails at 9.98% during peak hours—nearly double its regular rate (4.77%) and over 4x other banking peers (2.19%). All 42 instances of `BANK_SERVER_TIMEOUT` in the database originate from Kaveri Co-op Bank during these peak windows.
+
+## Common mistakes
+
+<CommonMistake>
+- **Forgetting to de-duplicate webhook transaction logs**: Raw payment logs contain duplicate delivery attempts. Summing raw rows inflates TPV and transaction counts.
+- **Calculating failure rate as failed divided by successful**: Computing `601 / 21619 = 2.78%` instead of dividing by total attempts `601 / 22300 = 2.70%`.
+- **Including failed transaction values in TPV**: Adding up the `amount` column without filtering `WHERE status = 'SUCCESS'`.
+- **Ignoring sample size minimums**: Raising an alarm because a bank shows a "25% failure rate" based on only 4 attempted transactions. Always enforce a minimum volume filter (`HAVING COUNT(*) >= 500`).
+- **Displaying patient PII in clinical dashboards**: Showing individual patient names or publishing demographic slices where `n < 10` violating privacy standards.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="fintechkpi" module="business" />
+
+## Mini quiz
+
+<Quiz questions={[
+  {
+    q: "In payment analytics, what is Total Payment Volume (TPV)?",
+    options: [
+      "The sum of all initiated transaction amounts, including failed payments",
+      "The sum of monetary amounts for successfully settled transactions only",
+      "The net merchant fees earned by the payment gateway switch",
+      "The total count of distinct active payment accounts"
+    ],
+    answer: 1,
+    explanation: "TPV measures gross monetary value settled through the payment network. Failed and pending payments contribute zero realized value."
+  },
+  {
+    q: "Why should pending transactions remain in the denominator when computing technical success rate?",
+    options: [
+      "Because pending transactions are always settled within 24 hours",
+      "Because excluding them artificially overstates platform reliability while user intent remains unfulfilled",
+      "Because the RBI mandates that pending transactions count as successful payments",
+      "Because pending transactions carry higher merchant processing fees"
+    ],
+    answer: 1,
+    explanation: "Pending transactions represent uncompleted user attempts and switch latency. Dropping them inflates perceived technical uptime."
+  },
+  {
+    q: "In the fintech dataset, what drove NammaPay's elevated 5.10% failure rate compared to peer apps (~2.2%)?",
+    options: [
+      "A uniformly higher daily failure rate across every day of the year",
+      "Four discrete server outage incident windows where failures spiked to nearly 39%",
+      "A higher proportion of high-value transactions exceeding Rs 50,000",
+      "A concentration of users operating on obsolete iOS devices"
+    ],
+    answer: 1,
+    explanation: "NammaPay's failure rate outside its 4 outage windows was 2.25%—identical to peers. Aggregate averages masked discrete outage events."
+  },
+  {
+    q: "A fraud prevention rule has a recall of 9.6% and a precision of 5.0%. What does this mean in plain language?",
+    options: [
+      "The rule catches 9.6% of all actual fraud, but 95% of flagged transactions are innocent customers",
+      "The rule catches 95% of all actual fraud with a 9.6% false positive rate",
+      "The rule blocks 5% of good customers and catches 50% of fraudsters",
+      "The rule reduces overall transaction volume by 9.6%"
+    ],
+    answer: 0,
+    explanation: "Precision (5.0%) indicates that only 5 out of 100 flags are true fraud. Recall (9.6%) means 90.4% of total platform fraud bypasses the rule."
+  },
+  {
+    q: "Why must healthcare analytics dashboards suppress reporting cells with n < 10 patients?",
+    options: [
+      "To save database memory and reduce rendering load",
+      "To prevent statistical re-identification of patients from quasi-identifiers under data protection standards",
+      "Because hospital billing systems cannot process single-digit numbers",
+      "To make clinical charts look visually cleaner"
+    ],
+    answer: 1,
+    explanation: "In small patient cohorts, combining quasi-identifiers (such as age, gender, and diagnosis) allows re-identification of specific individuals."
+  }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Senior analytics interviewers love asking troubleshooting questions based on real switch data: "Our payment success rate dropped 1.2% this morning. Walk me through the first 30 minutes of your investigation."
+</InterviewAlert>
+
+<InterviewQ q="Payment success rate dropped 1.2 percentage points today. How do you triage the issue in SQL?">
+I follow a structured 4-step triage sequence:
+1. **Verify data hygiene**: Check if webhook logging broke, verify duplicate rates, and confirm whether the drop is real or an artifact of delayed status updates.
+2. **Segment by payment rail and app**: Cut success rates by client app (`payment_app`). If only NammaPay dropped, the bug is on the client build or SDK network stack.
+3. **Cut by issuing and acquiring bank**: Group by `bank` and examine error codes (`failure_code`). If Kaveri Co-op Bank shows an explosion of `BANK_SERVER_TIMEOUT`, it is an external banking host outage.
+4. **Isolate time bands and error codes**: Group by hour and failure reason. If technical declines (`UPI_SYSTEM_DOWN`) surge at 11 AM, escalate to the core switch infrastructure team immediately.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between technical decline and business decline in payments?">
+A **technical decline** is caused by infrastructure or switch breakdown, such as `BANK_SERVER_TIMEOUT`, `UPI_SYSTEM_DOWN`, or network connection drops. These are platform failures where the user intends to pay and has sufficient balance, but technology fails. They are prime candidates for automated background retry (retry success rate $\approx 74\%$).
+
+A **business decline** occurs when the transaction is rejected due to customer-side constraints, such as `INSUFFICIENT_FUNDS`, `INCORRECT_PIN`, or daily transaction limit breaches. Retrying these automatically wastes switch resources (insufficient funds retries succeed only 13.5% of the time); the correct product action is prompting the user to top up their account or check their balance.
+</InterviewQ>
+
+<InterviewQ q="How would you design a KPI scorecard for a hospital outpatient (OPD) department?">
+I would track four operational pillars:
+1. **Access & Demand**: Total booked appointments, appointment booking conversion rate from app search, and OPD slot utilization %.
+2. **Clinical Punctuality & Fulfillment**: Consultation completion rate %, doctor on-time start %, and median patient waiting time in the reception lounge.
+3. **Leakage & Friction**: Appointment no-show rate %, late cancellation rate, and video consultation connection failure rate.
+4. **Guardrails & Privacy**: Patient satisfaction rating (CSAT $\ge 4.5/5$) and strict masking of any demographic cell with `n < 10` patients.
+</InterviewQ>
+
+## Key takeaways
+
+- Total Payment Volume (TPV) measures settled monetary value; failed and pending transactions must never be summed into TPV.
+- Payment logs frequently contain duplicate webhook deliveries; always execute `SELECT DISTINCT` before calculating top-line volumes.
+- Aggregate reliability figures conceal localized crises: NammaPay's 5.10% failure rate was driven entirely by 4 discrete outage windows.
+- In fraud detection, high-recall blunt rules often carry terrible precision, creating severe false-positive customer friction.
+- Healthcare metrics follow operational capacity mechanics similar to fintech switches, but require cell suppression (`n < 10`) to safeguard patient privacy.
+
+## Further reading
+
+<FurtherReading ids={["mode-sql", "sqlite-docs"]} />

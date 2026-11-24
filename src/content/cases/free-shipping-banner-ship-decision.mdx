@@ -1,0 +1,144 @@
+---
+title: "The A/B test ship decision: Should we launch the free-shipping checkout banner?"
+industry: "E-commerce"
+difficulty: hard
+type: case-study
+estimatedMinutes: 45
+---
+
+## Problem
+
+You are the lead experimentation analyst at an Indian e-commerce marketplace. The product team has concluded a 14-day A/B experiment testing a new promotional banner on the checkout page: *"Free Express Shipping on Orders Over ₹999!"*
+
+The Product Manager is ready to ship:
+> *"Our primary conversion rate jumped from 10.57% to 11.72%—a statistically significant +1.15 percentage point lift with p = 0.046! Revenue per visitor is up by 9.4%. Let's roll this out 100% to all users immediately."*
+
+The Engineering Director and UX Lead urge caution:
+> *"A p-value of 0.046 is right on the edge of statistical noise. What happens if we look under the hood across devices? Does this banner hurt Desktop users or compress our Average Order Value?"*
+
+Your objective is to clean the experimentation data, audit user contamination, verify statistical significance, evaluate guardrail metrics, conduct device segmentation, and deliver a definitive "Ship / No-Ship / Segmented-Ship" decision.
+
+## Data you have
+
+From `marketing.sqlite`:
+- `ab_test_results`: Experiment tracking logs (`user_id`, `variant`, `device`, `converted`, `order_amount`, `test_name`). Note: A small number of contaminated users were logged in both variants and must be excluded.
+
+## Approach
+
+1. **Clean Experimentation Data**: Deduplicate records and filter out contaminated user IDs exposed to both Control and Treatment variants.
+2. **Evaluate the Primary Conversion Metric**: Calculate overall sample sizes, conversion rates, standard errors, z-statistic, and p-value.
+3. **Audit Guardrail Metrics**: Analyze Average Order Value (AOV) and Revenue Per User (RPU) to ensure top-line conversion gains do not destroy basket profitability.
+4. **Conduct Subgroup Segmentation**: Slice test results by device type (Mobile vs. Desktop) to test for effect heterogeneity.
+5. **Deliver the Experimentation Verdict**: Recommend an evidence-based staged rollout strategy.
+
+## Step-by-step solution
+
+### Step 1: Data Cleaning and Sample Hygiene
+
+To ensure clean experimental integrity, we identify and drop users who were exposed to both variants due to cookie clearing or cross-device logins:
+
+```sql
+WITH user_variants AS (
+  SELECT user_id, COUNT(DISTINCT variant) AS variant_count
+  FROM ab_test_results
+  WHERE test_name = 'checkout_free_shipping_banner'
+  GROUP BY user_id
+)
+SELECT 
+  variant,
+  COUNT(DISTINCT user_id) AS total_users,
+  SUM(converted) AS conversions,
+  ROUND(100.0 * SUM(converted) / COUNT(DISTINCT user_id), 2) AS conversion_rate_pct,
+  ROUND(SUM(order_amount) / COUNT(DISTINCT user_id), 2) AS rev_per_user_inr,
+  ROUND(AVG(CASE WHEN converted = 1 THEN order_amount END), 2) AS aov_inr
+FROM ab_test_results
+WHERE test_name = 'checkout_free_shipping_banner'
+  AND user_id IN (SELECT user_id FROM user_variants WHERE variant_count = 1)
+GROUP BY variant;
+```
+
+| Variant | Total Sample ($n$) | Conversions | Conversion Rate (%) | Revenue / User (₹) | AOV (₹) |
+|---|---|---|---|---|---|
+| **Control (No Banner)** | 6,016 | 636 | **10.57%** | ₹113.31 | ₹1,072.10 |
+| **Treatment (Banner)** | 5,974 | 700 | **11.72%** | **₹124.03** | ₹1,058.24 |
+| **Observed Variance** | — | +64 | **+1.15 pp (+10.88%)** | **+₹10.72 (+9.46%)** | **-₹13.86 (-1.29%)** |
+
+### Step 2: Statistical Significance Testing
+
+Let's test the primary hypothesis:
+- Control Conversion: `p1 = 0.1057 (n1 = 6,016)`
+- Treatment Conversion: `p2 = 0.1172 (n2 = 5,974)`
+- Pooled Proportion: `p_hat = (636 + 700) / (6,016 + 5,974) = 1,336 / 11,990 = 0.1114`
+- Standard Error: `SE = sqrt(0.1114 * (1 - 0.1114) * (1/6016 + 1/5974)) = 0.00577`
+- **Z-Statistic**:
+  ```text
+  z = (0.1172 - 0.1057) / 0.00577 = 1.993
+  ```
+- **Two-Tailed P-Value**: `p = 0.046`
+- **95% Confidence Interval for Lift**: `[+0.02 pp, +2.28 pp]`
+
+*Conclusion on Overall Result*:
+The result passes the standard statistical significance threshold ($\alpha = 0.05$). However, because $p = 0.046$ sits right on the borderline, any underlying heterogeneity across user segments must be scrutinized.
+
+### Step 3: Guardrail Metric Health Check
+
+- **Revenue Per Visitor**: Treatment generated **₹124.03 vs. ₹113.31** in Control (+₹10.72 per visitor, a +9.46% lift).
+- **Average Order Value (AOV)**: Slipped slightly from **₹1,072.10 to ₹1,058.24 (-1.29%)**. Because the threshold was ₹999, shoppers who previously spent ₹1,200 trimmed non-essential items to settle just above the ₹999 free-shipping threshold. However, the +10.9% conversion surge easily compensated for the minor -1.3% ticket dilution.
+
+### Step 4: The Critical Discovery: Device Segmentation Divergence
+
+Let's segment the experiment by client device:
+
+```sql
+WITH clean_exp AS (
+  SELECT * FROM ab_test_results
+  WHERE test_name = 'checkout_free_shipping_banner'
+    AND user_id NOT IN (
+      SELECT user_id FROM ab_test_results 
+      WHERE test_name = 'checkout_free_shipping_banner'
+      GROUP BY user_id HAVING COUNT(DISTINCT variant) > 1
+    )
+)
+SELECT 
+  device,
+  variant,
+  COUNT(*) AS users,
+  SUM(converted) AS conversions,
+  ROUND(100.0 * SUM(converted) / COUNT(*), 2) AS conv_rate_pct
+FROM clean_exp
+GROUP BY device, variant
+ORDER BY device, variant;
+```
+
+| Device Platform | Variant | Visitors ($n$) | Conversions | Conversion Rate (%) | Net Delta |
+|---|---|---|---|---|---|
+| **Mobile** | Control | 5,093 | 431 | **8.47%** | Baseline |
+| **Mobile** | Treatment | 5,076 | 549 | **10.81%** | **+2.34 pp (+27.6%)** |
+| **Desktop** | Control | 923 | 142 | **15.35%** | Baseline |
+| **Desktop** | Treatment | 898 | 125 | **13.91%** | **-1.44 pp (-9.38%)** |
+
+*The Revelation (Heterogeneity Masked by Aggregation)*:
+- On **Mobile** (85% of traffic), the banner was a tremendous success, lifting conversion from **8.47% to 10.81% (+2.34 percentage points)**.
+- On **Desktop** (15% of traffic), the banner was actively harmful, dragging conversion down from **15.35% to 13.91% (-1.44 percentage points)**!
+- *Root Cause*: On desktop viewports, the bulky banner pushed the checkout review card and the primary "Proceed to Payment" button below the screen fold, introducing cognitive friction for desktop shoppers.
+
+## Key insight
+
+The overall A/B test result (+1.15 percentage points, p = 0.046) is a classic case of aggregated Simpson's masking. The positive headline result is driven entirely by Mobile users (+2.34 pp lift), while Desktop users experienced a severe -1.44 pp conversion drop due to visual clutter pushing CTA buttons below the fold. Shipping the banner globally would permanently damage desktop conversions.
+
+## Recommendation
+
+1. **Adopt a Segmented "Ship on Mobile Only" Strategy**:
+   - Immediately roll out the promotional banner to 100% of **Mobile web and app checkouts**, unlocking an estimated +2.34 percentage points in mobile purchase conversion.
+   - **Do NOT roll out the banner to Desktop browsers**. Maintain the clean, high-converting legacy layout on desktop.
+2. **Redesign Desktop Banner Layout for a Follow-up Test**:
+   - Have the UX team design an unobtrusive, horizontal inline badge for desktop that sits beside the cart subtotal rather than occupying a full-width vertical block. Run an iterative A/B test specifically for desktop traffic.
+3. **Mandate Pre-Registered Subgroup Analysis in Experimentation PRDs**:
+   - Update experimentation governance guidelines: all future A/B tests must pre-register device and platform splits to prevent shipping disguised negative experiences to minority user cohorts.
+
+## What a weak answer looks like
+
+- Recommends an immediate 100% global rollout simply because overall $p = 0.046$, ignoring that desktop conversion drops by 9.4%.
+- Fails to clean contaminated users exposed to multiple variants.
+- Does not check AOV or guardrail metrics to see if basket size shrank.
+- Completely misses the device divergence.

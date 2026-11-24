@@ -1,0 +1,109 @@
+---
+title: "Where did 33% TPV growth come from? Decomposing payments growth"
+industry: "Fintech"
+difficulty: easy
+type: case-study
+estimatedMinutes: 25
+---
+
+## Problem
+
+You are an analytics associate presenting at the annual business review of a payments app. The Chief Executive Officer opens the meeting with an enthusiastic statement:
+> *"Our Total Processed Volume (TPV) surged by 33% from Rs 1.28 Crore in 2023 to Rs 1.70 Crore in 2024. Our growth strategy is firing on all cylinders. Can you break down where this revenue expansion came from so we can double down on it next year?"*
+
+Your objective is to decompose top-line TPV using a structured metric tree, evaluate whether growth is driven by customer acquisition, purchasing frequency, or ticket size, and highlight any hidden operational vulnerabilities.
+
+## Data you have
+
+From `fintech.sqlite`:
+- `transactions`: 22,300 deduplicated records across calendar years 2023 and 2024 (`txn_id`, `user_id`, `amount_inr`, `status`, `txn_time`, `txn_type`).
+
+## Approach
+
+1. **Construct a Metric Tree Decomposition**:
+   ```text
+   TPV = Transacting Users * (Transactions / User) * Average Ticket Size (AOV)
+   ```
+2. **Compute Empirical Year-over-Year (YoY) Changes**: Run queries across 2023 and 2024 to calculate the three constituent drivers.
+3. **Analyze Transaction Category Mix**: Evaluate volume and TPV by transaction type (P2M, P2P, Bill Pay, Recharge).
+4. **Identify Strategic Vulnerabilities**: Synthesize what falling transaction frequency means for long-term customer lifetime value.
+
+## Step-by-step solution
+
+### Step 1: Metric Tree Decomposition Query
+
+Querying distinct successful transactions across both calendar years:
+
+```sql
+WITH t AS (SELECT DISTINCT * FROM transactions WHERE status = 'SUCCESS')
+SELECT 
+  strftime('%Y', txn_time) AS txn_year,
+  COUNT(DISTINCT user_id) AS transacting_users,
+  COUNT(*) AS total_successful_txns,
+  ROUND(CAST(COUNT(*) AS FLOAT) / COUNT(DISTINCT user_id), 2) AS txns_per_user,
+  ROUND(SUM(amount_inr), 2) AS total_tpv_inr,
+  ROUND(AVG(amount_inr), 2) AS avg_ticket_inr
+FROM t
+GROUP BY 1
+ORDER BY txn_year;
+```
+
+| Metric | 2023 Baseline | 2024 Performance | Absolute Change | YoY Growth Rate |
+|---|---|---|---|---|
+| **Total Processed Volume (TPV)** | ₹1,28,28,210 | ₹1,70,45,673 | +₹42,17,463 | **+32.88%** |
+| **Total Successful Txns** | 9,613 | 12,687 | +3,074 | **+31.98%** |
+| **Transacting Users** | 1,732 | 2,650 | +918 | **+52.99%** |
+| **Txns per Active User** | 5.55 | 4.79 | -0.76 | **-13.69%** |
+| **Average Ticket Size** | ₹1,380.08 | ₹1,383.18 | +₹3.10 | **+0.22% (Flat)** |
+
+### Step 2: Interpreting the Metric Tree Findings
+
+Decomposing the 32.88% TPV growth:
+1. **Customer Acquisition (+53%)**: Transacting users expanded aggressively from 1,732 to 2,650, driven by top-of-funnel merchant QR expansion and user onboarding campaigns.
+2. **Average Ticket Size (Flat, +0.2%)**: Average ticket size remained completely stagnant at ~₹1,383.
+3. **Usage Frequency (-13.7%)**: The average number of transactions per user contracted from 5.55 to 4.79 transactions per year.
+
+### Step 3: Transaction Type Mix Slicing
+
+Analyzing where users spend across the 2-year period:
+
+```sql
+WITH t AS (SELECT DISTINCT * FROM transactions WHERE status = 'SUCCESS')
+SELECT 
+  txn_type,
+  COUNT(*) AS txn_count,
+  ROUND(SUM(amount_inr) / 100000.0, 2) AS tpv_lakhs,
+  ROUND(AVG(amount_inr), 2) AS avg_ticket_inr
+FROM t
+GROUP BY txn_type
+ORDER BY tpv_lakhs DESC;
+```
+
+| txn_type | txn_count | tpv_lakhs (₹) | avg_ticket_inr |
+|---|---|---|---|
+| P2M (Merchant Payments) | 12,287 | ₹178.6 Lakhs | ₹1,453.57 |
+| P2P (Peer-to-Peer) | 5,425 | ₹62.8 Lakhs | ₹1,157.60 |
+| Bill Pay (Utilities) | 2,823 | ₹51.6 Lakhs | ₹1,827.84 |
+| Recharge (Mobile/DTH) | 1,765 | ₹5.6 Lakhs | ₹317.28 |
+
+*Finding*: P2M merchant payments represent the massive engine of the platform (59.8% of total TPV), while Bill Pay delivers the highest ticket sizes (₹1,828).
+
+## Key insight
+
+The 33% TPV growth is a "wide, but shallow" expansion. It was fueled entirely by adding new transacting users (+53%), while the core habituation and frequency of individual users degraded by 13.7% (dropping from 5.55 to 4.79 transactions/user). Average ticket size was flat. If customer acquisition slows as the market matures, top-line TPV will stall immediately unless user frequency is revived.
+
+## Recommendation
+
+1. **Shift Focus from Acquisition to Habituation**:
+   - Reallocate marketing spend from generic user referral bonuses to post-onboarding habituation loops (e.g., rewards for completing 3 utility bill payments within the first 60 days).
+2. **Promote High-Ticket Bill Payments**:
+   - Bill Pay carries an AOV of ₹1,828 (vs ₹317 for recharges). Introduce automated recurring bill payment reminders (electricity, broadband, FASTag) to drive predictable monthly frequency.
+3. **Establish a Usage Frequency OKR**:
+   - Add **'Transactions per Monthly Active User'** to the executive scorecard alongside top-line TPV to prevent teams from celebrating vanity acquisition while user engagement erodes.
+
+## What a weak answer looks like
+
+- Simply repeats the 33% growth number and tells leadership that everything is performing well.
+- Attributes the growth to "people spending more money per transaction" without calculating average ticket size.
+- Fails to notice that transactions per user actually dropped by nearly 14%.
+- Does not decompose the metric into a mathematical equation.

@@ -1,0 +1,186 @@
+[
+  {
+    "id": "business-guess-001",
+    "module": "business",
+    "topic": "guess",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "Estimate the total number of cups of freshly brewed chai consumed daily in an Indian tier-2 city with a population of 20 Lakh (2,000,000) adults. Assume that 40.0% of adults drink commercial chai outside the home on an average day, and that daily chai drinkers consume an average of 2 cups each. Calculate the total daily cups of chai.",
+    "dataset": "none",
+    "hint": "Multiply total adult population by the proportion of chai drinkers and by cups per day (2,000,000 * 0.40 * 2).",
+    "solution": "Chai Consumption Estimation:\n\n$$\\text{Daily Chai Drinkers} = 2,000,000 \\times 0.40 = 800,000$$\n$$\\text{Total Daily Cups} = 800,000 \\times 2 = 1,600,000$$\n\nTotal estimated daily consumption is 1,600,000 cups of chai.",
+    "expectedOutput": {
+      "value": 1600000
+    },
+    "explanation": "Top-down market sizing multiplies addressable population by penetration rate and consumption frequency. In a 20 Lakh population city, an estimated 1.6 million cups are consumed daily.",
+    "commonMistake": "Forgetting the 40% penetration rate and multiplying the entire 20 Lakh population by 2 cups (giving 4,000,000).",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 2,
+    "tags": ["guesstimate", "market-sizing", "mental-math"]
+  },
+  {
+    "id": "business-guess-002",
+    "module": "business",
+    "topic": "guess",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "In Indian numbering systems, how many Lakh are there in exactly 1 Crore? (Enter a single numeric integer).",
+    "dataset": "none",
+    "hint": "1 Lakh = 100,000 (10^5) and 1 Crore = 10,000,000 (10^7).",
+    "solution": "In the Indian numbering system:\n\n$$1 \\text{ Lakh} = 100,000 = 10^5$$\n$$1 \\text{ Crore} = 10,000,000 = 10^7$$\n$$\\frac{10^7}{10^5} = 100$$\n\nExactly 100 Lakh make 1 Crore.",
+    "expectedOutput": {
+      "value": 100
+    },
+    "explanation": "Mastering conversions between Indian numbering terms (lakh, crore) and Western millions and billions is essential for business case interviews in India.",
+    "commonMistake": "Confusing 1 Crore with 10 Lakh (which is 1 Million) or 1,000 Lakh.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 1,
+    "tags": ["indian-numbering", "conversions", "basics"]
+  },
+  {
+    "id": "business-guess-003",
+    "module": "business",
+    "topic": "guess",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "Estimate the total daily volume of UPI transactions processed across India. Assume an active national user base of 30 Crore (300,000,000) individuals. On any given day, assume 40.0% of these users initiate transactions, averaging 3 transactions each per active day. Calculate the estimated total daily transactions.",
+    "dataset": "none",
+    "hint": "Multiply 300,000,000 by 0.40 and then by 3.",
+    "solution": "Daily UPI Transaction Volume Estimation:\n\n$$\\text{Daily Active Transactors} = 300,000,000 \\times 0.40 = 120,000,000 \\text{ (12 Crore users)}$$\n$$\\text{Total Daily Transactions} = 120,000,000 \\times 3 = 360,000,000 \\text{ (36 Crore transactions)}$$\n\nTotal estimated daily transaction volume is 360,000,000 transactions.",
+    "expectedOutput": {
+      "value": 360000000
+    },
+    "explanation": "In 2024, NPCI reported approximately 13-15 billion monthly UPI transactions, translating to 400-500 million daily transactions. This top-down estimate of 360 million aligns closely with real-world infrastructure scale.",
+    "commonMistake": "Slipping by a power of 10 when converting between crore and numeric zeros (e.g. entering 36,000,000).",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": ["fintech", "guesstimate", "upi-volume"]
+  },
+  {
+    "id": "business-guess-004",
+    "module": "business",
+    "topic": "guess",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "Estimate the gross monthly consultation revenue of a private outpatient polyclinic. The clinic employs 6 full-time specialist doctors. Each doctor consults an average of 25 patients per day. The clinic operates 26 days per month, and the standard consultation fee is Rs 400 per visit. Calculate the clinic's total monthly gross consultation revenue in rupees.",
+    "dataset": "none",
+    "hint": "Multiply doctors * patients/day * operating days * fee per visit (6 * 25 * 26 * 400).",
+    "solution": "Monthly Polyclinic Consultation Revenue:\n\n$$\\text{Daily Patient Consultations} = 6 \\times 25 = 150 \\text{ consults/day}$$\n$$\\text{Monthly Consultations} = 150 \\times 26 = 3,900 \\text{ consults/month}$$\n$$\\text{Gross Monthly Revenue} = 3,900 \\times 400 = 1,560,000$$\n\nTotal estimated monthly revenue is Rs 1,560,000 (Rs 15.6 Lakh).",
+    "expectedOutput": {
+      "value": 1560000
+    },
+    "explanation": "Supply-side bottom-up estimation multiplies clinical capacity (doctors) by daily throughput (patients per day), operating duration (days per month), and unit pricing (fee).",
+    "commonMistake": "Using a 30-day operating month for an outpatient clinic that closes on Sundays, or dropping a doctor from the multiplication.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": ["healthcare", "bottom-up", "revenue-estimation"]
+  },
+  {
+    "id": "business-guess-005",
+    "module": "business",
+    "topic": "guess",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "A healthcare infrastructure committee evaluates hospital bed capacity for a metropolitan urban district with a population of 20 Lakh (2,000,000) residents. According to standard urban healthcare planning guidelines, the district aims for 1.5 staffed hospital beds per 1,000 citizens. Calculate the total number of hospital beds required to meet this guideline.",
+    "dataset": "none",
+    "hint": "Divide population by 1,000 and multiply by 1.5 (2,000,000 / 1,000 * 1.5).",
+    "solution": "Hospital Bed Requirement Calculation:\n\n$$\\text{Bed Requirement} = \\left(\\frac{2,000,000}{1000}\\right) \\times 1.5 = 2,000 \\times 1.5 = 3,000$$\n\nThe district requires exactly 3,000 staffed hospital beds.",
+    "expectedOutput": {
+      "value": 3000
+    },
+    "explanation": "Ratios per 1,000 people are standard benchmarking units in public health and city planning. For 2 million residents, 1.5 beds per thousand yields 3,000 beds.",
+    "commonMistake": "Multiplying 2,000,000 directly by 1.5 without dividing by the 1,000 baseline, giving an absurd 3,000,000 beds.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 2,
+    "tags": ["healthcare", "capacity-planning", "ratios"]
+  },
+  {
+    "id": "business-guess-006",
+    "module": "business",
+    "topic": "guess",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "Estimate the total number of retail pharmacies operating in an urban municipal corporation of 20 Lakh (2,000,000) people. If commercial retail census data indicates an average density of 1 pharmacy per 1,500 residents, calculate the estimated number of pharmacies (round to the nearest whole integer).",
+    "dataset": "none",
+    "hint": "Divide population by 1,500 and round to nearest integer (2,000,000 / 1,500).",
+    "solution": "Pharmacy Count Estimation:\n\n$$\\text{Pharmacies} = \\frac{2,000,000}{1500} = 1333.333... \\approx 1333$$\n\nTotal estimated retail pharmacies is 1,333 stores.",
+    "expectedOutput": {
+      "value": 1333
+    },
+    "explanation": "Density ratios establish quick retail universe sizes. A city of 2 million people supports approximately 1,333 retail chemist shops.",
+    "commonMistake": "Rounding down to 1,300 or calculating 2,000,000 / 150 = 13,333.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 2,
+    "tags": ["retail-census", "density-estimation", "pharma"]
+  },
+  {
+    "id": "business-guess-007",
+    "module": "business",
+    "topic": "guess",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "Estimate the Total Addressable Market (TAM) for an annual digital telehealth subscription across urban India. Assume there are 4 Crore (40,000,000) urban internet-connected households. Research estimates that 25.0% of these households are willing to purchase a family digital health plan. The subscription costs Rs 600 per household per year. Calculate the annual market size in **Rs Crore**.",
+    "dataset": "none",
+    "hint": "Multiply 40,000,000 households * 0.25 * Rs 600. Then convert the rupee total to Crore (divide by 10,000,000).",
+    "solution": "TAM Market Sizing in Rs Crore:\n\n$$\\text{Subscribing Households} = 40,000,000 \\times 0.25 = 10,000,000 \\text{ (1 Crore households)}$$\n$$\\text{Total Annual Revenue (Rupees)} = 10,000,000 \\times 600 = 6,000,000,000 \\text{ (Rs 600 Crore)}$$\n$$\\text{Market Size in Rs Crore} = \\frac{6,000,000,000}{10,000,000} = 600$$\n\nTotal Addressable Market is Rs 600 Crore.",
+    "expectedOutput": {
+      "value": 600
+    },
+    "explanation": "TAM calculation combines addressable households, willingness-to-pay adoption rate, and annual price point. One crore paying households at Rs 600/year yields a Rs 600 Crore annual market.",
+    "commonMistake": "Reporting the answer in raw rupees (6,000,000,000) instead of Rs Crore (600), or making a zero error during crore division.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": ["tam", "market-sizing", "telehealth"]
+  },
+  {
+    "id": "business-guess-008",
+    "module": "business",
+    "topic": "guess",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "Perform a bottom-up supply-side estimate of annual diagnostic pathology revenue in a state capital. The city has 400 operational clinical labs and collection centers. Each lab processes an average of 60 patient sample test orders per day. Labs operate 300 days per year, and the average realized revenue per test order is Rs 500. Calculate the total annual diagnostic lab market revenue in **Rs Crore**.",
+    "dataset": "none",
+    "hint": "Multiply 400 * 60 * 300 * 500, then divide by 10,000,000 to convert to Rs Crore.",
+    "solution": "Bottom-Up Diagnostic Market Revenue:\n\n$$\\text{Annual Sample Orders} = 400 \\times 60 \\times 300 = 7,200,000 \\text{ tests/year}$$\n$$\\text{Total Annual Revenue (Rupees)} = 7,200,000 \\times 500 = 3,600,000,000 \\text{ (Rs 360 Crore)}$$\n$$\\text{Market Size in Rs Crore} = \\frac{3,600,000,000}{10,000,000} = 360$$\n\nTotal annual market revenue is Rs 360 Crore.",
+    "expectedOutput": {
+      "value": 360
+    },
+    "explanation": "Bottom-up sizing validates demand-side estimates by analyzing the operating economics of physical suppliers (labs x capacity x days x price = Rs 360 Crore).",
+    "commonMistake": "Operating days error (e.g. using 365 days when labs operate 300 days) or converting to crore incorrectly.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": ["diagnostics", "market-sizing", "bottom-up"]
+  },
+  {
+    "id": "business-guess-009",
+    "module": "business",
+    "topic": "guess",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "Outline the step-by-step approach and explicit assumptions you would make to estimate the total daily food delivery orders for a platform like Swiggy or Zomato (fictional 'FoodKart') in a tier-1 Indian city of 80 Lakh (8 million) people.",
+    "dataset": "none",
+    "hint": "Segment by households, target economic class, ordering penetration, meal occasions, and market share.",
+    "solution": "Step-by-Step Guesstimate Structure:\n\n1. **Clarify Scope**: Geography = City limits of Tier-1 city (80 Lakh population); Metric = Total daily fulfilled orders for FoodKart.\n2. **Household Conversion**: Average Indian urban household size $\\approx 4.0$ members $\\rightarrow$ $8,000,000 / 4.0 = 20 \\text{ Lakh households}$.\n3. **Economic Segmentation**: \n   - Affluent / Upper-Middle Class (sec A/B, smartphone, disposable income) $\\approx 30\\% = 6 \\text{ Lakh households}$.\n   - Middle / Lower-Middle Class $\\approx 40\\% = 8 \\text{ Lakh households}$ (order rarely).\n   - Lower Income $\\approx 30\\% = 6 \\text{ Lakh households}$ (zero online delivery).\n4. **Order Frequency (Demand Occasions)**:\n   - 6 Lakh Affluent: order an average of 1.5 times per week $\\rightarrow 600,000 \\times 1.5 / 7 \\approx 128,500 \\text{ orders/day}$.\n   - 8 Lakh Middle: order 1 time every 2 weeks (0.5/week) $\\rightarrow 800,000 \\times 0.5 / 7 \\approx 57,000 \\text{ orders/day}$.\n   - Total Market Demand $\\approx 185,500 \\approx 1.85 \\text{ Lakh orders/day}$.\n5. **Market Share**: FoodKart holds a 45% market share in this city (competing with one rival holding 50% and direct restaurants holding 5%):\n   $$\\text{FoodKart Daily Orders} = 185,500 \\times 0.45 \\approx 83,500 \\text{ orders/day}$$\n6. **Sanity Check**: 83,500 orders across a fleet of 8,000 active delivery riders yields $\\approx 10.4$ deliveries per rider per day, which matches operational logistics realities.",
+    "explanation": "A great guesstimate response demonstrates structured segmentation, reasonable economic assumptions, clear meal occasion frequency, market share adjustments, and a fleet capacity sanity check.",
+    "commonMistake": "Assuming that all 80 Lakh people order food online, or failing to convert population into households.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": ["food-delivery", "guesstimate-framework", "sanity-check"]
+  },
+  {
+    "id": "business-guess-010",
+    "module": "business",
+    "topic": "guess",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "You are asked to estimate the total number of active UPI QR-code merchants in a metro city of 50 Lakh (5,000,000) people. Outline two independent estimation methods: Method 1 (Demand-Side / Consumer Spend Density) and Method 2 (Supply-Side / Commercial Retail Density). Reconcile the two approaches.",
+    "dataset": "none",
+    "hint": "Method 1 uses consumer retail transactions per merchant; Method 2 uses commercial retail outlets and street vendors.",
+    "solution": "Two Independent Estimation Methods for UPI Merchants:\n\n**Method 1: Supply-Side Commercial Census (Retail Outlets)**\n1. Population = 50 Lakh; Households $\\approx 12.5 \\text{ Lakh}$ (at 4 persons/household).\n2. Commercial density in Indian metros: $\\approx 1$ retail merchant (kirana, tea stall, pharmacy, apparel, bakery, salon, street vendor) per 15 households $\\rightarrow 1,250,000 / 15 \\approx 83,000 \\text{ commercial outlets}$.\n3. UPI QR Adoption: In metro cities, virtually all organized shops and $\\approx 75\\%$ of informal street vendors display a QR standee. Blended adoption $\\approx 80\\%$.\n4. **Supply Estimate**: $83,000 \\times 0.80 \\approx \\mathbf{66,400 \\text{ merchants}}$.\n\n**Method 2: Demand-Side Transaction Volume**\n1. Target population: 35 Lakh adults (70% of 50 Lakh).\n2. UPI P2M adoption: 60% of adults pay merchants via UPI $\\rightarrow 21 \\text{ Lakh active consumers}$.\n3. Consumer frequency: Each consumer makes an average of 1.2 in-person offline merchant payments per day $\\rightarrow 21 \\text{ Lakh} \\times 1.2 = 25.2 \\text{ Lakh daily offline P2M transactions}$.\n4. Merchant throughput: A typical Indian merchant (blending quiet kiranas and busy chai stalls) processes an average of 35 UPI transactions per day.\n5. **Demand Estimate**: $\\frac{2,520,000 \\text{ daily txns}}{35 \\text{ txns/merchant}} \\approx \\mathbf{72,000 \\text{ merchants}}$.\n\n**Reconciliation & Range**:\nBoth independent methods converge tightly between **66,000 and 72,000 active UPI merchants**. Stating a final confidence range of **65,000 to 75,000 merchants** provides an analytically robust, triangulation-backed estimate.",
+    "explanation": "Triangulating market estimates from both supply and demand perspectives is the hallmark of elite case analysis. When two independent approaches converge within 10%, confidence in the estimate is maximized.",
+    "commonMistake": "Relying on a single method without sanity checking against retail outlet density or transaction throughput.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": ["triangulation", "guesstimate-reconciliation", "fintech-merchants"]
+  }
+]

@@ -1,0 +1,132 @@
+---
+title: "One bank, bad evenings: Kaveri Bank peak-hour failures"
+industry: "Fintech"
+difficulty: medium
+type: case-study
+estimatedMinutes: 35
+---
+
+## Problem
+
+You are an analytics lead at a digital payments gateway. During a partner performance review, the merchant operations team raises a critical ticket:
+> *"Our overall payment success rate degrades every evening between 18:00 and 20:00 IST. Engineering believes it is a general platform capacity issue, while support claims customers are abandoning checkouts. Which bank is primarily responsible, what is the exact mechanism of failure, and how should we mitigate it?"*
+
+Your task is to identify the offending banking partner, isolate peak versus non-peak behavior, identify the specific technical failure code, and quantify the business impact.
+
+## Data you have
+
+From `fintech.sqlite`:
+- `transactions`: 22,300 deduplicated payment records (`txn_id`, `bank_name`, `amount_inr`, `status`, `txn_time`).
+- `failed_transactions`: 601 records (`failure_code`, `error_message`, `is_retried`, `retry_status`).
+
+## Approach
+
+1. **Benchmark by Bank**: Calculate overall transaction volume and failure rates across all partner banks.
+2. **Hourly Segmentation**: Dissect the worst-performing bank by hour of day (0 to 23) to detect peak-hour vulnerability.
+3. **Peer Benchmark Comparison**: Compare the bank's peak performance against all other banks during identical time windows.
+4. **Error Code Diagnosis**: Inspect specific failure codes in `failed_transactions` to determine if failure is user-side or bank server timeout.
+5. **Impact Sizing & Recommendation**: Quantify excess failures, evaluate retry success, and formulate dynamic routing policies.
+
+## Step-by-step solution
+
+### Step 1: Overall Failure Rate by Bank
+
+```sql
+WITH t AS (SELECT DISTINCT * FROM transactions)
+SELECT 
+  bank_name,
+  COUNT(*) AS total_txns,
+  SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) AS failed_txns,
+  ROUND(100.0 * SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) / COUNT(*), 2) AS failure_rate_pct
+FROM t
+GROUP BY bank_name
+ORDER BY failure_rate_pct DESC;
+```
+
+| bank_name | total_txns | failed_txns | failure_rate_pct |
+|---|---|---|---|
+| Kaveri Co-op Bank | 1,700 | 103 | 6.06% |
+| PayNova Small Finance Bank | 2,476 | 76 | 3.07% |
+| Sundaram Commercial Bank | 3,130 | 93 | 2.97% |
+| Coromandel Bank | 2,752 | 81 | 2.94% |
+| Himalaya Trust Bank | 3,363 | 98 | 2.91% |
+| Malabar Mercantile Bank | 2,674 | 73 | 2.73% |
+| Bharat Union Bank | 3,598 | 97 | 2.70% |
+| Rajdhani State Bank | 2,607 | 64 | 2.46% |
+
+*Finding*: Kaveri Co-op Bank is an extreme outlier with a 6.06% failure rate, more than double the ~2.7% platform peer average.
+
+### Step 2: Peak vs. Non-Peak Hour Slicing
+
+Analyzing Kaveri Bank by hour of day reveals severe concentration during morning rush hour (09:00 IST) and evening commute hours (18:00 and 19:00 IST):
+
+```sql
+WITH t AS (SELECT DISTINCT * FROM transactions)
+SELECT 
+  CASE 
+    WHEN CAST(strftime('%H', txn_time) AS INT) IN (9, 18, 19) THEN 'Peak Hours (09h, 18h, 19h)'
+    ELSE 'Non-Peak Hours'
+  END AS time_bucket,
+  COUNT(*) AS total_txns,
+  SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) AS failed_txns,
+  ROUND(100.0 * SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) / COUNT(*), 2) AS failure_rate_pct
+FROM t
+WHERE bank_name = 'Kaveri Co-op Bank'
+GROUP BY 1;
+```
+
+| time_bucket | total_txns | failed_txns | failure_rate_pct |
+|---|---|---|---|
+| Peak Hours (09h, 18h, 19h) | 421 | 42 | 9.98% |
+| Non-Peak Hours | 1,279 | 61 | 4.77% |
+
+*Comparison with Peer Banks*:
+During the exact same peak hours (09:00, 18:00, 19:00), all other 7 partner banks combined process 4,964 transactions with only 109 failures (**2.19% failure rate**). Kaveri Bank fails at **9.98%**—nearly 5 times higher!
+
+### Step 3: Error Code and Retry Analysis
+
+Joining with `failed_transactions`:
+
+```sql
+SELECT 
+  f.failure_code,
+  COUNT(*) AS kaveri_failures
+FROM failed_transactions f
+JOIN transactions t ON f.txn_id = t.txn_id
+WHERE t.bank_name = 'Kaveri Co-op Bank'
+GROUP BY f.failure_code
+ORDER BY kaveri_failures DESC;
+```
+
+*Finding*: All 42 recorded instances of `BANK_SERVER_TIMEOUT` across the entire database belong exclusively to Kaveri Co-op Bank. Their Core Banking System (CBS) and Hardware Security Module (HSM) connection pools become saturated under peak evening concurrency.
+
+*Retry Recovery*: For transactions that experienced `BANK_SERVER_TIMEOUT`, **74.1% of retried attempts (20 of 27)** succeeded when re-attempted after 1 to 2 minutes.
+
+### Step 4: Sizing the Impact
+
+Across the 421 peak transactions processed through Kaveri Bank:
+- Expected failures at peer benchmark (2.19%): `421 * 0.0219 = 9.2 failures`
+- Actual failures observed (9.98%): `42 failures`
+- Excess avoidable failures: `42 - 9 = ~33 failed transactions`
+
+While 33 failures across this extract may seem modest, in a scaled production environment processing 10 million transactions a month, a 10% failure rate on a mid-tier bank represents tens of thousands of abandoned checkouts and severe merchant churn.
+
+## Key insight
+
+The evening payment drop is not a platform-wide infrastructure bottleneck. It is concentrated in a single partner bank: Kaveri Co-operative Bank. The bank's core banking server experiences severe connection pool exhaustion at 09:00 and 18:00–19:00 IST, resulting in a 9.98% failure rate characterized exclusively by `BANK_SERVER_TIMEOUT`.
+
+## Recommendation
+
+1. **Dynamic Peak-Hour Throttling & De-prioritization**:
+   - During peak windows (08:30–10:00 and 17:30–20:30 IST), configure the smart checkout router to prompt users with multi-bank setups to select secondary accounts (e.g. HDFC or SBI) with an advisory: *"Kaveri Bank is experiencing high traffic."*
+2. **Automated Delayed Retries with Exponential Backoff**:
+   - Because 74.1% of `BANK_SERVER_TIMEOUT` retries succeed, implement an automated background retry after 90 seconds before displaying a terminal failure error.
+3. **Partner Escalation & Infrastructure Mandate**:
+   - Present this empirical data to Kaveri Bank's technology team. Mandate an expansion of their API gateway connection pool and core banking HSM thread concurrency as an SLA requirement.
+
+## What a weak answer looks like
+
+- Claims that all banks experience evening drop-offs due to general Indian internet traffic congestion.
+- Recommends completely terminating the relationship with Kaveri Bank, ignoring that over 1,500 legitimate customers rely on it.
+- Fails to inspect failure codes, missing that the issue is server timeouts rather than insufficient funds.
+- Proposes expensive internal server upgrades when the bottleneck sits entirely within a partner's infrastructure.

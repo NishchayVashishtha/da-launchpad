@@ -1,0 +1,419 @@
+[
+  {
+    "id": "business-rca-001",
+    "module": "business",
+    "topic": "rca",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "A business leader asks: 'Did DesiCart sales drop between November and December 2024?' Using the `orders` table (excluding outlier records `total_amount >= 100000` and filtering for `order_status = 'Delivered'`), return the `month` in 'YYYY-MM' format, total realized revenue rounded to nearest integer as `revenue`, and total delivered orders as `delivered_orders`. Filter for months '2024-11' and '2024-12' and order chronologically by `month` ascending.",
+    "dataset": "ecommerce",
+    "hint": "Filter total_amount < 100000 and order_status='Delivered' in a CTE, then group by strftime('%Y-%m', order_date).",
+    "solutionSql": "WITH o AS (\n  SELECT DISTINCT * FROM orders\n  WHERE total_amount < 100000 AND order_status = 'Delivered'\n)\nSELECT\n  strftime('%Y-%m', order_date) AS month,\n  CAST(ROUND(SUM(total_amount)) AS INTEGER) AS revenue,\n  COUNT(*) AS delivered_orders\nFROM o\nWHERE strftime('%Y-%m', order_date) IN ('2024-11', '2024-12')\nGROUP BY month\nORDER BY month ASC;",
+    "expectedOutput": {
+      "columns": [
+        "month",
+        "revenue",
+        "delivered_orders"
+      ],
+      "rows": [
+        [
+          "2024-11",
+          2591559,
+          496
+        ],
+        [
+          "2024-12",
+          2059545,
+          423
+        ]
+      ]
+    },
+    "explanation": "In November 2024, DesiCart fulfilled 496 delivered orders generating Rs 2,591,559. In December 2024, delivered orders dropped to 423 generating Rs 2,059,545. Delivered revenue contracted by -20.53% (-Rs 532,014), confirming a significant top-line drop.",
+    "commonMistake": "Summing unfulfilled orders (cancelled and RTO), which distorts realized revenue figures.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "rca",
+      "ecommerce",
+      "sales-drop"
+    ]
+  },
+  {
+    "id": "business-rca-002",
+    "module": "business",
+    "topic": "rca",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Decompose the order drop across client channels. For distinct orders in the `orders` table (excluding `total_amount >= 100000`), group by `sales_channel`. Return `sales_channel`, total November orders as `nov_orders`, total December orders as `dec_orders`, and the percentage change between November and December rounded to one decimal place as `change_pct`. Order by `change_pct` ascending to highlight the hardest-hit channel first.",
+    "dataset": "ecommerce",
+    "hint": "Use conditional aggregation: SUM(CASE WHEN strftime('%Y-%m', order_date) = '2024-11' THEN 1 ELSE 0 END).",
+    "solutionSql": "WITH o AS (\n  SELECT DISTINCT * FROM orders\n  WHERE total_amount < 100000\n)\nSELECT\n  sales_channel,\n  SUM(CASE WHEN strftime('%Y-%m', order_date) = '2024-11' THEN 1 ELSE 0 END) AS nov_orders,\n  SUM(CASE WHEN strftime('%Y-%m', order_date) = '2024-12' THEN 1 ELSE 0 END) AS dec_orders,\n  ROUND((SUM(CASE WHEN strftime('%Y-%m', order_date) = '2024-12' THEN 1 ELSE 0 END) - SUM(CASE WHEN strftime('%Y-%m', order_date) = '2024-11' THEN 1 ELSE 0 END)) * 100.0 / SUM(CASE WHEN strftime('%Y-%m', order_date) = '2024-11' THEN 1 ELSE 0 END), 1) AS change_pct\nFROM o\nWHERE strftime('%Y-%m', order_date) IN ('2024-11', '2024-12')\nGROUP BY sales_channel\nORDER BY change_pct ASC;",
+    "expectedOutput": {
+      "columns": [
+        "sales_channel",
+        "nov_orders",
+        "dec_orders",
+        "change_pct"
+      ],
+      "rows": [
+        [
+          "Website",
+          109,
+          86,
+          -21.1
+        ],
+        [
+          "iOS App",
+          98,
+          79,
+          -19.4
+        ],
+        [
+          "Mobile Web",
+          64,
+          54,
+          -15.6
+        ],
+        [
+          "Android App",
+          262,
+          239,
+          -8.8
+        ]
+      ]
+    },
+    "explanation": "Every single sales channel fell in December: Website (-21.1%), iOS App (-19.4%), Mobile Web (-15.6%), and Android App (-8.8%). Because the drop was universal across all platforms rather than isolated to one app build, the root cause is systemic customer demand rather than a technical software crash.",
+    "commonMistake": "Dividing by dec_orders instead of nov_orders in the percentage change formula.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "rca",
+      "channel-cut",
+      "decomposition"
+    ]
+  },
+  {
+    "id": "business-rca-003",
+    "module": "business",
+    "topic": "rca",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Seasonality check (YoY comparison): Compare December performance across consecutive years. For distinct orders in December (`strftime('%m', order_date) = '12'`) for 2023 and 2024 (excluding `total_amount >= 100000`), return the `year` in 'YYYY' format, total placed orders as `orders`, and delivered revenue rounded to the nearest integer as `revenue` (where `order_status = 'Delivered'`). Order chronologically by `year` ascending.",
+    "dataset": "ecommerce",
+    "hint": "Filter strftime('%m', order_date) = '12' AND strftime('%Y', order_date) IN ('2023', '2024').",
+    "solutionSql": "WITH o AS (\n  SELECT DISTINCT * FROM orders\n  WHERE total_amount < 100000\n)\nSELECT\n  strftime('%Y', order_date) AS year,\n  COUNT(*) AS orders,\n  CAST(ROUND(SUM(CASE WHEN order_status = 'Delivered' THEN total_amount ELSE 0 END)) AS INTEGER) AS revenue\nFROM o\nWHERE strftime('%m', order_date) = '12' AND strftime('%Y', order_date) IN ('2023', '2024')\nGROUP BY year\nORDER BY year ASC;",
+    "expectedOutput": {
+      "columns": [
+        "year",
+        "orders",
+        "revenue"
+      ],
+      "rows": [
+        [
+          "2023",
+          434,
+          1910326
+        ],
+        [
+          "2024",
+          458,
+          2059545
+        ]
+      ]
+    },
+    "explanation": "Comparing December YoY reveals healthy business growth: December 2024 orders grew by +5.5% (458 vs 434) and delivered revenue grew by +7.8% (Rs 20.6 Lakh vs Rs 19.1 Lakh) compared to December 2023. The MoM decline from November was entirely festive post-Diwali seasonality.",
+    "commonMistake": "Comparing December 2024 strictly against November 2024 and declaring a business crisis without checking year-over-year seasonality.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "rca",
+      "yoy-comparison",
+      "seasonality"
+    ]
+  },
+  {
+    "id": "business-rca-004",
+    "module": "business",
+    "topic": "rca",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Product category root-cause cut: For distinct orders in November and December 2024 (excluding `total_amount >= 100000`), join with distinct `order_items` and distinct `products`. Normalise product category labels using `LOWER(TRIM(category))` in a CTE to clean whitespace. For each category, return `category`, total units sold in November as `nov_units`, total units sold in December as `dec_units`, and the percentage change rounded to one decimal place as `change_pct`. Order by `change_pct` ascending.",
+    "dataset": "ecommerce",
+    "hint": "Clean products.category in a CTE using LOWER(TRIM(category)) before joining and aggregating.",
+    "solutionSql": "WITH o AS (\n  SELECT DISTINCT * FROM orders\n  WHERE total_amount < 100000 AND strftime('%Y-%m', order_date) IN ('2024-11', '2024-12')\n),\noi AS (\n  SELECT DISTINCT * FROM order_items\n),\np AS (\n  SELECT DISTINCT product_id, LOWER(TRIM(category)) AS category FROM products\n)\nSELECT\n  p.category,\n  SUM(CASE WHEN strftime('%Y-%m', o.order_date) = '2024-11' THEN oi.quantity ELSE 0 END) AS nov_units,\n  SUM(CASE WHEN strftime('%Y-%m', o.order_date) = '2024-12' THEN oi.quantity ELSE 0 END) AS dec_units,\n  ROUND((SUM(CASE WHEN strftime('%Y-%m', o.order_date) = '2024-12' THEN oi.quantity ELSE 0 END) - SUM(CASE WHEN strftime('%Y-%m', o.order_date) = '2024-11' THEN oi.quantity ELSE 0 END)) * 100.0 / SUM(CASE WHEN strftime('%Y-%m', o.order_date) = '2024-11' THEN oi.quantity ELSE 0 END), 1) AS change_pct\nFROM o\nJOIN oi ON o.order_id = oi.order_id\nJOIN p ON oi.product_id = p.product_id\nGROUP BY p.category\nORDER BY change_pct ASC;",
+    "expectedOutput": {
+      "columns": [
+        "category",
+        "nov_units",
+        "dec_units",
+        "change_pct"
+      ],
+      "rows": [
+        [
+          "books",
+          124,
+          72,
+          -41.9
+        ],
+        [
+          "footwear",
+          50,
+          39,
+          -22
+        ],
+        [
+          "fashion",
+          432,
+          339,
+          -21.5
+        ],
+        [
+          "home & kitchen",
+          254,
+          205,
+          -19.3
+        ],
+        [
+          "electronics",
+          213,
+          180,
+          -15.5
+        ],
+        [
+          "beauty",
+          58,
+          52,
+          -10.3
+        ],
+        [
+          "grocery",
+          284,
+          259,
+          -8.8
+        ]
+      ]
+    },
+    "explanation": "Cleaning dirty category spaces produces exactly 7 categories. Discretionary gift categories experienced the sharpest post-festive drops: Books (-41.9%), Footwear (-22.0%), and Fashion (-21.5%), while staple Grocery units fell by only -8.8%.",
+    "commonMistake": "Grouping on raw p.category without LOWER(TRIM()), which fractures Fashion and Grocery across 17 dirty label variants.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "rca",
+      "category-cut",
+      "data-cleaning"
+    ]
+  },
+  {
+    "id": "business-rca-005",
+    "module": "business",
+    "topic": "rca",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Fintech incident triage: On 2023-09-21, NammaPay users reported a payment failure spike. For distinct transactions where `payment_app = 'NammaPay'` and date is '2023-09-21', return the hour of day as an integer `hour` (`CAST(strftime('%H', txn_datetime) AS INTEGER)`), total attempted transactions as `txns`, and the failure rate percentage rounded to one decimal place as `failure_pct`. Filter for hours with at least 1 transaction and order by `hour` ascending.",
+    "dataset": "fintech",
+    "hint": "Filter payment_app='NammaPay' AND strftime('%Y-%m-%d', txn_datetime)='2023-09-21', group by CAST(strftime('%H', txn_datetime) AS INTEGER).",
+    "solutionSql": "WITH t AS (\n  SELECT DISTINCT * FROM transactions\n  WHERE payment_app = 'NammaPay' AND strftime('%Y-%m-%d', txn_datetime) = '2023-09-21'\n)\nSELECT\n  CAST(strftime('%H', txn_datetime) AS INTEGER) AS hour,\n  COUNT(*) AS txns,\n  ROUND(AVG(CASE WHEN status = 'FAILED' THEN 100.0 ELSE 0.0 END), 1) AS failure_pct\nFROM t\nGROUP BY hour\nORDER BY hour ASC;",
+    "expectedOutput": {
+      "columns": [
+        "hour",
+        "txns",
+        "failure_pct"
+      ],
+      "rows": [
+        [
+          5,
+          1,
+          0
+        ],
+        [
+          10,
+          1,
+          0
+        ],
+        [
+          12,
+          1,
+          0
+        ],
+        [
+          18,
+          24,
+          58.3
+        ],
+        [
+          19,
+          22,
+          22.7
+        ],
+        [
+          20,
+          18,
+          38.9
+        ],
+        [
+          21,
+          13,
+          38.5
+        ]
+      ]
+    },
+    "explanation": "Hourly isolation pinpoints a discrete server outage: while earlier hours showed 0.0% failure, evening hours exploded into failure between 18:00 and 21:00 (58.3% at 18:00, 22.7% at 19:00, 38.9% at 20:00, 38.5% at 21:00).",
+    "commonMistake": "Querying all payment apps instead of filtering for NammaPay, which dilutes the outage signal with stable peer apps.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "fintech",
+      "incident-rca",
+      "hourly-cut"
+    ]
+  },
+  {
+    "id": "business-rca-006",
+    "module": "business",
+    "topic": "rca",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "Place the 6 steps of the standard Root Cause Analysis (RCA) diagnostic framework in their correct chronological order:\n- Decompose via Metric Tree (Product of Drivers)\n- Formulate Hypotheses & Test with Targeted Data Cuts\n- Conclude, Quantify Impact, and Recommend Actions\n- Clarify & Define the Metric (Scope, Time Window, Magnitude)\n- Validate Data Pipeline Hygiene (Bugs, Outliers, Logging Duplicates)\n- Check External Context & Seasonality (Festivals, Holidays, Releases)",
+    "dataset": "none",
+    "hint": "Start with defining the problem, then data validation, context, decomposition, hypothesis testing, and action.",
+    "solution": "The correct chronological order of the 6-step RCA framework is:\n\n1. **Clarify & Define the Metric**: Determine exact metric definition, time horizon, baseline comparison, and magnitude of the drop.\n2. **Validate Data Pipeline Hygiene**: Audit for broken ingestion jobs, tracking logging changes, duplicate rows, and outlier records.\n3. **Check External Context & Seasonality**: Review festive calendars, holidays, macro shifts, and competitor launches.\n4. **Decompose via Metric Tree**: Break the metric down multiplicatively (Rates $\\times$ Volume) and additively (Channels, Categories, Regions).\n5. **Formulate Hypotheses & Test with Targeted Data Cuts**: Form testable hypotheses for the moving branch and validate with query cuts.\n6. **Conclude, Quantify Impact, and Recommend Actions**: Synthesize root causes with quantified evidence and present actionable business steps.",
+    "explanation": "Following this structured sequence prevents analysts from jumping to unverified conclusions or proposing expensive product overhauls when a drop is simply a holiday weekend or a broken tracking tag.",
+    "commonMistake": "Formulating hypotheses and querying data before clarifying the metric definition and validating data hygiene.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "rca",
+      "framework",
+      "diagnostic-order"
+    ]
+  },
+  {
+    "id": "business-rca-007",
+    "module": "business",
+    "topic": "rca",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "At DesiCart, delivered revenue was Rs 2,591,559 in November 2024 and Rs 2,059,545 in December 2024. Calculate the Month-over-Month (MoM) percentage change in delivered revenue, rounded to one decimal place.",
+    "dataset": "none",
+    "hint": "Compute (December Revenue - November Revenue) / November Revenue * 100.",
+    "solution": "MoM Percentage Change calculation:\n\n$$\\text{Percentage Change} = \\left(\\frac{2059545 - 2591559}{2591559}\\right) \\times 100 = \\left(\\frac{-532014}{2591559}\\right) \\times 100 = -20.5287... \\approx -20.5\\%$$\n\nDelivered revenue contracted by exactly -20.5% MoM.",
+    "explanation": "Percentage change always evaluates the difference against the prior baseline period (November). Dividing by December (-532014 / 2059545 = -25.8%) is a common calculation error.",
+    "commonMistake": "Dividing the change by December revenue instead of the baseline November revenue.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 2,
+    "tags": [
+      "rca",
+      "growth-math",
+      "mom"
+    ],
+    "expectedOutput": {
+      "value": -20.5
+    }
+  },
+  {
+    "id": "business-rca-008",
+    "module": "business",
+    "topic": "rca",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "In December 2023, DesiCart recorded 434 total placed orders. In December 2024, the platform recorded 458 total placed orders. Calculate the Year-over-Year (YoY) order growth percentage, rounded to one decimal place.",
+    "dataset": "none",
+    "hint": "Compute (Dec 2024 Orders - Dec 2023 Orders) / Dec 2023 Orders * 100.",
+    "solution": "YoY Order Growth calculation:\n\n$$\\text{YoY Growth} = \\left(\\frac{458 - 434}{434}\\right) \\times 100 = \\left(\\frac{24}{434}\\right) \\times 100 = 5.5299... \\approx 5.5\\%$$\n\nYear-over-year order volume grew by +5.5%.",
+    "explanation": "YoY benchmarking isolates true secular business growth from annual seasonal patterns. While orders fell -14.1% MoM from November, they grew +5.5% YoY compared to December 2023.",
+    "commonMistake": "Dividing the 24 incremental orders by 458 (5.2%) rather than the 2023 base of 434.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 2,
+    "tags": [
+      "rca",
+      "yoy",
+      "seasonality"
+    ],
+    "expectedOutput": {
+      "value": 5.5
+    }
+  },
+  {
+    "id": "business-rca-009",
+    "module": "business",
+    "topic": "rca",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "During an e-commerce revenue drop, total delivered revenue fell by an aggregate of Rs 532,014. Segment analysis shows that the Android App channel accounted for Rs 150,000 of that revenue drop. Calculate Android's percentage contribution to the total revenue decline, rounded to one decimal place.",
+    "dataset": "none",
+    "hint": "Divide Android's absolute revenue drop by the total platform revenue drop (150,000 / 532,014 * 100).",
+    "solution": "Contribution to Total Decline calculation:\n\n$$\\text{Contribution to Change} = \\left(\\frac{150000}{532014}\\right) \\times 100 = 28.194... \\approx 28.2\\%$$\n\nThe Android App channel contributed 28.2% of the overall revenue decline.",
+    "explanation": "Contribution to change calculates the share of the total gap explained by a specific segment. This allows analysts to quantify whether a drop is heavily concentrated in one bucket or distributed evenly.",
+    "commonMistake": "Dividing Android's drop by total Android revenue rather than total platform decline.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "rca",
+      "contribution-to-change",
+      "variance"
+    ],
+    "expectedOutput": {
+      "value": 28.2
+    }
+  },
+  {
+    "id": "business-rca-010",
+    "module": "business",
+    "topic": "rca",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "A digital wellness app notices that Daily Active Users (DAU) suddenly dropped by 50% exclusively on Apple iOS devices starting on a specific Tuesday morning, while Android and Web DAU remained completely steady. List the top 3 technical and platform checks you would immediately investigate.",
+    "dataset": "none",
+    "hint": "Focus exclusively on iOS-specific systems: App Store builds, push notification certificates, and OS compatibility.",
+    "solution": "Top 3 iOS-specific technical checks:\n\n1. **New iOS App Version Release Crash**: Check crash analytics (Crashlytics/Sentry) for a new iOS app release rolled out on Monday/Tuesday that introduced an immediate startup crash upon app launch.\n2. **Apple Push Notification Service (APNs) Certificate Expiry**: Verify whether the production APNs certificate expired on Tuesday, blocking daily re-engagement morning push notifications that trigger routine app opens.\n3. **App Store Review Status & Token Invalidation**: Check whether an update was rejected or pulled from the Apple App Store, or whether a biometric authentication (FaceID/TouchID) token refresh failed across iOS clients.",
+    "explanation": "When an anomaly affects 100% of one operating system while leaving all others untouched, the root cause is almost always a client-specific build release, OS-level permission break, or notification certificate failure.",
+    "commonMistake": "Investigating server-side backend databases or marketing spend, which would have impacted Android and Web users as well.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "rca",
+      "mobile-app",
+      "ios-triage"
+    ]
+  },
+  {
+    "id": "business-rca-011",
+    "module": "business",
+    "topic": "rca",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "In an interview, you are asked: 'Our e-commerce marketplace sales dropped 15% last week. How would you investigate?' Write a concise, 6-sentence response demonstrating the 6-step RCA framework.",
+    "dataset": "none",
+    "hint": "Dedicate exactly one clear sentence to each of the 6 framework steps: Clarify, Validate Data, External Context, Decompose, Test Hypotheses, Conclude.",
+    "solution": "A 6-sentence structured response using the RCA framework:\n\n1. First, I would clarify the problem by confirming whether 'sales' means gross merchandise value or delivered revenue, verifying the exact dates, and measuring the magnitude against the prior week and the same week last year.\n2. Second, I would validate data hygiene with engineering to ensure tracking webhooks, payment reconciliation jobs, and attribution logging were operating normally without data loss or duplicate drops.\n3. Third, I would check external and calendar context, including public holidays, major festive hangover periods, competitor sales events, and weather disruptions.\n4. Fourth, I would decompose the 15% drop via our metric tree into Orders versus Average Order Value, and segment additively across channels (Android, iOS, Web) and product categories.\n5. Fifth, I would formulate and test specific hypotheses for the moving branch, checking whether the leak was driven by checkout payment failures, out-of-stock bestsellers, or lower ad spend.\n6. Finally, I would synthesize the findings into an executive summary quantifying the root cause, estimate the recovered revenue, and recommend concrete remediation steps to leadership.",
+    "explanation": "Delivering a disciplined, 6-sentence answer shows interviewers that you possess a systematic mental model rather than relying on haphazard guesswork.",
+    "commonMistake": "Immediately guessing causes ('Maybe competitors offered bigger discounts!') without outlining a structured diagnostic methodology.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "rca",
+      "interview-framework",
+      "communication"
+    ]
+  },
+  {
+    "id": "business-rca-012",
+    "module": "business",
+    "topic": "rca",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "A UPI payments switch experiences an overnight drop in overall transaction success rate from 97.5% to 96.5% (-1.0 percentage point). List 4 prioritized diagnostic hypotheses in order of operational urgency, and state the exact SQL data cut you would run to test each.",
+    "dataset": "none",
+    "hint": "Prioritize major banking host outages, client app version regressions, network gateway timeout spikes, and high-risk merchant fraud surges.",
+    "solution": "Four prioritized diagnostic hypotheses and SQL cuts:\n\n1. **Core Banking Host Outage at a Major Partner (Highest Urgency)**: A high-volume partner bank (e.g. Kaveri Co-op Bank) is experiencing server timeouts or core switch downtime.\n   - *SQL Cut*: `GROUP BY bank` comparing today's success rate and failure code distribution (`failure_code = 'BANK_SERVER_TIMEOUT'`) against 7-day rolling baselines.\n2. **Client App Release Regression**: A newly deployed mobile build of a partner app (e.g. NammaPay) contains an SDK bug causing client timeouts.\n   - *SQL Cut*: `GROUP BY payment_app, device_os` to see if the 1.0 pp drop is isolated to a single client app application.\n3. **Switch Gateway / Network Error Spike**: An internal switch routing or NPCI network link degraded.\n   - *SQL Cut*: `GROUP BY failure_code` to detect surges in `UPI_SYSTEM_DOWN` or `NETWORK_ERROR` across all banks simultaneously.\n4. **High-Risk Merchant Fraud Attack**: A surge in automated bot traffic or stolen credentials at specific merchant endpoints triggered security blocks.\n   - *SQL Cut*: `GROUP BY merchant_id` on failed transactions with `is_flagged = 1` to check for volume spikes at individual merchant IDs.",
+    "explanation": "In payments, banking partner host degradation and switch-level network failures are the most frequent causes of sudden 1% success rate drops. Triage must proceed from large partner infrastructure down to individual merchant vectors.",
+    "commonMistake": "Treating user-side errors (like insufficient funds) as the primary suspect for sudden switch-wide overnight drops.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "fintech",
+      "rca",
+      "incident-triage"
+    ]
+  }
+]

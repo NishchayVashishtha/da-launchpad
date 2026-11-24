@@ -1,0 +1,123 @@
+---
+title: "The March anomaly: Why did the March 2024 telehealth cohort churn twice as fast?"
+industry: "Healthcare"
+difficulty: hard
+type: case-study
+estimatedMinutes: 45
+---
+
+## Problem
+
+You are the Director of Retention Analytics at a subscription telehealth platform. During a quarterly executive cohort review, the VP of Customer Success presents a disturbing chart:
+> *"Our 60-day paid subscriber churn has historically hovered between 19% and 25%. But for users who signed up in March 2024, 60-day churn spiked to an alarming 54.0%! More than half of those paying subscribers cancelled within two months. Did our clinical consultation quality collapse, was there a billing glitch, or did we acquire the wrong customers?"*
+
+Your objective is to investigate the subscription and event tables, evaluate sample sizes and statistical significance, slice the March 2024 cohort across multiple dimensions, isolate the root cause, and formulate a retention recovery plan.
+
+## Data you have
+
+From `subscription.sqlite`:
+- `users`: 5,200 deduplicated records (`user_id`, `signup_date`, `platform`, `acquisition_source`).
+- `subscriptions`: 3,308 records (`subscription_id`, `user_id`, `plan_name`, `billing_cycle`, `status`, `paid_start_date`, `cancel_date`).
+- `events`: 18,000+ behavioral event logs (`event_id`, `user_id`, `event_name`, `event_time`).
+
+## Approach
+
+1. **Verify the Cohort Metric**: Calculate 60-day post-payment churn across all monthly signup cohorts to confirm the anomaly.
+2. **Conduct Sample Size & Statistical Audit**: Check cohort sample size ($n$) and compute expected versus observed cancellations to ensure the finding is not random noise.
+3. **Multi-Dimensional Cohort Slicing**: Cut the March 2024 cohort by billing cycle (Monthly vs. Annual), subscription tier (Basic, Standard, Premium), client platform, and acquisition source.
+4. **Behavioral Event Log Telemetry**: Query `events` for failed renewal charges (`payment_failed`) or drop-offs in doctor consultation bookings.
+5. **Formulate Corrective Interventions**: Deliver a targeted win-back strategy and automated cohort monitoring guardrails.
+
+## Step-by-step solution
+
+### Step 1: 60-Day Churn Across Signup Cohorts
+
+Querying paid subscribers who cancelled within 60 days of starting their paid subscription:
+
+```sql
+WITH u AS (SELECT DISTINCT * FROM users),
+     s AS (SELECT DISTINCT * FROM subscriptions WHERE paid_start_date IS NOT NULL)
+SELECT 
+  strftime('%Y-%m', u.signup_date) AS signup_cohort,
+  COUNT(s.subscription_id) AS paid_subscribers,
+  SUM(CASE 
+    WHEN s.status = 'cancelled' 
+      AND (julianday(s.cancel_date) - julianday(s.paid_start_date)) <= 60 
+    THEN 1 ELSE 0 
+  END) AS churned_within_60d,
+  ROUND(100.0 * SUM(CASE 
+    WHEN s.status = 'cancelled' 
+      AND (julianday(s.cancel_date) - julianday(s.paid_start_date)) <= 60 
+    THEN 1 ELSE 0 
+  END) / COUNT(s.subscription_id), 1) AS churn_rate_60d_pct
+FROM u
+JOIN s ON u.user_id = s.user_id
+WHERE u.signup_date >= '2023-10-01' AND u.signup_date <= '2024-07-31'
+GROUP BY 1
+ORDER BY signup_cohort;
+```
+
+| Signup Cohort | Paid Subscribers ($n$) | Churned within 60 Days | 60-Day Churn Rate (%) |
+|---|---|---|---|
+| 2023-10 | 58 | 10 | 17.2% |
+| 2023-11 | 51 | 13 | 25.5% |
+| 2023-12 | 47 | 11 | 23.5% |
+| 2024-01 | 55 | 11 | 20.0% |
+| 2024-02 | 39 | 10 | 25.6% |
+| **2024-03 (Anomaly)** | **50** | **27** | **54.0%** |
+| 2024-04 | 52 | 12 | 23.1% |
+| 2024-05 | 72 | 16 | 22.2% |
+| 2024-06 | 60 | 12 | 20.0% |
+| 2024-07 | 61 | 12 | 19.7% |
+
+*Finding*: Every cohort before and after March 2024 maintained a predictable 60-day churn rate between 17% and 25%. March 2024 is a dramatic, isolated outlier with **54.0% churn**.
+
+### Step 2: Statistical Significance and Expected Values
+
+- **Cohort Size**: `n = 50` paid subscribers.
+- **Baseline Historical Churn Rate**: ~22.5%.
+- **Expected Cancellations**: `50 * 0.225 = 11.25 ≈ 11` users.
+- **Observed Cancellations**: 27 users (+16 excess churned users).
+- **Two-Proportion Z-Test**: `z = 4.78`, `p < 0.0001`. This is not random sampling noise; a definitive operational shock impacted this specific cohort.
+
+### Step 3: Deep Slicing the March 2024 Cohort
+
+Let's dissect the 50 paid users in March 2024:
+
+#### A. Billing Cycle (Monthly vs. Annual)
+- **Monthly Billing**: 44 users → **26 churned (59.1% churn rate)**.
+- **Annual Billing**: 6 users → **1 churned (16.7% churn rate)**.
+- *Finding*: Churn is concentrated almost entirely in monthly subscribers at their first or second recurring renewal milestone (Days 30 to 60).
+
+#### B. Plan Tier
+- **Basic Plan (₹149/mo)**: 28 users → 17 churned (**60.7% churn**).
+- **Standard Plan (₹299/mo)**: 14 users → 7 churned (**50.0% churn**).
+- **Premium Plan (₹499/mo)**: 8 users → 3 churned (**37.5% churn**).
+
+#### C. Cross-Referencing Acquisition Source
+Querying marketing attribution for March 2024 reveals that **Influencer Campaign** signups surged by 45% during early March due to an aggressive Spring promotional campaign. When these users converted to paid, they exhibited an 80% cancellation rate at the first monthly renewal cycle.
+
+#### D. Event Log Audit: The Operational Catalyst
+Joining against `events` and reviewing product changelogs from late March 2024 reveals:
+1. In mid-April 2024, the operations team discontinued the "Free Home Medicine Delivery" benefit for Basic tier subscribers, imposing a ₹99 delivery fee.
+2. Users who had signed up in March expecting free prescription delivery logged repeat cancellation feedback citing the policy change.
+
+## Key insight
+
+The product does not have a systemic retention collapse. The March 2024 churn spike was caused by a combination of two factors: (1) an influx of discount-driven influencer signups with weak long-term commitment, and (2) a sudden policy modification in mid-April that stripped free medicine delivery from Basic plan subscribers, prompting 27 out of 50 users to cancel before Day 60.
+
+## Recommendation
+
+1. **Targeted Win-Back Campaign for the March Churn Cohort**:
+   - Contact the 27 churned users with a dedicated email and WhatsApp outreach: *"We heard your feedback. Enjoy 3 months of complimentary medicine delivery when you reactivate your subscription today."* Re-activating 30% recovers ~₹25,000 in immediate ARR.
+2. **Grandfathering Policy for Pricing/Feature Changes**:
+   - When modifying core subscription perks (e.g. prescription shipping), grandfather existing paid members for 90 days rather than abruptly altering benefits mid-cycle.
+3. **Automated Rolling Cohort Churn Monitors**:
+   - Implement an automated weekly SQL monitor that triggers an email alert whenever any monthly cohort's 30-day or 60-day churn exceeds 30%, catching product and billing disruptions within 7 days rather than discovering them at quarterly reviews.
+
+## What a weak answer looks like
+
+- Concludes that the entire telehealth service is failing and recommends slashing prices for all 5,200 users.
+- Fails to notice that cohorts in April, May, and June returned to normal 20% churn baselines.
+- Does not check sample sizes ($n = 50$) or calculate statistical significance.
+- Ignores qualitative event logs and policy changes that explain user behavior.

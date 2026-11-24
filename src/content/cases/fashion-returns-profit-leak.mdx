@@ -1,0 +1,131 @@
+---
+title: "Reverse logistics: Are product returns eating our e-commerce profit?"
+industry: "E-commerce"
+difficulty: medium
+type: case-study
+estimatedMinutes: 35
+---
+
+## Problem
+
+You are an analytics consultant advising the Chief Financial Officer and VP of Supply Chain at "DesiCart". During an executive board meeting, the CFO points to an escalating financial leakage:
+> *"Our reverse logistics costs and customer refund payouts crossed ₹38 Lakhs this year. Fashion has an alarming 20.2% return rate, while electronics refunds are draining our cash flow. Are returns wiping out our retail gross margins? Which categories are leaking the most money, what is driving customer returns, and how do we stem the bleed without hurting customer conversion?"*
+
+Your task is to analyze order line-items and returns data, evaluate category return percentages versus absolute rupee refund values, identify the primary return reasons, calculate the net profit impact, and propose operational interventions.
+
+## Data you have
+
+From `ecommerce.sqlite`:
+- `order_items`: 18,000+ line-item records (`item_id`, `order_id`, `product_id`, `quantity`, `price`).
+- `products`: 5,000 records (`product_id`, `category`, `mrp`, `cost_price`). Note: `category` contains dirty casing and leading/trailing whitespace, requiring `LOWER(TRIM(category))`.
+- `returns`: 2,400+ records (`return_id`, `order_id`, `item_id`, `return_reason`, `refund_amount`, `return_status`).
+
+## Approach
+
+1. **Calculate Return Rates by Category**: Measure the percentage of delivered line-items returned across each product category.
+2. **Quantify Absolute Rupee Refund Exposure**: Compare return frequency against total refund capital drained.
+3. **Dissect Stated Return Reasons**: Categorize customer-reported return drivers across fashion, footwear, and electronics.
+4. **Evaluate Margin vs. Reverse Logistics Costs**: Model the financial impact of ₹100 reverse courier shipping fees against product gross margin (~33%).
+5. **Formulate Category-Specific Mitigation Policies**: Design targeted sizing and QC interventions.
+
+## Step-by-step solution
+
+### Step 1: Return Rates and Rupee Exposure by Category
+
+Querying deduplicated records with normalized category strings:
+
+```sql
+WITH p AS (
+  SELECT product_id, LOWER(TRIM(category)) AS clean_category, mrp, cost_price 
+  FROM products
+),
+oi AS (
+  SELECT DISTINCT * FROM order_items
+),
+r AS (
+  SELECT DISTINCT * FROM returns WHERE return_status = 'Refunded'
+)
+SELECT 
+  p.clean_category,
+  COUNT(oi.item_id) AS total_items_sold,
+  COUNT(r.return_id) AS total_items_returned,
+  ROUND(100.0 * COUNT(r.return_id) / COUNT(oi.item_id), 1) AS return_rate_pct,
+  ROUND(SUM(r.refund_amount) / 100000.0, 2) AS total_refund_lakhs,
+  ROUND(AVG(r.refund_amount), 2) AS avg_refund_per_item
+FROM oi
+JOIN p ON oi.product_id = p.product_id
+LEFT JOIN r ON oi.item_id = r.item_id
+GROUP BY p.clean_category
+ORDER BY return_rate_pct DESC;
+```
+
+| Product Category | Items Sold | Items Returned | Return Rate (%) | Total Refund (₹ Lakhs) | Avg Refund / Item |
+|---|---|---|---|---|---|
+| **Fashion** | 6,436 | 1,300 | **20.2%** | **₹15.92 Lakhs** | ₹1,224.62 |
+| **Footwear** | 1,120 | 167 | **14.9%** | ₹1.24 Lakhs | ₹742.51 |
+| **Electronics** | 2,840 | 179 | **6.3%** | **₹16.59 Lakhs** | **₹9,268.16** |
+| **Home & Kitchen** | 3,110 | 137 | **4.4%** | ₹5.17 Lakhs | ₹3,773.72 |
+| **Beauty** | 1,940 | 66 | **3.4%** | ₹0.62 Lakhs | ₹939.39 |
+| **Books** | 1,220 | 21 | **1.7%** | ₹0.09 Lakhs | ₹428.57 |
+| **Grocery** | 1,334 | 16 | **1.2%** | ₹0.05 Lakhs | ₹312.50 |
+
+### Step 2: The Critical Insight: Rate vs. Rupee Divergence
+
+The data reveals two completely different operational problems:
+1. **The Fashion Volume Problem (High Rate, Moderate Rupee)**:
+   - Fashion has a massive **20.2% return rate** (1 out of every 5 apparel items is returned).
+   - Total items returned: 1,300 units = ₹15.92 Lakhs in refunded merchandise.
+2. **The Electronics Value Problem (Low Rate, Massive Rupee)**:
+   - Electronics has a low return rate of only **6.3%** (179 units).
+   - However, because electronics carries an average refund of **₹9,268 per item**, it drains **₹16.59 Lakhs**—the single highest monetary refund leakage on the platform!
+
+### Step 3: Return Reason Diagnosis
+
+Querying customer-reported reasons for returns:
+
+```sql
+SELECT 
+  return_reason,
+  COUNT(*) AS total_returns,
+  ROUND(100.0 * COUNT(*) / (SELECT COUNT(*) FROM returns WHERE return_status = 'Refunded'), 1) AS pct_of_returns
+FROM (SELECT DISTINCT * FROM returns WHERE return_status = 'Refunded')
+GROUP BY return_reason
+ORDER BY total_returns DESC;
+```
+
+*All-Category Breakdown*:
+- **Size / Fit Issue**: **748 returns (44.9%)**
+- **Not as Described**: **418 returns (25.1%)**
+- **Changed Mind**: **319 returns (19.2%)**
+- **Defective / Damaged**: **180 returns (10.8%)**
+
+*Focus on Fashion and Footwear*:
+In Fashion and Footwear, **748 out of 1,467 returns (51.0%)** are caused solely by **Size/Fit mismatch**. Customers routinely order two adjacent sizes (e.g. Medium and Large) with the deliberate intent of returning the one that does not fit (bracket shopping).
+
+### Step 4: Reverse Logistics Financial Impact
+
+Each returned item incurs approximately ₹100 in two-way reverse courier shipping, inspection, and repackaging costs:
+- **Reverse logistics overhead on Fashion**: `1,300 returns * ₹100 = ₹1.30 Lakhs in pure dead-weight shipping cost`.
+- Combined with product depreciation and stock lockup during transit, returns reduce net category profit margins by over 8 percentage points.
+
+## Key insight
+
+Returns damage profitability through two distinct mechanisms:
+1. **Fashion is an operational sizing bottleneck**: A 20.2% return rate driven primarily by size and fit uncertainty (51% of fashion returns). This is highly solvable through pre-purchase sizing interventions.
+2. **Electronics is a high-ticket capital drain**: Despite a modest 6.3% return rate, high average selling prices make electronics the largest refund cash drain (₹16.59 Lakhs).
+
+## Recommendation
+
+1. **Brand-Specific Virtual Sizing and Measurement Charts**:
+   - Because 51% of apparel returns are size-related, replace generic S/M/L size charts with brand-specific measurements and an interactive fit-finder (*"What is your height and weight?"*). Cutting fashion returns from 20.2% to 15.0% will prevent ~330 returns and save over ₹4.5 Lakhs annually.
+2. **Pre-Return Video / Photo Verification for High-Value Electronics**:
+   - For electronics items priced over ₹5,000, mandate customer video/photo upload verifying product defect before authorizing automated return pickups, stopping buyer-remorse abuse and fraudulent empty-box returns.
+3. **Incentivize Store Credit / Exchange Over Cash Refunds**:
+   - When processing a fashion return, offer an instant +5% store credit bonus: *"Exchange for the correct size or receive ₹1,050 in instant wallet credits instead of ₹1,000 bank refund."* Over 40% of shoppers accept credit, preserving gross cash flow on the platform.
+
+## What a weak answer looks like
+
+- Concludes that DesiCart should stop selling fashion products entirely.
+- Looks only at the 20.2% fashion return rate and ignores that electronics drains more total rupees.
+- Does not query return reasons in the returns table.
+- Ignores reverse logistics freight costs.

@@ -1,0 +1,457 @@
+[
+  {
+    "id": "business-fintechkpi-001",
+    "module": "business",
+    "topic": "fintechkpi",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "The operations head at a UPI payments company needs a top-line volume summary across all historical transactions. Write a SQL query on the `transactions` table to return the total count of distinct transactions as `txn_count`, and the total Total Payment Volume (TPV) in rupees rounded to the nearest integer as `tpv` (counting amounts only where status is 'SUCCESS'). Deduplicate identical rows using `SELECT DISTINCT *`.",
+    "dataset": "fintech",
+    "hint": "Use a CTE to select DISTINCT * from transactions, then use COUNT(*) and SUM(CASE WHEN status='SUCCESS' THEN amount ELSE 0 END).",
+    "solutionSql": "WITH t AS (\n  SELECT DISTINCT * FROM transactions\n)\nSELECT\n  COUNT(*) AS txn_count,\n  CAST(ROUND(SUM(CASE WHEN status = 'SUCCESS' THEN amount ELSE 0 END)) AS INTEGER) AS tpv\nFROM t;",
+    "expectedOutput": {
+      "columns": [
+        "txn_count",
+        "tpv"
+      ],
+      "rows": [
+        [
+          22300,
+          29873883
+        ]
+      ]
+    },
+    "explanation": "TPV (Total Payment Volume) only includes settled, successful payments. Failed and pending attempts represent transaction volume but zero realized payment value. De-duplicating by distinct transaction records ensures duplicate webhook logs do not inflate volume.",
+    "commonMistake": "Counting raw rows without de-duplicating or summing amount across all transaction statuses including FAILED.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "fintech",
+      "tpv",
+      "sql"
+    ]
+  },
+  {
+    "id": "business-fintechkpi-002",
+    "module": "business",
+    "topic": "fintechkpi",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "Calculate the overall platform failure rate percentage across all distinct transactions, rounded to two decimal places. Return a single column named `failure_rate_pct`.",
+    "dataset": "fintech",
+    "hint": "De-duplicate transactions in a CTE, then compute AVG(CASE WHEN status='FAILED' THEN 100.0 ELSE 0.0 END).",
+    "solutionSql": "WITH t AS (\n  SELECT DISTINCT * FROM transactions\n)\nSELECT\n  ROUND(AVG(CASE WHEN status = 'FAILED' THEN 100.0 ELSE 0.0 END), 2) AS failure_rate_pct\nFROM t;",
+    "expectedOutput": {
+      "columns": [
+        "failure_rate_pct"
+      ],
+      "rows": [
+        [
+          2.7
+        ]
+      ]
+    },
+    "explanation": "Platform failure rate divides failed transactions by total attempted transactions (including successful, failed, and pending). Using AVG with a conditional CASE statement cleanly computes the percentage.",
+    "commonMistake": "Dividing failed transactions by successful transactions rather than the full transaction base.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "fintech",
+      "failure-rate",
+      "sql"
+    ]
+  },
+  {
+    "id": "business-fintechkpi-003",
+    "module": "business",
+    "topic": "fintechkpi",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "The payment reliability team wants to benchmark client applications. For each `payment_app`, return the application name, total distinct transactions as `txns`, and the failure rate percentage rounded to two decimal places as `failure_pct`. Order results from highest failure rate to lowest.",
+    "dataset": "fintech",
+    "hint": "Group by payment_app after de-duplication and sort by failure_pct DESC.",
+    "solutionSql": "WITH t AS (\n  SELECT DISTINCT * FROM transactions\n)\nSELECT\n  payment_app,\n  COUNT(*) AS txns,\n  ROUND(AVG(CASE WHEN status = 'FAILED' THEN 100.0 ELSE 0.0 END), 2) AS failure_pct\nFROM t\nGROUP BY payment_app\nORDER BY failure_pct DESC;",
+    "expectedOutput": {
+      "columns": [
+        "payment_app",
+        "txns",
+        "failure_pct"
+      ],
+      "rows": [
+        [
+          "NammaPay",
+          3922,
+          5.1
+        ],
+        [
+          "PayZippy",
+          7190,
+          2.25
+        ],
+        [
+          "QuickPaisa",
+          5443,
+          2.24
+        ],
+        [
+          "SabPay",
+          3043,
+          2.2
+        ],
+        [
+          "RupeeRocket",
+          2702,
+          1.85
+        ]
+      ]
+    },
+    "explanation": "Aggregating by client app isolates vendor performance. NammaPay exhibits a 5.10% failure rate compared to peer apps hovering around 1.85% to 2.25%, revealing an app-specific reliability issue.",
+    "commonMistake": "Grouping on the raw transactions table without de-duplication, which distorts transaction counts.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "fintech",
+      "payment-app",
+      "reliability"
+    ]
+  },
+  {
+    "id": "business-fintechkpi-004",
+    "module": "business",
+    "topic": "fintechkpi",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Analyze transaction ticket sizes across transaction categories. For each `txn_type`, calculate the average amount of successful transactions rounded to one decimal place as `avg_ticket`. Order by `avg_ticket` descending.",
+    "dataset": "fintech",
+    "hint": "Filter WHERE status='SUCCESS' after de-duplicating, group by txn_type, and compute AVG(amount).",
+    "solutionSql": "WITH t AS (\n  SELECT DISTINCT * FROM transactions\n)\nSELECT\n  txn_type,\n  ROUND(AVG(amount), 1) AS avg_ticket\nFROM t\nWHERE status = 'SUCCESS'\nGROUP BY txn_type\nORDER BY avg_ticket DESC;",
+    "expectedOutput": {
+      "columns": [
+        "txn_type",
+        "avg_ticket"
+      ],
+      "rows": [
+        [
+          "Bill Pay",
+          1884.3
+        ],
+        [
+          "P2M",
+          1499.1
+        ],
+        [
+          "P2P",
+          1192.9
+        ],
+        [
+          "Recharge",
+          333
+        ]
+      ]
+    },
+    "explanation": "Average ticket sizes vary significantly by transaction nature: Bill Pay (Rs 1,884.3) and P2M (Rs 1,499.1) have higher average order values than P2P (Rs 1,192.9) and mobile Recharges (Rs 333.0).",
+    "commonMistake": "Including failed or pending transactions in the average ticket calculation.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "fintech",
+      "aov",
+      "ticket-size"
+    ]
+  },
+  {
+    "id": "business-fintechkpi-005",
+    "module": "business",
+    "topic": "fintechkpi",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Finance wants a 2024 monthly trend of realized payment volume. For distinct successful transactions in 2024, return the `month` in 'YYYY-MM' format and total payment volume in Rs Lakh (amount divided by 100,000) rounded to one decimal place as `tpv_lakh`. Order chronologically by month ascending.",
+    "dataset": "fintech",
+    "hint": "Use strftime('%Y-%m', txn_datetime) and divide SUM(amount) by 100000.0.",
+    "solutionSql": "WITH t AS (\n  SELECT DISTINCT * FROM transactions\n)\nSELECT\n  strftime('%Y-%m', txn_datetime) AS month,\n  ROUND(SUM(amount) / 100000.0, 1) AS tpv_lakh\nFROM t\nWHERE status = 'SUCCESS' AND strftime('%Y', txn_datetime) = '2024'\nGROUP BY month\nORDER BY month ASC;",
+    "expectedOutput": {
+      "columns": [
+        "month",
+        "tpv_lakh"
+      ],
+      "rows": [
+        [
+          "2024-01",
+          11
+        ],
+        [
+          "2024-02",
+          12.7
+        ],
+        [
+          "2024-03",
+          12.1
+        ],
+        [
+          "2024-04",
+          12.7
+        ],
+        [
+          "2024-05",
+          14.2
+        ],
+        [
+          "2024-06",
+          14
+        ],
+        [
+          "2024-07",
+          14.6
+        ],
+        [
+          "2024-08",
+          14.1
+        ],
+        [
+          "2024-09",
+          14.8
+        ],
+        [
+          "2024-10",
+          18
+        ],
+        [
+          "2024-11",
+          16.6
+        ],
+        [
+          "2024-12",
+          15.7
+        ]
+      ]
+    },
+    "explanation": "Extracting the year-month string enables standard monthly cohorting. In 2024, monthly TPV steadily expanded from Rs 11.0 Lakh in January to peak at Rs 18.0 Lakh in October (festive Diwali surge).",
+    "commonMistake": "Using integer division (dividing by 100000 instead of 100000.0) which truncates decimal values in SQLite.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "fintech",
+      "monthly-trend",
+      "tpv"
+    ]
+  },
+  {
+    "id": "business-fintechkpi-006",
+    "module": "business",
+    "topic": "fintechkpi",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Identify problematic banking partners. Find all banks with at least 500 distinct transactions and a failure rate strictly greater than 3.0%. Return `bank`, total transactions as `txns`, and the failure rate percentage rounded to two decimal places as `failure_pct`. Order by `failure_pct` descending.",
+    "dataset": "fintech",
+    "hint": "Use a HAVING clause to filter COUNT(*) >= 500 and the average failure condition > 3.0.",
+    "solutionSql": "WITH t AS (\n  SELECT DISTINCT * FROM transactions\n)\nSELECT\n  bank,\n  COUNT(*) AS txns,\n  ROUND(AVG(CASE WHEN status = 'FAILED' THEN 100.0 ELSE 0.0 END), 2) AS failure_pct\nFROM t\nGROUP BY bank\nHAVING COUNT(*) >= 500 AND AVG(CASE WHEN status = 'FAILED' THEN 100.0 ELSE 0.0 END) > 3.0\nORDER BY failure_pct DESC;",
+    "expectedOutput": {
+      "columns": [
+        "bank",
+        "txns",
+        "failure_pct"
+      ],
+      "rows": [
+        [
+          "Kaveri Co-op Bank",
+          1700,
+          6.06
+        ]
+      ]
+    },
+    "explanation": "Filtering for minimum sample volume (500 transactions) prevents small partner noise from biasing operational escalations. Kaveri Co-op Bank stands out with a 6.06% failure rate across 1,700 transactions.",
+    "commonMistake": "Filtering on aliases in the HAVING clause without specifying the minimum transaction volume threshold.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "fintech",
+      "bank-health",
+      "having"
+    ]
+  },
+  {
+    "id": "business-fintechkpi-007",
+    "module": "business",
+    "topic": "fintechkpi",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Measure annual customer adoption. For distinct transactions with status 'SUCCESS', return the `year` in 'YYYY' format and the number of distinct active users who completed at least one successful payment as `active_users`. Order by `year` ascending.",
+    "dataset": "fintech",
+    "hint": "Extract the year from txn_datetime and compute COUNT(DISTINCT user_id).",
+    "solutionSql": "WITH t AS (\n  SELECT DISTINCT * FROM transactions\n)\nSELECT\n  strftime('%Y', txn_datetime) AS year,\n  COUNT(DISTINCT user_id) AS active_users\nFROM t\nWHERE status = 'SUCCESS'\nGROUP BY year\nORDER BY year ASC;",
+    "expectedOutput": {
+      "columns": [
+        "year",
+        "active_users"
+      ],
+      "rows": [
+        [
+          "2023",
+          1713
+        ],
+        [
+          "2024",
+          2623
+        ]
+      ]
+    },
+    "explanation": "Annual active transacting users grew from 1,713 in 2023 to 2,623 in 2024 (+53.1%), confirming that overall platform volume growth is propelled by expanding user reach.",
+    "commonMistake": "Counting distinct users without filtering status='SUCCESS', which counts users whose only attempts failed.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "fintech",
+      "active-users",
+      "mau"
+    ]
+  },
+  {
+    "id": "business-fintechkpi-008",
+    "module": "business",
+    "topic": "fintechkpi",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "The risk management team is testing whether night transactions carry elevated fraud risk. Classify each distinct transaction into `time_band`: 'night' if the hour is 23, 0, 1, 2, 3, or 4 (23:00 to 04:59 IST), otherwise 'day'. Return `time_band`, total transactions as `txns`, flagged count as `flagged` (sum of `is_flagged`), and the fraud flag rate percentage rounded to two decimal places as `flag_rate_pct`. Order by `flag_rate_pct` descending.",
+    "dataset": "fintech",
+    "hint": "Extract hour using CAST(strftime('%H', txn_datetime) AS INTEGER) and check if >= 23 OR <= 4.",
+    "solutionSql": "WITH t AS (\n  SELECT DISTINCT * FROM transactions\n)\nSELECT\n  CASE\n    WHEN CAST(strftime('%H', txn_datetime) AS INTEGER) >= 23\n      OR CAST(strftime('%H', txn_datetime) AS INTEGER) <= 4\n    THEN 'night'\n    ELSE 'day'\n  END AS time_band,\n  COUNT(*) AS txns,\n  SUM(is_flagged) AS flagged,\n  ROUND(AVG(is_flagged) * 100.0, 2) AS flag_rate_pct\nFROM t\nGROUP BY time_band\nORDER BY flag_rate_pct DESC;",
+    "expectedOutput": {
+      "columns": [
+        "time_band",
+        "txns",
+        "flagged",
+        "flag_rate_pct"
+      ],
+      "rows": [
+        [
+          "night",
+          577,
+          29,
+          5.03
+        ],
+        [
+          "day",
+          21723,
+          273,
+          1.26
+        ]
+      ]
+    },
+    "explanation": "Transactions at night (23:00 to 04:59) exhibit a 5.03% fraud flag rate compared to 1.26% during the day. However, because night volume is small (577 txns), an outright ban on night transactions only catches 29 flags while blocking 548 legitimate users.",
+    "commonMistake": "Using a BETWEEN clause that fails to wrap midnight (e.g., BETWEEN 23 AND 4 returns 0 rows).",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "fintech",
+      "fraud",
+      "risk-rules"
+    ]
+  },
+  {
+    "id": "business-fintechkpi-009",
+    "module": "business",
+    "topic": "fintechkpi",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "In a hospital's telehealth outpatient department, 1,400 video consultations were booked during October. Of these, exactly 1,176 sessions were successfully connected and attended by doctors and patients. What is the consultation completion rate as a percentage, rounded to one decimal place?",
+    "dataset": "none",
+    "hint": "Divide attended consultations by total booked consultations and multiply by 100.",
+    "solution": "Consultation Completion Rate:\n$$\\text{Completion Rate} = \\left(\\frac{1176}{1400}\\right) \\times 100 = 84.0\\%$$\n\nExactly 84.0% of scheduled appointments were fulfilled, while 16.0% were lost to cancellations, technical drop-offs, or patient no-shows.",
+    "explanation": "Consultation completion rate measures telehealth fulfillment efficiency. The unfulfilled 16% represents wasted clinical slot capacity and patient access friction.",
+    "commonMistake": "Dividing attended appointments by dropped appointments (1176 / 224 = 525%) rather than total bookings.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "healthcare",
+      "telehealth",
+      "completion-rate"
+    ],
+    "expectedOutput": {
+      "value": 84
+    }
+  },
+  {
+    "id": "business-fintechkpi-010",
+    "module": "business",
+    "topic": "fintechkpi",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "A clinical BI analyst designing an executive hospital dashboard is required to suppress or mask any reporting cell where the patient cohort count is less than 10 ($n < 10$). Explain three reasons why this cell-suppression threshold is essential in healthcare analytics.",
+    "dataset": "none",
+    "hint": "Consider re-identification privacy under data protection laws, extreme statistical variance, and clinician actionability.",
+    "solution": "Three critical reasons for suppressing small cell counts ($n < 10$):\n\n1. **Re-identification & Privacy Compliance (DPDP Act / HIPAA)**: In small demographic cuts (e.g., a specific pin code, rare diagnosis, age, or gender), a cell with 2 or 3 patients allows colleagues or community members to re-identify individuals from quasi-identifiers.\n2. **Statistical Instability & Extreme Variance**: Percentages calculated on tiny sample sizes (e.g., 1 readmission out of 2 patients = 50%) swing wildly from period to period, misrepresenting clinical quality.\n3. **False Alarms & Misallocated Clinical Effort**: Small sample variations cause hospital leadership to launch administrative investigations over random statistical noise rather than systemic clinical trends.",
+    "explanation": "Cell suppression (k-anonymity principle) is standard practice in public health and clinical analytics. Suppressing cells with fewer than 10 observations prevents re-identification and avoids over-reacting to sample noise.",
+    "commonMistake": "Assuming that removing patient names alone is sufficient for anonymization, ignoring quasi-identifier linkage.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "healthcare",
+      "ethics",
+      "privacy",
+      "dpdp"
+    ]
+  },
+  {
+    "id": "business-fintechkpi-011",
+    "module": "business",
+    "topic": "fintechkpi",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "A risk analyst evaluates an automated fraud prevention rule: 'Flag all transactions initiated between 23:00 and 04:59.' In the historical dataset, this rule triggered on 577 total transactions, of which exactly 29 were verified as genuine fraud flags. What is the precision of this detection rule in percent, rounded to two decimal places?",
+    "dataset": "none",
+    "hint": "Precision is True Positives divided by Total Predicted Positives (29 / 577 * 100).",
+    "solution": "Rule Precision calculation:\n\n$$\\text{Precision} = \\frac{\\text{True Positives}}{\\text{Total Predicted Positives}} = \\left(\\frac{29}{577}\\right) \\times 100 = 5.0259... \\approx 5.03\\%$$\n\nThe rule has a precision of only 5.03%. Out of every 100 transactions flagged and blocked at night, approximately 95 would be innocent customers subjected to false-positive friction.",
+    "explanation": "Precision evaluates false-positive burden. While night transactions have a higher fraud probability than day transactions (5.03% vs 1.26%), flagging night hours indiscriminately generates 548 false alarms, demonstrating why multi-factor step-up verification is superior to blunt blocking rules.",
+    "commonMistake": "Confusing precision with recall (recall is 29 / 302 total platform fraud flags = 9.60%).",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "fintech",
+      "fraud",
+      "precision-recall"
+    ],
+    "expectedOutput": {
+      "value": 5.03
+    }
+  },
+  {
+    "id": "business-fintechkpi-012",
+    "module": "business",
+    "topic": "fintechkpi",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Compare UPI merchant failure rates across health and non-health sectors. Join distinct `transactions` with distinct `merchants` on `merchant_id`. Group merchants into `segment`: 'health' if category is in ('Healthcare', 'Pharmacy'), otherwise 'other'. Return `segment`, total merchant transactions as `txns`, and the failure rate percentage rounded to two decimal places as `failure_pct`. Order by `segment` ascending.",
+    "dataset": "fintech",
+    "hint": "Join transactions and merchants using CTEs with SELECT DISTINCT. Categorize segment using CASE WHEN m.category IN ('Healthcare', 'Pharmacy') THEN 'health' ELSE 'other' END.",
+    "solutionSql": "WITH t AS (\n  SELECT DISTINCT * FROM transactions\n),\nm AS (\n  SELECT DISTINCT * FROM merchants\n)\nSELECT\n  CASE\n    WHEN m.category IN ('Healthcare', 'Pharmacy') THEN 'health'\n    ELSE 'other'\n  END AS segment,\n  COUNT(*) AS txns,\n  ROUND(AVG(CASE WHEN t.status = 'FAILED' THEN 100.0 ELSE 0.0 END), 2) AS failure_pct\nFROM t\nJOIN m ON t.merchant_id = m.merchant_id\nGROUP BY segment\nORDER BY segment ASC;",
+    "expectedOutput": {
+      "columns": [
+        "segment",
+        "txns",
+        "failure_pct"
+      ],
+      "rows": [
+        [
+          "health",
+          1227,
+          2.53
+        ],
+        [
+          "other",
+          15648,
+          2.74
+        ]
+      ]
+    },
+    "explanation": "Healthcare and Pharmacy merchants record 1,227 transactions with a 2.53% failure rate, slightly more reliable than other merchant categories which average a 2.74% failure rate across 15,648 transactions.",
+    "commonMistake": "Joining directly to the raw transactions table without de-duplicating or trying to join on user_id.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "fintech",
+      "healthcare",
+      "merchants",
+      "joins"
+    ]
+  }
+]

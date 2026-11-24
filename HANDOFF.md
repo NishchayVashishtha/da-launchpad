@@ -72,7 +72,7 @@ Check each item with `ls`, audit and validate:
 | Python | 20 | 130 | 8 notebooks, EDA checklist |
 | Statistics | 17 | 170 | 136 MCQs |
 | Interview | 8 | 41 | 475 bank items, 320 aptitude MCQs, 10 mock cases |
-| Business | 0 (outlined) | 0 (outlined) | 25 cases outlined |
+| Business | 14 | 132 | 25 written case studies |
 
 Tool pages are built and registered in tools.json:
 - /interview/banks/
@@ -88,9 +88,12 @@ They are NOT yet checked in a browser.
    - Tasks L1–L5: 8 lessons + 41 practice, ids `interview-pr-*`.
    - Tasks C1–C2: 10 mock cases in `src/content/cases/mock-case-NN-*.mdx`, type "mock-case".
    - Deleted placeholder `sample-case.mdx` and `_sample.json`. All 4 gates green (check:mdx, validate, audit, build).
-2. **Business writers (Haiku):** use `.work/writer-brief.md` and `.work/outlines/business/_plan.md` (9 tasks: lessons + 25 cases from `cases.md`; facts are in `_facts.md`).
-   - First verify that the schema accepts `module: business` (`npx astro sync`).
-   - Decide on adding a DPDP Act link to links.json for lesson 13.
+2. **[DONE] Business writers:**
+   - 14 lessons in `src/content/lessons/business/01..14-*.mdx`, all 10 required H2s.
+   - 14 practice sets in `src/content/practice/business/*.json`: 132 questions total (39 SQL, 93 text), fully validated against SQLite datasets.
+   - 25 written case studies in `src/content/cases/*.mdx`: 10 Fintech (F1-F10), 7 Healthcare (H1-H7), 8 Consulting (C1-C8), all with the 7 standard H2s.
+   - Added official DPDP Act link to `src/data/links.json`.
+   - All 4 gates green (check:mdx 179 files, validate 491 runnable passed, audit passed, build 215 pages + 184 indexed).
 3. **Fix the aptitude syllogism template** in `scripts/generate_aptitude.py`. The blind check showed apt-logical-052 (wrong key), 055, 056 and 059 are ambiguous under existential import. Make conclusions unambiguous (or state "assume all groups are non-empty") and regenerate. Then re-run the blind check: `node scripts/mcq-blind.mjs prep aptitude-logical 1`, have a Haiku answer it, then `compare`.
 4. **Light dedupe of the interview banks:** interview-powerbi-030 vs 031 and interview-sql-050 vs 071 look like near-duplicates. Statistics-2 partly overlaps statistics.json.
 5. **Reviewer pass** (`.briefs/reviewer.md`, FIX mode, Haiku) on the interview banks + Phase 5 content, plus a blind check on any new MCQs.

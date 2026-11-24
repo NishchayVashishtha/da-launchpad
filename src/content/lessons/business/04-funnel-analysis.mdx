@@ -1,0 +1,285 @@
+---
+title: "Funnel analysis: where do users drop off?"
+description: "Count users at each step, find the leakiest step and size the fix."
+module: business
+order: 4
+estimatedMinutes: 50
+objectives:
+  - "Map out linear user progression funnels using standardized event logging"
+  - "Differentiate between step conversion rate, overall conversion rate, and drop-off rate"
+  - "Write robust SQL queries using distinct user counting and event string normalisation"
+  - "Segment funnels across client platforms and acquisition channels to spot friction"
+  - "Size the commercial impact of closing conversion gaps across segments"
+tags: ["business", "funnel", "conversion", "sql", "subscription"]
+---
+
+## Learning objectives
+
+By the end of this lesson, you will be able to:
+- Define clear user journey milestones and map out end-to-end conversion funnels.
+- Calculate step conversion rates (`Step_n / Step_{n-1}`) and overall conversion rates (`Step_n / Step_1`) in SQL.
+- Avoid common analytics traps including duplicate counting, case-sensitivity logging bugs, and loose time windows.
+- Segment funnels by acquisition channel and client platform (iOS, Web, Android) to locate drop-offs.
+- Perform opportunity sizing math to estimate the revenue and subscriber impact of fixing a leaky step.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+A health and fitness subscription startup in Bengaluru spent Rs 25 Lakh on an influencer marketing campaign, driving 5,000 new app signups in a single weekend. The marketing team declared victory. But two weeks later, the finance manager pointed out that only 86 of those users ever converted to a paid subscription (a miserable 1.6% conversion rate). 
+
+Meanwhile, users joining through organic word-of-mouth converted at 37.3%. An analyst who simply reports total signups is celebrating vanity; an analyst who maps the full conversion funnel immediately proves that influencer traffic leaks heavily at the payment step because users are curious bargain-seekers with zero intent to pay.
+</RealWorld>
+
+Every mobile app, e-commerce marketplace, and SaaS product in India operates on funnels. Product managers and growth leads rely on analysts to answer: *"Where are we losing users?"*, *"Which screen has the worst drop-off?"*, and *"How many extra paying customers do we gain if we fix Android onboarding?"*
+
+## Concept
+
+### What is Funnel Analysis?
+
+A **funnel** is a series of sequential, ordered actions that a user must complete to achieve a high-value business milestone (such as placing an order, activating a trial, or completing a KYC registration).
+
+<Tip>
+**The Leaky Pipe Analogy:** Think of a water pipe with multiple joints. If 1,000 liters enter at the top and only 229 liters exit at the bottom, water is leaking through the pipe joints. Your job as an analyst is to inspect each joint, measure the exact leakage in liters, identify the leakiest joint, and tell engineering which gasket needs tightening.
+</Tip>
+
+### Key Funnel Formulas
+
+1. **Step Conversion Rate**:
+   The percentage of users who successfully progressed to Step n after completing Step n-1:
+   `Step Conversion Rate = (Unique Users at Step n / Unique Users at Step n-1) * 100`
+
+2. **Step Drop-Off Rate**:
+   The percentage of users who abandoned the flow at Step n:
+   `Drop-Off Rate = 100% - Step Conversion Rate`
+
+3. **Overall (End-to-End) Conversion Rate**:
+   The proportion of initial entrants who completed the final milestone:
+   `Overall Conversion Rate = (Unique Users at Final Step / Unique Users at Step 1) * 100`
+
+<FormulaCard title="Opportunity Sizing Formula">
+When recommending product improvements, always translate percentage point lifts into absolute customer or rupee gains:
+`Incremental Converters = Top-of-Funnel Volume * (Target Conversion Rate - Current Conversion Rate)`
+
+For example, if 1,973 Android trial users convert at 31.0%, improving their experience to match iOS (45.9%) yields:
+`1973 * (0.459 - 0.310) = 1973 * 0.149 ≈ 294 additional paying subscribers`
+</FormulaCard>
+
+### Segmenting Funnels & Simpson's Paradox
+
+Never evaluate a funnel solely at the aggregate level. Aggregate conversion can be deeply deceptive due to **mix shift** (Simpson's Paradox). 
+
+For example, if your marketing team ramps up acquisition in a low-converting demographic (e.g. mobile web traffic), your overall conversion rate may drop from 8% to 6% even if conversion rates on both Desktop and Mobile App independently improved. Always segment funnels by:
+- **Device & Client Platform**: iOS vs Android vs Desktop Web.
+- **Acquisition Source**: Organic vs Paid Search vs Social vs Influencer vs Referral.
+- **User Demographics**: Metro (Tier-1) vs Tier-2/3 cities.
+
+## Worked examples
+
+All examples in this section query `public/data/sqlite/subscription.sqlite` using SQLite.
+
+### Example 1: Full Milestone Funnel with Case-Insensitive Normalisation
+The `events` table contains logged actions, but `event_name` has mixed casing ('signup' and 'SIGNUP'). We normalise strings using `LOWER(event_name)` and count distinct users:
+
+```sql
+SELECT
+  LOWER(event_name) AS event_name,
+  COUNT(DISTINCT user_id) AS users
+FROM events
+WHERE LOWER(event_name) IN ('signup', 'trial_start', 'payment_success', 'renewal_success')
+GROUP BY LOWER(event_name)
+ORDER BY users DESC;
+```
+
+**Real Output from subscription.sqlite:**
+| event_name | users |
+| :--- | :--- |
+| signup | 5200 |
+| trial_start | 3308 |
+| payment_success | 1193 |
+| renewal_success | 766 |
+
+**Step Rate Calculations:**
+- **Signup → Trial Start**: `(3,308 / 5,200) * 100 = 63.62%` (Drop-off: 36.38%)
+- **Trial Start → Payment Success**: `(1,193 / 3,308) * 100 = 36.06%` (Drop-off: 63.94% — **The Leakiest Step**)
+- **Payment Success → Renewal Success**: `(766 / 1,193) * 100 = 64.21%` (Drop-off: 35.79%)
+- **Overall End-to-End**: `(1,193 / 5,200) * 100 = 22.94%`
+
+### Example 2: Funnel by Client Platform
+Joining `users` and `subscriptions` on `user_id` reveals striking platform differences:
+
+```sql
+WITH u AS (
+  SELECT DISTINCT * FROM users
+),
+s AS (
+  SELECT DISTINCT * FROM subscriptions
+)
+SELECT
+  u.platform,
+  COUNT(*) AS trials,
+  SUM(CASE WHEN s.paid_start_date IS NOT NULL THEN 1 ELSE 0 END) AS paid,
+  ROUND(AVG(CASE WHEN s.paid_start_date IS NOT NULL THEN 100.0 ELSE 0.0 END), 1) AS conversion_pct
+FROM s
+JOIN u ON s.user_id = u.user_id
+GROUP BY u.platform
+ORDER BY conversion_pct DESC;
+```
+
+**Real Output from subscription.sqlite:**
+| platform | trials | paid | conversion_pct |
+| :--- | :--- | :--- | :--- |
+| iOS | 833 | 382 | 45.9 |
+| Web | 502 | 199 | 39.6 |
+| Android | 1973 | 612 | 31.0 |
+
+**Insight:** Android accounts for the vast majority of trial volume (1,973 of 3,308 trials, or 59.6%), yet converts at only 31.0% compared to 45.9% on iOS. Closing this Android UX gap represents an immediate 294-subscriber growth opportunity.
+
+### Example 3: Acquisition Source Quality Comparison
+Cutting conversion by user acquisition channel:
+
+```sql
+WITH u AS (
+  SELECT DISTINCT * FROM users
+),
+s AS (
+  SELECT DISTINCT * FROM subscriptions
+)
+SELECT
+  u.acquisition_source,
+  COUNT(*) AS trials,
+  SUM(CASE WHEN s.paid_start_date IS NOT NULL THEN 1 ELSE 0 END) AS paid,
+  ROUND(AVG(CASE WHEN s.paid_start_date IS NOT NULL THEN 100.0 ELSE 0.0 END), 1) AS conversion_pct
+FROM s
+JOIN u ON s.user_id = u.user_id
+GROUP BY u.acquisition_source
+ORDER BY conversion_pct ASC;
+```
+
+**Real Output from subscription.sqlite:**
+| acquisition_source | trials | paid | conversion_pct |
+| :--- | :--- | :--- | :--- |
+| Influencer | 536 | 86 | 16.0 |
+| Google Ads | 703 | 258 | 36.7 |
+| Organic | 911 | 340 | 37.3 |
+| Play Store Feature | 207 | 78 | 37.7 |
+| Instagram | 535 | 235 | 43.9 |
+| Referral | 416 | 196 | 47.1 |
+
+**Insight:** Referral traffic converts at nearly $3\times$ the rate of Influencer campaigns (47.1% vs 16.0%). Reallocating ad budget from influencer sponsorships to referral referral incentives will immediately elevate blended conversion.
+
+## Common mistakes
+
+<CommonMistake>
+- **Counting raw events instead of distinct users**: A user who clicks "Checkout" four times due to a slow network connection must only be counted once (`COUNT(DISTINCT user_id)`).
+- **Failing to normalize string casing**: Querying `WHERE event_name = 'signup'` misses uppercase records like `'SIGNUP'`, undercounting funnel volume.
+- **Dividing by initial signups at every step**: Calculating Step 3 conversion by dividing by Step 1 users gives the cumulative funnel rate, not the local step conversion rate.
+- **Averaging conversion percentages across unequal cohorts**: Averaging iOS (45.9%) and Android (31.0%) to get 38.5% ignores that Android has more than double the volume.
+- **Ignoring time sequence and causality**: Counting a payment event that happened *before* a trial start as a valid conversion.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="funnel" module="business" />
+
+## Mini quiz
+
+<Quiz questions={[
+  {
+    q: "If 4,000 users visit a pricing page, 1,000 click 'Subscribe', and 250 complete payment, what is the step conversion rate from click to payment?",
+    options: [
+      "6.25%",
+      "25.0%",
+      "40.0%",
+      "75.0%"
+    ],
+    answer: 1,
+    explanation: "Step conversion is Step 3 divided by Step 2: 250 / 1,000 * 100 = 25.0%."
+  },
+  {
+    q: "Why should an analyst use COUNT(DISTINCT user_id) rather than COUNT(*) in funnel queries?",
+    options: [
+      "To improve SQL query execution speed on large tables",
+      "To ensure repeat event triggers by the same user do not inflate user milestone counts",
+      "Because SQL standards require DISTINCT in all GROUP BY aggregations",
+      "To filter out null database records automatically"
+    ],
+    answer: 1,
+    explanation: "Users frequently trigger duplicate events (e.g., refreshing a screen or clicking a button repeatedly). Counting distinct user IDs ensures each human is counted exactly once per stage."
+  },
+  {
+    q: "In the subscription dataset, what was the primary leak in the customer acquisition funnel?",
+    options: [
+      "Signup to Trial Start (36.4% drop-off)",
+      "Trial Start to Paid Subscription (63.9% drop-off)",
+      "Paid Subscription to First Renewal (35.8% drop-off)",
+      "Registration page load timeouts"
+    ],
+    answer: 1,
+    explanation: "Out of 3,308 trial starters, only 1,193 converted to a paid plan. The 63.9% drop-off makes trial-to-paid the leakiest milestone in the entire journey."
+  },
+  {
+    q: "How does Simpson's Paradox manifest in funnel analytics?",
+    options: [
+      "When a SQL query contains a circular join condition",
+      "When aggregate conversion declines due to a traffic mix shift toward a lower-converting channel, even while individual channels improve",
+      "When conversion rates exceed 100% due to data logging errors",
+      "When marketing teams double ad spend without informing the analytics team"
+    ],
+    answer: 1,
+    explanation: "A mix shift changes the composition of incoming cohorts. If low-converting mobile traffic surges, overall conversion can drop even if mobile and desktop rates both improved."
+  },
+  {
+    q: "Android has 1,973 trials converting at 31.0%. If conversion rises to 45.9% (matching iOS), how many incremental paying subscribers are gained?",
+    options: [
+      "149 subscribers",
+      "294 subscribers",
+      "612 subscribers",
+      "905 subscribers"
+    ],
+    answer: 1,
+    explanation: "Incremental subscribers = 1,973 * (0.459 - 0.310) = 1,973 * 0.149 = 293.98, or approximately 294 subscribers."
+  }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Funnel questions in interviews often assess whether you understand user intent: "Our checkout funnel conversion dropped 2% last week. What segments would you check first?"
+</InterviewAlert>
+
+<InterviewQ q="Our signup-to-purchase conversion dropped 2 percentage points. How do you investigate?">
+I investigate funnel drops using a 4-step framework:
+1. **Milestone Isolation**: Break down the aggregate drop into individual step conversion rates (Signup → Search → Add to Cart → Payment). Isolate exactly which transition suffered the drop.
+2. **Technical & Platform Cut**: Segment the leaky step by platform (iOS, Android, Web), app version, and browser. If the drop is concentrated on Android App Version 4.2.1, it is almost certainly a client-side crash or payment SDK bug.
+3. **Channel & Mix Shift Audit**: Check if traffic mix shifted toward low-intent channels (e.g., an influx of low-quality influencer traffic with high drop-off).
+4. **Payment Gateway Reliability**: Check failure codes at the checkout step (`UPI_SYSTEM_DOWN` or `BANK_SERVER_TIMEOUT`).
+</InterviewQ>
+
+<InterviewQ q="What is the difference between a loose funnel and a strict funnel?">
+A **strict funnel** requires that a user complete milestones in an exact sequential order within a designated session or time window (A → B → C). If a user skips a step or completes C before B, they are excluded from the funnel progression.
+
+A **loose funnel** evaluates whether a user ever completed each milestone regardless of path or intermediate actions (e.g., User did $A$ on Monday, did $C$ on Tuesday, and did $B$ on Wednesday). Strict funnels are vital for checkout flows and KYC verification; loose funnels are suited for broad product adoption.
+</InterviewQ>
+
+<InterviewQ q="How would you design and optimize an appointment booking funnel for a hospital network?">
+I would map the clinical booking journey into five distinct steps:
+1. **Search Specialty / Doctor**: Tracks patient intent.
+2. **View Doctor Profile & Slot Schedule**: Measures supply availability.
+3. **Select Slot & Enter Patient Details**: Measures booking friction.
+4. **Confirm Appointment & Pay Consultation Fee**: Measures payment completion.
+5. **Patient Clinic Attendance**: The final fulfillment step (guards against no-shows).
+
+The primary leak in healthcare funnels typically occurs between slot viewing and confirmation (often due to inconvenient appointment times or high fees), followed by no-shows at the physical clinic. I would implement automated WhatsApp booking reminders and pre-consultation confirmations to safeguard attendance.
+</InterviewQ>
+
+## Key takeaways
+
+- Funnels track sequential user progression; calculate both step conversion rates and overall end-to-end conversion.
+- The leakiest step represents the highest-leverage optimization target; focus product engineering where absolute user leakage is greatest.
+- Always normalize tracking event strings (`LOWER(event_name)`) and count unique human users (`COUNT(DISTINCT user_id)`).
+- Segment funnels by client platform and acquisition channel: in our subscription data, Referral converts at 47.1% while Influencers convert at only 16.0%.
+- Beware of Simpson's Paradox: shifts in cohort mix can drag down aggregate conversion even when individual channels perform well.
+
+## Further reading
+
+<FurtherReading ids={["mode-sql", "sqlite-docs"]} />

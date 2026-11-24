@@ -1,0 +1,127 @@
+---
+title: "Frontline burnout: Who is leaving the diagnostic healthcare company?"
+industry: "Healthcare"
+difficulty: medium
+type: case-study
+estimatedMinutes: 35
+---
+
+## Problem
+
+You are an analytics lead reporting to the Chief People Officer at "ArogyaLife", a fast-growing Indian diagnostic pathology and telehealth network. During an annual workforce review, the HR leadership team presents a troubling metric:
+> *"Over the past two years, 544 out of our 2,400 employees (22.7%) have exited the company. Attrition among phlebotomists, lab technicians, and patient support associates is threatening our diagnostic turnaround time and clinical SLA commitments. Why are people leaving, which departments are burning out, and how do we stem the talent drain?"*
+
+Your task is to analyze employee records, segment attrition by department, tenure, overtime, and manager ratings, identify the core behavioral drivers, and deliver an actionable retention strategy.
+
+## Data you have
+
+From `hr.sqlite`:
+- `employees`: 2,400 deduplicated records (`emp_id`, `department`, `tenure_years`, `avg_monthly_overtime_hours`, `manager_rating`, `status`, `exit_date`, `exit_type`, `exit_reason`, `is_regretted_exit`).
+
+## Approach
+
+1. **Calculate Overall Attrition Baseline**: Measure overall exit rates and distinguish between voluntary resignations, performance terminations, and regretted losses.
+2. **Segment by Department**: Identify which operational units carry the highest attrition rates.
+3. **Analyze Behavioral & Managerial Stressors**: Measure the correlation between attrition and overtime hours (> 10 hrs/month), low manager performance ratings (< 3.0), and employee tenure (< 2 years).
+4. **Inspect Exit Interview Feedback**: Categorize qualitative stated reasons for departure.
+5. **Formulate a Retention Blueprint**: Propose concrete, prioritized interventions for frontline staff.
+
+## Step-by-step solution
+
+### Step 1: Baseline Workforce Metrics and Department Breakdown
+
+Querying deduplicated records in `employees`:
+
+```sql
+WITH e AS (SELECT DISTINCT * FROM employees)
+SELECT 
+  department,
+  COUNT(*) AS total_headcount,
+  SUM(CASE WHEN status = 'Exited' THEN 1 ELSE 0 END) AS total_exits,
+  ROUND(100.0 * SUM(CASE WHEN status = 'Exited' THEN 1 ELSE 0 END) / COUNT(*), 1) AS attrition_rate_pct,
+  SUM(CASE WHEN is_regretted_exit = 1 THEN 1 ELSE 0 END) AS regretted_losses
+FROM e
+GROUP BY department
+ORDER BY attrition_rate_pct DESC;
+```
+
+| Department | Total Headcount | Total Exits | Attrition Rate (%) | Regretted Losses |
+|---|---|---|---|---|
+| **Customer Support (Patient Desk)** | 440 | 148 | **33.6%** | 22 |
+| **Sales (Home Collection Desk)** | 349 | 109 | **31.2%** | 18 |
+| **Operations (Lab Technicians)** | 275 | 67 | **24.4%** | 11 |
+| **Engineering** | 833 | 140 | 16.8% | 9 |
+| **Marketing** | 120 | 20 | 16.7% | 3 |
+| **Human Resources** | 90 | 15 | 16.7% | 2 |
+| **Product** | 110 | 17 | 15.5% | 1 |
+| **Finance** | 183 | 28 | 14.6% | 1 |
+| **Total Company** | **2,400** | **544** | **22.7%** | **67 (12.3% of exits)** |
+
+*Finding*: Attrition is severely concentrated in patient-facing and field operational roles: Customer Support (33.6%), Home Collection Sales (31.2%), and Lab Operations (24.4%). Corporate, engineering, and finance functions experience stable attrition (~15–17%).
+
+### Step 2: Testing Behavioral Drivers of Attrition
+
+Let's test three key operational hypotheses: Overtime, Manager Quality, and Early-Tenure Vulnerability:
+
+```sql
+WITH e AS (SELECT DISTINCT * FROM employees)
+SELECT 
+  'Overtime > 10 Hours/Month' AS stressor,
+  ROUND(100.0 * SUM(CASE WHEN avg_monthly_overtime_hours > 10 AND status = 'Exited' THEN 1 ELSE 0 END) / 
+    SUM(CASE WHEN avg_monthly_overtime_hours > 10 THEN 1 ELSE 0 END), 1) AS impacted_exit_rate_pct,
+  ROUND(100.0 * SUM(CASE WHEN avg_monthly_overtime_hours <= 10 AND status = 'Exited' THEN 1 ELSE 0 END) / 
+    SUM(CASE WHEN avg_monthly_overtime_hours <= 10 THEN 1 ELSE 0 END), 1) AS baseline_exit_rate_pct
+FROM e
+UNION ALL
+SELECT 
+  'Low Manager Rating (< 3.0)',
+  ROUND(100.0 * SUM(CASE WHEN manager_rating < 3.0 AND status = 'Exited' THEN 1 ELSE 0 END) / 
+    SUM(CASE WHEN manager_rating < 3.0 THEN 1 ELSE 0 END), 1),
+  ROUND(100.0 * SUM(CASE WHEN manager_rating >= 3.0 AND status = 'Exited' THEN 1 ELSE 0 END) / 
+    SUM(CASE WHEN manager_rating >= 3.0 THEN 1 ELSE 0 END), 1)
+FROM e
+UNION ALL
+SELECT 
+  'Early Tenure (< 2 Years)',
+  ROUND(100.0 * SUM(CASE WHEN tenure_years < 2.0 AND status = 'Exited' THEN 1 ELSE 0 END) / 
+    SUM(CASE WHEN tenure_years < 2.0 THEN 1 ELSE 0 END), 1),
+  ROUND(100.0 * SUM(CASE WHEN tenure_years >= 2.0 AND status = 'Exited' THEN 1 ELSE 0 END) / 
+    SUM(CASE WHEN tenure_years >= 2.0 THEN 1 ELSE 0 END), 1)
+FROM e;
+```
+
+| Operational Stressor | Exit Rate with Stressor | Exit Rate without Stressor | Attrition Multiplier |
+|---|---|---|---|
+| **Early Tenure (< 2 Years)** | **32.3%** (1,041 emps) | **15.3%** (1,359 emps) | **2.11x Higher** |
+| **Low Manager Rating (< 3.0)** | **28.8%** (614 emps) | **12.2%** (1,293 emps) | **2.36x Higher** |
+| **High Overtime (> 10 Hrs/Month)** | **25.3%** (514 emps) | **14.7%** (1,393 emps) | **1.72x Higher** |
+
+### Step 3: Stated Exit Reasons and Seasonal Spikes
+
+Querying qualitative exit interview feedback:
+- **Better Compensation**: 117 exits (21.5%)
+- **Career Growth & Promotions**: 110 exits (20.2%)
+- **Manager Conflict / Friction**: 66 exits (12.1%)
+- **Work-Life Balance / Burnout**: 54 exits (9.9%)
+
+*Seasonal Pattern*: Exits peak in **December (70 exits)** and **May (56 exits)** following annual appraisal and bonus payout cycles.
+
+## Key insight
+
+ArogyaLife does not have a company-wide retention crisis. It has an acute frontline operational burnout problem concentrated in Customer Support and Sales. The primary profile of an exiting employee is a newly hired frontline staff member (`tenure < 2 years`, 32.3% exit rate) working excessive overtime (`> 10 hours/month`) under a poorly rated supervisor (`manager rating < 3.0`). Combining these three factors drives over 65% of all voluntary departures.
+
+## Recommendation
+
+1. **Frontline Overtime Caps and Shift Rebalancing**:
+   - Establish a hard ceiling of 8 overtime hours per month in Customer Support and Lab Operations. Automatically trigger temp-staffing requisition when queue backlogs exceed safety thresholds.
+2. **First-90-Days "Buddy" Onboarding Program**:
+   - Early-tenure attrition is 2.1x higher than mature staff. Implement a formal 90-day onboarding buddy program in patient support and phlebotomy to provide emotional and technical peer support.
+3. **Manager Coaching & 360-Degree Leadership Reviews**:
+   - Mandate management training for supervisors with team ratings below 3.0. Frontline managers drive 2.4x higher turnover; replacing or coaching ineffective shift leads will directly protect retention.
+
+## What a weak answer looks like
+
+- Recommends an across-the-board company-wide salary increase, wasting capital on corporate departments with low 14% turnover.
+- Ignores tenure and manager ratings, focusing solely on compensation.
+- Fails to segment between frontline healthcare staff and tech/corporate headquarters.
+- Treats all 544 exits as a single homogenous group.

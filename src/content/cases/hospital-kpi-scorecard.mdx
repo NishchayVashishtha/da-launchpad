@@ -1,0 +1,122 @@
+---
+title: "Clinical & operational excellence: Build a KPI scorecard for a 120-bed hospital"
+industry: "Healthcare"
+difficulty: medium
+type: case-study
+estimatedMinutes: 30
+---
+
+## Problem
+
+You are an analytics consultant hired by the board of trustees of "Shanti Memorial Hospital", a 120-bed multi-specialty hospital in a Tier-2 Indian city. The Medical Superintendent and Managing Director seek your guidance:
+> *"Our financial margins are shrinking despite steady outpatient footfall. Department heads report conflicting numbers: nursing claims we are short-staffed, billing complains about insurance denials, and doctors say beds are frequently empty. We need an objective, executive-ready Monthly KPI Scorecard that provides transparency across bed utilization, outpatient clinic flow, clinical quality, and revenue cycle health."*
+
+Your task is to take the hospital's raw operational data from the past 30 days, define 6 foundational hospital KPIs with exact formulas, compute the empirical scorecard, evaluate performance against clinical benchmarks, and recommend top operational priorities.
+
+## Data you have
+
+Monthly operational activity summary for the 30-day reporting period:
+- **Total Operational Inpatient Beds**: 120 beds
+- **Days in Reporting Month**: 30 days
+- **Total Inpatient Days Occupied**: 1,968 patient-days
+- **Total Inpatient Discharges**: 410 patients
+- **Outpatient (OPD) Consultations Completed**: 6,200 visits
+- **Scheduled OPD Appointments (No-Shows)**: 810 missed appointments
+- **Emergency Room (ER) Acute Arrivals**: 940 arrivals
+- **Clinical Laboratory Test Reports Ordered**: 5,400 reports
+- **Lab Reports Delivered On-Time ($\le$ 6 Hours)**: 4,860 reports
+- **Unplanned 30-Day Readmissions**: 41 patients
+- **TPA / Health Insurance Claims Submitted**: 300 claims
+- **Health Insurance Claims Denied / Rejected**: 36 claims
+
+## Approach
+
+1. **Establish the Mathematical Formulas**: Formalize exact numerators, denominators, and units for the 6 core healthcare KPIs.
+2. **Compute Empirical Scores**: Calculate the monthly metrics using the verified hospital activity data.
+3. **Benchmark Against Indian Healthcare Standards**: Compare observed metrics against National Accreditation Board for Hospitals & Healthcare Providers (NABH) standards.
+4. **Identify Financial & Quality Leakages**: Highlight the divergence between bed occupancy, claim rejections, and readmission rates.
+5. **Structure Executive Recommendations**: Provide prioritized actions for clinical and administrative leadership.
+
+## Step-by-step solution
+
+### Step 1: Defining the 6 Core Hospital KPIs
+
+Here are the formal mathematical definitions:
+
+```text
+1. Bed Occupancy Rate (%) = (Total Inpatient Days / (Available Beds * Days in Month)) * 100
+2. Average Length of Stay (ALOS, Days) = Total Inpatient Days / Total Discharges
+3. OPD No-Show Rate (%) = (Missed Appointments / (Completed Visits + Missed Appointments)) * 100
+4. On-Time Lab Turnaround Rate (%) = (Reports Delivered within 6h / Total Reports Ordered) * 100
+5. 30-Day All-Cause Readmission Rate (%) = (Unplanned Readmissions within 30d / Total Discharges) * 100
+6. Insurance Claim Rejection Rate (%) = (Claims Rejected by TPA / Total Claims Submitted) * 100
+```
+
+### Step 2: Calculating the Monthly Operational Scorecard
+
+Let's compute each metric:
+
+1. **Bed Occupancy Rate**:
+   ```text
+   Available Bed-Days = 120 beds * 30 days = 3,600 bed-days
+   Occupancy Rate = (1,968 / 3,600) * 100 = 54.67%
+   ```
+2. **Average Length of Stay (ALOS)**:
+   ```text
+   ALOS = 1,968 patient-days / 410 discharges = 4.80 days
+   ```
+3. **OPD No-Show Rate**:
+   ```text
+   Total Booked OPD Appointments = 6,200 + 810 = 7,010 appointments
+   No-Show Rate = (810 / 7,010) * 100 = 11.55% (~11.6%)
+   ```
+4. **On-Time Diagnostic Lab Turnaround Rate**:
+   ```text
+   On-Time Lab Rate = (4,860 / 5,400) * 100 = 90.00%
+   ```
+5. **30-Day Unplanned Readmission Rate**:
+   ```text
+   Readmission Rate = (41 / 410) * 100 = 10.00%
+   ```
+6. **Insurance Claim Rejection Rate**:
+   ```text
+   Claim Rejection Rate = (36 / 300) * 100 = 12.00%
+   ```
+
+### Step 3: The Complete Executive KPI Scorecard
+
+| KPI Name | Formula | Hospital Value | NABH / Industry Benchmark | Status (RAG) |
+|---|---|---|---|---|
+| **Bed Occupancy Rate** | Inpatient Days / (Beds $\times$ 30) | **54.67%** | 75.0% – 85.0% | **Red (Under-utilized)** |
+| **Average Length of Stay (ALOS)** | Inpatient Days / Discharges | **4.80 days** | 3.5 – 4.5 days | **Yellow (Slightly high)** |
+| **OPD No-Show Rate** | Missed / Total Scheduled | **11.55%** | $\le$ 5.0% | **Red (Lost clinic revenue)** |
+| **On-Time Lab Turnaround** | Reports $\le$ 6h / Total Reports | **90.00%** | $\ge$ 95.0% | **Yellow (Near target)** |
+| **30-Day Readmission Rate** | Readmissions / Discharges | **10.00%** | $\le$ 5.0% | **Red (Clinical concern)** |
+| **Claim Rejection Rate** | Denied Claims / Filed Claims | **12.00%** | $\le$ 3.0% – 4.0% | **Red (Cash-flow bleed)** |
+
+### Step 4: Diagnosing the Hospital's Performance
+
+1. **Sub-Optimal Bed Utilization**: At 54.67% occupancy, nearly 55 of the hospital's 120 beds sit empty every night, wasting fixed nursing and infrastructure overhead.
+2. **OPD Clinic Capacity Leakage**: 810 missed appointments represent roughly 27 idle doctor consultation slots every single day, forfeiting pharmacy and downstream diagnostic revenue.
+3. **Severe Financial Bleed from Claim Rejections**: A 12.00% TPA claim denial rate (36 rejected claims) delays working capital and forces bad-debt write-offs on high-value surgical cases.
+4. **Clinical Quality Alarm**: A 10.00% 30-day readmission rate indicates premature discharges or inadequate post-discharge medication adherence counseling.
+
+## Key insight
+
+Shanti Memorial Hospital does not suffer from a lack of community demand; it suffers from operational and clinical friction. Low bed occupancy (54.67%) is exacerbated by an 11.6% outpatient no-show rate, while bottom-line profitability is eroded by a 12.0% insurance denial rate and a 10.0% readmission rate. Addressing administrative friction in outpatient reminders, discharge planning, and claims documentation will transform operational margins without adding new beds.
+
+## Recommendation
+
+1. **Automated WhatsApp OPD Reminders and Overbooking**:
+   - Deploy automated two-way WhatsApp appointment reminders 24 hours and 2 hours prior to scheduled OPD slots. Implement a controlled 10% overbooking model for high no-show specialties (e.g. general medicine) to achieve full doctor utilization.
+2. **Pre-Submission Insurance Claim Scrubbers**:
+   - Claim rejections at 12% are unsustainable. Implement an administrative checklist ensuring that pre-authorization codes, doctor notes, and diagnostic bills match TPA coding guidelines before claim submission, cutting denials below 4%.
+3. **Post-Discharge 48-Hour Nursing Follow-Up Calls**:
+   - Establish a dedicated telephonic follow-up protocol where a nurse contacts all discharged surgical and medical patients within 48 hours to confirm medication compliance, spot early complications, and reduce readmissions from 10% down to the 5% benchmark.
+
+## What a weak answer looks like
+
+- Recommends building an expensive new hospital wing when existing beds are already 45% empty.
+- Calculates Bed Occupancy by dividing discharges by beds (410 / 120 = 341%), confusing flow with stock.
+- Calculates OPD no-show rate as `810 / 6,200` instead of using total scheduled appointments as the denominator.
+- Fails to connect claim denials and no-shows to bottom-line financial sustainability.

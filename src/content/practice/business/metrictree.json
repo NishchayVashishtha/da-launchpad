@@ -1,0 +1,212 @@
+[
+  {
+    "id": "business-metrictree-001",
+    "module": "business",
+    "topic": "metrictree",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "An online stationery store records 800 delivered orders in October with an Average Order Value (AOV) of Rs 450. Using the multiplicative revenue tree formula (Revenue = Orders x AOV), calculate the store's total realized revenue in rupees.",
+    "dataset": "none",
+    "hint": "Multiply total delivered orders by the average order value.",
+    "solution": "Applying the multiplicative metric tree formula:\n\n$$\\text{Revenue} = \\text{Delivered Orders} \\times \\text{AOV} = 800 \\times 450 = 360,000$$\n\nTotal realized revenue is Rs 360,000.",
+    "explanation": "Revenue decomposes multiplicatively into volume (orders) and pricing (AOV). Moving either branch shifts the top-line number.",
+    "commonMistake": "Dividing orders by AOV instead of multiplying.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 2,
+    "tags": [
+      "metric-tree",
+      "revenue",
+      "multiplicative"
+    ],
+    "expectedOutput": {
+      "value": 360000
+    }
+  },
+  {
+    "id": "business-metrictree-002",
+    "module": "business",
+    "topic": "metrictree",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "In an interview, you are asked: 'How would you build a top-level metric tree for e-commerce Gross Merchandise Value (GMV)?' Name the three primary first-level multiplicative drivers of GMV and briefly define each.",
+    "dataset": "none",
+    "hint": "Think about visitors coming to the platform, those who buy, and how much they spend.",
+    "solution": "The three first-level multiplicative drivers of e-commerce GMV are:\n\n1. **Total Unique Visitors (Traffic)**: The total volume of potential shoppers visiting the website or mobile app across the reporting window.\n2. **Conversion Rate (CVR %)**: The percentage of visiting shoppers who successfully place a purchase: $\\frac{\\text{Transacting Buyers}}{\\text{Total Visitors}}$.\n3. **Average Order Value (AOV)**: The average gross monetary value spent per transaction: $\\frac{\\text{Total GMV}}{\\text{Total Orders}}$.\n\nMathematically:\n$$\\text{GMV} = \\text{Visitors} \\times \\text{Conversion Rate} \\times \\text{AOV}$$",
+    "explanation": "Decomposing GMV into Visitors, Conversion Rate, and AOV maps directly to organizational ownership: Marketing owns Visitors, Product/UX owns Conversion Rate, and Merchandising/Pricing owns AOV.",
+    "commonMistake": "Listing additive components (e.g. Sales in Delhi + Sales in Mumbai) instead of a structural multiplicative driver tree.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "metric-tree",
+      "ecommerce",
+      "gmv"
+    ]
+  },
+  {
+    "id": "business-metrictree-003",
+    "module": "business",
+    "topic": "metrictree",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "At DesiCart, delivered orders dropped from 496 in November to 423 in December (-14.72%), while AOV fell from Rs 5,224.92 to Rs 4,868.90 (-6.81%). Total delivered revenue fell from Rs 2,591,559 to Rs 2,059,545. Calculate the exact percentage change in revenue between November and December, rounded to two decimal places.",
+    "dataset": "none",
+    "hint": "Calculate (Dec Revenue - Nov Revenue) / Nov Revenue * 100.",
+    "solution": "Revenue change calculation:\n\n$$\\text{Percentage Change} = \\left(\\frac{2059545 - 2591559}{2591559}\\right) \\times 100 = \\left(\\frac{-532014}{2591559}\\right) \\times 100 = -20.5287... \\approx -20.53\\%$$\n\nNote that simply adding the two percentage drops ($-14.72\\% + -6.81\\% = -21.53\\%$) is an approximation; compounding factors yield $(1 - 0.147177) \\times (1 - 0.068139) - 1 = -20.53\\%$.",
+    "explanation": "Multiplicative factors compound. The revenue drop of -20.53% was driven roughly two-thirds by volume contraction (-14.7%) and one-third by lower basket size (-6.8%).",
+    "commonMistake": "Summing $-14.7\\% + -6.8\\% = -21.5\\%$ instead of computing exact revenue change from base values.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "metric-tree",
+      "growth-math",
+      "rca"
+    ],
+    "expectedOutput": {
+      "value": -20.53
+    }
+  },
+  {
+    "id": "business-metrictree-004",
+    "module": "business",
+    "topic": "metrictree",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "Draw or outline the 4-leaf multiplicative metric tree for a UPI payments app's Total Payment Volume (TPV). State the mathematical formula linking these four drivers to TPV.",
+    "dataset": "none",
+    "hint": "Consider active transacting users, engagement frequency, basket size, and switch reliability.",
+    "solution": "The 4-leaf multiplicative metric tree for UPI TPV is:\n\n$$\\text{TPV} = \\text{Monthly Active Transacting Users (MAU)} \\times \\left(\\frac{\\text{Transactions Attempted}}{\\text{Active User}}\\right) \\times \\text{Average Ticket Size} \\times \\text{Transaction Success Rate}$$\n\nDriver breakdown:\n1. **Active Users**: Breadth of customer adoption.\n2. **Transactions per User**: Frequency of habits and repeat use.\n3. **Average Ticket Size**: Average rupee amount per transaction.\n4. **Success Rate**: Switch and banking partner technical fulfillment percentage.\n\nIf any one of these four metrics drops, TPV drops proportionally.",
+    "explanation": "A complete payments metric tree must incorporate technical reliability (Success Rate). Omitting success rate implicitly assumes that 100% of attempted user intent translates into settled payments.",
+    "commonMistake": "Omitting the technical success rate, ignoring that payments switches lose volume to technical failures.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "fintech",
+      "metric-tree",
+      "tpv"
+    ]
+  },
+  {
+    "id": "business-metrictree-005",
+    "module": "business",
+    "topic": "metrictree",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "A SaaS subscription business begins the month with Monthly Recurring Revenue (MRR) of Rs 500,000. During the month, it adds Rs 60,000 in New MRR from newly acquired accounts, loses Rs 45,000 to Churned MRR from cancellations, and gains Rs 10,000 in Expansion MRR from tier upgrades. Calculate the Ending Net MRR in rupees.",
+    "dataset": "none",
+    "hint": "Ending MRR = Starting MRR + New MRR + Expansion MRR - Churned MRR.",
+    "solution": "Using the additive SaaS MRR bridge:\n\n$$\\text{Ending MRR} = \\text{Starting MRR} + \\text{New MRR} + \\text{Expansion MRR} - \\text{Churned MRR}$$\n$$\\text{Ending MRR} = 500000 + 60000 + 10000 - 45000 = 525,000$$\n\nEnding Net MRR is Rs 525,000.",
+    "explanation": "SaaS revenue bridges operate additively across customer lifecycle cohorts. Net New MRR was $+60,000 + 10,000 - 45,000 = +25,000$, resulting in a 5% MoM expansion in recurring revenue.",
+    "commonMistake": "Adding churn instead of subtracting it, or forgetting expansion MRR.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "saas",
+      "mrr",
+      "metric-tree"
+    ],
+    "expectedOutput": {
+      "value": 525000
+    }
+  },
+  {
+    "id": "business-metrictree-006",
+    "module": "business",
+    "topic": "metrictree",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "A digital clinic network notices that fulfilled telehealth consultations fell 15% last month. Construct a 3-level metric tree decomposing fulfilled consultations into operational drivers, and assign a functional team owner to each terminal leaf.",
+    "dataset": "none",
+    "hint": "Decompose into demand (appointments booked) and fulfillment (completion rate). Then break demand into traffic and conversion, and fulfillment into clinician availability and patient attendance.",
+    "solution": "3-Level Metric Tree for Fulfilled Consultations:\n\n**Level 1: Top Metric**\n- **Fulfilled Consultations** = Appointments Booked $\\times$ Consultation Completion Rate %\n\n**Level 2: Sub-Drivers**\n- **Appointments Booked** = Patient App Visits $\\times$ Slot Booking Conversion %\n- **Consultation Completion Rate** = Doctor Show-up Rate % $\\times$ Patient Attendance Rate % $\\times$ Video Call Connection Success Rate %\n\n**Level 3: Terminal Leaves & Operational Owners**\n1. **Patient App Visits**: Owned by **Performance Marketing & Growth** (user acquisition and CRM reminders).\n2. **Slot Booking Conversion Rate**: Owned by **Product & UX Team** (doctor discovery, slot availability display, and checkout flow).\n3. **Doctor Show-up Rate**: Owned by **Clinical Operations / Provider Network Team** (roster management, doctor punctuality, and incentives).\n4. **Patient Attendance Rate**: Owned by **Patient Support & Engagement** (pre-consultation WhatsApp/SMS reminders).\n5. **Video Call Connection Success Rate**: Owned by **Engineering / Telehealth Platform Infrastructure** (WebRTC connectivity, bandwidth fallback, and audio/video switch uptime).",
+    "explanation": "Structuring leaves down to single operational owners enables accountability during diagnostic investigations. If fulfilled consults drop, comparing leaves immediately tells you whether to summon Marketing, Product, Clinical Ops, or Tech.",
+    "commonMistake": "Stopping at Level 2 without assigning functional owners to operational leaves.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "healthcare",
+      "metric-tree",
+      "operational-ownership"
+    ]
+  },
+  {
+    "id": "business-metrictree-007",
+    "module": "business",
+    "topic": "metrictree",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "The leadership team at DesiCart wants to evaluate the revenue tree branches for the festive quarter. Using the `orders` table, select distinct orders with `total_amount < 100000` and `order_status = 'Delivered'` for November 2024 and December 2024. Return the month in 'YYYY-MM' format as `month`, count of delivered orders as `delivered_orders`, total revenue rounded to nearest integer as `revenue`, and average order value rounded to two decimal places as `aov`. Order chronologically by `month` ascending.",
+    "dataset": "ecommerce",
+    "hint": "Filter total_amount < 100000 and order_status='Delivered' in a CTE, extract month with strftime, and aggregate.",
+    "solutionSql": "WITH o AS (\n  SELECT DISTINCT * FROM orders\n  WHERE total_amount < 100000 AND order_status = 'Delivered'\n)\nSELECT\n  strftime('%Y-%m', order_date) AS month,\n  COUNT(*) AS delivered_orders,\n  CAST(ROUND(SUM(total_amount)) AS INTEGER) AS revenue,\n  ROUND(AVG(total_amount), 2) AS aov\nFROM o\nWHERE strftime('%Y-%m', order_date) IN ('2024-11', '2024-12')\nGROUP BY month\nORDER BY month ASC;",
+    "expectedOutput": {
+      "columns": [
+        "month",
+        "delivered_orders",
+        "revenue",
+        "aov"
+      ],
+      "rows": [
+        [
+          "2024-11",
+          496,
+          2591559,
+          5224.92
+        ],
+        [
+          "2024-12",
+          423,
+          2059545,
+          4868.9
+        ]
+      ]
+    },
+    "explanation": "In November 2024, DesiCart fulfilled 496 delivered orders for Rs 2,591,559 (AOV Rs 5,224.92). In December 2024, fulfilled orders fell to 423 for Rs 2,059,545 (AOV Rs 4,868.90). Both order volume (-14.7%) and AOV (-6.8%) contracted following the festive Diwali season.",
+    "commonMistake": "Omitting the order_status = 'Delivered' filter, which includes cancelled and RTO orders in revenue and order counts.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "ecommerce",
+      "metric-tree",
+      "sql"
+    ]
+  },
+  {
+    "id": "business-metrictree-008",
+    "module": "business",
+    "topic": "metrictree",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Deconstruct order volume one level deeper into customer breadth versus frequency. For distinct orders in November 2024 and December 2024 (excluding `total_amount >= 100000`), return the `month` in 'YYYY-MM' format, the count of unique transacting customers as `buyers`, and the average orders placed per buyer rounded to three decimal places as `orders_per_buyer`. Order by `month` ascending.",
+    "dataset": "ecommerce",
+    "hint": "Count distinct customer_id for buyers, and divide COUNT(*) * 1.0 by COUNT(DISTINCT customer_id).",
+    "solutionSql": "WITH o AS (\n  SELECT DISTINCT * FROM orders\n  WHERE total_amount < 100000\n)\nSELECT\n  strftime('%Y-%m', order_date) AS month,\n  COUNT(DISTINCT customer_id) AS buyers,\n  ROUND(COUNT(*) * 1.0 / COUNT(DISTINCT customer_id), 3) AS orders_per_buyer\nFROM o\nWHERE strftime('%Y-%m', order_date) IN ('2024-11', '2024-12')\nGROUP BY month\nORDER BY month ASC;",
+    "expectedOutput": {
+      "columns": [
+        "month",
+        "buyers",
+        "orders_per_buyer"
+      ],
+      "rows": [
+        [
+          "2024-11",
+          448,
+          1.19
+        ],
+        [
+          "2024-12",
+          392,
+          1.168
+        ]
+      ]
+    },
+    "explanation": "Active buyers declined from 448 in November to 392 in December (-12.5%), while order frequency per buyer edged down from 1.190 to 1.168 (-1.8%). This proves that customer acquisition/retention breadth was the dominant driver of the volume drop, rather than repeat buying frequency collapsing.",
+    "commonMistake": "Performing integer division (COUNT(*) / COUNT(DISTINCT customer_id)) which rounds down to 1.000 in SQLite.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "ecommerce",
+      "customer-breadth",
+      "frequency"
+    ]
+  }
+]

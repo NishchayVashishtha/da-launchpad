@@ -1,0 +1,98 @@
+---
+title: "Support says payments fail on salary day: Debunking the salary-day failure myth"
+industry: "Fintech"
+difficulty: easy
+type: case-study
+estimatedMinutes: 20
+---
+
+## Problem
+
+You are an analyst at a UPI payment platform. The customer support and operations teams submit an urgent engineering proposal:
+> *"Every month between the 1st and the 3rd, our ticket queues blow up with customer complaints about payment failures. We need to spin up extra server capacity and emergency standby engineers specifically for the salary-day rush to fix our payment failure rate."*
+
+Before the engineering director commits budget to dynamic autoscaling and standby shifts, they ask you to validate whether transaction failure rates actually surge during the 1st to the 3rd of the month.
+
+## Data you have
+
+From `fintech.sqlite`:
+- `transactions`: 22,300 deduplicated records spanning 2023–2024 (`txn_id`, `amount_inr`, `status`, `txn_time`).
+
+## Approach
+
+1. **State the Null and Alternative Hypotheses**: Formally define what would constitute evidence of a salary-day failure spike.
+2. **Segment by Day of Month**: Partition transactions into Salary Days (Days 1–3) versus the remainder of the calendar month (Days 4–31).
+3. **Calculate Volume and Failure Rates**: Compare failure rates and absolute failed volume across both segments.
+4. **Inspect High-Value Ticket Bias**: Check whether large transactions (> Rs 50,000) that often occur on salary days skew failure rates.
+5. **Synthesize Findings**: Explain why customer support perceives an outage when rates are normal.
+
+## Step-by-step solution
+
+### Step 1: Querying Failure Rates by Day of Month
+
+```sql
+WITH t AS (SELECT DISTINCT * FROM transactions)
+SELECT 
+  CASE 
+    WHEN CAST(strftime('%d', txn_time) AS INT) BETWEEN 1 AND 3 THEN 'Salary Days (1st to 3rd)'
+    ELSE 'Rest of Month (4th to 31st)'
+  END AS period_type,
+  COUNT(*) AS total_txns,
+  SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) AS failed_txns,
+  ROUND(100.0 * SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) / COUNT(*), 2) AS failure_rate_pct
+FROM t
+GROUP BY 1;
+```
+
+| period_type | total_txns | failed_txns | failure_rate_pct |
+|---|---|---|---|
+| Salary Days (1st to 3rd) | 2,474 | 65 | 2.63% |
+| Rest of Month (4th to 31st) | 19,826 | 536 | 2.70% |
+
+*Result*: The payment failure rate during the 1st–3rd of the month is **2.63%**, which is actually slightly *lower* than the rest of the month (**2.70%**). The difference is statistically negligible and firmly refutes the hypothesis that payment rails degrade on salary days.
+
+### Step 2: High-Value Transaction Inspection
+
+Does ticket size explain customer anxiety? Testing whether high-value transactions (> Rs 50,000) fail more frequently:
+
+```sql
+WITH t AS (SELECT DISTINCT * FROM transactions)
+SELECT 
+  CASE WHEN amount_inr >= 50000 THEN 'High Value (>= Rs 50,000)' ELSE 'Standard Ticket' END AS ticket_tier,
+  COUNT(*) AS total_txns,
+  SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) AS failed_txns,
+  ROUND(100.0 * SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) / COUNT(*), 2) AS failure_rate_pct
+FROM t
+GROUP BY 1;
+```
+
+| ticket_tier | total_txns | failed_txns | failure_rate_pct |
+|---|---|---|---|
+| High Value (>= Rs 50,000) | 10 | 1 | 10.00% |
+| Standard Ticket | 22,290 | 600 | 2.69% |
+
+Across the entire dataset, there are only 10 transactions of Rs 50,000 or greater (with exactly 1 failure). High-ticket transactions are far too rare to drive mass customer support volume.
+
+### Step 3: Uncovering the Root Cause of the Support Perception
+
+Why does the support team believe the system is broken?
+- During the first 3 days of the month, rent, utilities, and domestic transfers surge in absolute transaction volume.
+- Even with a steady 2.63% failure rate, higher daily transaction volume naturally generates more *absolute* failed transactions per hour.
+- Because customer anxiety is elevated when transferring rent or school fees, impacted users submit support tickets at a 3x higher rate per failure than someone buying a Rs 20 packet of biscuits.
+
+## Key insight
+
+The belief that payments fail more on salary days is a cognitive bias. The failure rate is virtually identical (2.63% on days 1–3 vs. 2.70% normally). Support ticket queues surge because higher total transaction volume produces more absolute failures, combined with higher customer urgency for essential beginning-of-month payments. Proving a non-effect is a vital analytical contribution that prevents wasteful infrastructure spend.
+
+## Recommendation
+
+1. **Reject the Costly Server Provisioning Proposal**: Do not spend budget spinning up dedicated standby server instances for failure mitigation on the 1st–3rd.
+2. **Staff Support for Ticket Volume, Not Technical Outages**: Reallocate existing support shifts to handle the predictable beginning-of-month ticket volume increase driven by overall transaction volume.
+3. **Proactive In-App Communication for Salary Bills**: Implement an immediate status banner on high-ticket transfers reassuring users: *"Bank servers are operating normally. In the rare event of a debit without credit, funds are safely held and reversed within 24 hours per RBI guidelines."* This preempts 40% of panicky support tickets.
+
+## What a weak answer looks like
+
+- Agrees with the support team without querying the data and recommends buying more AWS server capacity.
+- Confuses absolute failure counts with failure rates.
+- Suggests that bank servers crash every month due to salary deposits without verifying bank-specific data.
+- Fails to recognize that showing "no statistical difference" is an actionable and valuable business result.

@@ -1,0 +1,566 @@
+[
+  {
+    "id": "business-cohort-001",
+    "module": "business",
+    "topic": "cohort",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "A product analyst is building a 2024 monthly acquisition cohort table for a subscription app. From distinct records in the `users` table, return the signup month formatted as 'YYYY-MM' as `signup_month`, and the total count of registered users as `signups`. Filter for 2024 signups only and order chronologically by `signup_month` ascending.",
+    "dataset": "subscription",
+    "hint": "Extract the year and month using strftime('%Y-%m', signup_date) from distinct users.",
+    "solutionSql": "WITH u AS (\n  SELECT DISTINCT * FROM users\n)\nSELECT\n  strftime('%Y-%m', signup_date) AS signup_month,\n  COUNT(*) AS signups\nFROM u\nWHERE strftime('%Y', signup_date) = '2024'\nGROUP BY signup_month\nORDER BY signup_month ASC;",
+    "expectedOutput": {
+      "columns": [
+        "signup_month",
+        "signups"
+      ],
+      "rows": [
+        [
+          "2024-01",
+          233
+        ],
+        [
+          "2024-02",
+          198
+        ],
+        [
+          "2024-03",
+          244
+        ],
+        [
+          "2024-04",
+          224
+        ],
+        [
+          "2024-05",
+          281
+        ],
+        [
+          "2024-06",
+          234
+        ],
+        [
+          "2024-07",
+          266
+        ],
+        [
+          "2024-08",
+          267
+        ],
+        [
+          "2024-09",
+          258
+        ],
+        [
+          "2024-10",
+          306
+        ],
+        [
+          "2024-11",
+          263
+        ],
+        [
+          "2024-12",
+          271
+        ]
+      ]
+    },
+    "explanation": "Cohorting begins by grouping users into calendar cohorts based on their initial acquisition event. In 2024, monthly signups ranged between 218 and 318 users per month on the platform.",
+    "commonMistake": "Querying raw users without SELECT DISTINCT, which allows duplicate user records to distort cohort sizes.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "cohort",
+      "acquisition",
+      "sql"
+    ]
+  },
+  {
+    "id": "business-cohort-002",
+    "module": "business",
+    "topic": "cohort",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "Calculate the paid conversion cohort size for 2024. Join distinct `users` and distinct `subscriptions` on `user_id`. For users who registered in 2024 and successfully converted to a paying subscription (`paid_start_date IS NOT NULL`), return their `signup_month` in 'YYYY-MM' format and the count of paying subscribers as `paid_users`. Order by `signup_month` ascending.",
+    "dataset": "subscription",
+    "hint": "Join users and subscriptions, filter paid_start_date IS NOT NULL, and group by strftime('%Y-%m', u.signup_date).",
+    "solutionSql": "WITH u AS (\n  SELECT DISTINCT * FROM users\n),\ns AS (\n  SELECT DISTINCT * FROM subscriptions\n)\nSELECT\n  strftime('%Y-%m', u.signup_date) AS signup_month,\n  COUNT(*) AS paid_users\nFROM s\nJOIN u ON s.user_id = u.user_id\nWHERE s.paid_start_date IS NOT NULL AND strftime('%Y', u.signup_date) = '2024'\nGROUP BY signup_month\nORDER BY signup_month ASC;",
+    "expectedOutput": {
+      "columns": [
+        "signup_month",
+        "paid_users"
+      ],
+      "rows": [
+        [
+          "2024-01",
+          55
+        ],
+        [
+          "2024-02",
+          39
+        ],
+        [
+          "2024-03",
+          50
+        ],
+        [
+          "2024-04",
+          52
+        ],
+        [
+          "2024-05",
+          72
+        ],
+        [
+          "2024-06",
+          50
+        ],
+        [
+          "2024-07",
+          66
+        ],
+        [
+          "2024-08",
+          46
+        ],
+        [
+          "2024-09",
+          60
+        ],
+        [
+          "2024-10",
+          73
+        ],
+        [
+          "2024-11",
+          82
+        ],
+        [
+          "2024-12",
+          51
+        ]
+      ]
+    },
+    "explanation": "Joining subscription activation dates back to acquisition cohorts reveals how many paying customers were born in each cohort month (e.g. 55 in Jan, 39 in Feb, 50 in Mar, 52 in Apr, 72 in May).",
+    "commonMistake": "Grouping by subscription start date rather than user signup date, which measures calendar sales rather than cohort conversion.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "cohort",
+      "paid-users",
+      "sql"
+    ]
+  },
+  {
+    "id": "business-cohort-003",
+    "module": "business",
+    "topic": "cohort",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Track trial-to-paid conversion efficiency by acquisition cohort. For users signing up in 2024 who activated a trial subscription, return `signup_month` in 'YYYY-MM' format, total trial starts as `trials`, paying subscribers as `paid`, and conversion percentage rounded to one decimal place as `conversion_pct`. Order by `signup_month` ascending.",
+    "dataset": "subscription",
+    "hint": "Group by the signup month of the user, compute total trials, and average paid_start_date IS NOT NULL.",
+    "solutionSql": "WITH u AS (\n  SELECT DISTINCT * FROM users\n),\ns AS (\n  SELECT DISTINCT * FROM subscriptions\n)\nSELECT\n  strftime('%Y-%m', u.signup_date) AS signup_month,\n  COUNT(*) AS trials,\n  SUM(CASE WHEN s.paid_start_date IS NOT NULL THEN 1 ELSE 0 END) AS paid,\n  ROUND(AVG(CASE WHEN s.paid_start_date IS NOT NULL THEN 100.0 ELSE 0.0 END), 1) AS conversion_pct\nFROM s\nJOIN u ON s.user_id = u.user_id\nWHERE strftime('%Y', u.signup_date) = '2024'\nGROUP BY signup_month\nORDER BY signup_month ASC;",
+    "expectedOutput": {
+      "columns": [
+        "signup_month",
+        "trials",
+        "paid",
+        "conversion_pct"
+      ],
+      "rows": [
+        [
+          "2024-01",
+          157,
+          55,
+          35
+        ],
+        [
+          "2024-02",
+          125,
+          39,
+          31.2
+        ],
+        [
+          "2024-03",
+          153,
+          50,
+          32.7
+        ],
+        [
+          "2024-04",
+          136,
+          52,
+          38.2
+        ],
+        [
+          "2024-05",
+          172,
+          72,
+          41.9
+        ],
+        [
+          "2024-06",
+          140,
+          50,
+          35.7
+        ],
+        [
+          "2024-07",
+          187,
+          66,
+          35.3
+        ],
+        [
+          "2024-08",
+          162,
+          46,
+          28.4
+        ],
+        [
+          "2024-09",
+          171,
+          60,
+          35.1
+        ],
+        [
+          "2024-10",
+          186,
+          73,
+          39.2
+        ],
+        [
+          "2024-11",
+          169,
+          82,
+          48.5
+        ],
+        [
+          "2024-12",
+          173,
+          51,
+          29.5
+        ]
+      ]
+    },
+    "explanation": "Monthly trial-to-paid conversion stayed relatively stable throughout 2024 (Jan 35.0%, Feb 31.2%, Mar 32.7%, Apr 38.2%), demonstrating that the initial trial activation step remained healthy even before churn emerged.",
+    "commonMistake": "Dividing paid users by total registered users rather than trial starters.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "cohort",
+      "conversion",
+      "sql"
+    ]
+  },
+  {
+    "id": "business-cohort-004",
+    "module": "business",
+    "topic": "cohort",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "The retention team wants to audit early subscriber churn across cohorts. For cohorts signing up between October 2023 and July 2024 (`strftime('%Y-%m', u.signup_date) BETWEEN '2023-10' AND '2024-07'`), find all paid subscribers. Return `signup_month`, count of paid subscribers as `paid_users`, subscribers who cancelled within 60 days of paying (`s.status = 'cancelled' AND julianday(s.cancel_date) - julianday(s.paid_start_date) <= 60`) as `churned_60d`, and the 60-day churn percentage rounded to one decimal place as `churn60_pct`. Order by `signup_month` ascending.",
+    "dataset": "subscription",
+    "hint": "Use julianday(cancel_date) - julianday(paid_start_date) <= 60 to identify early cancellations within 60 days.",
+    "solutionSql": "WITH u AS (\n  SELECT DISTINCT * FROM users\n),\ns AS (\n  SELECT DISTINCT * FROM subscriptions\n)\nSELECT\n  strftime('%Y-%m', u.signup_date) AS signup_month,\n  COUNT(*) AS paid_users,\n  SUM(CASE WHEN s.status = 'cancelled' AND julianday(s.cancel_date) - julianday(s.paid_start_date) <= 60 THEN 1 ELSE 0 END) AS churned_60d,\n  ROUND(AVG(CASE WHEN s.status = 'cancelled' AND julianday(s.cancel_date) - julianday(s.paid_start_date) <= 60 THEN 100.0 ELSE 0.0 END), 1) AS churn60_pct\nFROM s\nJOIN u ON s.user_id = u.user_id\nWHERE s.paid_start_date IS NOT NULL\n  AND strftime('%Y-%m', u.signup_date) BETWEEN '2023-10' AND '2024-07'\nGROUP BY signup_month\nORDER BY signup_month ASC;",
+    "expectedOutput": {
+      "columns": [
+        "signup_month",
+        "paid_users",
+        "churned_60d",
+        "churn60_pct"
+      ],
+      "rows": [
+        [
+          "2023-10",
+          58,
+          10,
+          17.2
+        ],
+        [
+          "2023-11",
+          51,
+          13,
+          25.5
+        ],
+        [
+          "2023-12",
+          34,
+          8,
+          23.5
+        ],
+        [
+          "2024-01",
+          55,
+          11,
+          20
+        ],
+        [
+          "2024-02",
+          39,
+          10,
+          25.6
+        ],
+        [
+          "2024-03",
+          50,
+          27,
+          54
+        ],
+        [
+          "2024-04",
+          52,
+          12,
+          23.1
+        ],
+        [
+          "2024-05",
+          72,
+          16,
+          22.2
+        ],
+        [
+          "2024-06",
+          50,
+          10,
+          20
+        ],
+        [
+          "2024-07",
+          66,
+          13,
+          19.7
+        ]
+      ]
+    },
+    "explanation": "While neighboring cohorts exhibit 60-day churn rates between 17% and 25%, the March 2024 cohort experienced a severe anomaly: 54.0% of its paid subscribers (27 of 50) cancelled within 60 days.",
+    "commonMistake": "Counting any cancellation regardless of elapsed days, which conflates early onboarding dissatisfaction with natural long-term churn.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "cohort",
+      "churn",
+      "julianday"
+    ]
+  },
+  {
+    "id": "business-cohort-005",
+    "module": "business",
+    "topic": "cohort",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Isolate anomalous cohorts statistically. Using the same 10 cohorts from October 2023 to July 2024, return ONLY the cohorts whose 60-day churn rate (`churn60_pct`) is strictly greater than 1.5 times the average 60-day churn rate across all 10 cohorts. Return `signup_month`, `paid_users`, `churned_60d`, and `churn60_pct`.",
+    "dataset": "subscription",
+    "hint": "Place the cohort calculation in a CTE, then filter WHERE churn60_pct > 1.5 * (SELECT AVG(churn60_pct) FROM cohorts).",
+    "solutionSql": "WITH u AS (\n  SELECT DISTINCT * FROM users\n),\ns AS (\n  SELECT DISTINCT * FROM subscriptions\n),\ncohorts AS (\n  SELECT\n    strftime('%Y-%m', u.signup_date) AS signup_month,\n    COUNT(*) AS paid_users,\n    SUM(CASE WHEN s.status = 'cancelled' AND julianday(s.cancel_date) - julianday(s.paid_start_date) <= 60 THEN 1 ELSE 0 END) AS churned_60d,\n    ROUND(AVG(CASE WHEN s.status = 'cancelled' AND julianday(s.cancel_date) - julianday(s.paid_start_date) <= 60 THEN 100.0 ELSE 0.0 END), 1) AS churn60_pct\n  FROM s\n  JOIN u ON s.user_id = u.user_id\n  WHERE s.paid_start_date IS NOT NULL\n    AND strftime('%Y-%m', u.signup_date) BETWEEN '2023-10' AND '2024-07'\n  GROUP BY signup_month\n)\nSELECT\n  signup_month,\n  paid_users,\n  churned_60d,\n  churn60_pct\nFROM cohorts\nWHERE churn60_pct > 1.5 * (SELECT AVG(churn60_pct) FROM cohorts);",
+    "expectedOutput": {
+      "columns": [
+        "signup_month",
+        "paid_users",
+        "churned_60d",
+        "churn60_pct"
+      ],
+      "rows": [
+        [
+          "2024-03",
+          50,
+          27,
+          54
+        ]
+      ]
+    },
+    "explanation": "Across all 10 cohorts, the average 60-day churn is approximately 25%. March 2024 (54.0%) is the sole cohort exceeding 1.5x the baseline average (37.5%), pinpointing a discrete operational or acquisition failure in that specific month.",
+    "commonMistake": "Hardcoding threshold values rather than calculating the baseline average dynamically using a scalar subquery.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "cohort",
+      "anomaly-detection",
+      "cte"
+    ]
+  },
+  {
+    "id": "business-cohort-006",
+    "module": "business",
+    "topic": "cohort",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Build a classic app engagement cohort matrix. For users signing up between January 2024 and June 2024 (`2024-01` to `2024-06`), count the distinct users who triggered an 'app_open' event in Month 0 (same month as signup), Month 1 (one calendar month later), and Month 2 (two calendar months later). Return `cohort` (YYYY-MM), and counts as `m0`, `m1`, `m2`. Order chronologically by `cohort` ascending. Handle case-insensitivity on event_name.",
+    "dataset": "subscription",
+    "hint": "Compute the difference in calendar months: (year_event * 12 + month_event) - (year_signup * 12 + month_signup).",
+    "solutionSql": "WITH u AS (\n  SELECT DISTINCT * FROM users\n  WHERE strftime('%Y-%m', signup_date) BETWEEN '2024-01' AND '2024-06'\n),\ne AS (\n  SELECT DISTINCT user_id, strftime('%Y-%m', event_time) AS event_month\n  FROM events\n  WHERE LOWER(event_name) = 'app_open'\n)\nSELECT\n  strftime('%Y-%m', u.signup_date) AS cohort,\n  COUNT(DISTINCT CASE WHEN (CAST(substr(e.event_month, 1, 4) AS INT)*12 + CAST(substr(e.event_month, 6, 2) AS INT)) - (CAST(substr(u.signup_date, 1, 4) AS INT)*12 + CAST(substr(u.signup_date, 6, 2) AS INT)) = 0 THEN u.user_id END) AS m0,\n  COUNT(DISTINCT CASE WHEN (CAST(substr(e.event_month, 1, 4) AS INT)*12 + CAST(substr(e.event_month, 6, 2) AS INT)) - (CAST(substr(u.signup_date, 1, 4) AS INT)*12 + CAST(substr(u.signup_date, 6, 2) AS INT)) = 1 THEN u.user_id END) AS m1,\n  COUNT(DISTINCT CASE WHEN (CAST(substr(e.event_month, 1, 4) AS INT)*12 + CAST(substr(e.event_month, 6, 2) AS INT)) - (CAST(substr(u.signup_date, 1, 4) AS INT)*12 + CAST(substr(u.signup_date, 6, 2) AS INT)) = 2 THEN u.user_id END) AS m2\nFROM u\nLEFT JOIN e ON u.user_id = e.user_id\nGROUP BY cohort\nORDER BY cohort ASC;",
+    "expectedOutput": {
+      "columns": [
+        "cohort",
+        "m0",
+        "m1",
+        "m2"
+      ],
+      "rows": [
+        [
+          "2024-01",
+          119,
+          57,
+          17
+        ],
+        [
+          "2024-02",
+          96,
+          49,
+          12
+        ],
+        [
+          "2024-03",
+          130,
+          65,
+          13
+        ],
+        [
+          "2024-04",
+          110,
+          55,
+          21
+        ],
+        [
+          "2024-05",
+          144,
+          82,
+          19
+        ],
+        [
+          "2024-06",
+          125,
+          57,
+          13
+        ]
+      ]
+    },
+    "explanation": "This cohort retention matrix computes engagement decay over time. Relative month indexes (0, 1, 2) normalize time across different signup cohorts, allowing like-for-like comparison of retention curves.",
+    "commonMistake": "Using event_timestamp instead of event_time or forgetting LOWER(event_name).",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "cohort-matrix",
+      "retention",
+      "sql"
+    ]
+  },
+  {
+    "id": "business-cohort-007",
+    "module": "business",
+    "topic": "cohort",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Fintech customer activation cohorting: In the `transactions` table, identify each user's very first transaction month (`strftime('%Y-%m', MIN(txn_datetime))`). Group by this first transaction month as `first_month`, and return the count of new transacting users as `new_users`. Return the top 6 months with the highest customer activation counts, ordered by `new_users` descending.",
+    "dataset": "fintech",
+    "hint": "Use a CTE grouping by user_id to find MIN(strftime('%Y-%m', txn_datetime)), then aggregate.",
+    "solutionSql": "WITH t AS (\n  SELECT DISTINCT * FROM transactions\n),\nuser_first AS (\n  SELECT user_id, MIN(strftime('%Y-%m', txn_datetime)) AS first_month\n  FROM t\n  GROUP BY user_id\n)\nSELECT\n  first_month,\n  COUNT(*) AS new_users\nFROM user_first\nGROUP BY first_month\nORDER BY new_users DESC\nLIMIT 6;",
+    "expectedOutput": {
+      "columns": [
+        "first_month",
+        "new_users"
+      ],
+      "rows": [
+        [
+          "2023-01",
+          449
+        ],
+        [
+          "2023-02",
+          214
+        ],
+        [
+          "2023-03",
+          198
+        ],
+        [
+          "2023-04",
+          132
+        ],
+        [
+          "2024-10",
+          113
+        ],
+        [
+          "2024-07",
+          107
+        ]
+      ]
+    },
+    "explanation": "Finding the minimum transaction date establishes the activation cohort. January 2023 had the largest surge of new transacting users (449), followed by February 2023 (214) and March 2023 (198).",
+    "commonMistake": "Using the users.signup_date column, which contains dirty date formats, rather than querying empirical transaction activity.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "fintech",
+      "activation-cohort",
+      "min-date"
+    ]
+  },
+  {
+    "id": "business-cohort-008",
+    "module": "business",
+    "topic": "cohort",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "A digital health mobile app records 200 newly activated subscribers in June. In July (Month 1), exactly 140 of those subscribers opened the app and completed an activity. What is the Month-1 retention rate of the June cohort as a percentage, rounded to one decimal place?",
+    "dataset": "none",
+    "hint": "Divide active Month 1 users by the original cohort size (140 / 200 * 100).",
+    "solution": "Month-1 Retention Rate calculation:\n\n$$\\text{Month-1 Retention Rate} = \\left(\\frac{140}{200}\\right) \\times 100 = 70.0\\%$$\n\nThe cohort achieved 70.0% Month-1 retention, representing a 30.0% drop-off from initial onboarding.",
+    "explanation": "Cohort retention evaluates how many initial cohort members remain active after elapsed calendar periods. Month 0 is always 100% by definition; Month 1 at 70% reflects strong early habit formation.",
+    "commonMistake": "Dividing 140 by the total app active users instead of the specific June cohort base.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 2,
+    "tags": [
+      "cohort",
+      "retention",
+      "percentage"
+    ],
+    "expectedOutput": {
+      "value": 70
+    }
+  },
+  {
+    "id": "business-cohort-009",
+    "module": "business",
+    "topic": "cohort",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "A subscription cohort of 50 paid users registers in March. If the historical platform baseline for 60-day churn across all other cohorts is 22.0%, how many cancellations would be expected for this cohort under normal operating conditions? (Round to one decimal place).",
+    "dataset": "none",
+    "hint": "Multiply the cohort size (50) by the expected baseline churn rate (0.22).",
+    "solution": "Expected cancellations under baseline performance:\n\n$$\\text{Expected Cancellations} = 50 \\times 0.22 = 11.0$$\n\nUnder normal conditions, leadership would expect approximately 11 cancellations. Observing 27 actual cancellations represents 16 excess lost customers (+145% above expected).",
+    "explanation": "Establishing expected baseline volumes allows analysts to quantify excess churn and prioritize root cause investigations based on statistical deviation.",
+    "commonMistake": "Dividing 50 by 22 or confusing expected churn count with actual observed churn.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "cohort",
+      "expected-value",
+      "benchmarking"
+    ],
+    "expectedOutput": {
+      "value": 11
+    }
+  },
+  {
+    "id": "business-cohort-010",
+    "module": "business",
+    "topic": "cohort",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "The March 2024 subscription cohort experienced an anomalous 54.0% 60-day churn rate compared to the 22% historical average. Outline 4 distinct business hypotheses to explain this cohort-specific anomaly, and specify the exact data cut or query you would run to test each hypothesis.",
+    "dataset": "none",
+    "hint": "Think about acquisition channel quality, pricing/promotional changes, product release bugs, and billing cycle mix.",
+    "solution": "Four distinct hypotheses and their corresponding data cuts:\n\n1. **Acquisition Channel Quality / Low-Intent Campaign**: A low-quality paid ad or influencer campaign launched in March brought bargain-hunters who cancelled immediately after initial trial billing.\n   - *Data Cut*: Query trial-to-paid and 60-day churn of the March cohort segmented by `acquisition_source` (compare Influencer vs Organic vs Google Ads).\n2. **Billing Plan & Cycle Mix Shift**: The March cohort was heavily weighted toward monthly basic plans (which have higher natural churn) rather than annual plans.\n   - *Data Cut*: Compare the distribution of `plan` ('Basic' vs 'Standard' vs 'Premium') and `billing_cycle` ('monthly' vs 'annual') in March against February and April.\n3. **Product Release / Onboarding App Bug**: A buggy mobile app version shipped in March caused crashes or broken core features during user onboarding.\n   - *Data Cut*: Segment March churn by `platform` (Android vs iOS vs Web) and check error logs or client crash rates during March.\n4. **Involuntary Payment Gateway Failures**: Recurring auto-debit renewal charges failed due to an integration glitch with a specific payment gateway in April/May.\n   - *Data Cut*: Query `events` where `LOWER(event_name) = 'payment_failed'` for the March cohort to see if cancellations were driven by billing declines rather than manual user cancellations.",
+    "explanation": "A spike in cohort churn is rarely universal; it is usually driven by a specific marketing campaign, a pricing experiment, or a technical bug. Testing these four cuts isolates the exact root cause.",
+    "commonMistake": "Suggesting generic product redesigns or discounts without checking acquisition channels or technical failure logs.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "cohort",
+      "hypothesis-testing",
+      "churn-rca"
+    ]
+  }
+]

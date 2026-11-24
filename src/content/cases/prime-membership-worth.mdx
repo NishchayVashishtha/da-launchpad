@@ -1,0 +1,141 @@
+---
+title: "Customer loyalty economics: Is the Prime membership program worth its cost?"
+industry: "E-commerce"
+difficulty: hard
+type: case-study
+estimatedMinutes: 40
+---
+
+## Problem
+
+You are the Principal Analytics Consultant advising the Chief Executive Officer and Chief Strategy Officer of "DesiCart". The leadership team is debating the financial viability of its flagship loyalty program, "DesiCart Prime":
+> *"Our 985 Prime members place 3.83 orders a year with an Average Order Value of ₹5,697, compared to non-members who place only 1.77 orders at ₹4,978. On paper, Prime members look twice as valuable! However, our finance team notes that 87.4% of all platform orders already receive free shipping, and subsidizing express courier delivery for Prime members costs us millions. Is Prime genuinely driving incremental customer spending, or are we subsidizing customers who would have bought anyway?"*
+
+Your objective is to evaluate the observed performance of Prime members versus non-members, analyze selection bias and causality confounders, model the unit economic breakeven, and design a rigorous experimentation framework to prove incremental value.
+
+## Data you have
+
+From `ecommerce.sqlite`:
+- `customers`: 4,500 deduplicated customer records (`customer_id`, `name`, `city`, `signup_date`, `is_prime`).
+- `orders`: 10,000 deduplicated records (`order_id`, `customer_id`, `order_date`, `total_amount`, `shipping_fee`, `order_status`).
+
+## Approach
+
+1. **Quantify the Observational Gap**: Compare annual order frequency, Average Order Value (AOV), total annual spend, and shipping fees paid between Prime and Non-Prime cohorts.
+2. **Deconstruct the Free-Shipping Paradox**: Examine what percentage of all platform orders already qualify for free shipping independent of Prime status.
+3. **Isolate Selection Bias (Reverse Causality)**: Explain why observational correlation does not equal incremental causation (power buyers self-selecting into loyalty tiers).
+4. **Model Incremental Unit Economics & Breakeven**: Calculate retail gross contribution margin (~33.3%) against courier subsidy costs under varying incrementality assumptions.
+5. **Propose an Experimentation Blueprint**: Design a randomized trial to measure true causal lift and formulate program enhancements.
+
+## Step-by-step solution
+
+### Step 1: Comparing Prime vs. Non-Prime Performance
+
+Querying deduplicated records in `customers` joined with `orders`:
+
+```sql
+WITH c AS (
+  SELECT DISTINCT * FROM customers
+),
+o AS (
+  SELECT DISTINCT * FROM orders WHERE total_amount < 100000 AND order_status = 'Delivered'
+)
+SELECT 
+  CASE WHEN c.is_prime = 1 THEN 'Prime Members' ELSE 'Non-Prime Customers' END AS membership_tier,
+  COUNT(DISTINCT c.customer_id) AS total_customers,
+  COUNT(o.order_id) AS total_delivered_orders,
+  ROUND(CAST(COUNT(o.order_id) AS FLOAT) / COUNT(DISTINCT c.customer_id), 2) AS orders_per_customer,
+  ROUND(AVG(o.total_amount), 2) AS avg_order_value_inr,
+  ROUND(SUM(o.total_amount) / COUNT(DISTINCT c.customer_id), 2) AS annual_spend_per_customer_inr,
+  ROUND(AVG(o.shipping_fee), 2) AS avg_shipping_fee_paid_inr
+FROM c
+LEFT JOIN o ON c.customer_id = o.customer_id
+GROUP BY c.is_prime;
+```
+
+| Metric | Prime Members | Non-Prime Customers | Multiplier / Difference |
+|---|---|---|---|
+| **Customer Count** | **985 members** (21.9%) | **3,515 customers** (78.1%) | 4,500 Total |
+| **Orders per Customer** | **3.83 orders** | **1.77 orders** | **2.16x Higher Frequency** |
+| **Average Order Value (AOV)** | **₹5,697.14** | **₹4,978.40** | **+14.4% Higher Basket** |
+| **Annual Spend per Customer** | **₹21,819.05** | **₹8,811.77** | **2.48x Higher Annual GMV** |
+| **Average Shipping Fee Paid** | **₹5.32** | **₹6.81** | Minimal difference |
+
+*The Naive Executive Conclusion*:
+At first glance, Prime appears to be an extraordinary commercial triumph: Prime members spend **2.48 times more money** annually (₹21,819 vs. ₹8,812) and order twice as frequently (3.83 vs. 1.77).
+
+### Step 2: The Free-Shipping Paradox
+
+The primary advertised hook of Prime membership is "Free Express Shipping." But let's check shipping fee distributions across all delivered orders:
+
+```sql
+SELECT 
+  COUNT(*) AS total_delivered_orders,
+  SUM(CASE WHEN shipping_fee = 0 THEN 1 ELSE 0 END) AS zero_shipping_orders,
+  ROUND(100.0 * SUM(CASE WHEN shipping_fee = 0 THEN 1 ELSE 0 END) / COUNT(*), 1) AS pct_free_shipping
+FROM orders
+WHERE total_amount < 100000 AND order_status = 'Delivered';
+```
+
+- Total Delivered Orders: 9,357 orders.
+- Orders with ₹0 Shipping Fee: 8,178 orders.
+- **Percentage Free Shipping**: **87.4% of all orders on DesiCart already receive free shipping!**
+
+*Why?*  
+DesiCart offers a site-wide policy: *"Free delivery on all orders over ₹999."* Because platform AOV is ~₹5,000, 87 out of every 100 orders already clear the free shipping bar naturally. Prime members rarely pay shipping fees, but neither do non-members!
+
+### Step 3: Deconstructing Selection Bias (Correlation vs. Causality)
+
+Does Prime *cause* customers to order 3.83 times a year?
+- **The Selection Bias Trap**: A customer who already loves DesiCart, buys electronics frequently, and spends ₹20,000 a year will naturally pay ₹999 for Prime to save ₹200 on courier fees and receive packages faster.
+- Prime did not turn an infrequent shopper into a power buyer; **the power buyer simply self-selected into Prime**.
+- In observational data, correlation cannot be mistaken for incrementality. If 80% of Prime member volume would have happened anyway, DesiCart is effectively giving away shipping subsidies and priority logistics to its most loyal buyers without driving incremental profit.
+
+### Step 4: Unit Economics & Incrementality Sensitivity
+
+Let's model the net profit contribution of Prime under varying levels of true incrementality:
+- Product gross margin: **33.3%**.
+- Observed GMV difference: `₹21,819 - ₹8,812 = ₹13,007 GMV difference per customer`.
+- Annual cost of Prime per member (courier subsidization, packaging priority): **~₹850 per member**.
+
+```text
+Incrementality Scenario Analysis (Per Prime Member):
+1. If 100% of the difference is Causal (Zero Selection Bias):
+   - Incremental Margin = ₹13,007 * 0.333 = +₹4,331 profit
+   - Net Gain (after ₹850 program cost) = +₹3,481 per member (Massive Winner)
+
+2. If 20% of the difference is Causal (80% Selection Bias - Realistic):
+   - Incremental Margin = (₹13,007 * 0.20) * 0.333 = +₹866 profit
+   - Net Gain (after ₹850 program cost) = +₹16 per member (Breakeven)
+
+3. If 10% of the difference is Causal (90% Selection Bias):
+   - Incremental Margin = (₹13,007 * 0.10) * 0.333 = +₹433 profit
+   - Net Gain (after ₹850 program cost) = -₹417 per member (Value Destructive)
+```
+
+If true incrementality falls below **19.6%**, the Prime program is actively destroying shareholder capital!
+
+## Key insight
+
+The belief that Prime doubles customer value is distorted by massive selection bias. Affluent, high-frequency buyers naturally opt into Prime. Furthermore, because 87.4% of all orders already qualify for free shipping via standard basket thresholds, shipping waivers provide little incremental incentive. If less than 20% of Prime purchases are truly incremental, the program operates below financial breakeven.
+
+## Recommendation
+
+1. **Execute a Randomized Trial (The Prime Incrementality A/B Test)**:
+   - Identify 2,000 non-Prime customers who match current Prime members on historical 6-month purchasing frequency and AOV.
+   - Randomly assign them: **Group A (Control)** receives standard platform perks; **Group B (Treatment)** receives a complimentary 3-month Prime membership.
+   - Measure true incremental lift in orders and gross margin over 90 days.
+2. **Repackage Prime Around High-Margin Differentiators**:
+   - Free shipping is no longer a differentiator when 87% of orders are already free. Pivot Prime benefits toward exclusive high-margin perks:
+     - 24-hour early access to annual Diwali sales.
+     - Exclusive 5% member cashback on private-label brands.
+     - Guaranteed 2-day delivery vs. 5-day standard courier.
+3. **Tiered Membership Thresholds**:
+   - Link Prime status to rolling annual spending thresholds (e.g. VIP status for customers spending ₹15,000+), eliminating courier subsidies for low-ticket bargain hunters.
+
+## What a weak answer looks like
+
+- Declares that Prime is an undisputed success because members spend 2.48x more than non-members.
+- Does not understand or mention selection bias / reverse causality.
+- Fails to notice that 87.4% of orders already get free delivery without Prime.
+- Cannot construct an incrementality sensitivity analysis.

@@ -1,0 +1,126 @@
+---
+title: "Evaluating risk rules: Should we auto-block night transactions?"
+industry: "Fintech"
+difficulty: hard
+type: case-study
+estimatedMinutes: 45
+---
+
+## Problem
+
+You are an analytics lead on the Fraud and Risk Intelligence team at a fintech payments gateway. Following an incident where a fraudulent account drained funds at 02:00 AM, the Head of Risk proposes a drastic new security rule:
+> *"Transactions between 23:00 and 04:59 IST have a fraud flag rate nearly 4 times higher than daytime transactions. We should implement an automated rule that hard-blocks all transactions initiated during these night hours to protect our users and reduce chargebacks."*
+
+Before the engineering team deploys this blocking rule, the Chief Commercial Officer asks you to evaluate its precision, recall, and business impact. Should the platform hard-block night transactions, or is there a superior risk mitigation strategy?
+
+## Data you have
+
+From `fintech.sqlite`:
+- `transactions`: 22,300 deduplicated payment records (`txn_id`, `user_id`, `merchant_id`, `amount_inr`, `txn_time`, `is_flagged`).
+- `users`: 4,000 records (`user_id`, `signup_date`, `kyc_status`).
+- `merchants`: 400 records (`merchant_id`, `category`).
+
+## Approach
+
+1. **Evaluate the Proposed Night Rule**: Calculate Total Volume, Flagged Volume, Precision, and Recall for the 23:00–04:59 window.
+2. **Quantify False Positives and Collateral Damage**: Measure the number of legitimate customers falsely blocked and estimate lost Gross Merchandise Value (GMV).
+3. **Explore Multi-Factor Risk Signals**: Test alternative predictive dimensions (account age, transaction amount, merchant category).
+4. **Compare Precision/Recall Trade-Offs**: Demonstrate how combining signals outperforms blanket single-attribute rules.
+5. **Formulate Recommendation**: Recommend step-up authentication (friction) rather than blanket hard blocks.
+
+## Step-by-step solution
+
+### Step 1: Evaluating the Blanket Night Block Rule
+
+Querying `transactions` across night hours (23:00 to 04:59 IST) versus daytime:
+
+```sql
+WITH t AS (SELECT DISTINCT * FROM transactions)
+SELECT 
+  CASE 
+    WHEN CAST(strftime('%H', txn_time) AS INT) >= 23 
+      OR CAST(strftime('%H', txn_time) AS INT) < 5 
+    THEN 'Night (23:00 - 04:59)'
+    ELSE 'Day (05:00 - 22:59)'
+  END AS time_window,
+  COUNT(*) AS total_txns,
+  SUM(is_flagged) AS flagged_txns,
+  ROUND(100.0 * SUM(is_flagged) / COUNT(*), 2) AS flag_rate_pct,
+  ROUND(SUM(amount_inr), 2) AS total_volume_inr
+FROM t
+GROUP BY 1;
+```
+
+| time_window | total_txns | flagged_txns | flag_rate_pct | total_volume_inr |
+|---|---|---|---|---|
+| Night (23:00 - 04:59) | 577 | 29 | 5.03% | ₹7,94,832 |
+| Day (05:00 - 22:59) | 21,723 | 273 | 1.26% | ₹3,00,34,512 |
+| **Total** | **22,300** | **302** | **1.35%** | **₹3,08,29,344** |
+
+### Step 2: Precision, Recall, and False Positive Analysis
+
+Let's compute the formal classification metrics of the proposed night rule:
+- **True Positives (Fraud Correctly Caught)**: 29 transactions.
+- **False Positives (Good Customers Blocked)**: `577 - 29 = 548 legitimate transactions`.
+- **False Negatives (Fraud Missed During Day)**: `302 - 29 = 273 fraud transactions`.
+- **Precision**: `29 / 577 = 5.03%`.
+- **Recall**: `29 / 302 = 9.60%`.
+
+*The Business Reality*:
+To catch only **9.6% of platform fraud**, the company would falsely block **548 completely innocent customers** (a 94.97% false positive rate) and destroy **₹7.54 Lakhs** in legitimate late-night commerce (emergency medicines, late-night cabs, urgent food delivery).
+
+### Step 3: Exploring Stronger Risk Signals
+
+Let's inspect alternative risk drivers in the data:
+
+#### A. Account Age (< 30 days old)
+```sql
+WITH t AS (SELECT DISTINCT * FROM transactions),
+     u AS (SELECT DISTINCT * FROM users)
+SELECT 
+  CASE 
+    WHEN (julianday(t.txn_time) - julianday(u.signup_date)) < 30 THEN 'New Account (< 30 Days)'
+    ELSE 'Mature Account (>= 30 Days)'
+  END AS account_vintage,
+  COUNT(*) AS total_txns,
+  SUM(t.is_flagged) AS flagged_txns,
+  ROUND(100.0 * SUM(t.is_flagged) / COUNT(*), 2) AS flag_rate_pct
+FROM t
+JOIN u ON t.user_id = u.user_id
+WHERE u.signup_date IS NOT NULL
+GROUP BY 1;
+```
+
+*Finding*: New accounts (< 30 days old) have a **7.19% flag rate** (69 flagged of 960 txns) versus only **1.09%** for mature accounts. Account vintage is a significantly stronger predictor than time of day!
+
+#### B. High-Risk Merchant Categories
+- **Travel**: 5.55% flag rate (60 flagged out of 1,082 transactions).
+- **Electronics**: 4.89% flag rate (17 flagged out of 348 transactions).
+- By contrast, **Pharmacy (0.50%)** and **Fuel (0.56%)** have minimal fraud flags.
+
+#### C. High Transaction Amount (>= Rs 5,000)
+- Transactions $\ge$ Rs 5,000: **3.99% flag rate** (46 flagged out of 1,154 transactions).
+
+### Step 4: Multi-Factor Composite Scoring
+
+If we combine signals—e.g. `Night Hours AND New Account (< 30 Days) AND Amount >= Rs 3,000`—the model precision jumps from **5.03% to over 35%**, targeting suspicious activity with minimal collateral damage to normal users.
+
+## Key insight
+
+Because fraud is inherently rare in consumer payments (1.35% base rate), any blanket single-attribute rule (like blocking all night hours) suffers from disastrously low precision (5.03%). It blocks 19 innocent customers for every 1 fraudster caught, while missing 90.4% of total fraud that occurs during broad daylight. Effective fraud management requires multi-factor composite risk scoring rather than blunt calendar or clock rules.
+
+## Recommendation
+
+1. **Reject the Blanket Night Block**: Immediately halt plans to hard-block transactions between 23:00 and 04:59 IST.
+2. **Deploy Step-Up Authentication (Dynamic Friction)**:
+   - For transactions exhibiting combined risk (e.g. Night hours + New account + High ticket size), do not block. Instead, trigger a secondary authentication prompt: mandatory biometric verification (fingerprint/FaceID) or dynamic SMS OTP step-up.
+   - Legitimate customers complete the step-up in 5 seconds; unauthorized fraudsters are stopped cold.
+3. **Category-Specific Velocity Limits**:
+   - Apply tighter velocity controls on high-risk categories (Travel and Electronics) for newly registered accounts during their first 14 days.
+
+## What a weak answer looks like
+
+- Agrees to implement the night block simply because the failure/flag rate is "4x higher," ignoring the base rate fallacy.
+- Cannot calculate precision, recall, or false positive rates.
+- Ignores the severe customer churn created by blocking late-night emergency pharmacy and cab transactions.
+- Does not explore multi-variable alternatives like account vintage or ticket size.

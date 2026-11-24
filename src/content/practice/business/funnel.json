@@ -1,0 +1,349 @@
+[
+  {
+    "id": "business-funnel-001",
+    "module": "business",
+    "topic": "funnel",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "A product analyst is calculating the top-of-funnel entry volume for a telehealth subscription app. From the `events` table, count the total number of distinct users who generated a signup event as `signups`. Note that event names in the dataset have mixed casing ('signup' and 'SIGNUP').",
+    "dataset": "subscription",
+    "hint": "Filter using LOWER(event_name) = 'signup' and count distinct user_id.",
+    "solutionSql": "SELECT\n  COUNT(DISTINCT user_id) AS signups\nFROM events\nWHERE LOWER(event_name) = 'signup';",
+    "expectedOutput": {
+      "columns": [
+        "signups"
+      ],
+      "rows": [
+        [
+          5200
+        ]
+      ]
+    },
+    "explanation": "Event tracking logs frequently contain case discrepancies across client platforms. Converting event_name to lowercase using LOWER() ensures all signup events are captured without undercounting.",
+    "commonMistake": "Filtering strictly for event_name = 'signup', which ignores uppercase 'SIGNUP' entries and returns an undercounted result.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "funnel",
+      "cleaning",
+      "sql"
+    ]
+  },
+  {
+    "id": "business-funnel-002",
+    "module": "business",
+    "topic": "funnel",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "Map the full user progression funnel across the four primary milestone events: 'signup', 'trial_start', 'payment_success', and 'renewal_success'. Query the `events` table, normalise event names to lowercase as `event_name`, and return the count of distinct users at each step as `users`. Order the results by `users` descending.",
+    "dataset": "subscription",
+    "hint": "Use LOWER(event_name), filter with IN, group by LOWER(event_name), and order by COUNT(DISTINCT user_id) DESC.",
+    "solutionSql": "SELECT\n  LOWER(event_name) AS event_name,\n  COUNT(DISTINCT user_id) AS users\nFROM events\nWHERE LOWER(event_name) IN ('signup', 'trial_start', 'payment_success', 'renewal_success')\nGROUP BY LOWER(event_name)\nORDER BY users DESC;",
+    "expectedOutput": {
+      "columns": [
+        "event_name",
+        "users"
+      ],
+      "rows": [
+        [
+          "signup",
+          5200
+        ],
+        [
+          "trial_start",
+          3308
+        ],
+        [
+          "payment_success",
+          1193
+        ],
+        [
+          "renewal_success",
+          766
+        ]
+      ]
+    },
+    "explanation": "The core progression funnel shows 5,200 unique signups, 3,308 trial starters (63.6%), 1,193 paid converters (36.1% of trials), and 766 recurring renewals (64.2% of paid subscribers). Counting distinct users ensures repeat events do not falsely inflate funnel stages.",
+    "commonMistake": "Using COUNT(*) instead of COUNT(DISTINCT user_id), which counts total event triggers rather than unique users.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "funnel",
+      "user-milestones",
+      "sql"
+    ]
+  },
+  {
+    "id": "business-funnel-003",
+    "module": "business",
+    "topic": "funnel",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Calculate the conversion rate from free trial to paid subscription across all distinct records in the `subscriptions` table. A user converted to paid if `paid_start_date IS NOT NULL`. Return a single column named `trial_to_paid_pct` rounded to two decimal places.",
+    "dataset": "subscription",
+    "hint": "Select DISTINCT * from subscriptions in a CTE, then take AVG(CASE WHEN paid_start_date IS NOT NULL THEN 100.0 ELSE 0.0 END).",
+    "solutionSql": "WITH s AS (\n  SELECT DISTINCT * FROM subscriptions\n)\nSELECT\n  ROUND(AVG(CASE WHEN paid_start_date IS NOT NULL THEN 100.0 ELSE 0.0 END), 2) AS trial_to_paid_pct\nFROM s;",
+    "expectedOutput": {
+      "columns": [
+        "trial_to_paid_pct"
+      ],
+      "rows": [
+        [
+          36.06
+        ]
+      ]
+    },
+    "explanation": "Out of 3,308 distinct trial activations, 1,193 subscribers transitioned into paying status, yielding an overall trial-to-paid conversion rate of 36.06%.",
+    "commonMistake": "Dividing paid subscriptions by total registered users (5,200) instead of total trial activations (3,308).",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "subscription",
+      "trial-conversion",
+      "sql"
+    ]
+  },
+  {
+    "id": "business-funnel-004",
+    "module": "business",
+    "topic": "funnel",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Compare trial-to-paid conversion across user client platforms. Join distinct `users` and distinct `subscriptions` on `user_id`. For each `platform`, return the platform name, total trial subscriptions as `trials`, paying subscriptions as `paid` (where `paid_start_date IS NOT NULL`), and the conversion percentage rounded to one decimal place as `conversion_pct`. Order from highest conversion rate to lowest.",
+    "dataset": "subscription",
+    "hint": "Join users and subscriptions, group by u.platform, and sort by conversion_pct DESC.",
+    "solutionSql": "WITH u AS (\n  SELECT DISTINCT * FROM users\n),\ns AS (\n  SELECT DISTINCT * FROM subscriptions\n)\nSELECT\n  u.platform,\n  COUNT(*) AS trials,\n  SUM(CASE WHEN s.paid_start_date IS NOT NULL THEN 1 ELSE 0 END) AS paid,\n  ROUND(AVG(CASE WHEN s.paid_start_date IS NOT NULL THEN 100.0 ELSE 0.0 END), 1) AS conversion_pct\nFROM s\nJOIN u ON s.user_id = u.user_id\nGROUP BY u.platform\nORDER BY conversion_pct DESC;",
+    "expectedOutput": {
+      "columns": [
+        "platform",
+        "trials",
+        "paid",
+        "conversion_pct"
+      ],
+      "rows": [
+        [
+          "iOS",
+          833,
+          382,
+          45.9
+        ],
+        [
+          "Web",
+          502,
+          199,
+          39.6
+        ],
+        [
+          "Android",
+          1973,
+          612,
+          31
+        ]
+      ]
+    },
+    "explanation": "Conversion varies dramatically by platform: iOS leads at 45.9% (382 / 833), Web follows at 39.6% (199 / 502), while Android lags significantly at 31.0% (612 / 1,973) despite accounting for the vast majority of trial starts.",
+    "commonMistake": "Joining directly without de-duplicating users and subscriptions, distorting trial counts.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "funnel",
+      "platform-analysis",
+      "sql"
+    ]
+  },
+  {
+    "id": "business-funnel-005",
+    "module": "business",
+    "topic": "funnel",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "The marketing head wants to identify which user acquisition channels bring high-intent users versus low-intent trial users. For each `acquisition_source` in the `users` table joined with distinct `subscriptions`, return `acquisition_source`, total trials as `trials`, paying subscribers as `paid`, and conversion percentage rounded to one decimal place as `conversion_pct`. Order by `conversion_pct` ascending to reveal the lowest-performing channel first.",
+    "dataset": "subscription",
+    "hint": "Join users and subscriptions, group by acquisition_source, and sort by conversion_pct ASC.",
+    "solutionSql": "WITH u AS (\n  SELECT DISTINCT * FROM users\n),\ns AS (\n  SELECT DISTINCT * FROM subscriptions\n)\nSELECT\n  u.acquisition_source,\n  COUNT(*) AS trials,\n  SUM(CASE WHEN s.paid_start_date IS NOT NULL THEN 1 ELSE 0 END) AS paid,\n  ROUND(AVG(CASE WHEN s.paid_start_date IS NOT NULL THEN 100.0 ELSE 0.0 END), 1) AS conversion_pct\nFROM s\nJOIN u ON s.user_id = u.user_id\nGROUP BY u.acquisition_source\nORDER BY conversion_pct ASC;",
+    "expectedOutput": {
+      "columns": [
+        "acquisition_source",
+        "trials",
+        "paid",
+        "conversion_pct"
+      ],
+      "rows": [
+        [
+          "Influencer",
+          536,
+          86,
+          16
+        ],
+        [
+          "Google Ads",
+          703,
+          258,
+          36.7
+        ],
+        [
+          "Organic",
+          911,
+          340,
+          37.3
+        ],
+        [
+          "Play Store Feature",
+          207,
+          78,
+          37.7
+        ],
+        [
+          "Instagram",
+          535,
+          235,
+          43.9
+        ],
+        [
+          "Referral",
+          416,
+          196,
+          47.1
+        ]
+      ]
+    },
+    "explanation": "Influencer marketing has by far the lowest trial-to-paid conversion at 16.0% (86 / 536), while word-of-mouth Referral leads at 47.1% (196 / 416) and Instagram delivers 43.9% (235 / 535). Influencer campaigns generate top-of-funnel curiosity but poor monetization intent.",
+    "commonMistake": "Sorting descending instead of ascending or omitting the paid_start_date filter.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "marketing",
+      "funnel",
+      "channel-roi"
+    ]
+  },
+  {
+    "id": "business-funnel-006",
+    "module": "business",
+    "topic": "funnel",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Build an executive single-row summary funnel report. From distinct `users` and `subscriptions`, compute: total registered signups as `signups`, total trials started as `trials`, total paid subscribers as `paid`, step conversion rate from signup to trial as `trial_rate_pct` (rounded 1dp), step conversion rate from trial to paid as `paid_of_trial_pct` (rounded 1dp), and overall conversion rate from signup to paid as `overall_pct` (rounded 1dp).",
+    "dataset": "subscription",
+    "hint": "Use CTEs for distinct users and subscriptions, and compute scalar subquery counts in the SELECT clause.",
+    "solutionSql": "WITH u AS (\n  SELECT DISTINCT * FROM users\n),\ns AS (\n  SELECT DISTINCT * FROM subscriptions\n)\nSELECT\n  (SELECT COUNT(*) FROM u) AS signups,\n  (SELECT COUNT(*) FROM s) AS trials,\n  (SELECT COUNT(*) FROM s WHERE paid_start_date IS NOT NULL) AS paid,\n  ROUND((SELECT COUNT(*) FROM s) * 100.0 / (SELECT COUNT(*) FROM u), 1) AS trial_rate_pct,\n  ROUND((SELECT COUNT(*) FROM s WHERE paid_start_date IS NOT NULL) * 100.0 / (SELECT COUNT(*) FROM s), 1) AS paid_of_trial_pct,\n  ROUND((SELECT COUNT(*) FROM s WHERE paid_start_date IS NOT NULL) * 100.0 / (SELECT COUNT(*) FROM u), 1) AS overall_pct;",
+    "expectedOutput": {
+      "columns": [
+        "signups",
+        "trials",
+        "paid",
+        "trial_rate_pct",
+        "paid_of_trial_pct",
+        "overall_pct"
+      ],
+      "rows": [
+        [
+          5200,
+          3308,
+          1193,
+          63.6,
+          36.1,
+          22.9
+        ]
+      ]
+    },
+    "explanation": "The executive summary produces exactly 1 row: 5,200 signups -> 3,308 trials (63.6% trial rate) -> 1,193 paid (36.1% trial-to-paid rate), resulting in a 22.9% overall end-to-end signup-to-paid conversion rate.",
+    "commonMistake": "Querying the events table without handling case sensitivity, which causes mismatched user counts across steps.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "funnel",
+      "kpi-summary",
+      "cte"
+    ]
+  },
+  {
+    "id": "business-funnel-007",
+    "module": "business",
+    "topic": "funnel",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "Across the entire customer base, 3,308 users started a free trial, and 1,193 subsequently made at least one successful subscription payment. Calculate the step conversion rate from trial to paid in percent, rounded to one decimal place.",
+    "dataset": "none",
+    "hint": "Divide paid subscribers by total trial activations and multiply by 100.",
+    "solution": "Step Conversion Rate calculation:\n\n$$\\text{Step Conversion Rate} = \\left(\\frac{1193}{3308}\\right) \\times 100 = 36.064... \\approx 36.1\\%$$\n\nExactly 36.1% of trial users converted into paid customers.",
+    "explanation": "Step conversion evaluates how well a specific stage in the funnel converts users who reached it. The trial-to-paid step converts at 36.1%, leaving a 63.9% drop-off.",
+    "commonMistake": "Dividing 1,193 by the 5,200 total signups (22.9%), which is the overall funnel rate rather than the step conversion rate.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 2,
+    "tags": [
+      "funnel",
+      "conversion",
+      "step-rate"
+    ],
+    "expectedOutput": {
+      "value": 36.1
+    }
+  },
+  {
+    "id": "business-funnel-008",
+    "module": "business",
+    "topic": "funnel",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "Android users currently record 1,973 trial starts with a 31.0% trial-to-paid conversion rate (612 paid users). Meanwhile, iOS users convert at 45.9%. If the mobile product team optimizes the Android onboarding flow such that Android reaches the iOS conversion rate of 45.9%, estimate the number of incremental (extra) paying customers acquired (round to the nearest whole integer using the 14.9 percentage point lift).",
+    "dataset": "none",
+    "hint": "Multiply the Android trial volume (1,973) by the difference in conversion rates (0.459 - 0.310).",
+    "solution": "Opportunity sizing math:\n\n$$\\text{Rate Lift} = 45.9\\% - 31.0\\% = 14.9\\% = 0.149$$\n$$\\text{Incremental Paid Users} = 1973 \\times 0.149 = 293.977 \\approx 294$$\n\nClosing the Android-to-iOS conversion gap would generate approximately 294 additional paying subscribers from existing traffic without any additional ad spend.",
+    "explanation": "Opportunity sizing translates rate improvements into tangible business volume. Sizing the Android gap at 294 subscribers justifies dedicating mobile engineering resources to optimize the Android checkout flow.",
+    "commonMistake": "Multiplying the 14.9% lift by 612 current Android paid users instead of the 1,973 trial pool.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "sizing",
+      "funnel",
+      "opportunity-analysis"
+    ],
+    "expectedOutput": {
+      "value": 294
+    }
+  },
+  {
+    "id": "business-funnel-009",
+    "module": "business",
+    "topic": "funnel",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "An outpatient healthcare app tracks patient booking progression: 1,000 users sign up $\\rightarrow$ 700 view available doctor slots $\\rightarrow$ 280 confirm a booking $\\rightarrow$ 238 attend the consultation. Calculate the overall end-to-end conversion rate as a percentage, rounded to one decimal place.",
+    "dataset": "none",
+    "hint": "Divide the final step (238 attending) by the initial step (1,000 signups) and multiply by 100.",
+    "solution": "Overall Conversion Rate:\n\n$$\\text{Overall Conversion Rate} = \\left(\\frac{238}{1000}\\right) \\times 100 = 23.8\\%$$\n\nStep-by-step drop-offs:\n1. Signup $\\rightarrow$ View Slots: $700 / 1000 = 70.0\\%$\n2. View Slots $\\rightarrow$ Confirm Booking: $280 / 700 = 40.0\\%$ (leakiest step, 60% drop-off)\n3. Confirm Booking $\\rightarrow$ Attend: $238 / 280 = 85.0\\%$",
+    "explanation": "Overall conversion is the ratio of final milestone users to initial entrants (23.8%). The leakiest step is slot viewing to booking confirmation (only 40% convert), pointing to doctor availability, pricing, or timing friction.",
+    "commonMistake": "Averaging the three individual step conversion rates (70% + 40% + 85%) / 3 = 65.0% instead of dividing end by start.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "healthcare",
+      "funnel",
+      "drop-off"
+    ],
+    "expectedOutput": {
+      "value": 23.8
+    }
+  },
+  {
+    "id": "business-funnel-010",
+    "module": "business",
+    "topic": "funnel",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "Explain Simpson's Paradox in the context of funnel analysis: How can an e-commerce platform's overall checkout conversion rate decline from Month 1 to Month 2 even though checkout conversion rates improved on both Mobile and Desktop independently? Provide a brief numerical demonstration.",
+    "dataset": "none",
+    "hint": "Demonstrate a shift in traffic mix toward a lower-converting channel (mix shift).",
+    "solution": "Simpson's Paradox occurs in funnel analysis when an underlying shift in the composition of traffic (a mix shift) masks positive performance within individual segments.\n\n**Numerical Example:**\n\n**Month 1 (Desktop Heavy):**\n- **Desktop**: 1,000 visitors, 100 converted = **10.0%**\n- **Mobile**: 200 visitors, 8 converted = **4.0%**\n- **Overall**: 108 converters / 1,200 visitors = **9.00%**\n\n**Month 2 (Marketing launches heavy Mobile campaign):**\n- **Desktop**: 500 visitors, 55 converted = **11.0%** (+1.0 pp improvement)\n- **Mobile**: 2,000 visitors, 100 converted = **5.0%** (+1.0 pp improvement)\n- **Overall**: 155 converters / 2,500 visitors = **6.20%** (-2.80 pp decline!)\n\n**Key Takeaway**: Even though the checkout experience improved on both Desktop (10% $\\rightarrow$ 11%) and Mobile (4% $\\rightarrow$ 5%), the massive influx of low-converting Mobile traffic shifted the weighted average downward from 9.0% to 6.2%. An analyst must always segment aggregate metrics before concluding a feature hurt conversion.",
+    "explanation": "Mix shift is the most common reason aggregate metrics deceive decision-makers. Whenever user acquisition sources, device types, or regional proportions change rapidly, aggregate conversion can trend opposite to underlying segment health.",
+    "commonMistake": "Assuming that a drop in aggregate conversion proves that the checkout page was redesigned poorly, without checking channel mix shift.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "simpsons-paradox",
+      "funnel",
+      "mix-shift"
+    ]
+  }
+]

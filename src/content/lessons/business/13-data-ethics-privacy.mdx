@@ -1,0 +1,243 @@
+---
+title: "Data ethics and privacy basics"
+description: "Handle personal and health data responsibly and spot biased analysis."
+module: business
+order: 13
+estimatedMinutes: 40
+objectives:
+  - "Classify datasets into Personally Identifiable Information (PII), Sensitive Personal Data (SPD), and safe operational aggregates"
+  - "Apply data protection safeguards: masking, tokenisation, differential privacy, and k-anonymity suppression"
+  - "Explain the core obligations of India's Digital Personal Data Protection (DPDP) Act 2023 in practical analytical workflows"
+  - "Identify algorithmic proxy bias, p-hacking, and discriminatory data modeling patterns"
+tags: ["business", "ethics", "privacy", "dpdp", "healthcare"]
+---
+
+## Learning objectives
+
+By the end of this lesson, you will be able to:
+- Distinguish between direct identifiers (PII), sensitive personal attributes (health, biometrics, financial records), and quasi-identifiers.
+- Implement practical de-identification techniques including data masking, hashing limits, and k-anonymity small-cell suppression (`n < 5` or `n < 10`).
+- Explain the key principles of India's Digital Personal Data Protection (DPDP) Act 2023: Data Principal, Data Fiduciary, consent, purpose limitation, and storage limitation.
+- Detect hidden algorithmic bias where benign demographic proxies (e.g. pin code) inadvertently reconstruct discriminatory decision models.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+As a data analyst, you often possess elevated database privileges that allow you to query production customer records, financial transactions, employee compensation, and medical diagnoses. A marketing manager might ping you on Slack: *"Can you quickly dump all user phone numbers who abandoned their cart yesterday so our call center can telemarket them?"*
+
+If you run that query and email the CSV, you could be committing a serious compliance violation and regulatory breach. India's Digital Personal Data Protection (DPDP) Act 2023 imposes financial penalties of up to Rs 250 crore for significant data security failures. Data analysts are the frontline guardians of customer privacy and institutional ethics.
+</RealWorld>
+
+Data ethics is not an abstract philosophy; it directly influences your day-to-day SQL queries, feature engineering, and stakeholder communication. Handling personal data with discipline protects customers from identity theft, prevents discriminatory algorithms, and safeguards your company's legal standing.
+
+## Concept
+
+### Data classification taxonomy
+
+To handle information safely, every data column must be categorized into one of three risk tiers:
+
+```text
+1. DIRECT PII (Personally Identifiable Information)
+   - Columns: Full Name, 10-digit Mobile Number, Personal Email, Aadhaar Number, PAN, Passport.
+   - Rule: Strictly encrypted at rest; never exported to unvetted CSVs; masked in dashboards (e.g. XXXXXX9812).
+
+2. SENSITIVE PERSONAL DATA (SPD)
+   - Columns: Medical Diagnoses, Biometric Records, Bank Account Numbers, UPI PIN, Passwords, Caste/Religion.
+   - Rule: Stored in isolated, audited schemas; accessible only via strict Role-Based Access Control (RBAC).
+
+3. QUASI-IDENTIFIERS & SAFE OPERATIONAL AGGREGATES
+   - Columns: City, Pin Code, Gender, Age Bracket, Order Count, Session Duration, Category.
+   - Rule: Safe for analytical modeling in aggregate, provided granular combinations do not isolate individuals.
+```
+
+<Tip>
+**The Borrowed Keys Analogy**  
+Accessing production databases is like being handed the master keys to a friend's apartment to water their plants. You are trusted to enter for a specific, agreed-upon task. Going through their private dresser drawers, photocopying their financial documents, or giving copies of the keys to strangers is an absolute breach of trust.
+</Tip>
+
+### Privacy techniques: Anonymisation vs. Pseudonymisation
+
+Understanding the legal and mathematical boundary between anonymisation and pseudonymisation is critical:
+
+- **Pseudonymisation (Reversible)**: Replaces direct identifiers with artificial aliases or tokens (e.g., replacing `user_id = 94821` with a random hash `tok_e7a1b9`). The data can still be uniquely distinguished, tracked longitudinally, and re-linked if someone possesses the secret decryption key.
+- **Why Simple Hashing Fails on Phone Numbers**: A 10-digit Indian mobile number has a small search space (~4 billion combinations). An attacker can precompute the SHA-256 hash of every valid phone number in under an hour (a "rainbow table"). Hashing without cryptographic salting is not anonymous.
+- **Anonymisation (Irreversible)**: Strips or coarsens data so that re-identifying an individual is mathematically and practically impossible under any reasonable means.
+
+### Statistical Disclosure Control: $k$-Anonymity
+
+Even without names, combining quasi-identifiers can uniquely single out a person:
+
+<FormulaCard title="The k-Anonymity Principle">
+A dataset possesses **$k$-anonymity** if every combination of quasi-identifiers (e.g., Age + Gender + Pin Code) is shared by at least **$k$** distinct individuals.
+
+- **Cell Suppression Rule**: If any cell in a cross-tabulated dashboard has fewer than 5 or 10 individuals (`n < 5`), suppress the cell display (display as `< 5` or `*`) to prevent re-identification linkage attacks.
+</FormulaCard>
+
+### India's DPDP Act 2023 in plain terms
+
+The Digital Personal Data Protection (DPDP) Act 2023 establishes four foundational concepts for data teams:
+1. **Data Principal**: The individual whose personal data is collected (the user/customer).
+2. **Data Fiduciary**: The entity/organization that determines the purpose and means of processing personal data.
+3. **Purpose Limitation**: Data collected for a specific purpose (e.g., delivering an e-commerce order) must never be repurposed (e.g., cold telemarketing) without fresh, explicit consent.
+4. **Data Minimisation**: Collect and query only the minimum data strictly necessary to answer the business question.
+
+*Disclaimer: This lesson provides general educational information for data professionals and does not constitute formal legal advice.*
+
+### Algorithmic bias and proxy variables
+
+Even when protected attributes (caste, religion, gender) are excluded from training datasets, machine learning models can inadvertently learn discriminatory behavior through **proxy variables**:
+- **Geographic Redlining**: Using residential 6-digit pin code as an input feature in credit-scoring models can act as a proxy for socioeconomic or demographic segregation, systematically denying loans to marginalized communities.
+- **Analyst Check: Disparate Impact Ratio**: Always verify whether the model's approval rate for protected groups is at least 80% of the approval rate for privileged groups:
+  ```text
+  Disparate Impact = Approval Rate (Underrepresented) / Approval Rate (Benchmark) >= 0.80
+  ```
+
+## Worked examples
+
+### 1. Classifying columns in the fintech database
+
+Let's inspect the `users` and `transactions` tables from `fintech.sqlite` and assign appropriate privacy classifications:
+
+| Column | Classification | Risk Tier | Analytical Handling Rule |
+|---|---|---|---|
+| `phone_number` | Direct PII | Critical | Mask display (`XXXXXX1234`). Restrict raw export access. |
+| `upi_id` | Financial PII | High | Tokenise or mask (`user****@okhdfc`). Restrict to payment rails. |
+| `name` | Direct PII | High | Drop from analytical modeling; replace with `user_id`. |
+| `city` | Quasi-Identifier | Low | Safe for regional grouping; enforce `n >= 10` cell suppression. |
+| `kyc_status` | Operational Status | Low | Fully safe for compliance funnel reporting (`VERIFIED` vs `PENDING`). |
+| `amount_inr` | Financial Metric | Low | Safe for numerical aggregation (sum, median, mean). |
+
+### 2. Designing a privacy-safe HR attrition extract
+
+An HR consulting firm requests an extract of 2,000 employees from the `hr` database to analyze why employees resign:
+- **Raw fields dropped**: `full_name`, `personal_email`, `mobile_number`, and `home_address` (zero relevance to attrition drivers).
+- **Sensitive continuous fields transformed**:
+  - `monthly_salary_inr` → Transformed into discrete pay bands (`Tier 1: 30k-50k`, `Tier 2: 50k-80k`).
+  - `date_of_birth` → Converted to 5-year age brackets (`25-29`, `30-34`).
+  - `hire_date` and `exit_date` → Transformed to `tenure_months` to eliminate exact calendar footprint matching.
+- **Result**: The consultant receives rich behavioral signals while employee personal identities are thoroughly protected.
+
+### 3. Re-identification vulnerability in a small clinic table
+
+Consider this published hospital cross-tabulation:
+
+```text
+District: Bangalore Urban | Pin Code: 560083 | Age: 52 | Gender: Male | Diagnosis: Tuberculosis | Count: 1
+```
+
+Because only one 52-year-old male in pin code 560083 is treated for this condition, anyone who knows their neighbor visited the clinic can confirm their confidential medical diagnosis with 100% certainty.  
+*Mitigation*: Broaden geographic reporting to district level (Bangalore Urban) and age to `40-65`, expanding the cell count to 48 patients.
+
+## Common mistakes
+
+<CommonMistake>
+**Common Mistake: Believing that hashing mobile numbers makes them anonymous**  
+Data engineers often claim: *"We hashed all 10-digit customer phone numbers with SHA-256, so the dataset is completely anonymous!"*  
+Because the entire keyspace of Indian mobile numbers is finite (~4 billion numbers), an attacker can easily precalculate a rainbow lookup table and reverse every single hash in minutes. Hashing is pseudonymisation, not anonymisation.
+</CommonMistake>
+
+Other frequent mistakes:
+- **Sending raw data extracts over email or messaging apps**: Exporting production customer CSVs to personal laptops or unprotected cloud drives.
+- **Ignoring small-cell counts**: Displaying granular tables with cell counts of 1, 2, or 3 in public or wide-access dashboards.
+- **P-hacking and cherry-picking**: Testing 30 different customer subgroups until finding one with `p < 0.05` and presenting it as a breakthrough insight while concealing the 29 failed tests.
+- **Hoarding data**: Collecting extra customer data points "just in case we need them in the future," violating the data minimisation principle.
+
+## Practice questions
+
+<PracticeSet topic="ethics" module="business" />
+
+## Mini quiz
+
+<Quiz questions={[
+  {
+    q: "Under India's DPDP Act 2023, what does the principle of 'Purpose Limitation' mandate?",
+    options: [
+      "Companies can only process data for a maximum of 30 days",
+      "Personal data collected for a specific stated purpose must not be repurposed without fresh consent",
+      "All machine learning models must be written in Python",
+      "Data analysts must limit their SQL queries to 100 rows"
+    ],
+    answer: 1,
+    explanation: "Purpose limitation requires that personal data be processed exclusively for the specific purpose the user consented to."
+  },
+  {
+    q: "Why is a 10-digit mobile number hashed with standard SHA-256 considered pseudonymised rather than anonymised?",
+    options: [
+      "Because SHA-256 encryption keys expire after 24 hours",
+      "Because the small keyspace of phone numbers makes them vulnerable to precomputed rainbow table attacks",
+      "Because phone numbers are classified as public government records",
+      "Because hashing alters the font style of the numbers"
+    ],
+    answer: 1,
+    explanation: "The finite space of 10-digit phone numbers allows attackers to precompute hashes and reverse identities in minutes."
+  },
+  {
+    q: "What does a k-anonymity threshold of k = 5 require when publishing an analytical dashboard?",
+    options: [
+      "The dashboard must contain at least 5 different charts",
+      "Every combination of quasi-identifiers must be shared by at least 5 distinct individuals, or the cell must be suppressed",
+      "Only 5 users are permitted to view the dashboard at any time",
+      "Queries must complete in under 5 seconds"
+    ],
+    answer: 1,
+    explanation: "k-anonymity ensures no individual can be isolated in a group smaller than k, requiring cell suppression for smaller counts."
+  },
+  {
+    q: "A credit scoring model excludes applicant caste and religion, but uses residential pin code. What ethical risk does this introduce?",
+    options: [
+      "Database connection timeouts",
+      "Proxy bias, where geographic location reconstructs historical socioeconomic and demographic discrimination",
+      "SQL injection attacks",
+      "Zero risk, because direct protected demographic attributes were omitted"
+    ],
+    answer: 1,
+    explanation: "Proxy variables correlate strongly with protected attributes, allowing machine learning models to replicate discrimination without explicit labels."
+  },
+  {
+    q: "You find an unencrypted spreadsheet containing 10,000 customer bank account details on an open public drive. What is your first action?",
+    options: [
+      "Download the file to your personal laptop and delete the online copy immediately",
+      "Immediately contain access by revoking public permissions, preserve audit logs, and escalate to your Data Protection Officer / InfoSec team",
+      "Ignore it because you did not create the file",
+      "Post about the security failure on social media"
+    ],
+    answer: 1,
+    explanation: "Immediate containment, evidence preservation, and formal escalation to security leadership are the professional incident response protocol."
+  }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+**How interviewers evaluate ethics and privacy questions**  
+Interviewers ask ethical questions to see if you can protect company assets and user trust under pressure. They watch for whether you push back constructively against improper requests, understand data minimisation, and adhere to compliance protocols.
+</InterviewAlert>
+
+<InterviewQ q="A marketing manager asks you for a CSV dump of all user names, email addresses, and phone numbers who abandoned a checkout last week so their team can run an outbound calling campaign. How do you respond?">
+I would handle this request with professionalism, firmness, and an alternative solution:
+
+1. **Decline Unencrypted Raw PII Export**: I would explain that sharing raw customer phone numbers and names via email or unencrypted CSV violates our data governance policy and the DPDP Act's purpose limitation principles (unless users specifically consented to marketing outreach).
+2. **Propose a Compliant Automated Route**: If marketing outreach is consented, I would propose integrating the data directly via an automated, audited system API that sends the audience list to our vetted CRM platform without downloading raw files to local spreadsheets.
+3. **Offer Aggregated Slicing**: Alternatively, I would offer an aggregated report showing checkout drop-offs by device, payment rail, and category to help marketing optimize their on-site abandoned cart email automation.
+</InterviewQ>
+
+<InterviewQ q="How would you audit a machine learning loan approval algorithm for bias and fairness?">
+I would conduct a two-step fairness audit:
+
+1. **Proxy Analysis**: Inspect input features for correlated proxies of protected attributes (e.g., assessing whether pin code or device model correlates with community or religion).
+2. **Statistical Parity & Error Rate Metrics**:
+   - *Disparate Impact*: Compute the approval rate across demographic groups to ensure the ratio is $\ge 0.80$.
+   - *Equal Opportunity (False Negative Rate Parity)*: Compare the rate at which truly creditworthy applicants are rejected across different cohorts. If creditworthy individuals from specific postal codes are rejected at twice the benchmark rate, the model exhibits systemic bias.
+</InterviewQ>
+
+## Key takeaways
+
+- Classify every data column: Direct PII (encrypt & mask), Sensitive Personal Data (strict RBAC), and Safe Aggregates.
+- Hashing phone numbers or PAN cards without secret cryptographic salting is pseudonymisation, not anonymisation.
+- Enforce $k$-anonymity: suppress or generalize any dashboard table cell where individual counts are fewer than 5 (`n < 5`).
+- India's DPDP Act 2023 mandates clear consent, purpose limitation, and data minimisation across all analytical pipelines.
+- Guard against algorithmic proxy bias by auditing models for disparate impact and error rate parity across demographic subgroups.
+
+## Further reading
+
+<FurtherReading ids={["dpdp-act", "alex-the-analyst"]} />
