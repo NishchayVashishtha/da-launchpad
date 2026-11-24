@@ -1,0 +1,104 @@
+[
+  {
+    "id": "python-loops-001",
+    "module": "python",
+    "topic": "loops",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "A teacher wants the sum of the squares of 1 to 10 for a quick check. Use a loop and assign the total to `result`.",
+    "dataset": "none",
+    "hint": "Use `range(1, 11)`. Add `i * i` to `total` on each pass.",
+    "solutionCode": "total = 0\nfor i in range(1, 11):\n    total += i * i\nresult = total",
+    "expectedOutput": {
+      "value": 385
+    },
+    "orderMatters": false,
+    "explanation": "`range(1, 11)` gives 1 to 10, because the stop value is not included. Each pass adds the square of `i` to the running total, so the final total is 385.",
+    "commonMistake": "Using `range(1, 10)`. The stop value 10 is excluded, so the loop stops at 9 and the total becomes 285.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "for",
+      "range",
+      "accumulator"
+    ]
+  },
+  {
+    "id": "python-loops-002",
+    "module": "python",
+    "topic": "loops",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "A payments team reviews large transactions. Given `txns = [250, 1200, 80000, 45, 9100]`, count how many amounts are above 5000. Assign the count to `result`.",
+    "dataset": "none",
+    "hint": "Start a counter at 0. Add 1 each time an amount passes the test.",
+    "solutionCode": "txns = [250, 1200, 80000, 45, 9100]\ncount = 0\nfor amt in txns:\n    if amt > 5000:\n        count += 1\nresult = count",
+    "expectedOutput": {
+      "value": 2
+    },
+    "orderMatters": false,
+    "explanation": "The loop checks each amount once. Only 80000 and 9100 are above 5000, so the counter ends at 2. The counter pattern is used in almost every analysis script.",
+    "commonMistake": "Using `>=` by mistake, or checking the wrong threshold such as 1000. The count then includes 1200, which should not be there.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "for",
+      "if",
+      "counter"
+    ]
+  },
+  {
+    "id": "python-loops-003",
+    "module": "python",
+    "topic": "loops",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "A risk rule tags each amount. Given `amounts = [12000, 50000, 4500, 75000, 999]`, make a list where each item is \"High\" if the amount is 50000 or more, and \"Normal\" otherwise. Assign the list to `result`.",
+    "dataset": "none",
+    "hint": "Create an empty list. Use `if` and `else` inside the loop, then `append` to the list.",
+    "solutionCode": "amounts = [12000, 50000, 4500, 75000, 999]\nlabels = []\nfor amt in amounts:\n    if amt >= 50000:\n        labels.append(\"High\")\n    else:\n        labels.append(\"Normal\")\nresult = labels",
+    "expectedOutput": {
+      "value": [
+        "Normal",
+        "High",
+        "Normal",
+        "High",
+        "Normal"
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "Each amount gets exactly one label, so the output list has the same length as the input. The `append` method adds to the end of the list each time.",
+    "commonMistake": "Writing `amounts.append(...)` inside the loop, which changes the input list. The output then has extra items and the original list is damaged.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "for",
+      "if",
+      "append"
+    ]
+  },
+  {
+    "id": "python-loops-004",
+    "module": "python",
+    "topic": "loops",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "A puzzle game starts at n = 27. While n is not 1, add 1 to a step counter. If n is even, set n to n // 2. If n is odd, set n to 3 * n + 1. Assign the number of steps to `result`.",
+    "dataset": "none",
+    "hint": "Use a `while` loop that stops when n is 1. Use `%` to check if n is even.",
+    "solutionCode": "n = 27\nsteps = 0\nwhile n != 1:\n    if n % 2 == 0:\n        n = n // 2\n    else:\n        n = 3 * n + 1\n    steps += 1\nresult = steps",
+    "expectedOutput": {
+      "value": 111
+    },
+    "orderMatters": false,
+    "explanation": "The loop keeps going until n reaches 1. The `%` operator gives the remainder, so `n % 2 == 0` is True for even numbers. Counting the steps after each change gives 111 for n = 27.",
+    "commonMistake": "Counting the steps before the change, or forgetting the update to n. The loop then never stops, which is an infinite loop.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 6,
+    "tags": [
+      "while",
+      "modulus",
+      "loop control"
+    ]
+  }
+]

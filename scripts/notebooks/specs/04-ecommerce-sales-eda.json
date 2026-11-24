@@ -1,0 +1,67 @@
+{
+  "filename": "04-ecommerce-sales-eda",
+  "title": "Ecommerce sales: EDA with joins",
+  "dataset": "ecommerce",
+  "cells": [
+    {
+      "type": "markdown",
+      "source": "# Ecommerce sales: EDA with joins\n\nThis notebook joins orders, order items, products and customers. It checks the row count after each join, then looks at monthly revenue, returns by category, and Prime versus non-Prime buyers.\n\nPut the CSV files for this dataset in a folder named `ecommerce` next to this notebook. The site zip has one folder per dataset. Run the cells from top to bottom."
+    },
+    {
+      "type": "code",
+      "source": "import pandas as pd\n\norders = pd.read_csv(\"ecommerce/orders.csv\").drop_duplicates(subset=\"order_id\")\nitems = pd.read_csv(\"ecommerce/order_items.csv\")\nproducts = pd.read_csv(\"ecommerce/products.csv\")\ncustomers = pd.read_csv(\"ecommerce/customers.csv\").drop_duplicates(subset=\"customer_id\")\nprint(\"orders:\", len(orders), \"| items:\", len(items), \"| products:\", len(products), \"| customers:\", len(customers))"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 1: Check the grain\n\nOne row in `order_items` is one product line in one order. One row in `orders` is one order. Confirm the keys are unique before you join."
+    },
+    {
+      "type": "code",
+      "source": "print(\"items with a duplicate order_item_id:\", items[\"order_item_id\"].duplicated().sum())\nprint(\"products with a duplicate product_id:\", products[\"product_id\"].duplicated().sum())"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 2: Parse the order dates\n\nSome order dates are `DD-MM-YYYY` and some are ISO."
+    },
+    {
+      "type": "code",
+      "source": "iso = pd.to_datetime(orders[\"order_date\"], format=\"%Y-%m-%d\", errors=\"coerce\")\ndmy = pd.to_datetime(orders[\"order_date\"], format=\"%d-%m-%Y\", errors=\"coerce\")\norders[\"order_dt\"] = iso.combine_first(dmy)\nprint(\"unparsed order dates:\", orders[\"order_dt\"].isna().sum())"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 3: Join the tables\n\nJoin one table at a time. Check the row count after each join. A many-to-one join must not add rows."
+    },
+    {
+      "type": "code",
+      "source": "lines = items.merge(orders[[\"order_id\", \"customer_id\", \"order_dt\", \"order_status\"]], on=\"order_id\", how=\"inner\")\nprint(\"after items to orders:\", len(lines), \"(items had\", len(items), \"rows)\")\nlines = lines.merge(products[[\"product_id\", \"category\"]], on=\"product_id\", how=\"left\")\nprint(\"after products:\", len(lines))\nlines = lines.merge(customers[[\"customer_id\", \"is_prime\"]], on=\"customer_id\", how=\"left\")\nprint(\"after customers:\", len(lines))"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 4: Monthly revenue\n\nCount only delivered orders. Clean the product category text first, because some values have extra spaces or capitals."
+    },
+    {
+      "type": "code",
+      "source": "lines[\"category\"] = lines[\"category\"].str.strip().str.title()\ndelivered = lines[lines[\"order_status\"] == \"Delivered\"].copy()\ndelivered[\"month\"] = delivered[\"order_dt\"].dt.to_period(\"M\")\nmonthly = delivered.groupby(\"month\")[\"line_total\"].sum().round(2)\nmonthly.head(12)"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 5: Return rate by category\n\nReturns link to an order item. Count the returned items and divide by the items sold."
+    },
+    {
+      "type": "code",
+      "source": "returns = pd.read_csv(\"ecommerce/returns.csv\")\nreturned_items = set(returns[\"order_item_id\"])\nlines[\"returned\"] = lines[\"order_item_id\"].isin(returned_items)\nrate = lines.groupby(\"category\").agg(items_sold=(\"order_item_id\", \"size\"), returned=(\"returned\", \"sum\"))\nrate[\"return_rate_pct\"] = (rate[\"returned\"] / rate[\"items_sold\"] * 100).round(2)\nrate.sort_values(\"return_rate_pct\", ascending=False)"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 6: Prime versus non-Prime\n\nCompare order value and order count per customer. Prime members place more orders, so compare averages, not totals."
+    },
+    {
+      "type": "code",
+      "source": "per_order = lines.groupby([\"is_prime\", \"order_id\"])[\"line_total\"].sum().reset_index()\nsummary = per_order.groupby(\"is_prime\")[\"line_total\"].agg([\"count\", \"mean\"]).round(2)\nsummary.columns = [\"orders\", \"avg_order_value\"]\nsummary"
+    },
+    {
+      "type": "markdown",
+      "source": "## Next questions\n\n- Does the return rate change with the sales channel?\n- Is the Prime gap the same in every month?\n- Which category has the most revenue but a high return rate?"
+    }
+  ]
+}

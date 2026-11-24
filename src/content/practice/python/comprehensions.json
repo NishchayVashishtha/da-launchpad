@@ -1,0 +1,114 @@
+[
+  {
+    "id": "python-comprehensions-001",
+    "module": "python",
+    "topic": "comprehensions",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "A payments team wants only the big transactions. Given `amounts = [250, 1200, 80000, 45, 9100]`, use a list comprehension to keep the amounts above 1000. Assign the list to `result`.",
+    "dataset": "none",
+    "hint": "The shape is `[item for item in list if condition]`. The `if` goes after the `for`.",
+    "solutionCode": "amounts = [250, 1200, 80000, 45, 9100]\nresult = [a for a in amounts if a > 1000]",
+    "expectedOutput": {
+      "value": [
+        1200,
+        80000,
+        9100
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "The comprehension loops over each amount and keeps only the ones that pass the test. The output keeps the original order: [1200, 80000, 9100].",
+    "commonMistake": "Putting the condition before the `for`, such as `[a if a > 1000 for a in amounts]`. That is a syntax error, because the `if` alone cannot skip items.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "comprehension",
+      "filter"
+    ]
+  },
+  {
+    "id": "python-comprehensions-002",
+    "module": "python",
+    "topic": "comprehensions",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "A product team counts payment app usage. Given `apps = [\"GPay\", \"PhonePe\", \"Paytm\", \"GPay\", \"BHIM\", \"PhonePe\", \"GPay\", \"Paytm\"]`, build a dict that maps each app to how many times it appears. Assign the dict to `result`.",
+    "dataset": "none",
+    "hint": "Use `.get(key, 0)` so a new app starts at 0 instead of raising an error.",
+    "solutionCode": "apps = [\"GPay\", \"PhonePe\", \"Paytm\", \"GPay\", \"BHIM\", \"PhonePe\", \"GPay\", \"Paytm\"]\ncounts = {}\nfor app in apps:\n    counts[app] = counts.get(app, 0) + 1\nresult = counts",
+    "expectedOutput": {
+      "value": {
+        "GPay": 3,
+        "PhonePe": 2,
+        "Paytm": 2,
+        "BHIM": 1
+      }
+    },
+    "orderMatters": false,
+    "explanation": "`.get(app, 0)` returns 0 for a new key, so the first sighting is counted. Using `counts[app] += 1` would raise a KeyError on the first sighting of each app.",
+    "commonMistake": "Writing `counts[app] += 1` without setting a starting value. The first time each app appears, Python raises a KeyError.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "dict",
+      "get",
+      "counting"
+    ]
+  },
+  {
+    "id": "python-comprehensions-003",
+    "module": "python",
+    "topic": "comprehensions",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "A finance analyst totals spend by city. Given `records = [{\"city\": \"Pune\", \"amount\": 1200.5}, {\"city\": \"Chennai\", \"amount\": 850}, {\"city\": \"Pune\", \"amount\": 430.25}, {\"city\": \"Jaipur\", \"amount\": 2200}, {\"city\": \"Chennai\", \"amount\": 99.75}]`, build a dict of city to total amount, rounded to 2 decimals. Assign the dict to `result`.",
+    "dataset": "none",
+    "hint": "First add up the amounts in a loop with `.get`. Then round the totals with a dict comprehension.",
+    "solutionCode": "records = [{\"city\": \"Pune\", \"amount\": 1200.5}, {\"city\": \"Chennai\", \"amount\": 850}, {\"city\": \"Pune\", \"amount\": 430.25}, {\"city\": \"Jaipur\", \"amount\": 2200}, {\"city\": \"Chennai\", \"amount\": 99.75}]\ntotals = {}\nfor r in records:\n    totals[r[\"city\"]] = totals.get(r[\"city\"], 0) + r[\"amount\"]\nresult = {city: round(total, 2) for city, total in totals.items()}",
+    "expectedOutput": {
+      "value": {
+        "Pune": 1630.75,
+        "Chennai": 949.75,
+        "Jaipur": 2200
+      }
+    },
+    "orderMatters": false,
+    "explanation": "The loop adds each amount to the running total for its city. The dict comprehension rounds each total for the output. Pune is 1630.75 and Chennai is 949.75.",
+    "commonMistake": "Replacing the total each time with `totals[city] = amount`. Only the last amount for each city is kept, so Pune shows 430.25 instead of 1630.75.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 6,
+    "tags": [
+      "dict",
+      "accumulate",
+      "round"
+    ]
+  },
+  {
+    "id": "python-comprehensions-004",
+    "module": "python",
+    "topic": "comprehensions",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "A fraud team checks repeat users. Given `txns = [{\"id\": 1, \"user\": \"asha\", \"amount\": 500}, {\"id\": 2, \"user\": \"ravi\", \"amount\": 1200}, {\"id\": 3, \"user\": \"asha\", \"amount\": 2500}, {\"id\": 4, \"user\": \"meena\", \"amount\": 300}, {\"id\": 5, \"user\": \"ravi\", \"amount\": 900}, {\"id\": 6, \"user\": \"asha\", \"amount\": 150}]`, build a dict of user to their largest amount. Keep only users with 2 or more transactions. Assign the dict to `result`.",
+    "dataset": "none",
+    "hint": "Do two passes. First count the transactions per user. Then keep the users whose count is 2 or more.",
+    "solutionCode": "txns = [{\"id\": 1, \"user\": \"asha\", \"amount\": 500}, {\"id\": 2, \"user\": \"ravi\", \"amount\": 1200}, {\"id\": 3, \"user\": \"asha\", \"amount\": 2500}, {\"id\": 4, \"user\": \"meena\", \"amount\": 300}, {\"id\": 5, \"user\": \"ravi\", \"amount\": 900}, {\"id\": 6, \"user\": \"asha\", \"amount\": 150}]\ncount = {}\nbest = {}\nfor t in txns:\n    u = t[\"user\"]\n    count[u] = count.get(u, 0) + 1\n    best[u] = max(best.get(u, 0), t[\"amount\"])\nresult = {u: best[u] for u in best if count[u] >= 2}",
+    "expectedOutput": {
+      "value": {
+        "asha": 2500,
+        "ravi": 1200
+      }
+    },
+    "orderMatters": false,
+    "explanation": "Counting and taking the maximum in one pass is fine. The final dict comprehension applies the count filter after the groups are built. asha has 3 transactions with max 2500, ravi has 2 with max 1200, and meena is dropped.",
+    "commonMistake": "Filtering the transactions first with `count >= 2` on each row. A row-level filter cannot see the user's total count, so the wrong users are kept.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 10,
+    "tags": [
+      "dict",
+      "comprehension",
+      "grouping",
+      "max"
+    ]
+  }
+]

@@ -1,0 +1,185 @@
+[
+  {
+    "id": "python-viz-001",
+    "module": "python",
+    "topic": "viz",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "The growth team wants to see how monthly orders moved over two years, including the festive peaks. Which chart type should they use, and what goes on each axis?",
+    "dataset": "none",
+    "hint": "Ask what the chart must show: a number changing over time. Think about which chart keeps the time order visible.",
+    "solution": "Use a **line chart**.\n\n- x-axis: the month, oldest first (Jan 2023 to Dec 2024).\n- y-axis: the number of orders in that month.\n\nA line shows the rise, the dips and the festive peaks in time order. Each point is one month, so the eye can follow the trend from left to right.",
+    "explanation": "Time on the x-axis and a number on the y-axis is the classic trend setup, and a line joins the points so the trend is easy to follow. Keeping the months in order is what makes the peaks readable.",
+    "commonMistake": "Using a pie chart with 24 slices. Pie slices for 24 months are hard to compare, and the pie hides the time order, so the festive peaks are lost.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "matplotlib",
+      "line-chart",
+      "trend"
+    ]
+  },
+  {
+    "id": "python-viz-002",
+    "module": "python",
+    "topic": "viz",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "A teammate has a dict `d` that maps each city name to its order count. Write the matplotlib lines that draw a bar chart with the tallest bar first. The chart needs a title, an x-axis label and a y-axis label. Use `fig, ax = plt.subplots()`.",
+    "dataset": "none",
+    "hint": "Sort the items by value with `sorted()` and `reverse=True`. Then pass the names and counts to `ax.bar`.",
+    "solution": "```python\nimport matplotlib.pyplot as plt\n\nitems = sorted(d.items(), key=lambda kv: kv[1], reverse=True)\nnames = [city for city, _ in items]\ncounts = [count for _, count in items]\n\nfig, ax = plt.subplots()\nax.bar(names, counts)\nax.set_title(\"Orders by city\")\nax.set_xlabel(\"City\")\nax.set_ylabel(\"Number of orders\")\nplt.tight_layout()\nplt.show()\n```\n\nThe sort runs before plotting, so the bars come out in order. The three label calls make the chart readable on its own.",
+    "explanation": "`ax.bar` needs two lists, one for the labels and one for the heights. Sorting the dict items by the value (index 1 of each pair) gives the tallest bar first. The title and axis labels stop the chart from being a set of unnamed bars.",
+    "commonMistake": "Sorting the dict keys instead of the items. `sorted(d)` orders the city names alphabetically, so the bars are not ranked by orders at all.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "matplotlib",
+      "bar-chart",
+      "labels"
+    ]
+  },
+  {
+    "id": "python-viz-003",
+    "module": "python",
+    "topic": "viz",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "The payments team wants the failure rate for each UPI app before they draw the bar chart. Use the transactions table with one row per `txn_id`. For each `payment_app`, find the share of transactions with `status` equal to FAILED, as a percentage rounded to 2 decimals. Assign a Series with the apps as the index, sorted from the highest rate to the lowest, to `result`.",
+    "dataset": "fintech",
+    "hint": "Remove duplicate `txn_id` rows first. Make a True or False column for FAILED, then take the mean per app and multiply by 100.",
+    "solutionCode": "t = load(\"fintech\", \"transactions\").drop_duplicates(subset=\"txn_id\")\nt = t.assign(failed=t[\"status\"].eq(\"FAILED\"))\nrate = t.groupby(\"payment_app\")[\"failed\"].mean() * 100\nresult = rate.round(2).sort_values(ascending=False).rename(\"failure_rate_pct\")",
+    "expectedOutput": {
+      "columns": [
+        "payment_app",
+        "failure_rate_pct"
+      ],
+      "rows": [
+        [
+          "NammaPay",
+          5.1
+        ],
+        [
+          "PayZippy",
+          2.25
+        ],
+        [
+          "QuickPaisa",
+          2.24
+        ],
+        [
+          "SabPay",
+          2.2
+        ],
+        [
+          "RupeeRocket",
+          1.85
+        ]
+      ]
+    },
+    "explanation": "The mean of a True or False column is the share of True values, so grouping and taking the mean gives the failure rate per app. Multiplying by 100 turns the share into a percentage. Sorting in descending order puts the worst app first, which is the bar order the chart needs.",
+    "commonMistake": "Skipping the duplicate removal. About 90 extra rows repeat an existing `txn_id` in the raw file, so the denominator is inflated and the failure rate comes out a little low for each app.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 6,
+    "tags": [
+      "groupby",
+      "failure-rate",
+      "bar-chart-prep"
+    ]
+  },
+  {
+    "id": "python-viz-004",
+    "module": "python",
+    "topic": "viz",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "A slide shows a bar chart of UPI success rate by bank. The y-axis starts at 90, not 0, so the bars look far apart. The true rates are 97.1, 96.4 and 91.2 for three banks. Name three problems with this chart and give a fix for each.",
+    "dataset": "none",
+    "hint": "Look at how far the shortest bar seems to be from the tallest one, compared with the real gap. Then check the title, the labels and the order of the bars.",
+    "solution": "**Problem 1: the y-axis starts at 90.** A bar at 91.2 looks like a tiny stub next to a bar at 97.1, but the real gap is under 6 points. Fix: start the y-axis at 0, or change the chart to a dot plot, which does not need a zero baseline.\n\n**Problem 2: the bars are not sorted.** The eye has to hunt for the best and worst bank. Fix: sort the bars from highest to lowest.\n\n**Problem 3: no clear title or units.** A reader cannot tell if the number is a rate, a count or a percentage. Fix: write a title that states the insight (for example, \"Bank X trails the other two by 5 points\") and label the y-axis as \"Success rate (%)\".",
+    "explanation": "A bar's length is the message in a bar chart, so the baseline must be zero. Starting the axis at 90 makes small gaps look large. Sorting and clear labels make the chart easy to read in a few seconds.",
+    "commonMistake": "Fixing only the colours and leaving the truncated axis. The chart still exaggerates the gap, which is the main problem.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "chart-review",
+      "misleading-charts"
+    ]
+  },
+  {
+    "id": "python-viz-005",
+    "module": "python",
+    "topic": "viz",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "The category team wants a heatmap of how many units each order line carries. Take the 3 categories with the most units sold (the sum of `quantity`), ranked from most to least. Join `order_items` to `products` on `product_id`. Clean `category` with `strip()` and `title()`. Build a table with the categories as rows and the quantity as columns 1 to 5. Quantities of 5 or more go in column 5. Each cell is the number of order lines. Assign this DataFrame to `result`, with the categories in ranked order.",
+    "dataset": "ecommerce",
+    "hint": "Find the top 3 by summing `quantity` first. Then cap the quantity with `clip(upper=5)` and build the grid with `pd.crosstab`. Use `reindex` to keep the ranked order.",
+    "solutionCode": "oi = load(\"ecommerce\", \"order_items\")\npr = load(\"ecommerce\", \"products\")\npr[\"category_clean\"] = pr[\"category\"].astype(str).str.strip().str.title()\nm = oi.merge(pr[[\"product_id\", \"category_clean\"]], on=\"product_id\", how=\"left\")\ntop = m.groupby(\"category_clean\")[\"quantity\"].sum().sort_values(ascending=False).head(3).index\nx = m[m[\"category_clean\"].isin(top)].assign(q=lambda d: d[\"quantity\"].clip(upper=5))\nresult = pd.crosstab(x[\"category_clean\"], x[\"q\"]).reindex(top)",
+    "expectedOutput": {
+      "columns": [
+        "category_clean",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5"
+      ],
+      "rows": [
+        [
+          "Fashion",
+          5638,
+          798,
+          0,
+          0,
+          0
+        ],
+        [
+          "Grocery",
+          1216,
+          1169,
+          529,
+          148,
+          33
+        ],
+        [
+          "Home & Kitchen",
+          3548,
+          460,
+          0,
+          0,
+          0
+        ]
+      ]
+    },
+    "explanation": "Ranking by units first picks the categories that move the most stock. `clip(upper=5)` turns every quantity of 5 or more into 5, so the grid stays at five columns. `pd.crosstab` counts order lines for each category and quantity pair, and `reindex` keeps the ranked row order.",
+    "commonMistake": "Ranking by the number of order lines instead of the units. That picks Fashion, Home and Kitchen, and Electronics, and the grid misses Grocery, which sells many units per line.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 10,
+    "tags": [
+      "pivot",
+      "crosstab",
+      "heatmap-prep",
+      "clip"
+    ]
+  },
+  {
+    "id": "python-viz-006",
+    "module": "python",
+    "topic": "viz",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "A marketing review asks three questions. Which channel gives the most return per rupee spent? How did total spend and total return move over six months? Is the return of the smallest channel real, or just noise? Design three charts to answer them. For each chart, give the chart type, the data you must prepare and the one key message it should carry.",
+    "dataset": "none",
+    "hint": "Match each question to a chart type from the chart chooser: comparison, trend, and spread or uncertainty.",
+    "solution": "**Chart 1: bar chart of return per rupee by channel.**\n- Data: total return divided by total spend for each channel, sorted from highest to lowest.\n- Key message: the top channel returns the most per rupee. Bars start at zero and show the value.\n\n**Chart 2: line chart of monthly spend and monthly return.**\n- Data: one row per month, with two columns (spend and return), in date order.\n- Key message: whether return grows faster than spend over the six months. Two lines on one axis, with a legend.\n\n**Chart 3: dot plot of conversion rate by channel with a range for each channel.**\n- Data: the conversion rate for each channel, plus a low and high value for a rough range (for example, using the daily spread).\n- Key message: whether the smallest channel's range overlaps the others. If it does, the difference may be noise and the team should wait for more data.",
+    "explanation": "Each question needs a chart that matches its job. A sorted bar compares, a line shows change over time, and a dot with a range shows how sure we are. Naming the data and the key message before drawing keeps each chart focused on one question.",
+    "commonMistake": "Building eight charts for one review. A reviewer cannot hold that many messages, so the key point gets lost. Three charts, one question each, is the right size for this review.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 8,
+    "tags": [
+      "chart-choice",
+      "campaign-review"
+    ]
+  }
+]

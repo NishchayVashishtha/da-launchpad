@@ -1,0 +1,170 @@
+[
+  {
+    "id": "python-numpy-001",
+    "module": "python",
+    "topic": "numpy",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "A small lender logs five loan amounts in rupees: 250, 1200, 80000, 45 and 9100. Find the average loan amount, rounded to 2 decimals, and assign it to `result`.",
+    "dataset": "none",
+    "hint": "Put the numbers in an array and call np.mean on it.",
+    "solutionCode": "import numpy as np\n\namounts = np.array([250, 1200, 80000, 45, 9100])\nresult = round(float(np.mean(amounts)), 2)",
+    "expectedOutput": {
+      "value": 18119
+    },
+    "explanation": "np.array makes one array from the list. np.mean adds all the values and divides by the count. The average is pulled up by the one large loan of 80,000, so the mean is much higher than the middle value.",
+    "commonMistake": "Using np.median, which gives 1200.0 here, a different answer from the average the question asks for.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "mean",
+      "array"
+    ]
+  },
+  {
+    "id": "python-numpy-002",
+    "module": "python",
+    "topic": "numpy",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "The same five amounts are priced with 18% GST added. Multiply the whole array by 1.18 in one step, round each value to 2 decimals and assign the result as a plain Python list to `result`.\n\nAmounts: 250, 1200, 80000, 45, 9100.",
+    "dataset": "none",
+    "hint": "NumPy multiplies every element by the number. Use .tolist() to get a normal list at the end.",
+    "solutionCode": "import numpy as np\n\namounts = np.array([250, 1200, 80000, 45, 9100])\nresult = np.round(amounts * 1.18, 2).tolist()",
+    "expectedOutput": {
+      "value": [
+        295,
+        1416,
+        94400,
+        53.1,
+        10738
+      ]
+    },
+    "explanation": "Multiplying an array by 1.18 applies the change to every value at once, which is called vectorised maths. tolist() turns the NumPy array into a plain list so the answer is easy to compare.",
+    "commonMistake": "Writing amounts = [250, 1200, ...] as a Python list. Then amounts * 1.18 raises a TypeError, because lists cannot be multiplied by a decimal.",
+    "interviewFrequency": "low",
+    "estimatedMinutes": 4,
+    "tags": [
+      "vectorised",
+      "broadcasting",
+      "round"
+    ]
+  },
+  {
+    "id": "python-numpy-003",
+    "module": "python",
+    "topic": "numpy",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "The fraud desk wants to know how many payments in the fintech `transactions` table were flagged. Load the table and count the rows where `is_flagged` is 1. Use the raw rows, including duplicates. Assign the count to `result` as an integer.",
+    "dataset": "fintech",
+    "hint": "The column holds 0 or 1. The sum of a 0/1 column is the number of 1s.",
+    "solutionCode": "df = load(\"fintech\", \"transactions\")\nresult = int(df[\"is_flagged\"].to_numpy().sum())",
+    "expectedOutput": {
+      "value": 302
+    },
+    "explanation": "The flag is stored as 0 or 1. Adding the column gives the count of 1s, because 0 adds nothing. to_numpy() moves the column into a NumPy array first, and int() turns the result into a normal Python integer.",
+    "commonMistake": "Using len(df), which counts every transaction, flagged or not.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "sum",
+      "flags"
+    ]
+  },
+  {
+    "id": "python-numpy-004",
+    "module": "python",
+    "topic": "numpy",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Take the whole numbers from 1 to 20. Count how many of them are divisible by 3 and also greater than 6. Assign the count to `result`.",
+    "dataset": "none",
+    "hint": "Build two true/false masks, one for each condition. Join them with & and put brackets around each mask.",
+    "solutionCode": "import numpy as np\n\nnumbers = np.arange(1, 21)\nmask = (numbers % 3 == 0) & (numbers > 6)\nresult = int(mask.sum())",
+    "expectedOutput": {
+      "value": 4
+    },
+    "explanation": "Each comparison makes a True/False array. The & operator joins the two arrays element by element. Brackets are needed because & binds more tightly than ==, and True counts as 1 in sum(). The matching numbers are 9, 12, 15 and 18.",
+    "commonMistake": "Writing `and` instead of `&`. Python then tries to decide the truth of a whole array and raises a ValueError.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 6,
+    "tags": [
+      "boolean-mask",
+      "arange"
+    ]
+  },
+  {
+    "id": "python-numpy-005",
+    "module": "python",
+    "topic": "numpy",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "A wallet report has one missing amount, shown as `np.nan`. The amounts are 250.0, 1200.0, nan, 45.0 and 9100.0. Find the mean of the amounts that are present, rounded to 2 decimals, and assign it to `result`.",
+    "dataset": "none",
+    "hint": "Use the NaN-aware version of the mean function.",
+    "solutionCode": "import numpy as np\n\namounts = np.array([250.0, 1200.0, np.nan, 45.0, 9100.0])\nresult = round(float(np.nanmean(amounts)), 2)",
+    "expectedOutput": {
+      "value": 2648.75
+    },
+    "explanation": "One NaN makes np.mean return NaN for the whole result. np.nanmean skips the missing value, adds the other four amounts and divides by four, not five.",
+    "commonMistake": "Using np.mean. It returns nan, so the report shows no answer at all.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "nan",
+      "nanmean"
+    ]
+  },
+  {
+    "id": "python-numpy-006",
+    "module": "python",
+    "topic": "numpy",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "A bank tracks payment volumes in a 3 by 4 table. Each row is a month. Each column is a payment app: QuickPaisa, PayZippy, SabPay and NetBhim. Find each app's share of the total volume, as a percentage rounded to 1 decimal. Assign a list of 4 numbers to `result`, in the same column order.\n\n```\n[[120, 80, 40, 60],\n [150, 90, 50, 70],\n [180, 100, 60, 80]]\n```",
+    "dataset": "none",
+    "hint": "Add down the columns with axis=0. Divide by the grand total and multiply by 100.",
+    "solutionCode": "import numpy as np\n\nvolumes = np.array([[120, 80, 40, 60], [150, 90, 50, 70], [180, 100, 60, 80]])\ncol_totals = volumes.sum(axis=0)\nresult = np.round(col_totals / col_totals.sum() * 100, 1).tolist()",
+    "expectedOutput": {
+      "value": [
+        41.7,
+        25,
+        13.9,
+        19.4
+      ]
+    },
+    "explanation": "axis=0 means add down each column, so you get one total per app. Dividing by the sum of those totals gives each app's share. The grand total is the same whichever way you add.",
+    "commonMistake": "Using axis=1, which adds across each month. That gives monthly totals, not app totals, and the list has 3 numbers, not 4.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 6,
+    "tags": [
+      "axis",
+      "2d-array",
+      "percent"
+    ]
+  },
+  {
+    "id": "python-numpy-007",
+    "module": "python",
+    "topic": "numpy",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "A bank checks daily payment counts for outliers using z-scores. A z-score is `(x - mean) / std`. Use the population standard deviation, which is `ddof=0` in NumPy. Count how many values have an absolute z-score greater than 1.0. The values are 10, 12, 11, 13, 20, 12, 11 and 9. Assign the count to `result`.",
+    "dataset": "none",
+    "hint": "Compute the mean and std once with NumPy. Then compute the z-scores as one array and count the values where abs(z) is above 1.0.",
+    "solutionCode": "import numpy as np\n\nx = np.array([10, 12, 11, 13, 20, 12, 11, 9], dtype=float)\nz = (x - x.mean()) / x.std()\nresult = int((np.abs(z) > 1.0).sum())",
+    "expectedOutput": {
+      "value": 2
+    },
+    "explanation": "x.std() with no ddof argument divides by n, which is the population form. The z-score is calculated for all values in one array. The two values that sit more than one standard deviation away from the mean are 20 and 9.",
+    "commonMistake": "Using x.std(ddof=1), the sample form. It makes the spread a little larger, so only one value passes the 1.0 cut-off and the answer is 1, not 2.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 10,
+    "tags": [
+      "z-score",
+      "std",
+      "ddof"
+    ]
+  }
+]

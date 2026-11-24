@@ -1,0 +1,188 @@
+[
+  {
+    "id": "python-eda-001",
+    "module": "python",
+    "topic": "eda",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "The growth team wants to know which app platform its users sign up from. Count users per `platform` after removing duplicate user rows. Return a dict like `{\"Android\": 10}` with the user count for each platform.",
+    "dataset": "subscription",
+    "hint": "Remove duplicates by `user_id` first, then use `value_counts()` on `platform`.",
+    "solutionCode": "users = load(\"subscription\", \"users\").drop_duplicates(subset=\"user_id\")\ncounts = users[\"platform\"].value_counts()\nresult = {k: int(v) for k, v in counts.items()}",
+    "expectedOutput": {
+      "value": {
+        "Android": 3209,
+        "iOS": 1128,
+        "Web": 863
+      }
+    },
+    "orderMatters": false,
+    "explanation": "The users table has a few exact duplicate rows, so `drop_duplicates(subset=\"user_id\")` keeps one row per user. `value_counts()` then counts the rows for each platform value. Converting each count to `int` gives a plain dict that is easy to compare.",
+    "commonMistake": "Counting without removing duplicates. `value_counts()` on the raw table adds the repeated users again, so the platform counts add up to more than the 5,200 distinct users (Android shows 3,216 instead of 3,209).",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "eda",
+      "value_counts",
+      "dedupe"
+    ]
+  },
+  {
+    "id": "python-eda-002",
+    "module": "python",
+    "topic": "eda",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Risk analysts want the UPI failure rate for two hours of the day: 9 AM and 6 PM. Use the transactions table. Drop duplicate `txn_id` rows, read the mixed date formats, and compute the percentage of transactions with `status` equal to `FAILED` for hour 9 and hour 18. Return a DataFrame with columns `hour` and `failure_rate_pct` (rounded to 2 decimals), sorted by `hour`.",
+    "dataset": "fintech",
+    "hint": "Some dates are `YYYY-MM-DD` and some are `DD-MM-YYYY`. Parse both formats, then take `.dt.hour`. A failure rate is the mean of a True/False column.",
+    "solutionCode": "def parse_ts(s):\n    a = pd.to_datetime(s, format=\"%Y-%m-%d %H:%M:%S\", errors=\"coerce\")\n    b = pd.to_datetime(s, format=\"%d-%m-%Y %H:%M:%S\", errors=\"coerce\")\n    return a.combine_first(b)\n\nt = load(\"fintech\", \"transactions\").drop_duplicates(subset=\"txn_id\").copy()\nt[\"ts\"] = parse_ts(t[\"txn_datetime\"])\nt[\"hour\"] = t[\"ts\"].dt.hour\nt = t[t[\"hour\"].isin([9, 18])]\nrate = t.groupby(\"hour\")[\"status\"].apply(lambda s: (s == \"FAILED\").mean() * 100)\nresult = pd.DataFrame({\"hour\": rate.index.astype(int), \"failure_rate_pct\": rate.round(2).values})",
+    "expectedOutput": {
+      "columns": [
+        "hour",
+        "failure_rate_pct"
+      ],
+      "rows": [
+        [
+          9,
+          2.43
+        ],
+        [
+          18,
+          2.75
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The `parse_ts` helper tries the ISO format first and the day-first format second, so every row gets a timestamp. `.dt.hour` turns each timestamp into an hour number. The mean of `status == \"FAILED\"` is the failure share, which we scale to a percentage.",
+    "commonMistake": "Parsing with one format only, such as `pd.to_datetime(s)` with no format. Rows in the DD-MM-YYYY format are either read as the wrong day and month or turned into missing values, so the hour counts are wrong.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "eda",
+      "datetime",
+      "groupby",
+      "rate"
+    ]
+  },
+  {
+    "id": "python-eda-003",
+    "module": "python",
+    "topic": "eda",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "The operations head asks how strongly trip distance and delivery time move together. Use the deliveries table. Drop duplicate `delivery_id` rows, keep only rows where `delivery_status` is `Delivered`, and return the Pearson correlation between `distance_km` and `actual_minutes`, rounded to 2 decimals.",
+    "dataset": "food_delivery",
+    "hint": "Cancelled orders have no `actual_minutes`. Filter them out before you compute the correlation.",
+    "solutionCode": "d = load(\"food_delivery\", \"deliveries\").drop_duplicates(subset=\"delivery_id\")\nd = d[d[\"delivery_status\"] == \"Delivered\"]\nd = d.dropna(subset=[\"distance_km\", \"actual_minutes\"])\nresult = round(float(d[\"distance_km\"].corr(d[\"actual_minutes\"])), 2)",
+    "expectedOutput": {
+      "value": 0.7
+    },
+    "orderMatters": false,
+    "explanation": "`corr()` gives a number from -1 to 1 that shows how well a straight line fits the two columns. We keep only delivered orders because cancelled orders have no delivery time. Rounding to 2 decimals makes the answer easy to read.",
+    "commonMistake": "Calling `corr()` on the full table. Cancelled rows have missing `actual_minutes`, and depending on how the NaN values are handled the answer changes. Also, the correlation is not the same as cause: longer distance does not prove it causes the delay.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 7,
+    "tags": [
+      "eda",
+      "correlation",
+      "nan"
+    ]
+  },
+  {
+    "id": "python-eda-004",
+    "module": "python",
+    "topic": "eda",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "The product team wants the trial-to-paid conversion rate for each app platform. A user counts as a trial user if they have a trial start date. A trial user counts as paid if `paid_start_date` is not empty. Join subscriptions to users (remove duplicate users first). Return a DataFrame with columns `platform`, `trial_users`, `paid_users`, `conversion_pct` (rounded to 1 decimal), sorted by `conversion_pct` descending, then `platform` ascending.",
+    "dataset": "subscription",
+    "hint": "Build the trial base from the subscriptions table, then join the platform from the users table. Count `paid` with a True/False column.",
+    "solutionCode": "users = load(\"subscription\", \"users\").drop_duplicates(subset=\"user_id\")[[\"user_id\", \"platform\"]]\nsubs = load(\"subscription\", \"subscriptions\").drop_duplicates(subset=\"subscription_id\")\ntrials = subs[subs[\"trial_start_date\"].notna()].merge(users, on=\"user_id\", how=\"inner\")\ntrials[\"paid\"] = trials[\"paid_start_date\"].notna()\ng = trials.groupby(\"platform\").agg(trial_users=(\"user_id\", \"nunique\"), paid_users=(\"paid\", \"sum\")).reset_index()\ng[\"conversion_pct\"] = (g[\"paid_users\"] / g[\"trial_users\"] * 100).round(1)\nresult = g.sort_values([\"conversion_pct\", \"platform\"], ascending=[False, True]).reset_index(drop=True)",
+    "expectedOutput": {
+      "columns": [
+        "platform",
+        "trial_users",
+        "paid_users",
+        "conversion_pct"
+      ],
+      "rows": [
+        [
+          "iOS",
+          833,
+          382,
+          45.9
+        ],
+        [
+          "Web",
+          502,
+          199,
+          39.6
+        ],
+        [
+          "Android",
+          1973,
+          612,
+          31
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The trial base comes from the subscriptions table, because only subscribed users started a trial. The join adds the platform, and `paid` marks the rows that have a paid start date. Dividing paid users by trial users gives the conversion share for each platform.",
+    "commonMistake": "Counting trial users from the users table. Many signed-up users never start a trial, so the denominator becomes too big and every conversion rate looks lower than it is.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 12,
+    "tags": [
+      "eda",
+      "merge",
+      "conversion",
+      "funnel"
+    ]
+  },
+  {
+    "id": "python-eda-005",
+    "module": "python",
+    "topic": "eda",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "Payments ops wants to know which banks fail more at busy hours. Peak hours are 9, 10, 18, 19 and 20. Use the transactions table: drop duplicate `txn_id` rows and parse the mixed dates. For each bank, compute the failure rate (percent with `status` equal to `FAILED`) in peak hours and in all other hours. Return the top 3 banks by peak failure rate as a DataFrame with columns `bank`, `peak_failure_pct` and `off_peak_failure_pct`, each rounded to 2 decimals, sorted by `peak_failure_pct` descending.",
+    "dataset": "fintech",
+    "hint": "Make a `period` column with the values `peak` and `off_peak`. Group by bank and period, then use `unstack()` to turn the period into columns.",
+    "solutionCode": "def parse_ts(s):\n    a = pd.to_datetime(s, format=\"%Y-%m-%d %H:%M:%S\", errors=\"coerce\")\n    b = pd.to_datetime(s, format=\"%d-%m-%Y %H:%M:%S\", errors=\"coerce\")\n    return a.combine_first(b)\n\nt = load(\"fintech\", \"transactions\").drop_duplicates(subset=\"txn_id\").copy()\nt[\"ts\"] = parse_ts(t[\"txn_datetime\"])\nt[\"period\"] = t[\"ts\"].dt.hour.isin([9, 10, 18, 19, 20]).map({True: \"peak\", False: \"off_peak\"})\nt[\"failed\"] = t[\"status\"].eq(\"FAILED\").astype(float) * 100\nrates = t.groupby([\"bank\", \"period\"])[\"failed\"].mean().unstack(\"period\").round(2)\ntop = rates.sort_values(\"peak\", ascending=False).head(3).reset_index()\nresult = top.rename(columns={\"peak\": \"peak_failure_pct\", \"off_peak\": \"off_peak_failure_pct\"})[[\"bank\", \"peak_failure_pct\", \"off_peak_failure_pct\"]]",
+    "expectedOutput": {
+      "columns": [
+        "bank",
+        "peak_failure_pct",
+        "off_peak_failure_pct"
+      ],
+      "rows": [
+        [
+          "Kaveri Co-op Bank",
+          10.25,
+          3.24
+        ],
+        [
+          "PayNova Small Finance Bank",
+          3.38,
+          2.67
+        ],
+        [
+          "Sundaram Bank",
+          3.29,
+          2.14
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Each transaction gets a `peak` or `off_peak` label from its hour. Group by bank and period, then `unstack()` moves the period labels into columns, which makes a small pivot table. Sorting by the peak rate and taking the top 3 gives the banks to check first.",
+    "commonMistake": "Comparing raw failure counts instead of rates. A big bank has more failures just because it has more transactions. The rate divides by the total for each bank and period, which makes banks of different sizes fair to compare.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 14,
+    "tags": [
+      "eda",
+      "pivot",
+      "segment",
+      "peak"
+    ]
+  }
+]

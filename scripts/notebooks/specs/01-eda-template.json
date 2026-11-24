@@ -1,0 +1,83 @@
+{
+  "filename": "01-eda-template",
+  "title": "EDA template: a starter notebook for any table",
+  "dataset": "any",
+  "cells": [
+    {
+      "type": "markdown",
+      "source": "# EDA template\n\nThis notebook is a starter for any table. It follows the same 10 steps every time: business question, load, quality, clean, single columns, time, segments, relationships, outliers, and insights.\n\nSet `PATH` to your file. Then fill in the questions as you go. Run the cells from top to bottom."
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 1: Business question and grain\n\nWrite the question in one sentence. Then write the grain: what does one row stand for? For example, \"one row is one transaction\".\n\nQuestion:\nGrain:"
+    },
+    {
+      "type": "code",
+      "source": "import numpy as np\nimport pandas as pd\n\nPATH = \"your_file.csv\"  # Set PATH to your file, for example \"fintech/transactions.csv\""
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 2: Load, shape and data types"
+    },
+    {
+      "type": "code",
+      "source": "df = pd.read_csv(PATH)\nprint(\"rows, columns:\", df.shape)\nprint(df.dtypes)\ndf.head()"
+    },
+    {
+      "type": "markdown",
+      "source": "## Steps 3 and 4: Quality, then clean\n\nCheck nulls, exact duplicates and impossible values first. Then write each fix as its own line, so a reviewer can see it."
+    },
+    {
+      "type": "code",
+      "source": "print(df.isna().sum())\nprint(\"exact duplicate rows:\", df.duplicated().sum())"
+    },
+    {
+      "type": "code",
+      "source": "# Write your cleaning steps below. Keep the cleaned table in df.\ndf = df.drop_duplicates().copy()\nprint(\"rows after cleaning:\", len(df))"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 5: Single columns (univariate)"
+    },
+    {
+      "type": "code",
+      "source": "print(df.describe(include=\"all\").T)\nfor col in df.select_dtypes(exclude=\"number\").columns[:3]:\n    print(df[col].value_counts(dropna=False).head(10))"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 6: Time (trend and seasonality)"
+    },
+    {
+      "type": "code",
+      "source": "DATE_COL = None  # Set DATE_COL to a date column name, for example \"order_date\"\nif DATE_COL:\n    dates = pd.to_datetime(df[DATE_COL], errors=\"coerce\")\n    print(\"unparsed dates:\", dates.isna().sum())\n    print(dates.dt.to_period(\"M\").value_counts().sort_index())"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 7: Segments (groupby on key dimensions)"
+    },
+    {
+      "type": "code",
+      "source": "SEGMENT = None  # Set SEGMENT to a text column, for example \"city\"\nif SEGMENT:\n    print(df[SEGMENT].value_counts(dropna=False).head(10))"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 8: Relationships (correlation and crosstab)"
+    },
+    {
+      "type": "code",
+      "source": "num = df.select_dtypes(include=\"number\")\nprint(num.corr(numeric_only=True).round(2))"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 9: Outliers and anomalies"
+    },
+    {
+      "type": "code",
+      "source": "num = df.select_dtypes(include=\"number\")\nq = num.quantile([0.01, 0.5, 0.99]).T\nprint(q)"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 10: Insights, next questions and caveats\n\nUse this format for each finding:\n\n- Finding: one sentence with the key fact.\n- Evidence: the table or number that shows it.\n- Action: what to do next, and who should act.\n\nAlso write one caveat (for example, the data has no refund rows) and one next question."
+    }
+  ]
+}

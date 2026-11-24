@@ -1,0 +1,310 @@
+[
+  {
+    "id": "python-missing-001",
+    "module": "python",
+    "topic": "missing",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "The fraud team asks how many rows in the raw transactions file are exact copies of another row (every column the same). Count them and assign the integer to `result`.",
+    "dataset": "fintech",
+    "hint": "Use `duplicated()` on the whole DataFrame, then sum the True values.",
+    "solutionCode": "result = int(load('fintech', 'transactions').duplicated().sum())",
+    "expectedOutput": {
+      "value": 47
+    },
+    "orderMatters": false,
+    "explanation": "`duplicated()` marks every row after its first exact copy. Summing the True flags counts the extra copies. Without a subset, all columns must match.",
+    "commonMistake": "Passing `subset=['txn_id']` to `duplicated()`. That counts rows with a repeated id, which is a different number, because some repeats differ in format.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "duplicated",
+      "missing"
+    ]
+  },
+  {
+    "id": "python-missing-002",
+    "module": "python",
+    "topic": "missing",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "The CRM team wants to know how many customer rows have no email, before any cleaning. Give the share of raw rows with a missing email as a percentage, rounded to 2 decimals, in `result`.",
+    "dataset": "ecommerce",
+    "hint": "`isna()` gives True for missing cells. The mean of True/False values is a share.",
+    "solutionCode": "result = round(load('ecommerce', 'customers')['email'].isna().mean() * 100, 2)",
+    "expectedOutput": {
+      "value": 7.26
+    },
+    "orderMatters": false,
+    "explanation": "`isna()` flags each missing email. `.mean()` turns those flags into a share, and multiplying by 100 gives a percent.",
+    "commonMistake": "Counting after dropping duplicates. The question asks for the raw table, so the share changes if you dedupe first.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "isna",
+      "missing"
+    ]
+  },
+  {
+    "id": "python-missing-003",
+    "module": "python",
+    "topic": "missing",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "HR wants a data-quality view of the employees table. Return a Series of only the columns that have at least one missing value, with the missing count per column, sorted from most to fewest missing.",
+    "dataset": "hr",
+    "hint": "Count missing values per column, then keep only the counts above zero.",
+    "solutionCode": "miss = load('hr', 'employees').isna().sum()\nresult = miss[miss > 0].sort_values(ascending=False)",
+    "expectedOutput": {
+      "columns": [
+        "index",
+        "value"
+      ],
+      "rows": [
+        [
+          "manager_id",
+          118
+        ],
+        [
+          "email",
+          84
+        ],
+        [
+          "city",
+          49
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "`isna().sum()` counts blanks in each column. Filtering with `> 0` keeps only the problem columns, and the sort puts the worst first.",
+    "commonMistake": "Filtering with `miss > 0` before sorting is fine, but forgetting the filter returns every column, including those with zero missing.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "isna",
+      "missing"
+    ]
+  },
+  {
+    "id": "python-missing-004",
+    "module": "python",
+    "topic": "missing",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Operations thinks missing `actual_minutes` only happens on cancelled orders. Remove exact duplicate rows, then return one row per `delivery_status` with two count columns, `minutes_present` and `minutes_missing`. Sort by `delivery_status`.",
+    "dataset": "food_delivery",
+    "hint": "Build a crosstab of the status against whether `actual_minutes` is missing.",
+    "solutionCode": "d = load('food_delivery', 'deliveries').drop_duplicates()\nct = pd.crosstab(d['delivery_status'], d['actual_minutes'].isna())\nct.columns = ['minutes_present', 'minutes_missing']\nresult = ct.reset_index(drop=True).assign(delivery_status=ct.index.values)[['delivery_status', 'minutes_present', 'minutes_missing']]",
+    "expectedOutput": {
+      "columns": [
+        "delivery_status",
+        "minutes_present",
+        "minutes_missing"
+      ],
+      "rows": [
+        [
+          "Cancelled",
+          0,
+          711
+        ],
+        [
+          "Delivered",
+          14355,
+          0
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "A crosstab counts each combination of status and missing flag. If the missing column only shows up for Cancelled rows, the operations guess is right.",
+    "commonMistake": "Filling the blank minutes with 0 before checking. The zeros hide the pattern and drag the average down.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "crosstab",
+      "missing"
+    ]
+  },
+  {
+    "id": "python-missing-005",
+    "module": "python",
+    "topic": "missing",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Growth wants the top 3 cities for app users. Remove exact duplicate user rows, strip spaces and use title case on `city`, fill missing cities with 'Unknown', then return the 3 largest city counts as a Series.",
+    "dataset": "subscription",
+    "hint": "Clean the text first, then fill the blanks, then count.",
+    "solutionCode": "u = load('subscription', 'users').drop_duplicates()\ncity = u['city'].str.strip().str.title().fillna('Unknown')\nresult = city.value_counts().head(3)",
+    "expectedOutput": {
+      "columns": [
+        "city",
+        "count"
+      ],
+      "rows": [
+        [
+          "Delhi",
+          665
+        ],
+        [
+          "Mumbai",
+          662
+        ],
+        [
+          "Bengaluru",
+          558
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "`str.strip()` removes stray spaces and `str.title()` fixes the case. `fillna` gives blanks a visible label, and `value_counts` ranks the cities.",
+    "commonMistake": "Counting before stripping and title-casing. ' delhi' and 'Delhi' then count as two cities and the top 3 list is wrong.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "fillna",
+      "text"
+    ]
+  },
+  {
+    "id": "python-missing-006",
+    "module": "python",
+    "topic": "missing",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "The compensation team needs a quick check of salary data. Clean `annual_ctc` (it can be text like '₹12,50,000'). Count rows outside the IQR fences (Q1 - 1.5 x IQR, Q3 + 1.5 x IQR), and count rows above ₹1 crore (10000000). Return a dict with keys `iqr_outliers` and `above_1_crore`.",
+    "dataset": "hr",
+    "hint": "Strip the rupee symbol and commas, then compute the quartiles on the cleaned numbers.",
+    "solutionCode": "s = load('hr', 'salaries')\nctc = s['annual_ctc'].astype(str).str.replace(r'[₹,\\s]', '', regex=True).astype(float)\nq1, q3 = ctc.quantile(0.25), ctc.quantile(0.75)\niqr = q3 - q1\nlow, high = q1 - 1.5 * iqr, q3 + 1.5 * iqr\nresult = {'iqr_outliers': int(((ctc < low) | (ctc > high)).sum()), 'above_1_crore': int((ctc > 10000000).sum())}",
+    "expectedOutput": {
+      "value": {
+        "iqr_outliers": 289,
+        "above_1_crore": 5
+      }
+    },
+    "orderMatters": false,
+    "explanation": "Clean the text first so the numbers are real. The IQR fences use quartiles, which ignore extreme values, and the crore rule catches the impossible salaries.",
+    "commonMistake": "Computing the quartiles on the raw text column, which fails or gives nonsense. Also using a mean-based z-score, which the big outliers distort.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "iqr",
+      "outliers"
+    ]
+  },
+  {
+    "id": "python-missing-007",
+    "module": "python",
+    "topic": "missing",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "Pricing asks for a typical net sale value per category. Remove duplicate `sale_id` rows (keep the first), clean `net_amount_inr` (rupee text like '₹1,250' becomes a number), then drop rows above 10 times their category median as data errors. Return the median net amount per category, rounded to 2 decimals, with columns `category` and `median_net_inr`, sorted by category.",
+    "dataset": "retail",
+    "hint": "Use `transform('median')` to get each row's category median, then compare.",
+    "solutionCode": "r = load('retail', 'sales').drop_duplicates(subset=['sale_id'])\nr = r.assign(net=r['net_amount_inr'].astype(str).str.replace(r'[₹,\\s]', '', regex=True).astype(float))\nmed = r.groupby('category')['net'].transform('median')\nclean = r[r['net'] <= 10 * med]\nresult = clean.groupby('category')['net'].median().round(2).reset_index(name='median_net_inr').sort_values('category').reset_index(drop=True)",
+    "expectedOutput": {
+      "columns": [
+        "category",
+        "median_net_inr"
+      ],
+      "rows": [
+        [
+          "Apparel",
+          1346.78
+        ],
+        [
+          "Electronics Accessories",
+          900.4
+        ],
+        [
+          "Grocery & Staples",
+          831.25
+        ],
+        [
+          "Home & Kitchen",
+          1568.38
+        ],
+        [
+          "Home Decor",
+          991.95
+        ],
+        [
+          "Personal Care",
+          525.35
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "A median ignores extreme values, so it describes a typical sale. The 10x rule removes entry errors before the final median.",
+    "commonMistake": "Using the mean instead of the median per category. A few huge sales pull the mean up and make the typical value look too high.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "median",
+      "outliers"
+    ]
+  },
+  {
+    "id": "python-missing-008",
+    "module": "python",
+    "topic": "missing",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "The growth team runs an A/B test. Remove exact duplicate rows, then remove every user who appears in both variants. Return one row per variant with `variant`, `rows` (row count) and `conversion_rate_pct` (mean of `converted` times 100, rounded to 2 decimals). Sort by `variant`.",
+    "dataset": "marketing",
+    "hint": "A user in both groups has a contaminated assignment. Find those users with `nunique` on the variant column.",
+    "solutionCode": "a = load('marketing', 'ab_test_results').drop_duplicates()\nnv = a.groupby('user_id')['variant'].nunique()\nbad = nv[nv > 1].index\nclean = a[~a['user_id'].isin(bad)]\ns = clean.groupby('variant')['converted'].agg(rows='size', conv='mean').reset_index()\ns['conversion_rate_pct'] = (s['conv'] * 100).round(2)\nresult = s[['variant', 'rows', 'conversion_rate_pct']].reset_index(drop=True)",
+    "expectedOutput": {
+      "columns": [
+        "variant",
+        "rows",
+        "conversion_rate_pct"
+      ],
+      "rows": [
+        [
+          "control",
+          6016,
+          10.57
+        ],
+        [
+          "treatment",
+          5974,
+          11.72
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "`nunique` counts distinct variants per user, so a value above 1 means the user saw both. Removing those users keeps the comparison fair, and the mean of a 0/1 column is a conversion rate.",
+    "commonMistake": "Skipping the contamination check. Users who saw both versions blur the comparison and can flip which variant looks better.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "ab-test",
+      "groupby"
+    ]
+  },
+  {
+    "id": "python-missing-009",
+    "module": "python",
+    "topic": "missing",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Ops wants the most common city for users without a city. Remove exact duplicate user rows, clean `city` (strip spaces, title case) first, then return a dict with `mode_city` (the most common cleaned city) and `filled_count` (how many cities are missing).",
+    "dataset": "fintech",
+    "hint": "Clean first, so one city does not split into two spellings. `mode()` ignores blanks.",
+    "solutionCode": "u = load('fintech', 'users').drop_duplicates()\ncity = u['city'].str.strip().str.title()\nresult = {'mode_city': city.mode()[0], 'filled_count': int(city.isna().sum())}",
+    "expectedOutput": {
+      "value": {
+        "mode_city": "Mumbai",
+        "filled_count": 148
+      }
+    },
+    "orderMatters": false,
+    "explanation": "After cleaning, each city has one spelling, so `mode()` counts it correctly. The blanks are counted separately to show how many would be filled.",
+    "commonMistake": "Finding the mode before cleaning the case. 'mumbai' and 'Mumbai' are counted separately, so the true top city shows a lower count than it should.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "mode",
+      "fillna"
+    ]
+  }
+]

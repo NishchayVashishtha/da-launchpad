@@ -1,0 +1,79 @@
+{
+  "filename": "07-matplotlib-seaborn-gallery",
+  "title": "Matplotlib and seaborn gallery: 8 charts",
+  "dataset": "fintech",
+  "cells": [
+    {
+      "type": "markdown",
+      "source": "# Matplotlib and seaborn gallery\n\nThis notebook draws eight charts on the fintech and ecommerce data. Before each chart, a short note says which chart type to pick and why.\n\nPut the CSV files for this dataset in a folder named `fintech and ecommerce` next to this notebook. The site zip has one folder per dataset. Run the cells from top to bottom."
+    },
+    {
+      "type": "code",
+      "source": "import matplotlib.pyplot as plt\nimport pandas as pd\nimport seaborn as sns\n\nsns.set_theme(style=\"whitegrid\")\n\ntx = pd.read_csv(\"fintech/transactions.csv\").drop_duplicates(subset=\"txn_id\").copy()\ntx[\"amount_inr\"] = tx[\"amount\"].str.replace(r\"[₹,\\s]\", \"\", regex=True).astype(float)\ntx[\"ts\"] = pd.to_datetime(tx[\"txn_datetime\"], format=\"%Y-%m-%d %H:%M:%S\", errors=\"coerce\").combine_first(\n    pd.to_datetime(tx[\"txn_datetime\"], format=\"%d-%m-%Y %H:%M:%S\", errors=\"coerce\"))\ntx[\"hour\"] = tx[\"ts\"].dt.hour\ntx[\"failed\"] = tx[\"status\"].eq(\"FAILED\")"
+    },
+    {
+      "type": "markdown",
+      "source": "## Chart 1\n\nChart chooser: compare a value across categories. Use a horizontal bar chart when the labels are long."
+    },
+    {
+      "type": "code",
+      "source": "rate = tx.groupby(\"bank\")[\"failed\"].mean().mul(100).sort_values()\nax = rate.plot(kind=\"barh\", figsize=(8, 4), color=\"#4C72B0\")\nax.set_xlabel(\"Failure rate (%)\")\nax.set_title(\"Failure rate by bank\")\nplt.tight_layout()\nplt.show()"
+    },
+    {
+      "type": "markdown",
+      "source": "## Chart 2\n\nChart chooser: show a trend over time. Use a line chart with one point per month."
+    },
+    {
+      "type": "code",
+      "source": "monthly = tx.groupby(tx[\"ts\"].dt.to_period(\"M\")).size()\nax = monthly.plot(figsize=(8, 4), marker=\"o\")\nax.set_ylabel(\"Transactions\")\nax.set_title(\"Transactions per month\")\nplt.tight_layout()\nplt.show()"
+    },
+    {
+      "type": "markdown",
+      "source": "## Chart 3\n\nChart chooser: show the spread of one number. Use a histogram. Amounts have a long tail, so use a log scale."
+    },
+    {
+      "type": "code",
+      "source": "fig, ax = plt.subplots(figsize=(8, 4))\nsns.histplot(tx[\"amount_inr\"], bins=60, log_scale=True, ax=ax)\nax.set_title(\"Distribution of transaction amounts (log scale)\")\nplt.tight_layout()\nplt.show()"
+    },
+    {
+      "type": "markdown",
+      "source": "## Chart 4\n\nChart chooser: compare the spread of a number between groups. Use a box plot."
+    },
+    {
+      "type": "code",
+      "source": "fig, ax = plt.subplots(figsize=(8, 4))\nsns.boxplot(data=tx, x=\"txn_type\", y=\"amount_inr\", showfliers=False, ax=ax)\nax.set_ylabel(\"Amount (INR)\")\nax.set_title(\"Amount by transaction type (outliers hidden)\")\nplt.tight_layout()\nplt.show()"
+    },
+    {
+      "type": "markdown",
+      "source": "## Chart 5\n\nChart chooser: a grid of values for two categories. Use a heatmap."
+    },
+    {
+      "type": "code",
+      "source": "peak_grid = tx.pivot_table(index=\"payment_app\", columns=\"hour\", values=\"failed\", aggfunc=\"mean\").mul(100)\nfig, ax = plt.subplots(figsize=(10, 3))\nsns.heatmap(peak_grid, cmap=\"Reds\", annot=False, cbar_kws={\"label\": \"Failure rate (%)\"}, ax=ax)\nax.set_title(\"Failure rate by app and hour\")\nplt.tight_layout()\nplt.show()"
+    },
+    {
+      "type": "markdown",
+      "source": "## Chart 6\n\nChart chooser: show the share of a total over time. Use a column chart for each month."
+    },
+    {
+      "type": "code",
+      "source": "orders = pd.read_csv(\"ecommerce/orders.csv\").drop_duplicates(subset=\"order_id\")\norders[\"order_dt\"] = pd.to_datetime(orders[\"order_date\"], format=\"%Y-%m-%d\", errors=\"coerce\").combine_first(\n    pd.to_datetime(orders[\"order_date\"], format=\"%d-%m-%Y\", errors=\"coerce\"))\nsales = orders[orders[\"order_status\"] == \"Delivered\"].groupby(orders[\"order_dt\"].dt.to_period(\"M\"))[\"total_amount\"].sum()\nax = sales.plot(kind=\"bar\", figsize=(10, 4), color=\"#55A868\")\nax.set_ylabel(\"Revenue (INR)\")\nax.set_title(\"Delivered revenue per month\")\nplt.tight_layout()\nplt.show()"
+    },
+    {
+      "type": "markdown",
+      "source": "## Chart 7\n\nChart chooser: show two numbers for each item. Use a scatter plot. Add a trend line with seaborn."
+    },
+    {
+      "type": "code",
+      "source": "dl = pd.read_csv(\"food_delivery/deliveries.csv\").drop_duplicates(subset=\"delivery_id\")\ndl = dl[dl[\"delivery_status\"] == \"Delivered\"].dropna(subset=[\"distance_km\", \"actual_minutes\"])\nfig, ax = plt.subplots(figsize=(8, 4))\nsns.regplot(data=dl, x=\"distance_km\", y=\"actual_minutes\", scatter_kws={\"s\": 5, \"alpha\": 0.3}, ax=ax)\nax.set_title(\"Delivery time against distance\")\nplt.tight_layout()\nplt.show()"
+    },
+    {
+      "type": "markdown",
+      "source": "## Chart 8\n\nChart chooser: parts of a whole with few parts. Use a horizontal bar chart, not a pie chart, when there are more than three parts."
+    },
+    {
+      "type": "code",
+      "source": "returns = pd.read_csv(\"ecommerce/returns.csv\")\nreasons = returns[\"return_reason\"].value_counts()\nax = reasons.plot(kind=\"barh\", figsize=(8, 4), color=\"#C44E52\")\nax.set_xlabel(\"Number of returns\")\nax.set_title(\"Return reasons\")\nplt.tight_layout()\nplt.show()"
+    }
+  ]
+}

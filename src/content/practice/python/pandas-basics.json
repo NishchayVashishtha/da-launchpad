@@ -1,0 +1,236 @@
+[
+  {
+    "id": "python-pandas-basics-001",
+    "module": "python",
+    "topic": "pandas-basics",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "The growth team wants to know how big the customer file is. Load the `customers` table and return the number of rows as a plain integer. Count every row, including duplicates.",
+    "dataset": "ecommerce",
+    "hint": "A DataFrame has a length. Use `len()` on the DataFrame.",
+    "solutionCode": "df = load(\"ecommerce\", \"customers\")\nresult = int(len(df))",
+    "expectedOutput": {
+      "value": 4520
+    },
+    "orderMatters": false,
+    "explanation": "`load` returns a pandas DataFrame, and `len(df)` gives its number of rows. The file has some exact duplicate rows, and this question asks for the raw count, so the duplicates stay in. Wrapping the answer in `int()` returns a plain Python number.",
+    "commonMistake": "Dropping duplicates first. That returns a smaller number (about 4,500), which is not the raw row count the question asks for.",
+    "interviewFrequency": "low",
+    "estimatedMinutes": 3,
+    "tags": [
+      "dataframe",
+      "len",
+      "shape"
+    ]
+  },
+  {
+    "id": "python-pandas-basics-002",
+    "module": "python",
+    "topic": "pandas-basics",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "HR wants the list of employment statuses that appear in the employee file. Return the distinct values of `employment_status` as a sorted Python list. Skip any missing values.",
+    "dataset": "hr",
+    "hint": "Use `.unique()` on the column, then `sorted()` on the result.",
+    "solutionCode": "df = load(\"hr\", \"employees\")\nresult = sorted(df[\"employment_status\"].dropna().unique().tolist())",
+    "expectedOutput": {
+      "value": [
+        "Active",
+        "Exited"
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "`unique()` gives each distinct value once. `dropna()` removes missing values so that NaN never appears in the list. `sorted()` puts the values in alphabetical order, so the answer is the same every time you run it.",
+    "commonMistake": "Forgetting `sorted()` and returning values in file order. The list still has the same items, but its order changes with the file, so it fails the comparison.",
+    "interviewFrequency": "low",
+    "estimatedMinutes": 3,
+    "tags": [
+      "unique",
+      "sorted",
+      "missing values"
+    ]
+  },
+  {
+    "id": "python-pandas-basics-003",
+    "module": "python",
+    "topic": "pandas-basics",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "The subscription product team wants a count of subscriptions in each status. Return a Series of counts per `status` in the `subscriptions` table, with the largest count first. Count raw rows.",
+    "dataset": "subscription",
+    "hint": "`value_counts()` counts each distinct value in a column.",
+    "solutionCode": "df = load(\"subscription\", \"subscriptions\")\nresult = df[\"status\"].value_counts()",
+    "expectedOutput": {
+      "columns": [
+        "status",
+        "count"
+      ],
+      "rows": [
+        [
+          "trial_expired",
+          2071
+        ],
+        [
+          "cancelled",
+          654
+        ],
+        [
+          "active",
+          539
+        ],
+        [
+          "trialing",
+          44
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "`value_counts()` counts how often each status appears and sorts the counts from high to low by default. The result is a Series where the index holds the status and the values hold the count. Missing statuses are skipped, so check `isna()` if you suspect blanks.",
+    "commonMistake": "Using `df[\"status\"].count()`. That returns one number, the total of non-missing rows, and does not give a count per status.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "value_counts",
+      "series"
+    ]
+  },
+  {
+    "id": "python-pandas-basics-004",
+    "module": "python",
+    "topic": "pandas-basics",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "The retail real estate team wants the average store size. Load the `stores` table and return the mean of `carpet_area_sqft`, rounded to 1 decimal place as a float.",
+    "dataset": "retail",
+    "hint": "Pick one column with `df[\"column\"]`, then call `.mean()` on it.",
+    "solutionCode": "df = load(\"retail\", \"stores\")\nresult = round(float(df[\"carpet_area_sqft\"].mean()), 1)",
+    "expectedOutput": {
+      "value": 24595.8
+    },
+    "orderMatters": false,
+    "explanation": "Selecting one column with single brackets gives a Series. The Series method `mean()` adds up the values and divides by how many there are. `round(..., 1)` keeps one decimal place.",
+    "commonMistake": "Using `sum() / 24` with a hard-coded row count. It gives the same answer here, but it breaks as soon as the table changes size. `mean()` works for any length.",
+    "interviewFrequency": "low",
+    "estimatedMinutes": 3,
+    "tags": [
+      "mean",
+      "round"
+    ]
+  },
+  {
+    "id": "python-pandas-basics-005",
+    "module": "python",
+    "topic": "pandas-basics",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Finance wants the gross value of all items before any discount. Load `order_items`, add a new column `gross = quantity * unit_price`, and return the total of `gross` rounded to 2 decimals. Use the rows as they are in the file.",
+    "dataset": "ecommerce",
+    "hint": "Multiply two columns to make a new column. Then add up the new column.",
+    "solutionCode": "df = load(\"ecommerce\", \"order_items\")\ndf[\"gross\"] = df[\"quantity\"] * df[\"unit_price\"]\nresult = round(float(df[\"gross\"].sum()), 2)",
+    "expectedOutput": {
+      "value": 54587897.49
+    },
+    "orderMatters": false,
+    "explanation": "Multiplying two Series does the work row by row, so there is no loop. The new column holds the value of each line before the discount is taken off. Adding the column up gives the total gross value.",
+    "commonMistake": "Summing `line_total` instead. That column already has the discount taken off, so the answer is too low.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "vectorised",
+      "new column",
+      "sum"
+    ]
+  },
+  {
+    "id": "python-pandas-basics-006",
+    "module": "python",
+    "topic": "pandas-basics",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Operations wants to know how each delivery ended. Load `deliveries` and return the share of rows for each `delivery_status`, as proportions rounded to 3 decimals, with the largest share first. Use all rows as they are in the file.",
+    "dataset": "food_delivery",
+    "hint": "`value_counts` has a `normalize` option that turns counts into shares.",
+    "solutionCode": "df = load(\"food_delivery\", \"deliveries\")\nresult = df[\"delivery_status\"].value_counts(normalize=True).round(3)",
+    "expectedOutput": {
+      "columns": [
+        "delivery_status",
+        "proportion"
+      ],
+      "rows": [
+        [
+          "Delivered",
+          0.953
+        ],
+        [
+          "Cancelled",
+          0.047
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "`value_counts(normalize=True)` divides each count by the total number of non-missing rows, so the shares add up to 1. Rounding to 3 decimals gives a clean answer. Adding `.round(3)` after the call works on the whole Series.",
+    "commonMistake": "Dividing each count by a number you typed in by hand. A typed-in total often misses the rows that the file really has, so the shares do not add up to 1.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "value_counts",
+      "normalize",
+      "proportion"
+    ]
+  },
+  {
+    "id": "python-pandas-basics-007",
+    "module": "python",
+    "topic": "pandas-basics",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "The fintech growth team wants a quick look at the first few users. From the `users` table, return the columns `user_id`, `full_name` and `city` for the first 5 users when sorted by `user_id`. Return a DataFrame with a fresh 0 to 4 index.",
+    "dataset": "fintech",
+    "hint": "Use double brackets to keep a DataFrame, then sort and take the first 5 rows.",
+    "solutionCode": "df = load(\"fintech\", \"users\")\nresult = df[[\"user_id\", \"full_name\", \"city\"]].sort_values(\"user_id\").head(5).reset_index(drop=True)",
+    "expectedOutput": {
+      "columns": [
+        "user_id",
+        "full_name",
+        "city"
+      ],
+      "rows": [
+        [
+          1,
+          "Vivaan Mishra",
+          "Bengaluru"
+        ],
+        [
+          2,
+          "Pallavi Singh",
+          "Coimbatore"
+        ],
+        [
+          3,
+          "Harpreet Shetty",
+          null
+        ],
+        [
+          4,
+          "Gaurav Patel",
+          "Chandigarh"
+        ],
+        [
+          5,
+          "Bhavna Menon",
+          "Delhi"
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The inner double brackets keep a DataFrame with three columns. `sort_values` puts the rows in user order, and `head(5)` keeps the first five. `reset_index(drop=True)` gives the rows a clean 0 to 4 index.",
+    "commonMistake": "Writing `df[\"user_id\", \"full_name\", \"city\"]` with single brackets. That raises an error, and `df[\"user_id\"]` alone would return a Series instead of a DataFrame.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "column selection",
+      "sort_values",
+      "head"
+    ]
+  }
+]

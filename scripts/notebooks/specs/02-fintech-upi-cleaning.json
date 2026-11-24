@@ -1,0 +1,67 @@
+{
+  "filename": "02-fintech-upi-cleaning",
+  "title": "Cleaning UPI transactions",
+  "dataset": "fintech",
+  "cells": [
+    {
+      "type": "markdown",
+      "source": "# Cleaning UPI transactions\n\nThis notebook cleans the fintech transactions table. The raw file has rupee text in `amount`, two date formats in `txn_datetime`, and duplicate rows. You will fix each one and write a cleaning log.\n\nPut the CSV files for this dataset in a folder named `fintech` next to this notebook. The site zip has one folder per dataset. Run the cells from top to bottom."
+    },
+    {
+      "type": "code",
+      "source": "import pandas as pd\n\ndf = pd.read_csv(\"fintech/transactions.csv\")\nprint(\"raw rows:\", df.shape[0])\ndf.head()"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 1: Look at the raw text\n\nCheck which values have rupee signs or commas, and which dates use the day-first format."
+    },
+    {
+      "type": "code",
+      "source": "print(\"amount has rupee sign or comma:\", df[\"amount\"].str.contains(\"₹|,\").sum())\nprint(\"date starts with a 4-digit year:\", df[\"txn_datetime\"].str.match(r\"^\\d{4}-\").sum())\nprint(\"date uses DD-MM-YYYY:\", (~df[\"txn_datetime\"].str.match(r\"^\\d{4}-\")).sum())"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 2: Remove duplicate rows\n\nThe same `txn_id` can appear more than once. Keep the first row for each `txn_id`."
+    },
+    {
+      "type": "code",
+      "source": "exact_dupes = df.duplicated().sum()\nid_dupes = df[\"txn_id\"].duplicated().sum()\ndf = df.drop_duplicates(subset=\"txn_id\", keep=\"first\").copy()\nprint(\"exact duplicate rows:\", exact_dupes)\nprint(\"duplicate txn_id rows removed:\", id_dupes)\nprint(\"rows now:\", len(df))"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 3: Turn the amount text into a number\n\nRemove the rupee sign, the commas and any spaces. Then convert to float."
+    },
+    {
+      "type": "code",
+      "source": "df[\"amount_inr\"] = df[\"amount\"].str.replace(r\"[₹,\\s]\", \"\", regex=True).astype(float)\nprint(df[\"amount_inr\"].describe().round(2))"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 4: Parse both date formats\n\nTry the ISO format first. Then try the day-first format for the rows that failed. `combine_first` keeps the first good value."
+    },
+    {
+      "type": "code",
+      "source": "iso = pd.to_datetime(df[\"txn_datetime\"], format=\"%Y-%m-%d %H:%M:%S\", errors=\"coerce\")\ndmy = pd.to_datetime(df[\"txn_datetime\"], format=\"%d-%m-%Y %H:%M:%S\", errors=\"coerce\")\ndf[\"txn_ts\"] = iso.combine_first(dmy)\nprint(\"rows that could not be parsed:\", df[\"txn_ts\"].isna().sum())\nprint(df[\"txn_ts\"].min(), \"to\", df[\"txn_ts\"].max())"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 5: Look at the largest amounts\n\nDo not delete outliers without a reason. Flag them first, and show the top values to a business owner. A 3 x IQR fence is only a starting rule: many flagged rows are real large payments, so the flag is for review, not removal."
+    },
+    {
+      "type": "code",
+      "source": "print(df.nlargest(5, \"amount_inr\")[[\"txn_id\", \"amount_inr\", \"payment_app\", \"txn_type\"]])\nq1, q3 = df[\"amount_inr\"].quantile([0.25, 0.75])\nupper = q3 + 3 * (q3 - q1)\ndf[\"amount_flag\"] = df[\"amount_inr\"] > upper\nprint(\"upper fence (Q3 + 3 x IQR):\", round(upper, 2))\nprint(\"flagged rows:\", int(df[\"amount_flag\"].sum()))"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 6: Save the cleaned table and a cleaning log\n\nThe log lists every change, so a reviewer can check the numbers. The flag stays in the file, so no row is lost."
+    },
+    {
+      "type": "code",
+      "source": "clean = df[[\"txn_id\", \"user_id\", \"txn_type\", \"txn_ts\", \"amount_inr\", \"payment_app\", \"bank\", \"status\", \"amount_flag\"]].copy()\nclean.to_csv(\"transactions_clean.csv\", index=False)\n\nlog = pd.DataFrame([\n    {\"step\": \"remove duplicate txn_id\", \"rows_removed\": int(id_dupes)},\n    {\"step\": \"amount text to number\", \"rows_changed\": int(df[\"amount\"].str.contains(\"₹|,\").sum())},\n    {\"step\": \"parse two date formats\", \"rows_unparsed\": int(df[\"txn_ts\"].isna().sum())},\n    {\"step\": \"flag amounts above upper fence\", \"rows_flagged\": int(df[\"amount_flag\"].sum())},\n])\nlog.to_csv(\"cleaning_log.csv\", index=False)\nprint(log.to_string(index=False))\nprint(\"saved rows:\", len(clean))"
+    },
+    {
+      "type": "markdown",
+      "source": "## Findings to check\n\n- Did any row lose its `txn_id` after cleaning? (It should not.)\n- Is the cleaned row count the raw count minus the duplicate count?\n- Which bank or app has the most flagged amounts? Write that down before you go on."
+    }
+  ]
+}

@@ -1,0 +1,331 @@
+---
+title: "Exploratory data analysis (EDA) workflow"
+description: "Explore a new dataset in a fixed order and write down what you find."
+module: python
+order: 15
+estimatedMinutes: 45
+objectives:
+  - "Run a 10-step EDA checklist in the same order every time"
+  - "Profile single columns and pairs of columns"
+  - "Spot trends and segments that averages hide"
+  - "Turn findings into 3 business insights"
+  - "Write a short EDA summary with evidence and caveats"
+tags: ["python", "eda", "pandas", "checklist"]
+---
+
+## Learning objectives
+
+- Run a 10-step EDA checklist in the same order every time.
+- Profile single columns and pairs of columns.
+- Spot trends and segments that averages hide.
+- Turn findings into 3 business insights.
+- Write an EDA summary with evidence and caveats.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+A product manager in a Bengaluru fintech gets a new table on Monday. She asks you for "a quick look" by Wednesday. The analysts who get trusted are the ones who check the row count, the nulls and the dates before they show any chart. A fixed checklist makes that habit automatic, so you never skip the boring checks that catch the expensive mistakes.
+</RealWorld>
+
+## Concept
+
+### Think like a doctor's check-up
+
+A doctor does not start with surgery. First come the basic checks: temperature, blood pressure, weight. Then the doctor runs focused tests only where something looks wrong. EDA works the same way. You check the basics of the data first (shape, types, nulls, duplicates), then look closer at the columns and groups that matter for the business question.
+
+EDA stands for **exploratory data analysis**. It is the step before any model or final report. The goal is to learn what the data looks like, what is broken in it, and what questions it can answer.
+
+### The 10-step EDA checklist
+
+Use the same order on every new table. Skipping a step is how analysts end up with a wrong number in front of a manager.
+
+<FormulaCard title="The 10-step EDA checklist">
+1. **Business question and grain.** Write the question. Then write what one row stands for.
+2. **Load, shape, data types.** Check the number of rows and columns and the type of each column.
+3. **Quality.** Count nulls, exact duplicates and impossible values (negative prices, dates in the future).
+4. **Clean.** Fix each problem with one clear line of code, as in the cleaning lesson.
+5. **Univariate.** Describe each important column with `describe()` and `value_counts()`.
+6. **Time.** Plot or group by month. Look for trend and seasonality.
+7. **Segments.** Group by the key dimensions, such as bank, city or platform.
+8. **Relationships.** Check the correlation of number columns and a crosstab of text columns.
+9. **Outliers and anomalies.** Look at the largest and smallest values. Decide what to flag.
+10. **Insights.** Write findings, the next questions and the caveats.
+</FormulaCard>
+
+### Check the grain first
+
+The **grain** is what one row stands for. One row in a transactions table is one payment attempt. One row in an order-items table is one product line. If you do not know the grain, you will count the wrong thing.
+
+Reconcile your counts too. If the cleaned table has 22,300 rows and the raw table has 22,389 rows, you should be able to say why the 89 rows are gone. A number you cannot explain is not ready to share.
+
+### Single columns, then pairs
+
+Start with one column at a time. For a number, look at `describe()`. Check the mean, the median (the middle value) and the spread. For a text column, use `value_counts()` to see each label and its share.
+
+Then look at pairs. The **correlation** from `df.corr(numeric_only=True)` measures how closely two number columns move together. It runs from -1 to 1. A value near 0 means little straight-line link. A value near 1 or -1 means a strong link.
+
+<Tip>
+Correlation is not causation. Two columns can move together because a third column drives both. Say "is linked with", not "causes", until you have a test. The statistics module covers this in depth.
+</Tip>
+
+### Segments hide the truth
+
+An overall average can hide a big gap between groups. Take failure rates. The overall rate might look normal, while one bank has a rate three times higher at peak hours. Always split the main number by the key dimensions, and compare the rates, not only the counts.
+
+Remember that a rate needs a denominator. "Kaveri failed 60 payments" means little. "Kaveri failed 10 out of every 100 peak-hour payments" is useful.
+
+### Findings, evidence, action
+
+Write each insight in three parts:
+
+- **Finding:** one sentence with the key fact.
+- **Evidence:** the table or number that shows it.
+- **Action:** what to do next, and who should act.
+
+Add one caveat and one next question. This format is short, clear and easy to check. Managers read it in two minutes.
+
+## Worked examples
+
+### Example 1: a quick pass on fintech transactions
+
+The first pass checks the shape, cleans the amount, looks at the status mix and checks the daily volume. The file is in the `fintech` folder next to your notebook.
+
+```python
+import pandas as pd
+
+# Step 2: load and check the shape
+df = pd.read_csv("fintech/transactions.csv")
+print(df.shape)
+
+# Step 3: quality - exact and id duplicates
+print("exact duplicate rows:", df.duplicated().sum())
+print("duplicate txn_id values:", df["txn_id"].duplicated().sum())
+df = df.drop_duplicates(subset="txn_id").copy()
+print("rows after dedupe:", len(df))
+
+# Step 4: clean the amount text
+df["amount_inr"] = df["amount"].str.replace(r"[₹,\s]", "", regex=True).astype(float)
+print(df["amount_inr"].describe().round(2))
+
+# Step 5: status mix
+print(df["status"].value_counts())
+print((df["status"].value_counts(normalize=True) * 100).round(2))
+
+# Step 6: daily volume shape
+df["ts"] = pd.to_datetime(df["txn_datetime"], format="%Y-%m-%d %H:%M:%S", errors="coerce").combine_first(
+    pd.to_datetime(df["txn_datetime"], format="%d-%m-%Y %H:%M:%S", errors="coerce"))
+print("unparsed dates:", df["ts"].isna().sum())
+daily = df.groupby(df["ts"].dt.date).size()
+print(daily.describe().round(1))
+```
+
+**Output:**
+
+```text
+(22389, 12)
+exact duplicate rows: 47
+duplicate txn_id values: 89
+rows after dedupe: 22300
+count    22300.00
+mean      1384.64
+std       2894.86
+min         22.66
+25%        293.28
+50%        556.87
+75%       1361.83
+max      95484.05
+Name: amount_inr, dtype: float64
+status
+SUCCESS    21619
+FAILED       601
+PENDING       80
+Name: count, dtype: int64
+status
+SUCCESS    96.95
+FAILED      2.70
+PENDING     0.36
+Name: proportion, dtype: float64
+unparsed dates: 0
+count    731.0
+mean      30.5
+std       10.2
+min       11.0
+25%        24.0
+50%        29.0
+75%        35.0
+max      114.0
+dtype: float64
+```
+
+Three things stand out. First, 89 rows share a `txn_id` with another row, so the grain is one transaction per `txn_id`. Second, the mean amount (about 1,385 rupees) is much higher than the median (about 557 rupees). The amounts are **skewed**: a few large payments pull the average up. Third, the daily volume ranges from 11 to 114 transactions, so one day can be much busier than the typical day.
+
+<Tip>
+When the mean and median are far apart, report the median as the typical value and the mean as the total-weighted value. Say which one you used.
+</Tip>
+
+### Example 2: the failure rate by hour and by bank
+
+Now look at a segment. Group the failure rate by hour, then check the peak hours and one bank.
+
+```python
+import pandas as pd
+
+df = pd.read_csv("fintech/transactions.csv").drop_duplicates(subset="txn_id").copy()
+df["ts"] = pd.to_datetime(df["txn_datetime"], format="%Y-%m-%d %H:%M:%S", errors="coerce").combine_first(
+    pd.to_datetime(df["txn_datetime"], format="%d-%m-%Y %H:%M:%S", errors="coerce"))
+df["hour"] = df["ts"].dt.hour
+df["failed"] = df["status"].eq("FAILED")
+
+# Failure rate by hour
+by_hour = df.groupby("hour").agg(transactions=("txn_id", "size"), failure_rate_pct=("failed", "mean"))
+by_hour["failure_rate_pct"] = (by_hour["failure_rate_pct"] * 100).round(2)
+print(by_hour.loc[[8, 9, 10, 11, 17, 18, 19, 20, 21]].to_string())
+
+# Split the rate by bank, peak hours only
+peak = df[df["hour"].isin([9, 10, 18, 19, 20])]
+by_bank = peak.groupby("bank")["failed"].agg(["size", "mean"])
+by_bank["mean"] = (by_bank["mean"] * 100).round(2)
+print(by_bank.sort_values("mean", ascending=False).head(3).to_string())
+```
+
+**Output:**
+
+```text
+      transactions  failure_rate_pct
+hour                                
+8             1182              2.37
+9             1522              2.43
+10            1725              3.71
+11            1319              3.41
+17            1514              2.11
+18            2000              2.75
+19            2020              3.07
+20            1599              3.88
+21            1081              3.42
+                            size   mean
+bank                                   
+Kaveri Co-op Bank            683  10.25
+PayNova Small Finance Bank   296   3.38
+Sundaram Bank               1852   3.29
+```
+
+The hour pattern is mild. Failures are around 2.4 per cent at 9 AM and 3.9 per cent at 8 PM, while the overall rate is 2.70 per cent. The bank split tells a sharper story. Kaveri Co-op Bank fails about 10 per cent of its peak-hour payments. The other top banks sit near 3 per cent. A table of hours alone would have missed this.
+
+### Example 3: trial-to-paid conversion by platform
+
+The subscription data has one row per trial. A user who signed up but never started a trial is not part of the conversion base.
+
+```python
+import pandas as pd
+
+users = pd.read_csv("subscription/users.csv").drop_duplicates(subset="user_id")
+subs = pd.read_csv("subscription/subscriptions.csv")
+
+m = subs.merge(users[["user_id", "platform"]], on="user_id", how="inner")
+m["paid"] = m["paid_start_date"].notna()
+conv = m.groupby("platform").agg(trial_users=("user_id", "size"), paid_users=("paid", "sum"))
+conv["conversion_pct"] = (conv["paid_users"] / conv["trial_users"] * 100).round(1)
+print(conv.sort_values("conversion_pct", ascending=False).to_string())
+print("all users in users table:", len(users), "| users who started a trial:", len(subs))
+```
+
+**Output:**
+
+```text
+          trial_users  paid_users  conversion_pct
+platform                                         
+iOS               833         382            45.9
+Web               502         199            39.6
+Android          1973         612            31.0
+all users in users table: 5200 | users who started a trial: 3308
+```
+
+iOS converts best at 45.9 per cent. Android is lowest at 31.0 per cent, and it has the most trial users, so it brings in the most paid users in total. Notice the last line. The users table has 5,200 people, but only 3,308 started a trial. If you divided by 5,200, every rate would look too low.
+
+### Example 4: write three insights
+
+Turn the numbers above into a short write-up. Use the template below as a starting point, and replace the wording with your own.
+
+- **Finding 1:** Kaveri Co-op Bank fails about 10 per cent of peak-hour payments. **Evidence:** Example 2, peak-hour table. **Action:** share the bank-level rate with the payments team and ask for their outage log.
+- **Finding 2:** Trial-to-paid conversion is 45.9 per cent on iOS and 31.0 per cent on Android. **Evidence:** Example 3. **Action:** test an Android onboarding change and track the rate each week.
+- **Finding 3:** Failure rates move a little by hour, from about 2.4 per cent at 9 AM to about 3.9 per cent at 8 PM. **Evidence:** Example 2, hour table. **Action:** check whether the evening peak needs more server capacity. **Caveat:** this is a small gap; confirm it with more months of data.
+
+## Common mistakes
+
+<CommonMistake>
+**Jumping to charts before cleaning.** A chart of raw data shows the duplicates, the rupee text and the mixed dates as if they were real. Clean first, then plot. The chart is the last step, not the first.
+</CommonMistake>
+
+<CommonMistake>
+**Skipping the grain check and double counting.** A table with two rows per `txn_id` makes every total about 0.4 per cent too high. Always ask what one row stands for, and count distinct keys to confirm it.
+</CommonMistake>
+
+<CommonMistake>
+**Looking only at averages.** A mean of 1,385 rupees hides the fact that the median is 557 rupees. Check `describe()` and the median for any skewed money column.
+</CommonMistake>
+
+<CommonMistake>
+**Reporting correlation as cause.** A correlation of 0.7 between distance and delivery time shows a strong straight-line link. It does not show that distance causes the delay. Traffic and weather may drive both.
+</CommonMistake>
+
+<CommonMistake>
+**Ignoring time.** A figure for the whole year can hide a drop in the last quarter. Group by month before you say a number is stable.
+</CommonMistake>
+
+<CommonMistake>
+**Leaving no written conclusion.** An EDA that ends with a pile of tables helps nobody. End every EDA with three findings, each with evidence and an action.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="eda" module="python" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "You receive a new table. What is the first step in the EDA checklist?", options: ["Draw a histogram of every column", "Write the business question and the grain of one row", "Drop all rows with nulls", "Fit a regression line"], answer: 1, explanation: "The question and the grain tell you what to count and what each row means. Every later step depends on them." },
+  { q: "What range does a correlation value from `df.corr()` take?", options: ["0 to 100", "0 to 1", "-1 to 1", "-100 to 100"], answer: 2, explanation: "A correlation runs from -1 (perfect negative link) through 0 (no straight-line link) to 1 (perfect positive link)." },
+  { q: "Why should you check the grain before you count rows?", options: ["To make the file smaller", "To avoid counting the same thing twice, such as several rows per transaction", "Because pandas needs it to load the file", "To sort the table faster"], answer: 1, explanation: "If one transaction has several rows, a simple row count counts it more than once. The grain tells you which rows to count." },
+  { q: "The overall failure rate looks normal, but one bank's rate is high in peak hours. What is this an example of?", options: ["A data error that must be deleted", "A segment that the overall average hides", "A correlation of 1", "A duplicate row problem"], answer: 1, explanation: "Averages over everything can hide a group that behaves very differently. Splitting by segment shows it." },
+  { q: "A column has a mean of 1,385 and a median of 557. Which statement is best?", options: ["The data has no outliers", "The data is skewed, so the median is a better picture of a typical value", "The median is always wrong", "The mean and median must be equal in a clean table"], answer: 1, explanation: "A large gap between mean and median means a few big values pull the mean up. Report the median as the typical value and say which one you used." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers give you a new table and ask you to walk through it. They want to hear a fixed order, a grain check, and a written conclusion. They also listen for whether you mention duplicates, nulls and time, without being asked.
+</InterviewAlert>
+
+<InterviewQ q="Walk me through EDA on a new table.">
+I start with the business question and the grain, so I know what one row means. Then I check the shape, data types, nulls and duplicates. After I clean the data, I look at each column alone, then by month, then by the main segments. I finish with correlations and outliers, and I write three findings with evidence and caveats.
+</InterviewQ>
+
+<InterviewQ q="What would you check first in a transactions table?">
+First, the grain: is one row one transaction, and is `txn_id` unique? Second, the duplicates and nulls in the key columns. Third, the date formats and the time range. Only then do I count totals. If the row count after dedupe does not match what I expect, I stop and find out why before I go further.
+</InterviewQ>
+
+<InterviewQ q="How do you find the drivers of churn?">
+I define churn clearly first, such as no paid renewal within 30 days. Then I compare churn rates across segments like plan, platform, acquisition source and cohort month. I look for a segment with a much higher rate and check whether the gap holds over time. I describe the drivers as links, and I say a test is needed before I claim cause.
+</InterviewQ>
+
+<InterviewQ q="How do you present EDA findings to a non-technical manager?">
+I lead with the finding in one sentence, then show one simple chart or table that supports it. I say the evidence number and the action I suggest. I mention one caveat in plain words, such as "this is three months of data". I keep the technical steps for an appendix, in case someone asks.
+</InterviewQ>
+
+<InterviewQ q="Correlation is 0.8 between two columns. Can you say one causes the other?">
+No. A strong correlation shows the two values move together, but it does not show which one drives the other, or whether a third factor drives both. I would say they are strongly linked, then design a test or find a natural experiment before I claim cause.
+</InterviewQ>
+
+## Key takeaways
+
+- Run the same 10-step checklist on every new table, in the same order.
+- Check the grain and reconcile row counts before you trust any total.
+- A mean alone can hide skew, and an average can hide a bad segment.
+- Correlation shows a link, not a cause.
+- End every EDA with three findings, each with evidence, an action and a caveat.
+
+## Further reading
+
+Free download: the [EDA template notebook](/downloads/notebooks/01-eda-template.ipynb) gives you the 10 steps as headings with starter code.
+
+<FurtherReading ids={["pandas-docs", "kaggle-learn"]} />

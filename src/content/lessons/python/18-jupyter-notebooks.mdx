@@ -1,0 +1,208 @@
+---
+title: "Jupyter notebooks for analysts"
+description: "Work in cells, document as you go, share clean notebooks."
+module: python
+order: 18
+estimatedMinutes: 30
+objectives:
+  - "Install and launch Jupyter, or open a notebook in Google Colab or VS Code"
+  - "Use code cells and markdown cells, and run them in order"
+  - "Use keyboard shortcuts and magic commands"
+  - "Structure a portfolio-grade notebook with headings and a table of contents"
+  - "Export a notebook to HTML and share it cleanly"
+tags: ["python", "jupyter", "notebook"]
+---
+
+## Learning objectives
+
+- Install and launch Jupyter, or open a notebook in Google Colab or VS Code.
+- Use code cells and markdown cells, and run them in the right order.
+- Use keyboard shortcuts and magic commands.
+- Structure a portfolio-grade notebook with headings and a table of contents.
+- Export a notebook to HTML and share it cleanly.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Many analysts share their work as a notebook. A hiring manager may open your portfolio notebook and read it top to bottom in ten minutes. If the notebook runs cleanly, has a clear question and explains each step, it proves you can work. If it fails on the first cell or has no words, it proves the opposite. Jupyter is also the everyday tool for exploring a new dataset before the final report is built in Excel or Power BI.
+</RealWorld>
+
+## Concept
+
+### What a notebook is
+
+Think of a notebook as a lab notebook. The code, the results and your notes sit in one document. You write a step, run it, look at the output, and then write what you learned under it. The file ends in `.ipynb`, and it opens in a browser.
+
+### Three ways to start
+
+- **Anaconda.** Install Anaconda, open **Jupyter Notebook** or **JupyterLab** from its launcher, and create a new Python 3 notebook.
+- **pip.** Run `pip install jupyter` in a terminal, then run `jupyter notebook` to open the browser.
+- **Google Colab or VS Code.** Colab runs notebooks in Google's cloud with no setup, so it is handy for a quick test. VS Code opens `.ipynb` files with the Jupyter extension installed.
+
+### Cells: code and markdown
+
+A notebook is a list of cells.
+
+- A **code cell** holds Python. Press **Shift+Enter** to run it and move to the next cell.
+- A **markdown cell** holds text. Write headings with `#`, `##` and `###`, and use bullet points and bold text. Press **Shift+Enter** to show the formatted text.
+- Each code cell prints the value of its last line. Ending a cell with `df.head()` shows a neat table.
+
+### The kernel and the hidden state bug
+
+The **kernel** is the Python process behind the notebook. It keeps every variable in memory, from every cell you have run. This is useful, but it causes a common bug. You might change a cell, run it again, and get a result that depends on a cell you ran earlier, or on one you have since deleted.
+
+The fix is **Kernel, then Restart and Run All**. It starts a clean Python session and runs every cell from the top. If the notebook fails, you have found a bug before a reader does.
+
+### Magic commands
+
+Magic commands are shortcuts that work only inside Jupyter. They start with `%` for one line or `%%` for a whole cell.
+
+| Magic | What it does |
+|---|---|
+| `%timeit` | Times one line, running it many times for an average |
+| `%%timeit` | Times the whole cell |
+| `%matplotlib inline` | Shows charts inside the notebook (older notebooks use it) |
+| `!pip install pandas` | Runs a shell command, here installing a package (the `!` prefix) |
+
+### Structure a portfolio notebook
+
+A good notebook follows the same story as a short report.
+
+1. **Title and question.** One markdown heading and one sentence on the question.
+2. **Table of contents.** Links to each section, so a reader can skip around.
+3. **Data.** Where the data came from, the row counts and the known issues.
+4. **Cleaning.** Each cleaning step, with a sentence on why.
+5. **EDA.** Charts and tables, each with a short note on what it shows.
+6. **Insights and next steps.** The answer in plain words.
+
+### Habits that keep a notebook shareable
+
+- Run **Restart and Run All** before you share or save.
+- Keep outputs small. Print `df.head()`, not a 20,000-row table.
+- Name variables and cells clearly. Use relative paths such as `data/transactions.csv`.
+- Keep a `requirements.txt` file that lists the packages.
+- Never write passwords, API keys or private customer data into a cell.
+
+### Export and commit
+
+- `jupyter nbconvert --to html eda.ipynb` writes `eda.html`, which anyone can open in a browser.
+- `jupyter nbconvert --to script eda.ipynb` writes a plain `.py` file.
+- The **File, Download as** menu does the same. You can also export to PDF.
+- Commit the `.ipynb` file to Git. Clear the outputs first if they are large, or keep them if the charts are part of the portfolio.
+
+## Worked examples
+
+### Example 1: a notebook skeleton
+
+A markdown-only first section sets up the story. This is the top of a portfolio notebook on UPI failures.
+
+```text
+# UPI failure analysis (markdown cell)
+
+Question: Which banks and apps fail most often, and when?
+
+## Contents
+- Data
+- Cleaning
+- Exploratory analysis
+- Findings
+
+## Data (markdown cell)
+Source: fintech transactions, 22,389 rows, one row per payment attempt.
+```
+
+The reader now knows the goal and the data before any code runs.
+
+### Example 2: the hidden state bug
+
+Suppose you wrote two cells. Cell 1 loads the data, and Cell 2 removes duplicates.
+
+```python
+# Cell 1
+import pandas as pd
+df = pd.read_csv("fintech/transactions.csv")
+```
+
+```python
+# Cell 2
+df = df.drop_duplicates(subset="txn_id")
+```
+
+You ran Cell 1, then Cell 2. Later you deleted Cell 1 because you thought it was not needed. The notebook still works on your laptop, because the kernel still holds `df` from the earlier run. A reviewer who opens the file and clicks **Kernel, then Restart and Run All** gets a `NameError` in Cell 2, because `df` no longer exists in a fresh session.
+
+The fix is to run **Kernel, then Restart and Run All**, read the first error, and put the loading code back at the top.
+
+### Example 3: timing and magics
+
+```python
+%timeit df.groupby("bank")["amount"].mean()
+```
+
+`%timeit` runs the line several times and prints the average time per loop. Use it to compare two ways of doing the same job, for example a loop against `groupby`. Write `%%timeit` at the top of a cell to time the whole cell.
+
+### Example 4: export to HTML
+
+Run this in a terminal, in the folder with the notebook.
+
+```bash
+jupyter nbconvert --to html eda.ipynb
+```
+
+The command runs the notebook's saved outputs into a new file called `eda.html` in the same folder. Open it in any browser and share it as a link or attachment. If you want the code run again first, add `--execute`.
+
+## Common mistakes
+
+- **Running cells out of order.** The notebook depends on the cell order, and a reviewer gets different results. Run Restart and Run All before sharing.
+- **Huge outputs.** Printing a 20,000-row table makes the notebook slow to open and hard to read. Use `head()` or a summary.
+- **No markdown story.** A notebook with only code is hard to review. Add a question, short notes and a conclusion.
+- **Hard-coded local paths.** A path like `C:/Users/you/Downloads/data.csv` breaks on any other computer. Use a relative path.
+- **Committing data and secrets.** Raw customer files and API keys do not belong in a public repository. Use `.gitignore` and environment variables.
+- **Never restarting the kernel.** Old variables keep working in memory and hide bugs. Restart often, especially before you export.
+
+## Practice questions
+
+<PracticeSet topic="jupyter" module="python" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Which keyboard shortcut runs the current cell and moves to the next one?", options: ["Ctrl+Enter", "Shift+Enter", "Alt+Enter", "Ctrl+S"], answer: 1, explanation: "Shift+Enter runs the cell and moves down. Ctrl+Enter runs the cell and stays in it." },
+  { q: "What is the kernel in Jupyter?", options: ["The file that stores the notebook", "The Python process that runs your code and keeps variables in memory", "The chart library", "The export menu"], answer: 1, explanation: "The kernel is the running Python session. Variables live in it, which is why old values can hide bugs." },
+  { q: "A cell works only because a variable from a cell you deleted still exists in memory. What is this problem called?", options: ["A syntax error", "Hidden state", "A join error", "A merge conflict"], answer: 1, explanation: "Hidden state means the result depends on past runs. Restart and Run All exposes it." },
+  { q: "Which prefix marks a magic command that times one line?", options: ["A question mark", "A single percent sign, as in %timeit", "An exclamation mark for shell commands", "A hash sign"], answer: 1, explanation: "A single percent sign marks a line magic such as %timeit. The exclamation mark runs a shell command, which is a different thing." },
+  { q: "Which command turns eda.ipynb into a shareable HTML file?", options: ["jupyter nbconvert --to html eda.ipynb", "pip install html eda.ipynb", "jupyter run eda.html", "git export eda.ipynb"], answer: 0, explanation: "jupyter nbconvert --to html converts the notebook to an HTML file that anyone can open in a browser." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers ask about notebooks to see whether you know their weak points. Say clearly what a notebook is good for, where it fails, and how you make it reproducible. A candidate who names hidden state and Restart and Run All scores well.
+</InterviewAlert>
+
+<InterviewQ q="What is the difference between a Jupyter notebook and a Python script?">
+A script runs top to bottom, every time, with no saved state. A notebook mixes code, output and notes, and it keeps variables in memory between cells. That makes notebooks great for exploring and sharing results, but it also makes them risky, because cell order can change the result. I use notebooks for exploration and reports, and move any code that other people run often into a script or a module.
+</InterviewQ>
+
+<InterviewQ q="What are the main problems with notebooks?">
+The biggest one is hidden state. Other issues are huge outputs that slow the file, hard-coded paths, versions of packages that are not written down, and code that is hard to test. I reduce these with Restart and Run All, relative paths, a requirements file and small outputs.
+</InterviewQ>
+
+<InterviewQ q="How do you make a notebook reproducible?">
+I put the imports and data loading at the top, use relative paths, list the package versions in a requirements file, and run Restart and Run All before sharing. I also keep the raw data out of the repository and say in the first markdown cell where to put the files. A reviewer should be able to run the notebook on a clean machine and get the same numbers.
+</InterviewQ>
+
+<InterviewQ q="When would you use Google Colab instead of a local Jupyter install?">
+Colab is good when I need a notebook fast, or when I want to share a runnable link with someone who has no setup. A local install is better for private data, for a fixed package version, and for work that runs longer than the Colab session allows. For a portfolio, I often publish a Colab link next to the GitHub copy.
+</InterviewQ>
+
+## Key takeaways
+
+- A notebook mixes code, output and notes. Use markdown cells to tell the story, and code cells for each step.
+- Shift+Enter runs a cell and moves on. Magic commands such as `%timeit` add shortcuts inside Jupyter.
+- The kernel keeps variables in memory, which causes hidden state. Run Restart and Run All before you share.
+- A portfolio notebook has a question, a contents list, data, cleaning, analysis and insights.
+- Export with `jupyter nbconvert --to html`, keep paths relative, and never commit secrets or raw private data.
+
+## Further reading
+
+<FurtherReading ids={["jupyter", "anaconda", "vscode"]} />

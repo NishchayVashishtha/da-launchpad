@@ -1,0 +1,525 @@
+[
+  {
+    "id": "python-messy-001",
+    "module": "python",
+    "topic": "messy",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "A UPI ops head wants the total successful payment value for each payment app. The `fintech.transactions` table is messy. `amount` is text with a rupee sign and commas. Some `txn_id` values appear twice, and the copies differ only in format. A few amounts are entry errors above 50,000. Steps: clean `amount`, parse `txn_datetime`, drop duplicate `txn_id` rows, keep `status` = SUCCESS, drop amounts above 50,000, sum by `payment_app`, round to 0 decimals. Output: columns `payment_app`, `total_amount`, 5 rows, sorted by `total_amount` descending then `payment_app` ascending.",
+    "dataset": "fintech",
+    "hint": "Clean the text first, then drop duplicates. Two copies only match after formatting is fixed.",
+    "solutionCode": "def clean_inr(s):\n    return pd.to_numeric(s.astype(str).str.replace(r\"[₹,\\s]\", \"\", regex=True), errors=\"coerce\")\n\ndef parse_mixed_date(s):\n    iso = pd.to_datetime(s, format=\"%Y-%m-%d\", errors=\"coerce\")\n    dmy = pd.to_datetime(s, format=\"%d-%m-%Y\", errors=\"coerce\")\n    return iso.combine_first(dmy)\n\ndef parse_mixed_datetime(s):\n    iso = pd.to_datetime(s, format=\"%Y-%m-%d %H:%M:%S\", errors=\"coerce\")\n    dmy = pd.to_datetime(s, format=\"%d-%m-%Y %H:%M:%S\", errors=\"coerce\")\n    return iso.combine_first(dmy)\n\nt = load(\"fintech\", \"transactions\")\nt[\"amount\"] = clean_inr(t[\"amount\"])\nt[\"txn_datetime\"] = parse_mixed_datetime(t[\"txn_datetime\"])\nt = t.drop_duplicates(subset=\"txn_id\", keep=\"last\")\nok = t[(t[\"status\"] == \"SUCCESS\") & (t[\"amount\"] <= 50000)]\nres = ok.groupby(\"payment_app\", as_index=False)[\"amount\"].sum()\nres[\"total_amount\"] = res[\"amount\"].round(0)\nresult = (res[[\"payment_app\", \"total_amount\"]]\n          .sort_values([\"total_amount\", \"payment_app\"], ascending=[False, True])\n          .reset_index(drop=True))\n",
+    "expectedOutput": {
+      "columns": [
+        "payment_app",
+        "total_amount"
+      ],
+      "rows": [
+        [
+          "PayZippy",
+          9221460
+        ],
+        [
+          "QuickPaisa",
+          7158744
+        ],
+        [
+          "NammaPay",
+          5089844
+        ],
+        [
+          "SabPay",
+          4043412
+        ],
+        [
+          "RupeeRocket",
+          3711142
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The `amount` column is text, so you clean it before any sum. Dropping duplicate `txn_id` rows after cleaning makes the copies identical, so each payment counts once. The filter for SUCCESS and the 50,000 cap come before the group-by, so the totals only hold clean, real payments.",
+    "commonMistake": "Summing the raw text column, which either fails or joins strings. Another mistake is dropping duplicates before fixing the date and rupee formats. The copies still look different, so about 40 duplicate payments stay in and inflate the totals.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 20,
+    "tags": [
+      "messy",
+      "cleaning",
+      "groupby"
+    ]
+  },
+  {
+    "id": "python-messy-002",
+    "module": "python",
+    "topic": "messy",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "Finance wants delivered revenue for each month from January to March 2024. The `ecommerce.orders` table has three messes. `order_date` mixes `2023-01-05` and `05-01-2023` formats. `total_amount` is text with a rupee sign and commas for some rows. About 100 `order_id` values appear twice. Steps: parse `order_date` with both formats, clean `total_amount`, drop duplicate `order_id` rows, keep `order_status` = Delivered, keep dates from 2024-01-01 to 2024-03-31, group by month as `YYYY-MM`, round to 2 decimals. Output: columns `month`, `revenue`, 3 rows, sorted by month.",
+    "dataset": "ecommerce",
+    "hint": "Parse dates with two explicit formats. Do not let pandas guess the day and month order.",
+    "solutionCode": "def clean_inr(s):\n    return pd.to_numeric(s.astype(str).str.replace(r\"[₹,\\s]\", \"\", regex=True), errors=\"coerce\")\n\ndef parse_mixed_date(s):\n    iso = pd.to_datetime(s, format=\"%Y-%m-%d\", errors=\"coerce\")\n    dmy = pd.to_datetime(s, format=\"%d-%m-%Y\", errors=\"coerce\")\n    return iso.combine_first(dmy)\n\ndef parse_mixed_datetime(s):\n    iso = pd.to_datetime(s, format=\"%Y-%m-%d %H:%M:%S\", errors=\"coerce\")\n    dmy = pd.to_datetime(s, format=\"%d-%m-%Y %H:%M:%S\", errors=\"coerce\")\n    return iso.combine_first(dmy)\n\no = load(\"ecommerce\", \"orders\")\no[\"order_date\"] = parse_mixed_date(o[\"order_date\"])\no[\"total_amount\"] = clean_inr(o[\"total_amount\"])\no = o.drop_duplicates(subset=\"order_id\", keep=\"first\")\nd = o[(o[\"order_status\"] == \"Delivered\")\n      & (o[\"order_date\"].between(\"2024-01-01\", \"2024-03-31\"))].copy()\nd[\"month\"] = d[\"order_date\"].dt.strftime(\"%Y-%m\")\nres = d.groupby(\"month\", as_index=False)[\"total_amount\"].sum()\nres[\"revenue\"] = res[\"total_amount\"].round(2)\nresult = res[[\"month\", \"revenue\"]].sort_values(\"month\").reset_index(drop=True)\n",
+    "expectedOutput": {
+      "columns": [
+        "month",
+        "revenue"
+      ],
+      "rows": [
+        [
+          "2024-01",
+          2177042.06
+        ],
+        [
+          "2024-02",
+          2594639.5
+        ],
+        [
+          "2024-03",
+          1952586.81
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Each step fixes one mess. Parsing both date formats keeps every row, so no order is lost to a NaT. Dropping duplicate `order_id` values after cleaning keeps one row per order, and the status and date filters run before the monthly sum.",
+    "commonMistake": "Parsing `05-01-2023` with a single format that reads month first. Then 5 January becomes 1 May, and the month totals are wrong with no error message. Summing `total_amount` before the rupee sign is removed is another common slip.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 20,
+    "tags": [
+      "messy",
+      "dates",
+      "cleaning"
+    ]
+  },
+  {
+    "id": "python-messy-003",
+    "module": "python",
+    "topic": "messy",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "The HR analytics lead wants the average annual CTC for each job level. Use each employee's latest salary record. The `hr.salaries` table has three messes. `annual_ctc` is text for some rows, with rupee signs and Indian commas. About 5 rows are 100x entry errors above 1 crore. The `hr.employees` table has 12 duplicate employee rows. Steps: clean `annual_ctc`, drop rows above 10,000,000 as entry errors, remove duplicate employees, keep each employee's latest `effective_date` salary, join to `job_level`, and average by level rounded to 0 decimals. Output: columns `job_level`, `avg_ctc`, `employees`, sorted by `avg_ctc` descending then `job_level` ascending.",
+    "dataset": "hr",
+    "hint": "Remove bad salary rows before you pick each employee's latest row. Otherwise the wrong row can become the latest.",
+    "solutionCode": "def clean_inr(s):\n    return pd.to_numeric(s.astype(str).str.replace(r\"[₹,\\s]\", \"\", regex=True), errors=\"coerce\")\n\ndef parse_mixed_date(s):\n    iso = pd.to_datetime(s, format=\"%Y-%m-%d\", errors=\"coerce\")\n    dmy = pd.to_datetime(s, format=\"%d-%m-%Y\", errors=\"coerce\")\n    return iso.combine_first(dmy)\n\ndef parse_mixed_datetime(s):\n    iso = pd.to_datetime(s, format=\"%Y-%m-%d %H:%M:%S\", errors=\"coerce\")\n    dmy = pd.to_datetime(s, format=\"%d-%m-%Y %H:%M:%S\", errors=\"coerce\")\n    return iso.combine_first(dmy)\n\nemp = load(\"hr\", \"employees\").drop_duplicates(subset=\"employee_id\", keep=\"first\")\nsal = load(\"hr\", \"salaries\")\nsal[\"annual_ctc\"] = clean_inr(sal[\"annual_ctc\"])\nsal[\"effective_date\"] = parse_mixed_date(sal[\"effective_date\"])\nsal = sal[sal[\"annual_ctc\"] <= 10000000]\nlatest = (sal.sort_values([\"employee_id\", \"effective_date\"])\n             .drop_duplicates(subset=\"employee_id\", keep=\"last\"))\nm = latest.merge(emp[[\"employee_id\", \"job_level\"]], on=\"employee_id\", how=\"inner\")\nres = m.groupby(\"job_level\", as_index=False).agg(\n    avg_ctc=(\"annual_ctc\", \"mean\"), employees=(\"employee_id\", \"count\"))\nres[\"avg_ctc\"] = res[\"avg_ctc\"].round(0)\nresult = (res.sort_values([\"avg_ctc\", \"job_level\"], ascending=[False, True])\n             .reset_index(drop=True))\n",
+    "expectedOutput": {
+      "columns": [
+        "job_level",
+        "avg_ctc",
+        "employees"
+      ],
+      "rows": [
+        [
+          "Manager",
+          4540754,
+          118
+        ],
+        [
+          "Lead",
+          2797229,
+          218
+        ],
+        [
+          "Senior",
+          1765825,
+          566
+        ],
+        [
+          "Mid",
+          955383,
+          760
+        ],
+        [
+          "Junior",
+          464543,
+          736
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The salary text becomes numbers first. Bad rows are removed before the latest-row step, so an entry error cannot hide a real salary. Duplicate employees are removed so each person is counted once per level.",
+    "commonMistake": "Taking the latest row first and removing outliers after. If the latest row is a 100x error, the code drops it and reports the older salary as current. Sorting `effective_date` as text in the wrong format is another trap.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 25,
+    "tags": [
+      "messy",
+      "groupby",
+      "merge"
+    ]
+  },
+  {
+    "id": "python-messy-004",
+    "module": "python",
+    "topic": "messy",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "The product team wants the average plan price, with monthly and annual billing kept apart. The `subscription.subscriptions` table has one mess. `price_inr` is text for about 1,360 rows, some with a rupee sign and some with commas, such as `₹1,299`. Steps: clean `price_inr` to numbers, build a pivot table with `plan` as rows and `billing_cycle` as columns, take the mean price, and round to 0 decimals. Output: columns `plan`, `Annual`, `Monthly`, 3 rows, sorted by `plan` ascending.",
+    "dataset": "subscription",
+    "hint": "A pivot table with the mean as aggregation does the work. Clean the price first.",
+    "solutionCode": "def clean_inr(s):\n    return pd.to_numeric(s.astype(str).str.replace(r\"[₹,\\s]\", \"\", regex=True), errors=\"coerce\")\n\ndef parse_mixed_date(s):\n    iso = pd.to_datetime(s, format=\"%Y-%m-%d\", errors=\"coerce\")\n    dmy = pd.to_datetime(s, format=\"%d-%m-%Y\", errors=\"coerce\")\n    return iso.combine_first(dmy)\n\ndef parse_mixed_datetime(s):\n    iso = pd.to_datetime(s, format=\"%Y-%m-%d %H:%M:%S\", errors=\"coerce\")\n    dmy = pd.to_datetime(s, format=\"%d-%m-%Y %H:%M:%S\", errors=\"coerce\")\n    return iso.combine_first(dmy)\n\ns = load(\"subscription\", \"subscriptions\")\ns[\"price_inr\"] = clean_inr(s[\"price_inr\"])\np = s.pivot_table(index=\"plan\", columns=\"billing_cycle\", values=\"price_inr\", aggfunc=\"mean\")\np = p.round(0).sort_index()\nresult = p.rename_axis(None, axis=1).reset_index()\n",
+    "expectedOutput": {
+      "columns": [
+        "plan",
+        "Annual",
+        "Monthly"
+      ],
+      "rows": [
+        [
+          "Basic",
+          1299,
+          149
+        ],
+        [
+          "Premium",
+          3999,
+          499
+        ],
+        [
+          "Standard",
+          2499,
+          299
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The price column is cleaned before pivoting, so the mean is a number. Annual and Monthly stay as separate columns because one year of billing and one month of billing cannot be averaged together.",
+    "commonMistake": "Running `mean()` on the raw text column. pandas raises an error or the average is nonsense. Averaging `price_inr` across all billing cycles mixes annual and monthly prices into one number that means nothing.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 15,
+    "tags": [
+      "messy",
+      "pivot"
+    ]
+  },
+  {
+    "id": "python-messy-005",
+    "module": "python",
+    "topic": "messy",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "The retail head wants the top 5 stores by net sales. The `retail.sales` table is messy. `net_amount_inr` is text for about 6,100 rows, with rupee signs and commas. About 350 `sale_id` values appear twice, and the copies differ only in the amount format. A few net amounts are entry errors above 50,000. Steps: clean `net_amount_inr`, drop duplicate `sale_id` rows, drop net amounts above 50,000, sum by `store_id`, round to 0 decimals, keep the top 5. Output: columns `store_id`, `net_sales`, 5 rows, sorted by `net_sales` descending then `store_id` ascending.",
+    "dataset": "retail",
+    "hint": "Clean the amount first. Then drop duplicate sales, because the copies only match after cleaning.",
+    "solutionCode": "def clean_inr(s):\n    return pd.to_numeric(s.astype(str).str.replace(r\"[₹,\\s]\", \"\", regex=True), errors=\"coerce\")\n\ndef parse_mixed_date(s):\n    iso = pd.to_datetime(s, format=\"%Y-%m-%d\", errors=\"coerce\")\n    dmy = pd.to_datetime(s, format=\"%d-%m-%Y\", errors=\"coerce\")\n    return iso.combine_first(dmy)\n\ndef parse_mixed_datetime(s):\n    iso = pd.to_datetime(s, format=\"%Y-%m-%d %H:%M:%S\", errors=\"coerce\")\n    dmy = pd.to_datetime(s, format=\"%d-%m-%Y %H:%M:%S\", errors=\"coerce\")\n    return iso.combine_first(dmy)\n\ns = load(\"retail\", \"sales\")\ns[\"net_amount_inr\"] = clean_inr(s[\"net_amount_inr\"])\ns = s.drop_duplicates(subset=\"sale_id\", keep=\"first\")\ns = s[s[\"net_amount_inr\"] <= 50000]\nres = s.groupby(\"store_id\", as_index=False)[\"net_amount_inr\"].sum()\nres[\"net_sales\"] = res[\"net_amount_inr\"].round(0)\nresult = (res[[\"store_id\", \"net_sales\"]]\n          .sort_values([\"net_sales\", \"store_id\"], ascending=[False, True])\n          .head(5).reset_index(drop=True))\n",
+    "expectedOutput": {
+      "columns": [
+        "store_id",
+        "net_sales"
+      ],
+      "rows": [
+        [
+          12,
+          2447723
+        ],
+        [
+          1,
+          2440042
+        ],
+        [
+          3,
+          2431026
+        ],
+        [
+          5,
+          2325389
+        ],
+        [
+          24,
+          1374128
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The text amount is cleaned, then each sale is counted once, then the entry errors are dropped. The top 5 is taken only after the totals are sorted, with `store_id` as the tie-breaker.",
+    "commonMistake": "Sorting by `net_amount_inr` as text, so 9,000 ranks above 100,000. Also, summing before dropping the duplicate `sale_id` rows adds some sales twice, which pushes the store totals up.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 20,
+    "tags": [
+      "messy",
+      "groupby",
+      "dedupe"
+    ]
+  },
+  {
+    "id": "python-messy-006",
+    "module": "python",
+    "topic": "messy",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "The operations lead wants the average order value for each city, top 5 cities. The `food_delivery.deliveries` table is messy. `order_value` is text for some rows with a rupee sign. About 120 `delivery_id` values appear twice. `city` has extra spaces and mixed casing, such as ` delhi ` and `MUMBAI`. One order is an entry error above 40,000. Steps: clean `order_value`, drop duplicate deliveries, drop order values above 40,000, standardise `city` with strip and title case, average by city, round to 2 decimals. Output: columns `city`, `avg_order_value`, 5 rows, sorted by `avg_order_value` descending then `city` ascending.",
+    "dataset": "food_delivery",
+    "hint": "Standardise the city names before the group-by. Otherwise one city splits into several groups.",
+    "solutionCode": "def clean_inr(s):\n    return pd.to_numeric(s.astype(str).str.replace(r\"[₹,\\s]\", \"\", regex=True), errors=\"coerce\")\n\ndef parse_mixed_date(s):\n    iso = pd.to_datetime(s, format=\"%Y-%m-%d\", errors=\"coerce\")\n    dmy = pd.to_datetime(s, format=\"%d-%m-%Y\", errors=\"coerce\")\n    return iso.combine_first(dmy)\n\ndef parse_mixed_datetime(s):\n    iso = pd.to_datetime(s, format=\"%Y-%m-%d %H:%M:%S\", errors=\"coerce\")\n    dmy = pd.to_datetime(s, format=\"%d-%m-%Y %H:%M:%S\", errors=\"coerce\")\n    return iso.combine_first(dmy)\n\nd = load(\"food_delivery\", \"deliveries\")\nd[\"order_value\"] = clean_inr(d[\"order_value\"])\nd = d.drop_duplicates(subset=\"delivery_id\", keep=\"first\")\nd = d[d[\"order_value\"] <= 40000].copy()\nd[\"city\"] = d[\"city\"].str.strip().str.title()\nres = d.groupby(\"city\", as_index=False)[\"order_value\"].mean()\nres[\"avg_order_value\"] = res[\"order_value\"].round(2)\nresult = (res[[\"city\", \"avg_order_value\"]]\n          .sort_values([\"avg_order_value\", \"city\"], ascending=[False, True])\n          .head(5).reset_index(drop=True))\n",
+    "expectedOutput": {
+      "columns": [
+        "city",
+        "avg_order_value"
+      ],
+      "rows": [
+        [
+          "Ahmedabad",
+          493.47
+        ],
+        [
+          "Jaipur",
+          487.59
+        ],
+        [
+          "Chennai",
+          485.21
+        ],
+        [
+          "Mumbai",
+          476.68
+        ],
+        [
+          "Hyderabad",
+          471.1
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The `strip` and `title` steps merge ` delhi `, `DELHI` and `Delhi` into one group. Cleaning the order value and dropping duplicates first keeps the averages fair.",
+    "commonMistake": "Grouping on the raw `city` column. You get extra rows such as `Delhi`, `delhi` and `Delhi ` that each look like a separate city, so the top 5 list is wrong.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 25,
+    "tags": [
+      "messy",
+      "text",
+      "groupby"
+    ]
+  },
+  {
+    "id": "python-messy-007",
+    "module": "python",
+    "topic": "messy",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "The returns team wants the total refund amount for each return reason. The `ecommerce.returns` table has one main mess. `refund_amount` is text for most rows, with rupee signs and Indian grouping such as `₹1,23,456.00`. Some rows are blank because the return was rejected, and blanks should not count as zero. Steps: clean `refund_amount`, sum by `return_reason`, round to 0 decimals. Output: columns `return_reason`, `total_refund`, 8 rows, sorted by `total_refund` descending then `return_reason` ascending.",
+    "dataset": "ecommerce",
+    "hint": "Removing commas is not enough on its own. Strip the rupee sign and the spaces too, then let blanks become NaN.",
+    "solutionCode": "def clean_inr(s):\n    return pd.to_numeric(s.astype(str).str.replace(r\"[₹,\\s]\", \"\", regex=True), errors=\"coerce\")\n\ndef parse_mixed_date(s):\n    iso = pd.to_datetime(s, format=\"%Y-%m-%d\", errors=\"coerce\")\n    dmy = pd.to_datetime(s, format=\"%d-%m-%Y\", errors=\"coerce\")\n    return iso.combine_first(dmy)\n\ndef parse_mixed_datetime(s):\n    iso = pd.to_datetime(s, format=\"%Y-%m-%d %H:%M:%S\", errors=\"coerce\")\n    dmy = pd.to_datetime(s, format=\"%d-%m-%Y %H:%M:%S\", errors=\"coerce\")\n    return iso.combine_first(dmy)\n\nr = load(\"ecommerce\", \"returns\")\nr[\"refund_amount\"] = clean_inr(r[\"refund_amount\"])\nres = r.groupby(\"return_reason\", as_index=False)[\"refund_amount\"].sum()\nres[\"total_refund\"] = res[\"refund_amount\"].round(0)\nresult = (res[[\"return_reason\", \"total_refund\"]]\n          .sort_values([\"total_refund\", \"return_reason\"], ascending=[False, True])\n          .reset_index(drop=True))\n",
+    "expectedOutput": {
+      "columns": [
+        "return_reason",
+        "total_refund"
+      ],
+      "rows": [
+        [
+          "Not as described",
+          990787
+        ],
+        [
+          "Size / fit issue",
+          933572
+        ],
+        [
+          "Changed mind",
+          673686
+        ],
+        [
+          "Defective product",
+          557588
+        ],
+        [
+          "Wrong item sent",
+          399651
+        ],
+        [
+          "Damaged",
+          386194
+        ],
+        [
+          "Expired / near expiry",
+          9454
+        ],
+        [
+          "Allergic / skin reaction",
+          8896
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The `clean_inr` helper removes the rupee sign, spaces and commas, so `₹1,23,456.00` becomes a number. Blank refunds turn into NaN, and `sum()` skips NaN, so rejected returns add nothing.",
+    "commonMistake": "Calling `float()` on each value. The Indian grouping `₹1,23,456.00` fails with a ValueError. Another mistake is filling blanks with 0 and then averaging, which pulls the average down.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 15,
+    "tags": [
+      "messy",
+      "text",
+      "groupby"
+    ]
+  },
+  {
+    "id": "python-messy-008",
+    "module": "python",
+    "topic": "messy",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "The growth team wants the top 5 cities by ad clicks. The `marketing.clicks` table is messy. `city` has mixed casing and extra spaces, such as `LUCKNOW` and ` Delhi `. About 650 rows have a blank city. `click_time` mixes two date formats. About 30 `click_id` values appear twice. Steps: parse `click_time`, drop duplicate `click_id` rows, standardise `city` with strip and title case, drop blank cities, count clicks per city. Output: columns `city`, `clicks`, 5 rows, sorted by `clicks` descending then `city` ascending.",
+    "dataset": "marketing",
+    "hint": "Standardise the city names first. Drop blank cities before you count.",
+    "solutionCode": "def clean_inr(s):\n    return pd.to_numeric(s.astype(str).str.replace(r\"[₹,\\s]\", \"\", regex=True), errors=\"coerce\")\n\ndef parse_mixed_date(s):\n    iso = pd.to_datetime(s, format=\"%Y-%m-%d\", errors=\"coerce\")\n    dmy = pd.to_datetime(s, format=\"%d-%m-%Y\", errors=\"coerce\")\n    return iso.combine_first(dmy)\n\ndef parse_mixed_datetime(s):\n    iso = pd.to_datetime(s, format=\"%Y-%m-%d %H:%M:%S\", errors=\"coerce\")\n    dmy = pd.to_datetime(s, format=\"%d-%m-%Y %H:%M:%S\", errors=\"coerce\")\n    return iso.combine_first(dmy)\n\nc = load(\"marketing\", \"clicks\")\nc[\"click_time\"] = parse_mixed_datetime(c[\"click_time\"])\nc = c.drop_duplicates(subset=\"click_id\", keep=\"first\")\nc[\"city\"] = c[\"city\"].str.strip().str.title()\nc = c.dropna(subset=[\"city\"])\nres = c.groupby(\"city\").size().reset_index(name=\"clicks\")\nresult = (res.sort_values([\"clicks\", \"city\"], ascending=[False, True])\n             .head(5).reset_index(drop=True))\n",
+    "expectedOutput": {
+      "columns": [
+        "city",
+        "clicks"
+      ],
+      "rows": [
+        [
+          "Mumbai",
+          2846
+        ],
+        [
+          "Delhi",
+          2732
+        ],
+        [
+          "Bengaluru",
+          2399
+        ],
+        [
+          "Hyderabad",
+          1723
+        ],
+        [
+          "Chennai",
+          1532
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Duplicate clicks are removed by `click_id`, so each click counts once. Standardising the city first makes `LUCKNOW` and `Lucknow` one group, and blank cities are dropped before the count.",
+    "commonMistake": "Counting clicks on the raw `city` column. Casing and spacing variants split the same city into many rows, so a real top city falls out of the top 5.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 20,
+    "tags": [
+      "messy",
+      "text",
+      "dedupe"
+    ]
+  },
+  {
+    "id": "python-messy-009",
+    "module": "python",
+    "topic": "messy",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "The promo team wants the total discount given for each promo code, top 5 codes. The `food_delivery.promo_usage` table is messy. `discount_amount` is text for some rows with a rupee sign, such as `₹88.50`. `promo_code` has extra spaces and mixed casing, such as ` welcome50 `. Steps: clean `discount_amount`, standardise `promo_code` with strip and upper case, sum by code, round to 2 decimals, keep the top 5. Output: columns `promo_code`, `total_discount`, 5 rows, sorted by `total_discount` descending then `promo_code` ascending.",
+    "dataset": "food_delivery",
+    "hint": "Upper case makes the codes match. Clean the discount amount before you sum it.",
+    "solutionCode": "def clean_inr(s):\n    return pd.to_numeric(s.astype(str).str.replace(r\"[₹,\\s]\", \"\", regex=True), errors=\"coerce\")\n\ndef parse_mixed_date(s):\n    iso = pd.to_datetime(s, format=\"%Y-%m-%d\", errors=\"coerce\")\n    dmy = pd.to_datetime(s, format=\"%d-%m-%Y\", errors=\"coerce\")\n    return iso.combine_first(dmy)\n\ndef parse_mixed_datetime(s):\n    iso = pd.to_datetime(s, format=\"%Y-%m-%d %H:%M:%S\", errors=\"coerce\")\n    dmy = pd.to_datetime(s, format=\"%d-%m-%Y %H:%M:%S\", errors=\"coerce\")\n    return iso.combine_first(dmy)\n\np = load(\"food_delivery\", \"promo_usage\")\np[\"discount_amount\"] = clean_inr(p[\"discount_amount\"])\np[\"promo_code\"] = p[\"promo_code\"].str.strip().str.upper()\nres = p.groupby(\"promo_code\", as_index=False)[\"discount_amount\"].sum()\nres[\"total_discount\"] = res[\"discount_amount\"].round(2)\nresult = (res[[\"promo_code\", \"total_discount\"]]\n          .sort_values([\"total_discount\", \"promo_code\"], ascending=[False, True])\n          .head(5).reset_index(drop=True))\n",
+    "expectedOutput": {
+      "columns": [
+        "promo_code",
+        "total_discount"
+      ],
+      "rows": [
+        [
+          "WELCOME50",
+          121020.5
+        ],
+        [
+          "FLAT75",
+          98161
+        ],
+        [
+          "BIGSAVER",
+          77124.6
+        ],
+        [
+          "FREEDEL",
+          49240
+        ],
+        [
+          "MONSOON20",
+          17584.8
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The text amounts become numbers before the sum. Upper-casing and trimming the code keeps `welcome50` and ` WELCOME50 ` in one group, so the total for each code is complete.",
+    "commonMistake": "Summing the text column, which breaks or concatenates. Grouping on the raw code lets ` WELCOME50 ` and `WELCOME50` count as two codes, so each one looks smaller than it is.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 20,
+    "tags": [
+      "messy",
+      "text",
+      "groupby"
+    ]
+  },
+  {
+    "id": "python-messy-010",
+    "module": "python",
+    "topic": "messy",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "The growth lead wants new sign-ups for each month of 2024, with all 12 months shown. The `subscription.users` table is messy. `signup_date` mixes `2024-03-25` and `25-03-2024` formats. About 8 `user_id` values appear twice. Steps: parse `signup_date`, drop duplicate users, keep sign-ups from 2024, count by month as `YYYY-MM`, fill any empty month with 0. Output: columns `month`, `signups`, 12 rows, sorted by month.",
+    "dataset": "subscription",
+    "hint": "Make a list of all 12 months first, then reindex the counts onto it so empty months show 0.",
+    "solutionCode": "def clean_inr(s):\n    return pd.to_numeric(s.astype(str).str.replace(r\"[₹,\\s]\", \"\", regex=True), errors=\"coerce\")\n\ndef parse_mixed_date(s):\n    iso = pd.to_datetime(s, format=\"%Y-%m-%d\", errors=\"coerce\")\n    dmy = pd.to_datetime(s, format=\"%d-%m-%Y\", errors=\"coerce\")\n    return iso.combine_first(dmy)\n\ndef parse_mixed_datetime(s):\n    iso = pd.to_datetime(s, format=\"%Y-%m-%d %H:%M:%S\", errors=\"coerce\")\n    dmy = pd.to_datetime(s, format=\"%d-%m-%Y %H:%M:%S\", errors=\"coerce\")\n    return iso.combine_first(dmy)\n\nu = load(\"subscription\", \"users\")\nu[\"signup_date\"] = parse_mixed_date(u[\"signup_date\"])\nu = u.drop_duplicates(subset=\"user_id\", keep=\"first\")\nu = u[u[\"signup_date\"].dt.year == 2024].copy()\nu[\"month\"] = u[\"signup_date\"].dt.strftime(\"%Y-%m\")\ncounts = u.groupby(\"month\").size()\nmonths = pd.date_range(\"2024-01-01\", \"2024-12-01\", freq=\"MS\").strftime(\"%Y-%m\")\nres = counts.reindex(months, fill_value=0).rename(\"signups\").rename_axis(\"month\")\nresult = res.reset_index()\n",
+    "expectedOutput": {
+      "columns": [
+        "month",
+        "signups"
+      ],
+      "rows": [
+        [
+          "2024-01",
+          233
+        ],
+        [
+          "2024-02",
+          198
+        ],
+        [
+          "2024-03",
+          244
+        ],
+        [
+          "2024-04",
+          224
+        ],
+        [
+          "2024-05",
+          281
+        ],
+        [
+          "2024-06",
+          234
+        ],
+        [
+          "2024-07",
+          266
+        ],
+        [
+          "2024-08",
+          267
+        ],
+        [
+          "2024-09",
+          258
+        ],
+        [
+          "2024-10",
+          306
+        ],
+        [
+          "2024-11",
+          263
+        ],
+        [
+          "2024-12",
+          271
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Parsing both date formats puts every sign-up in the right month. Reindexing onto a fixed list of 12 months means a quiet month still shows up with 0 instead of disappearing.",
+    "commonMistake": "Using `value_counts()` alone. It skips months with no sign-ups, so the result has fewer than 12 rows. Parsing `25-03-2024` with the month-first format sends the sign-ups to the wrong months.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 20,
+    "tags": [
+      "messy",
+      "dates",
+      "groupby"
+    ]
+  }
+]

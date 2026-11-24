@@ -1,0 +1,125 @@
+[
+  {
+    "id": "python-regression-001",
+    "module": "python",
+    "topic": "regression",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "A small test has five points: x = [1, 2, 3, 4, 5] and y = [2, 4, 5, 4, 5]. Fit a straight line with `np.polyfit(x, y, 1)`. Return the slope rounded to 2 decimals.",
+    "dataset": "none",
+    "hint": "`np.polyfit(x, y, 1)` returns the slope first, then the intercept.",
+    "solutionCode": "x = [1, 2, 3, 4, 5]\ny = [2, 4, 5, 4, 5]\nslope, intercept = np.polyfit(x, y, 1)\nresult = round(float(slope), 2)",
+    "expectedOutput": {
+      "value": 0.6
+    },
+    "orderMatters": false,
+    "explanation": "`np.polyfit` with degree 1 fits the best straight line by least squares. The first number it returns is the slope, which is how much y changes for each one-unit step in x. Here the slope is 0.6.",
+    "commonMistake": "Reading the intercept as the slope. `polyfit` returns `(slope, intercept)` in that order for degree 1, so unpacking them the other way round gives 2.2 instead of 0.6.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "regression",
+      "polyfit",
+      "slope"
+    ]
+  },
+  {
+    "id": "python-regression-002",
+    "module": "python",
+    "topic": "regression",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "The logistics team wants the time cost of distance. Use the deliveries table. Drop duplicate `delivery_id` rows and keep only `Delivered` orders. Fit `actual_minutes` on `distance_km` with `np.polyfit`. Return the slope (extra minutes per extra km), rounded to 2 decimals.",
+    "dataset": "food_delivery",
+    "hint": "Filter to delivered rows and drop missing values in the two columns before you call `np.polyfit`.",
+    "solutionCode": "d = load(\"food_delivery\", \"deliveries\").drop_duplicates(subset=\"delivery_id\")\nd = d[d[\"delivery_status\"] == \"Delivered\"].dropna(subset=[\"distance_km\", \"actual_minutes\"])\nslope, intercept = np.polyfit(d[\"distance_km\"].astype(float), d[\"actual_minutes\"].astype(float), 1)\nresult = round(float(slope), 2)",
+    "expectedOutput": {
+      "value": 4.39
+    },
+    "orderMatters": false,
+    "explanation": "The slope says how many extra minutes each extra kilometre adds, on average. Cancelled orders are removed first because they have no delivery time. Duplicate rows are removed so that a few deliveries do not count twice.",
+    "commonMistake": "Passing the full table to `np.polyfit`. NaN values in `actual_minutes` can make `np.polyfit` fail or return NaN, and the cancelled rows are not deliveries at all. Always drop missing values before fitting.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 7,
+    "tags": [
+      "regression",
+      "polyfit",
+      "slope",
+      "cleaning"
+    ]
+  },
+  {
+    "id": "python-regression-003",
+    "module": "python",
+    "topic": "regression",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Use the same five points from the first test: x = [1, 2, 3, 4, 5] and y = [2, 4, 5, 4, 5]. Fit the line with `np.polyfit(x, y, 1)` and predict y when x = 6. Return the prediction rounded to 2 decimals.",
+    "dataset": "none",
+    "hint": "Prediction = intercept + slope times x. Take x = 6 and do not use any data point from the table.",
+    "solutionCode": "x = [1, 2, 3, 4, 5]\ny = [2, 4, 5, 4, 5]\nslope, intercept = np.polyfit(x, y, 1)\nresult = round(float(intercept + slope * 6), 2)",
+    "expectedOutput": {
+      "value": 5.8
+    },
+    "orderMatters": false,
+    "explanation": "The fitted line is `y = intercept + slope * x`. With slope 0.6 and intercept 2.2, x = 6 gives 5.8. This is a prediction for a value next to the data, so it is more reliable than a prediction far outside the data.",
+    "commonMistake": "Plugging in only the slope and forgetting the intercept. `0.6 * 6` is 3.6, which is far below the fitted value of 5.8.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "regression",
+      "predict"
+    ]
+  },
+  {
+    "id": "python-regression-004",
+    "module": "python",
+    "topic": "regression",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "The analytics lead asks how much of the variation in delivery time distance explains. Use the same cleaned delivered rows as the slope question: drop duplicate `delivery_id` rows and keep only `Delivered` orders. Fit `actual_minutes` on `distance_km` with `np.polyfit`, then compute R-squared as `1 - SS_res / SS_tot` and round it to 3 decimals.",
+    "dataset": "food_delivery",
+    "hint": "SS_res is the sum of squared (actual minus predicted). SS_tot is the sum of squared (actual minus mean).",
+    "solutionCode": "d = load(\"food_delivery\", \"deliveries\").drop_duplicates(subset=\"delivery_id\")\nd = d[d[\"delivery_status\"] == \"Delivered\"].dropna(subset=[\"distance_km\", \"actual_minutes\"])\nx = d[\"distance_km\"].astype(float).to_numpy()\ny = d[\"actual_minutes\"].astype(float).to_numpy()\nslope, intercept = np.polyfit(x, y, 1)\ny_hat = intercept + slope * x\nss_res = np.sum((y - y_hat) ** 2)\nss_tot = np.sum((y - y.mean()) ** 2)\nresult = round(float(1 - ss_res / ss_tot), 3)",
+    "expectedOutput": {
+      "value": 0.491
+    },
+    "orderMatters": false,
+    "explanation": "R-squared is the share of the spread in `actual_minutes` that the line explains. `ss_res` adds up the squared gaps between the actual and predicted minutes. `ss_tot` adds up the squared gaps from the average. For a single x column, R-squared equals the correlation squared.",
+    "commonMistake": "Reading R-squared as the accuracy of each prediction. A value near 0.49 means distance explains about half of the spread in minutes. The other half comes from traffic, weather and the restaurant, which this model ignores.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 10,
+    "tags": [
+      "regression",
+      "r2",
+      "metrics"
+    ]
+  },
+  {
+    "id": "python-regression-005",
+    "module": "python",
+    "topic": "regression",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "Ops wants to know whether very long trips change the speed estimate. Use the cleaned delivered rows (drop duplicate `delivery_id` rows, keep `Delivered` only). Fit the slope of `actual_minutes` on `distance_km` twice: once with all rows, and once after removing rows where `distance_km` is greater than 10. Return a dict `{\"slope_all\": ..., \"slope_trim\": ...}`, each rounded to 2 decimals.",
+    "dataset": "food_delivery",
+    "hint": "Fit the line on the full cleaned table first. Then filter out the long trips and fit again. Do not drop rows before you clean the NaN values.",
+    "solutionCode": "d = load(\"food_delivery\", \"deliveries\").drop_duplicates(subset=\"delivery_id\")\nd = d[d[\"delivery_status\"] == \"Delivered\"].dropna(subset=[\"distance_km\", \"actual_minutes\"])\nd = d.assign(distance_km=d[\"distance_km\"].astype(float), actual_minutes=d[\"actual_minutes\"].astype(float))\nslope_all = np.polyfit(d[\"distance_km\"], d[\"actual_minutes\"], 1)[0]\ntrim = d[d[\"distance_km\"] <= 10]\nslope_trim = np.polyfit(trim[\"distance_km\"], trim[\"actual_minutes\"], 1)[0]\nresult = {\"slope_all\": round(float(slope_all), 2), \"slope_trim\": round(float(slope_trim), 2)}",
+    "expectedOutput": {
+      "value": {
+        "slope_all": 4.39,
+        "slope_trim": 4.42
+      }
+    },
+    "orderMatters": false,
+    "explanation": "Each slope comes from a separate fit: one on all delivered rows, one on rows with trips of 10 km or less. Comparing the two shows whether a few long trips pull the line. Removing outliers is a choice you must explain, so always report both numbers.",
+    "commonMistake": "Dropping rows before removing the NaN values, or fitting on the trimmed table only and reporting it as the overall slope. You then lose the comparison, and the result looks more certain than it is.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 10,
+    "tags": [
+      "regression",
+      "outliers",
+      "filtering"
+    ]
+  }
+]

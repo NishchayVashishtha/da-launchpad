@@ -1,0 +1,258 @@
+---
+title: "Combining tables: merge, join, concat"
+description: "Bring related tables together without duplicating rows."
+module: python
+order: 10
+estimatedMinutes: 40
+objectives: ["Merge tables on keys with inner, left, right and outer joins", "Check row counts before and after a merge", "Handle key types and duplicate keys", "Find unmatched rows with indicator", "Stack tables with concat"]
+tags: ["python", "pandas", "merge", "join", "concat"]
+---
+
+## Learning objectives
+
+- Merge two tables on one or more key columns with `inner`, `left`, `right` and `outer` joins.
+- Check the row count before and after a merge, every time.
+- Spot and fix duplicate keys and key type problems before they multiply rows.
+- Find unmatched rows with `indicator=True`.
+- Stack tables that have the same columns with `concat`.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Real data sits in many tables. Orders are in one file, customers in another, and payment failures in a third. Almost every analysis asks you to join them. A bad join does not crash. It quietly makes the numbers too big or drops rows. Interviewers and senior analysts check the row counts first for this reason.
+</RealWorld>
+
+## Concept
+
+Think of a school. The marks sheet has roll numbers and marks. The student list has roll numbers and names. To print a result card with names and marks, you match the two lists on the roll number. That is a merge.
+
+```python
+import pandas as pd
+
+merged = pd.merge(orders, customers, on="customer_id", how="left")
+# same thing as
+merged = orders.merge(customers, on="customer_id", how="left")
+```
+
+The main arguments are:
+
+- `on`: the key column in both tables. If the names differ, use `left_on` and `right_on`.
+- `how`: the join type. The default is `inner`.
+- `indicator=True`: adds a `_merge` column that says where each row came from.
+- `validate`: checks the key uniqueness. For example, `validate="m:1"` means many rows on the left, one row per key on the right.
+- `suffixes`: the names added when both tables have a column with the same name, such as `city_x` and `city_y`.
+
+### Join types
+
+| how | rows kept |
+|---|---|
+| `inner` | only keys found in both tables |
+| `left` | every row of the left table, with blanks where the right has no match |
+| `right` | every row of the right table |
+| `outer` | every row from both tables |
+
+Most analysts use `left` when the left table is the base they want to keep. An `inner` join is handy when you only want matched rows, but it hides the rows that did not match.
+
+### The row count rule
+
+A left merge keeps the number of left rows only when each key appears once on the right. If the right side repeats a key, each matching left row is copied once for each repeat. This is called a row explosion.
+
+<Tip>
+Before a merge, check the key on the right side. Count the repeats. After the merge, check the row count again. The left rows should not grow. If they do, a key on the right repeats.
+</Tip>
+
+### Dedupe the lookup table first
+
+The customers file has 20 repeated `customer_id` rows. Drop those before the join. The orders are the base, so their rows must not change.
+
+```python
+customers = load("ecommerce", "customers").drop_duplicates(subset="customer_id")
+```
+
+### Anti-join: find what did not match
+
+An anti-join returns rows from the left table that have no match on the right. In pandas, do a left merge with `indicator=True`, then keep the rows marked `left_only`.
+
+```python
+m = users.merge(subs, on="user_id", how="left", indicator=True)
+never_subscribed = m[m["_merge"] == "left_only"]
+```
+
+### concat: stack the same kind of table
+
+`pd.concat` stacks tables on top of each other. Use it when the tables have the same columns, for example one file per month. `ignore_index=True` gives the rows a fresh index from 0.
+
+```python
+all_orders = pd.concat([orders_2023, orders_2024], ignore_index=True)
+```
+
+Use merge when you add columns from another table. Use concat when you add rows.
+
+### Key types must match
+
+A key stored as text in one table and as a number in the other will not match. `"101"` is not equal to `101`. Check `dtype` on both keys, and convert with `astype` before you merge.
+
+### SQL bridge
+
+`merge` is `JOIN`. `how="left"` is `LEFT JOIN`, and the anti-join is the SQL `LEFT JOIN ... WHERE right.key IS NULL`. `concat` is `UNION ALL`, because it keeps the repeated rows.
+
+## Worked examples
+
+All examples use the messy CSV files that `load()` reads. Each one drops repeated ids first, then checks the row count.
+
+### Example 1: orders with customer city
+
+We want every order, with the customer's city. The customers file has repeated rows, so we see the effect first.
+
+```python
+orders = load("ecommerce", "orders").drop_duplicates(subset="order_id")
+raw_customers = load("ecommerce", "customers")
+
+risky = orders.merge(raw_customers[["customer_id", "city"]], on="customer_id", how="left")
+print(len(orders), len(risky))         # 10000 10032
+```
+
+The raw customers file adds 32 extra rows. The 20 repeated customers each copy their orders. Now the fixed version:
+
+```python
+customers = raw_customers.drop_duplicates(subset="customer_id")[["customer_id", "city"]]
+orders_with_city = orders.merge(customers, on="customer_id", how="left", validate="m:1")
+print(len(orders_with_city), orders_with_city["city"].isna().sum())   # 10000 300
+```
+
+| check | value |
+|---|---|
+| orders before merge | 10000 |
+| rows after merge with repeated customers | 10032 (wrong) |
+| rows after merge with unique customers | 10000 |
+| orders with no city | 300 |
+
+The count stays at 10000 after the fixed merge, which is what we want.
+
+### Example 2: customers who never ordered
+
+This is an anti-join. We start with unique customers and mark who has at least one order.
+
+```python
+cust = load("ecommerce", "customers").drop_duplicates(subset="customer_id")[["customer_id", "city"]]
+ordered = load("ecommerce", "orders")[["customer_id"]].drop_duplicates()
+
+m = cust.merge(ordered, on="customer_id", how="left", indicator=True)
+no_orders = m[m["_merge"] == "left_only"]
+print(len(cust), len(no_orders))    # 4500 2278
+```
+
+About half of the customers have never placed an order. The first three of them are:
+
+| customer_id | city | _merge |
+|---|---|---|
+| 2 | Chennai | left_only |
+| 8 | Surat | left_only |
+| 9 | Chennai | left_only |
+
+### Example 3: let validate catch a bad key
+
+If we forget to drop the repeats, `validate="m:1"` stops the merge with an error. This is a good thing. The error tells you the key is not unique.
+
+```python
+orders.merge(raw_customers[["customer_id", "city"]], on="customer_id", how="left", validate="m:1")
+# MergeError: Merge keys are not unique in right dataset; not a many-to-one merge
+```
+
+The message also lists some of the repeated keys. Fix the lookup table, then run the merge again.
+
+### Example 4: stack two years of orders with concat
+
+We split the orders by the year of the order date. Some dates are written as DD-MM-YYYY, so we parse both formats first.
+
+```python
+def parse_date(s):
+    s = s.astype(str)
+    iso = pd.to_datetime(s, format="%Y-%m-%d", errors="coerce")
+    dmy = pd.to_datetime(s, format="%d-%m-%Y", errors="coerce")
+    return iso.combine_first(dmy)
+
+orders["order_dt"] = parse_date(orders["order_date"])
+orders_2023 = orders[orders["order_dt"].dt.year == 2023]
+orders_2024 = orders[orders["order_dt"].dt.year == 2024]
+
+both_years = pd.concat([orders_2023, orders_2024], ignore_index=True)
+print(len(orders_2023), len(orders_2024), len(both_years))   # 4506 5494 10000
+```
+
+The row count adds up: 4,506 plus 5,494 is 10,000. The index now runs from 0 to 9,999 because of `ignore_index=True`.
+
+## Common mistakes
+
+<CommonMistake>
+**Many-to-many joins that inflate sums.** If both tables repeat the key, every pair of matches becomes a row. Revenue after such a join can be several times too big. Dedupe the lookup table, or aggregate before the join.
+</CommonMistake>
+
+<CommonMistake>
+**Using the wrong join type.** An inner join silently drops orders with no matching customer. The total count goes down, and nothing warns you. Use `how="left"` when the left table is the base you want to keep.
+</CommonMistake>
+
+<CommonMistake>
+**Key type mismatch.** A `customer_id` stored as text in one file and as a number in the other matches nothing, or matches only part of the rows. Check `dtype` on both sides.
+</CommonMistake>
+
+<CommonMistake>
+**Confusing the `_x` and `_y` suffixes.** When both tables have `city`, the merged table has `city_x` and `city_y`. Your code then fails with a key error. Rename one column before the merge, or pass clear `suffixes`.
+</CommonMistake>
+
+<CommonMistake>
+**Filtering after a left merge in the wrong place.** Writing `m[m["city"] == "Pune"]` after a left merge removes the unmatched rows. This quietly turns the left join into an inner join. Filter the rows you want before the merge, or keep the NaN rows on purpose.
+</CommonMistake>
+
+<CommonMistake>
+**Not checking the row count.** Print the length before and after each merge. If the number grows when you expected it to stay the same, stop and check the keys.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="merge" module="python" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "orders has 10,000 rows. You do a left merge with a customers table that has a unique customer_id. How many rows do you get?", options: ["Fewer than 10,000", "Exactly 10,000", "More than 10,000", "It depends on the number of cities"], answer: 1, explanation: "A left merge keeps every left row. With a unique key on the right, no row is copied, so the count stays at 10,000." },
+  { q: "The right table repeats a key twice. What happens to the matching left row?", options: ["It is dropped", "It appears once", "It appears twice", "pandas raises an error by default"], answer: 2, explanation: "Each match creates one output row. A key that appears twice on the right copies the left row twice. validate would catch this, but the default does not." },
+  { q: "What does indicator=True add to a merge result?", options: ["A column with the row number", "A _merge column that says left_only, right_only or both", "A column with the sum of both tables", "A copy of the key"], answer: 1, explanation: "The _merge column tells you where each row came from. Filtering it to left_only gives the rows with no match on the right." },
+  { q: "Which function should you use to stack two monthly order files that have the same columns?", options: ["merge", "concat", "groupby", "pivot"], answer: 1, explanation: "concat adds rows from one table under another. merge adds columns from a second table, based on a key." },
+  { q: "What does validate='m:1' do in merge?", options: ["It sorts the result by the key", "It checks that the key is unique on the right side and raises an error if not", "It removes duplicate rows from the left", "It converts the key to text"], answer: 1, explanation: "validate checks the key relationship. 'm:1' means the right side must have one row per key, so a repeated key stops the merge early with a clear error." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers ask about join types and about avoiding a row explosion. A strong answer names the row count you expect, says how you would check it, and mentions validate or an anti-join with indicator.
+</InterviewAlert>
+
+<InterviewQ q="What is the difference between inner and left join?">
+An inner join keeps only the rows with a match in both tables. A left join keeps every row from the left table, and fills the right-side columns with blanks where there is no match. I use a left join when the left table is my base, such as orders, and I do not want to lose any of them. I use an inner join when I only want matched records.
+</InterviewQ>
+
+<InterviewQ q="How do you find customers who never ordered?">
+I do an anti-join. I left-merge the customer list with the orders on customer_id, with indicator set to True. Then I keep the rows where _merge is left_only. Before that, I make sure the customer list has one row per customer, so the count is right. In our ecommerce data, 2,278 of 4,500 unique customers have no order.
+</InterviewQ>
+
+<InterviewQ q="How do you avoid duplicate row explosion when merging?">
+I check the key on the lookup table first. If the key repeats, I drop the repeats or aggregate the table to one row per key. I add validate="m:1" so pandas stops with an error if the key is not unique. I also compare the row count before and after the merge. If the count grows, I stop and find the cause.
+</InterviewQ>
+
+<InterviewQ q="When do you use merge, join and concat?">
+merge joins two tables on key columns. join is a shortcut that joins on the index. concat stacks tables that have the same columns, for example one file per month. I use merge to add columns and concat to add rows.
+</InterviewQ>
+
+## Key takeaways
+
+- A merge matches rows on a key. Choose the join type on purpose: `left` keeps your base table.
+- Check the key is unique on the lookup side. Use `validate="m:1"` to make pandas check it for you.
+- Compare the row count before and after every merge. A growing count means repeated keys.
+- Use `indicator=True` and keep `left_only` rows to find what did not match.
+- Use `concat` with `ignore_index=True` to stack tables with the same columns.
+- Clean and dedupe the dimension tables first, such as customers and products.
+
+## Further reading
+
+<FurtherReading ids={["pandas-docs"]} />

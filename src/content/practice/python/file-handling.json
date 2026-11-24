@@ -1,0 +1,131 @@
+[
+  {
+    "id": "python-file-handling-001",
+    "module": "python",
+    "topic": "file-handling",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "A shop owner copies four UPI payments into this CSV text. Count the data rows. Do not count the header line. Assign the number to `result`.\n\n```\ntxn_id,amount,status\n1,250.00,SUCCESS\n2,1200.50,FAILED\n3,80.00,SUCCESS\n4,45.75,SUCCESS\n```",
+    "dataset": "none",
+    "hint": "Read the text with csv.reader after wrapping it in io.StringIO. Skip the first row, then count what is left.",
+    "solutionCode": "import csv\nimport io\n\ntext = \"txn_id,amount,status\\n1,250.00,SUCCESS\\n2,1200.50,FAILED\\n3,80.00,SUCCESS\\n4,45.75,SUCCESS\\n\"\nreader = csv.reader(io.StringIO(text))\nnext(reader)  # skip the header row\nresult = sum(1 for _ in reader)",
+    "expectedOutput": {
+      "value": 4
+    },
+    "explanation": "io.StringIO makes a string behave like a file, so csv.reader can read it line by line. next(reader) moves past the header. The generator counts the rows that remain.",
+    "commonMistake": "Counting every line from csv.reader, including the header, which gives 5 instead of 4.",
+    "interviewFrequency": "low",
+    "estimatedMinutes": 3,
+    "tags": [
+      "csv",
+      "csv-module",
+      "stringio"
+    ]
+  },
+  {
+    "id": "python-file-handling-002",
+    "module": "python",
+    "topic": "file-handling",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "The risk team wants the size of the users table before they start a review. Load `users` from the fintech dataset. Assign a dict to `result` with keys `rows` (number of data rows) and `cols` (number of columns).",
+    "dataset": "fintech",
+    "hint": "A DataFrame has a `shape` attribute. It is a tuple of (rows, columns).",
+    "solutionCode": "df = load(\"fintech\", \"users\")\nresult = {\"rows\": int(df.shape[0]), \"cols\": int(df.shape[1])}",
+    "expectedOutput": {
+      "value": {
+        "rows": 4010,
+        "cols": 11
+      }
+    },
+    "explanation": "shape gives the row count first and the column count second. The header line is not counted as a row, because pandas reads it as column names. The raw load keeps exact duplicate rows, so this count includes them.",
+    "commonMistake": "Swapping the two numbers, so `rows` shows 11 and `cols` shows 4010.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "read_csv",
+      "shape"
+    ]
+  },
+  {
+    "id": "python-file-handling-003",
+    "module": "python",
+    "topic": "file-handling",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "A UPI export gives each payment as a JSON record. The amount is stored as text with Indian commas, such as `\"1,250.50\"`. Parse this JSON string and return the total amount of the payments with status `SUCCESS`, rounded to 2 decimals, as `result`.\n\n```\n[{\"txn_id\": 101, \"amount\": \"1,250.50\", \"status\": \"SUCCESS\"}, {\"txn_id\": 102, \"amount\": \"480.00\", \"status\": \"FAILED\"}, {\"txn_id\": 103, \"amount\": \"2,099.25\", \"status\": \"SUCCESS\"}]\n```",
+    "dataset": "none",
+    "hint": "json.loads turns the string into a list of dicts. Remove the commas and convert each amount to a float before you add.",
+    "solutionCode": "import json\n\nraw = '[{\"txn_id\": 101, \"amount\": \"1,250.50\", \"status\": \"SUCCESS\"}, {\"txn_id\": 102, \"amount\": \"480.00\", \"status\": \"FAILED\"}, {\"txn_id\": 103, \"amount\": \"2,099.25\", \"status\": \"SUCCESS\"}]'\nrecords = json.loads(raw)\ntotal = sum(float(r[\"amount\"].replace(\",\", \"\")) for r in records if r[\"status\"] == \"SUCCESS\")\nresult = round(total, 2)",
+    "expectedOutput": {
+      "value": 3349.75
+    },
+    "explanation": "json.loads returns plain Python dicts. The amount is a string, so replace() removes the comma and float() turns it into a number. Only then can sum() add the values.",
+    "commonMistake": "Adding the strings directly. Python joins them as text, or raises an error, instead of adding the amounts.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "json",
+      "json-loads",
+      "strings"
+    ]
+  },
+  {
+    "id": "python-file-handling-004",
+    "module": "python",
+    "topic": "file-handling",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "The data team wants a list of the text columns in the fintech `transactions` table, so they can check each one for stray spaces. Load the table. Assign to `result` a sorted list of the names of the columns that hold text.",
+    "dataset": "fintech",
+    "hint": "pd.api.types.is_string_dtype(column) tells you if a column holds text. Loop over df.columns and keep the names that pass.",
+    "solutionCode": "df = load(\"fintech\", \"transactions\")\ntext_cols = [c for c in df.columns if pd.api.types.is_string_dtype(df[c])]\nresult = sorted(text_cols)",
+    "expectedOutput": {
+      "value": [
+        "amount",
+        "bank",
+        "device_os",
+        "payment_app",
+        "status",
+        "txn_datetime",
+        "txn_type"
+      ]
+    },
+    "explanation": "read_csv guesses each column type from its values. The amount column has rupee signs in some rows, so pandas keeps it as text, even though it looks like a number. is_string_dtype finds those columns, and sorted() gives a fixed order for checking.",
+    "commonMistake": "Using select_dtypes(include='number') and missing amount. It looks numeric but is stored as text, so it is left out of the list.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 6,
+    "tags": [
+      "dtypes",
+      "read_csv",
+      "text"
+    ]
+  },
+  {
+    "id": "python-file-handling-005",
+    "module": "python",
+    "topic": "file-handling",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "A grocery app exports orders as nested JSON. Each order has a list of items, and an order can have an empty list. Flatten the data so there is one line per item with `order_id`, `sku` and `qty`. Assign to `result` a dict with three keys: `lines` (number of item lines), `sum_qty` (total quantity across all lines) and `orders_without_items` (number of orders with an empty item list).\n\n```\n{\"orders\": [\n {\"order_id\": \"A1\", \"items\": [{\"sku\": \"TEA-500\", \"qty\": 2}, {\"sku\": \"BIS-200\", \"qty\": 1}]},\n {\"order_id\": \"A2\", \"items\": []},\n {\"order_id\": \"A3\", \"items\": [{\"sku\": \"SOAP-75\", \"qty\": 4}]}\n]}\n```",
+    "dataset": "none",
+    "hint": "Loop over the orders first, then over each order's items. Count the orders that have no items in a separate check.",
+    "solutionCode": "import json\n\nraw = '{\"orders\": [{\"order_id\": \"A1\", \"items\": [{\"sku\": \"TEA-500\", \"qty\": 2}, {\"sku\": \"BIS-200\", \"qty\": 1}]}, {\"order_id\": \"A2\", \"items\": []}, {\"order_id\": \"A3\", \"items\": [{\"sku\": \"SOAP-75\", \"qty\": 4}]}]}'\ndata = json.loads(raw)\nlines = []\nempty = 0\nfor order in data[\"orders\"]:\n    if not order[\"items\"]:\n        empty += 1\n    for item in order[\"items\"]:\n        lines.append((order[\"order_id\"], item[\"sku\"], item[\"qty\"]))\nresult = {\"lines\": len(lines), \"sum_qty\": sum(q for _, _, q in lines), \"orders_without_items\": empty}",
+    "expectedOutput": {
+      "value": {
+        "lines": 3,
+        "sum_qty": 7,
+        "orders_without_items": 1
+      }
+    },
+    "explanation": "The outer loop visits each order and the inner loop visits each item. Each item becomes one tuple that keeps its order_id. An order with an empty list adds no lines, so the counter checks for it separately, and the order is not lost from the report.",
+    "commonMistake": "Writing only the inner loop. Orders with empty item lists then vanish from the report without any error.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 12,
+    "tags": [
+      "json",
+      "nested",
+      "loops"
+    ]
+  }
+]

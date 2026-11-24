@@ -1,0 +1,270 @@
+---
+title: "Decisions and loops: if, for, while"
+description: "Make Python choose and repeat."
+module: python
+order: 2
+estimatedMinutes: 30
+objectives:
+  - "Write if, elif and else for simple business rules"
+  - "Loop over a list with for and range"
+  - "Use while with a clear stop condition"
+  - "Use break and continue to control a loop"
+  - "Add up totals and counts inside a loop"
+tags: ["python", "loops", "if"]
+---
+
+## Learning objectives
+
+- Write `if`, `elif` and `else` blocks for business rules such as fee slabs.
+- Loop over a list with `for`, `range()` and `enumerate()`.
+- Use `while` with a stop condition, and avoid an infinite loop.
+- Use `break` to stop early and `continue` to skip one item.
+- Add up totals and counts while you loop.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+A payments team checks thousands of transactions to find failures, large amounts and repeat patterns. Some checks are simple rules, such as "flag any payment above ₹50,000". Others need a loop that reads each row and keeps a running count. Analysts write these checks in Python, then move them to pandas later, which runs the same logic faster on large tables.
+</RealWorld>
+
+## Concept
+
+### Indentation is the block
+
+Python uses indentation, not braces, to group code. Everything indented under an `if` or a `for` belongs to that block. Use four spaces for each level.
+
+```python
+amount = 5400
+if amount > 1000:
+    print("Mid slab")
+print("This line always runs")
+```
+
+Think of a bank counter with a token system. The loop is the queue that serves each token in turn. The `if` is the clerk who sends each customer to the right counter based on the account type.
+
+### if, elif and else
+
+The checks run from top to bottom. The first condition that is True wins, and the rest are skipped.
+
+```python
+if amount > 50000:
+    label = "High"
+elif amount > 1000:
+    label = "Mid"
+else:
+    label = "Low"
+```
+
+The order of the checks matters. If you test `amount > 1000` first, then 70000 also matches that line, and the `High` branch never runs. Put the strictest test first.
+
+### for loops, range and enumerate
+
+A `for` loop visits each item in a list, in order.
+
+```python
+for amount in [120, 5400, 62000]:
+    print(amount)
+```
+
+`range(start, stop, step)` makes numbers for you. The stop value is **not** included:
+
+- `range(3)` gives 0, 1, 2.
+- `range(2, 8, 2)` gives 2, 4, 6.
+
+`enumerate(items)` gives both the position and the item, so you can report where something was found.
+
+### while loops and break
+
+A `while` loop repeats as long as its condition is True. You must change something inside the loop, or the condition never becomes False. That is an **infinite loop**, and it keeps the program busy forever.
+
+Use `break` to leave the loop early. Use `continue` to skip the rest of the current pass and move to the next item.
+
+### The accumulator pattern
+
+Most business loops follow one pattern:
+
+1. Set a starting value before the loop, such as `total = 0` or `count = 0`.
+2. In the loop, add to it: `total += amount` or `count += 1`.
+3. Use the final value after the loop.
+
+<FormulaCard title="Accumulator pattern">
+Start with `total = 0`. For each item, do `total += item`. After the loop, `total` holds the sum of all items. Divide by the count to get the average, but first check that the count is not 0.
+</FormulaCard>
+
+### Why analysts move to pandas
+
+A loop is easy to read, but it is slow on large tables. On a lakh rows, a Python loop can take noticeable time, while pandas runs the same rule on the whole column at once. You will learn that style soon. For now, loops help you understand the logic, and the same logic appears in pandas later.
+
+## Worked examples
+
+### Example 1: fee slabs with if and elif
+
+Label each amount as Low, Mid or High. The slabs are: above ₹50,000 is High, above ₹1,000 is Mid, and everything else is Low.
+
+```python
+amounts = [120, 5400, 62000]
+for amount in amounts:
+    if amount > 50000:
+        label = "High"
+    elif amount > 1000:
+        label = "Mid"
+    else:
+        label = "Low"
+    print(amount, label)
+```
+
+**Output:**
+
+```
+120 Low
+5400 Mid
+62000 High
+```
+
+The `elif` only runs when the first check is False. So 5400 is not checked against the High rule at all.
+
+### Example 2: sum and count only the successful payments
+
+A list holds the status of each payment, and a matching list holds the amount. Add up only the successful ones, count them, then find the average.
+
+```python
+statuses = ["Success", "Failed", "Success", "Success", "Failed"]
+amounts = [250.0, 1200.0, 80000.0, 45.0, 9100.0]
+
+total = 0.0
+count = 0
+for status, amount in zip(statuses, amounts):
+    if status != "Success":
+        continue
+    total += amount
+    count += 1
+
+print("count:", count)
+print("total:", total)
+print("average:", round(total / count, 2))
+```
+
+**Output:**
+
+```
+count: 3
+total: 80295.0
+average: 26765.0
+```
+
+`continue` skips the failed rows, so they never reach the `total` or `count` lines. `zip` pairs each status with its amount.
+
+### Example 3: find the first big payment with break
+
+Find the position and amount of the first payment above ₹10,000, then stop.
+
+```python
+amounts = [250, 1200, 80000, 45, 9100]
+for position, amount in enumerate(amounts):
+    if amount > 10000:
+        print("First big payment at position", position, "amount", amount)
+        break
+```
+
+**Output:**
+
+```
+First big payment at position 2 amount 80000
+```
+
+`break` stops the loop at once. Without it, the loop would keep going and check the rest of the list.
+
+### Example 4: flag every fifth invoice for audit
+
+An audit team wants every fifth invoice, numbered 1 to 15, to be checked by hand. Use `%` to test for multiples of 5.
+
+```python
+for invoice_id in range(1, 16):
+    if invoice_id % 5 == 0:
+        print("Audit invoice", invoice_id)
+```
+
+**Output:**
+
+```
+Audit invoice 5
+Audit invoice 10
+Audit invoice 15
+```
+
+`invoice_id % 5 == 0` is True only when the remainder after dividing by 5 is 0.
+
+## Common mistakes
+
+<CommonMistake>
+Off-by-one errors with `range`. `range(1, 10)` stops at 9, not 10. If you want 1 to 10, write `range(1, 11)`. Summing the squares of 1 to 10 with `range(1, 10)` gives 285 instead of 385.
+</CommonMistake>
+
+<CommonMistake>
+Removing items from a list while looping over it. Each removal shifts the positions, so the loop skips items. Build a new list instead, or filter with a comprehension.
+</CommonMistake>
+
+<CommonMistake>
+Wrong indentation under an `if`. If the line is not indented, it runs for every row, not only for matching rows. Python shows an IndentationError when the block is empty or misaligned.
+</CommonMistake>
+
+<CommonMistake>
+A `while` loop with no change to the variable. `while n != 1:` with no update to `n` never stops. Always change the value that the condition checks.
+</CommonMistake>
+
+<CommonMistake>
+Putting the broad `elif` check first. If `amount > 1000` comes before `amount > 10000`, a 70000 payment is labelled Mid, not High. Put the strictest check at the top.
+</CommonMistake>
+
+<CommonMistake>
+Dividing by the count when the list is empty. `total / len(amounts)` raises a ZeroDivisionError when the list has no items. Check `if count > 0` first.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="loops" module="python" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What is the value of `list(range(2, 8, 2))`?", options: ["[2, 4, 6, 8]", "[2, 4, 6]", "[2, 3, 4, 5, 6, 7]", "[4, 6]"], answer: 1, explanation: "range starts at 2, steps by 2, and stops before 8. The values are 2, 4 and 6. The stop value 8 is never included." },
+  { q: "What does this code print?\n\nfor i in range(3):\n    print(i)", options: ["1 2 3", "0 1 2", "0 1 2 3", "1 2"], answer: 1, explanation: "range(3) gives 0, 1 and 2. Each value is printed on its own line, so the output is 0, 1 and 2." },
+  { q: "Which keyword stops the whole loop at once?", options: ["continue", "break", "skip", "next"], answer: 1, explanation: "break leaves the loop immediately. continue only skips the rest of the current pass and moves to the next item." },
+  { q: "The checks are `if amount > 1000: label = \"Mid\"` then `elif amount > 10000: label = \"High\"`. What label does 70000 get?", options: ["High", "Mid", "Low", "An error"], answer: 1, explanation: "The first check is True for 70000, so the if block runs and the elif is skipped. The branch order caused the wrong label." },
+  { q: "How many pairs does `list(zip([1, 2, 3], \"ab\"))` contain?", options: ["1", "2", "3", "6"], answer: 1, explanation: "zip stops at the shorter input. The string \"ab\" has 2 characters, so there are 2 pairs: (1, a) and (2, b)." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers use loop questions to check your logic, not your memory of syntax. Talk through the starting value, the update inside the loop and the stop condition. Mention that pandas usually replaces explicit loops on big tables.
+</InterviewAlert>
+
+<InterviewQ q="Write FizzBuzz, or count the vowels in a word, using a loop. Explain each step.">
+For FizzBuzz, loop from 1 to 100. If the number is divisible by both 3 and 5, print "FizzBuzz". If it is divisible by 3, print "Fizz". If it is divisible by 5, print "Buzz". Otherwise print the number. For vowels, start a counter at 0, loop over the characters, and add 1 when the character is in `"aeiou"`. Say the accumulator and the test out loud.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between a for loop and a while loop? When would you use each?">
+Use a `for` loop when you know the items you want to visit, such as every row in a list. Use a `while` loop when you repeat until a condition changes, such as retrying a payment until it succeeds or stepping a number down to 1. A `while` loop needs a clear update, or it never ends.
+</InterviewQ>
+
+<InterviewQ q="How would you find the second largest number in a list without sorting it?">
+Keep two variables, `largest` and `second`, and start both at the lowest possible value. For each number, if it is bigger than `largest`, move `largest` into `second` and set the new `largest`. Otherwise, if it is bigger than `second` and not equal to `largest`, update `second`. One pass through the list gives the answer.
+</InterviewQ>
+
+<InterviewQ q="Why do analysts avoid explicit loops in pandas, and what does enumerate do?">
+Pandas runs an operation on a whole column in optimised code, so it is much faster than a Python loop over each row. `enumerate` gives the position and the value of each item in a loop, which helps when you need to report where a match was found.
+</InterviewQ>
+
+## Key takeaways
+
+- Indentation is the syntax that groups code into blocks.
+- The first True branch in an `if` and `elif` chain wins, so order the checks carefully.
+- `range` stops before its end value, so `range(1, 11)` gives 1 to 10.
+- Use `+=` to add up totals and counts inside a loop.
+- Use `break` to stop early and `continue` to skip one item.
+- Loops teach the logic, and pandas later runs the same logic faster on whole columns.
+
+## Further reading
+
+<FurtherReading ids={["python-docs", "kaggle-learn"]} />

@@ -1,0 +1,175 @@
+{
+  "filename": "06-pandas-cheatsheet-practice",
+  "title": "Pandas cheatsheet: 20 practice exercises",
+  "dataset": "ecommerce",
+  "cells": [
+    {
+      "type": "markdown",
+      "source": "# Pandas cheatsheet practice\n\nThis notebook has 20 short exercises on the ecommerce tables. Each exercise has an empty code cell. Write your code under the comment, run it, and check the output. Use the cheatsheet lessons if you get stuck.\n\nPut the CSV files for this dataset in a folder named `ecommerce` next to this notebook. The site zip has one folder per dataset. Run the cells from top to bottom."
+    },
+    {
+      "type": "code",
+      "source": "import pandas as pd\n\norders = pd.read_csv(\"ecommerce/orders.csv\").drop_duplicates(subset=\"order_id\")\nitems = pd.read_csv(\"ecommerce/order_items.csv\")\nproducts = pd.read_csv(\"ecommerce/products.csv\")\ncustomers = pd.read_csv(\"ecommerce/customers.csv\").drop_duplicates(subset=\"customer_id\")\npayments = pd.read_csv(\"ecommerce/payments.csv\")\nreturns = pd.read_csv(\"ecommerce/returns.csv\")"
+    },
+    {
+      "type": "markdown",
+      "source": "## Exercise 1\n\nCount orders for each order status. Return a Series sorted from most to least."
+    },
+    {
+      "type": "code",
+      "source": "# Write your code below"
+    },
+    {
+      "type": "markdown",
+      "source": "## Exercise 2\n\nCount how many distinct customers placed at least one order."
+    },
+    {
+      "type": "code",
+      "source": "# Write your code below"
+    },
+    {
+      "type": "markdown",
+      "source": "## Exercise 3\n\nFind the total order_total (total_amount) for each sales channel. Sort from highest to lowest."
+    },
+    {
+      "type": "code",
+      "source": "# Write your code below"
+    },
+    {
+      "type": "markdown",
+      "source": "## Exercise 4\n\nFind the average unit price for each product category. Clean the category text first (strip spaces, title case)."
+    },
+    {
+      "type": "code",
+      "source": "# Write your code below"
+    },
+    {
+      "type": "markdown",
+      "source": "## Exercise 5\n\nFor each order, count the number of product lines. Show the 5 orders with the most lines."
+    },
+    {
+      "type": "code",
+      "source": "# Write your code below"
+    },
+    {
+      "type": "markdown",
+      "source": "## Exercise 6\n\nJoin orders to customers on customer_id. Count orders per is_prime value."
+    },
+    {
+      "type": "code",
+      "source": "# Write your code below"
+    },
+    {
+      "type": "markdown",
+      "source": "## Exercise 7\n\nMake a pivot table of order count: sales channel as rows, order status as columns."
+    },
+    {
+      "type": "code",
+      "source": "# Write your code below"
+    },
+    {
+      "type": "markdown",
+      "source": "## Exercise 8\n\nCount the delivered orders in each month."
+    },
+    {
+      "type": "code",
+      "source": "# Write your code below"
+    },
+    {
+      "type": "markdown",
+      "source": "## Exercise 9\n\nFind the top 5 products by total quantity sold."
+    },
+    {
+      "type": "code",
+      "source": "# Write your code below"
+    },
+    {
+      "type": "markdown",
+      "source": "## Exercise 10\n\nFind the products that were never sold. Use a left merge and check for missing values."
+    },
+    {
+      "type": "code",
+      "source": "# Write your code below"
+    },
+    {
+      "type": "markdown",
+      "source": "## Exercise 11\n\nCount returned order items for each product category."
+    },
+    {
+      "type": "code",
+      "source": "# Write your code below"
+    },
+    {
+      "type": "markdown",
+      "source": "## Exercise 12\n\nFind the average discount_pct for each sales channel, rounded to 1 decimal."
+    },
+    {
+      "type": "code",
+      "source": "# Write your code below"
+    },
+    {
+      "type": "markdown",
+      "source": "## Exercise 13\n\nFind the share (percent) of orders that used a coupon. A coupon is any non-empty coupon_code."
+    },
+    {
+      "type": "code",
+      "source": "# Write your code below"
+    },
+    {
+      "type": "markdown",
+      "source": "## Exercise 14\n\nUse pd.cut to put each order total into the bands 0-500, 500-2000, 2000-5000 and above 5000. Count the orders in each band."
+    },
+    {
+      "type": "code",
+      "source": "# Write your code below"
+    },
+    {
+      "type": "markdown",
+      "source": "## Exercise 15\n\nCount the rows for each payment_method in the payments table."
+    },
+    {
+      "type": "code",
+      "source": "# Write your code below"
+    },
+    {
+      "type": "markdown",
+      "source": "## Exercise 16\n\nFind the average number of orders per customer, split by is_prime."
+    },
+    {
+      "type": "code",
+      "source": "# Write your code below"
+    },
+    {
+      "type": "markdown",
+      "source": "## Exercise 17\n\nFind the 10 customers with the highest total spend (sum of total_amount for delivered orders)."
+    },
+    {
+      "type": "code",
+      "source": "# Write your code below"
+    },
+    {
+      "type": "markdown",
+      "source": "## Exercise 18\n\nCount the orders placed on each weekday. Parse the order_date first (two formats exist)."
+    },
+    {
+      "type": "code",
+      "source": "# Write your code below"
+    },
+    {
+      "type": "markdown",
+      "source": "## Exercise 19\n\nFill missing shipping_fee values with 0, then find the total shipping fee collected for each order status."
+    },
+    {
+      "type": "code",
+      "source": "# Write your code below"
+    },
+    {
+      "type": "markdown",
+      "source": "## Exercise 20\n\nFind the products whose product_name contains the word 'Pro' (any capitalisation). Return the count."
+    },
+    {
+      "type": "code",
+      "source": "# Write your code below"
+    }
+  ]
+}

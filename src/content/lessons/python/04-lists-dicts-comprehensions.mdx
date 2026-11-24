@@ -1,0 +1,313 @@
+---
+title: "Lists, dictionaries and comprehensions"
+description: "Hold many values and transform them in one line."
+module: python
+order: 4
+estimatedMinutes: 35
+objectives:
+  - "Use list, tuple, set and dict, and pick the right one for a job"
+  - "Index, slice, append and sort a list"
+  - "Count items with a dict and the get method"
+  - "Write list and dict comprehensions"
+  - "Read a list of dict records, the same shape as API data and table rows"
+tags: ["python", "list", "dict", "comprehension"]
+---
+
+## Learning objectives
+
+- Pick `list`, `tuple`, `set` or `dict` for a given job.
+- Index, slice, `append` and sort a list.
+- Count items with a dict and the `get` method.
+- Write list and dict comprehensions, and know when to stop.
+- Read a list of dict records, which is the shape of API data and table rows.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+A payments export is a list of records. Each record is one transaction with an id, an app, an amount and a status. Before you use pandas, you must count the failed codes, total the amounts by city or find the unique payment apps. These are list and dict tasks. The same ideas explain the table you will see in pandas, because `pd.DataFrame` builds a table from a list of dicts.
+</RealWorld>
+
+## Concept
+
+### Pick the right container
+
+Each container is good at one kind of job. Think of everyday objects:
+
+| Container | Everyday analogy | Use it for | Example |
+|---|---|---|---|
+| `list` | a queue at an ATM | ordered items you may change | `[250, 1200, 80000]` |
+| `dict` | a phone contact list | look up a value by a key | `{"GPay": 3, "Paytm": 1}` |
+| `set` | a badge box with no repeats | unique items only | `{"Pune", "Jaipur"}` |
+| `tuple` | a fixed pair, like a map point | values that should not change | `(19.07, 72.87)` |
+
+A list keeps order and allows repeats. A set has no order and no repeats. A dict stores pairs of key and value. A tuple is a list that cannot change after you make it.
+
+### Lists: index, slice, append and sort
+
+```python
+amounts = [250, 1200, 80000, 45, 9100]
+print(amounts[0])      # 250, the first item
+print(amounts[-1])     # 9100, the last item
+print(amounts[1:3])    # [1200, 80000], stop index not included
+amounts.append(500)    # adds to the end
+```
+
+Use `sorted(amounts)` to get a new sorted list. Use `amounts.sort()` to sort in place. `sort()` returns `None`, so never write `amounts = amounts.sort()`.
+
+Slicing works the same way on text. `"UPI-2024"[:3]` gives `"UPI"`.
+
+### Dicts: keys, values and get
+
+A dict maps a key to a value. Use `get` to read a key that may be missing. `get` returns a default instead of raising an error:
+
+```python
+app_counts = {"GPay": 3, "Paytm": 1}
+print(app_counts["GPay"])          # 3
+print(app_counts.get("BHIM", 0))   # 0, because BHIM is missing
+```
+
+`d[key]` raises a KeyError when the key is missing. `d.get(key, 0)` does not. That difference is why `get` is the standard way to count.
+
+Loop over both key and value with `.items()`:
+
+```python
+for app, count in app_counts.items():
+    print(app, count)
+```
+
+### The counting idiom
+
+To count items, start each key at 0 the first time you see it, then add 1:
+
+```python
+counts = {}
+for code in ["U01", "U05", "U01"]:
+    counts[code] = counts.get(code, 0) + 1
+```
+
+The `collections.Counter` class does the same job in one line. You will see it in many scripts. Learn the dict version first, because it shows exactly what happens.
+
+### Sets and unique values
+
+`set()` removes repeats. It also tests membership faster than a list when the data is large:
+
+```python
+cities = ["Pune", "Chennai", "Pune", "Jaipur"]
+unique_cities = sorted(set(cities))   # ['Chennai', 'Jaipur', 'Pune']
+```
+
+A set has no position, so `s[0]` raises a TypeError. Sort it into a list when you need order.
+
+### Comprehensions
+
+A comprehension builds a new list, dict or set in one line. The pattern is:
+
+<FormulaCard title="List comprehension">
+`[expression for item in items if condition]`. Read it as: for each item, keep it if the condition is True, then output the expression.
+</FormulaCard>
+
+```python
+big = [a for a in amounts if a > 1000]
+with_gst = [round(a * 1.18, 2) for a in big]
+counts = {app: apps.count(app) for app in set(apps)}
+```
+
+Keep comprehensions short. One `for` and one `if` is easy to read. Two levels of nesting is the limit. Past that, use a normal loop.
+
+### Records: a list of dicts
+
+Most API responses and exported files look like a list of dicts. Each dict is one row, and each key is one column:
+
+```python
+records = [
+    {"txn_id": 101, "payment_app": "GPay", "amount": 1200.0, "status": "Success"},
+    {"txn_id": 102, "payment_app": "PhonePe", "amount": 450.5, "status": "Failed"},
+]
+```
+
+`pd.DataFrame(records)` turns this into a table. So the skills in this lesson carry straight into pandas.
+
+### Copies and references
+
+A list name holds a reference to the list. Two names can point to the same list:
+
+```python
+a = [1, 2]
+b = a              # b points to the same list
+b.append(3)
+print(a)           # [1, 2, 3]
+c = a.copy()       # c is a new list
+```
+
+Use `.copy()` when you want a separate list.
+
+## Worked examples
+
+### Example 1: count failed transaction codes and find the top one
+
+Each failed payment has a code. Count how often each code appears, then find the most common one.
+
+```python
+codes = ["U01", "U05", "U01", "B12", "U01", "B12"]
+counts = {}
+for code in codes:
+    counts[code] = counts.get(code, 0) + 1
+print(counts)
+
+top_code = max(counts, key=counts.get)
+print("top code:", top_code, "count:", counts[top_code])
+```
+
+**Output:**
+
+```
+{'U01': 3, 'U05': 1, 'B12': 2}
+top code: U01 count: 3
+```
+
+`max(counts, key=counts.get)` looks at each key and picks the one with the largest value.
+
+### Example 2: a comprehension with a filter and a calculation
+
+Keep the amounts above ₹1,000 and add 18 percent GST to each one.
+
+```python
+amounts = [250, 1200, 80000, 45, 9100]
+with_gst = [round(a * 1.18, 2) for a in amounts if a > 1000]
+print(with_gst)
+```
+
+**Output:**
+
+```
+[1416.0, 94400.0, 10738.0]
+```
+
+The `if` filters first, then the expression runs on each kept item. The filter is at the end, after `for`.
+
+### Example 3: count payment apps with a dict comprehension
+
+Count how often each payment app appears. Sorting the unique apps keeps the output in a fixed order.
+
+```python
+apps = ["GPay", "PhonePe", "GPay", "Paytm", "PhonePe", "GPay"]
+app_counts = {app: apps.count(app) for app in sorted(set(apps))}
+print(app_counts)
+```
+
+**Output:**
+
+```
+{'GPay': 3, 'Paytm': 1, 'PhonePe': 2}
+```
+
+`set(apps)` gives the unique names. `apps.count(app)` counts each one. This is simple, but it scans the list once for each app, so the dict-with-get loop from Example 1 is faster on a large list.
+
+### Example 4: unique cities and a records table
+
+Find the unique cities, then turn three transaction records into a table with pandas.
+
+```python
+import pandas as pd
+
+cities = ["Pune", "Chennai", "Pune", "Jaipur", "Chennai", "Pune"]
+print(sorted(set(cities)))
+
+records = [
+    {"txn_id": 101, "payment_app": "GPay", "amount": 1200.0, "status": "Success"},
+    {"txn_id": 102, "payment_app": "PhonePe", "amount": 450.5, "status": "Failed"},
+    {"txn_id": 103, "payment_app": "GPay", "amount": 9800.0, "status": "Success"},
+]
+df = pd.DataFrame(records)
+print(df)
+```
+
+**Output:**
+
+```
+['Chennai', 'Jaipur', 'Pune']
+   txn_id payment_app  amount   status
+0     101        GPay  1200.0  Success
+1     102     PhonePe   450.5   Failed
+2     103        GPay  9800.0  Success
+```
+
+Each dict becomes one row, and each key becomes one column. This is the same shape you will use all through the pandas lessons.
+
+## Common mistakes
+
+<CommonMistake>
+Writing `x = x.sort()`. `sort()` changes the list in place and returns `None`, so `x` becomes `None`. Call `x.sort()` on its own, or use `x = sorted(x)`.
+</CommonMistake>
+
+<CommonMistake>
+Reading a missing key with `d[key]`. The first unseen code raises a KeyError and the script stops. Use `d.get(key, 0)` when a key may be new.
+</CommonMistake>
+
+<CommonMistake>
+Copying a list with `b = a`. Both names point to one list, so a change to `b` also changes `a`. Use `b = a.copy()` for a separate list.
+</CommonMistake>
+
+<CommonMistake>
+Changing a dict while you loop over it. Adding or removing keys inside `for key in d:` raises a RuntimeError. Loop over `list(d)` or build a new dict.
+</CommonMistake>
+
+<CommonMistake>
+Indexing a set, such as `unique_cities[0]`. A set has no order, so it raises a TypeError. Use `sorted(unique_cities)[0]` if you need the first item in order.
+</CommonMistake>
+
+<CommonMistake>
+Writing a nested comprehension that nobody can read. A line with two `for` loops and two `if` checks is hard to debug. Switch to a normal loop when the comprehension goes past one line.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="comprehensions" module="python" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What is the value of `[x * 2 for x in range(3)]`?", options: ["[0, 2, 4]", "[2, 4, 6]", "[0, 1, 2]", "[0, 2, 4, 6]"], answer: 0, explanation: "range(3) gives 0, 1 and 2. Doubling each gives 0, 2 and 4. The stop value 3 is not included." },
+  { q: "What is `len(set([1, 1, 2]))`?", options: ["3", "2", "1", "An error"], answer: 1, explanation: "A set keeps one copy of each value, so {1, 2} has 2 items." },
+  { q: "A dict `d` has no key \"z\". What does `d.get(\"z\", 0)` return?", options: ["None", "0", "A KeyError", "An empty string"], answer: 1, explanation: "get returns the default value when the key is missing. Here the default is 0, so no error is raised." },
+  { q: "After `a = [1, 2]`, `b = a`, `b.append(3)`, what is `a`?", options: ["[1, 2]", "[1, 2, 3]", "[3]", "An error"], answer: 1, explanation: "a and b point to the same list. Appending to b also changes a, so a is [1, 2, 3]." },
+  { q: "What is `[10, 20, 30, 40][-2:]`?", options: ["[20, 30, 40]", "[30, 40]", "[40]", "[10, 20]"], answer: 1, explanation: "A slice starting at -2 begins with the second-last item. That gives 30 and 40, the last two items." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers test whether you pick the right container and understand references. They also ask about lookup speed. A dict or set checks membership in about constant time, while a list check scans the items one by one.
+</InterviewAlert>
+
+<InterviewQ q="What is the difference between a list, a tuple, a set and a dict? When do you use each?">
+A list is an ordered, changeable sequence, used for rows of values. A tuple is an ordered sequence that cannot change, used for fixed pairs such as a latitude and longitude. A set holds unique items with no order, used to remove duplicates or test membership. A dict maps keys to values, used for lookups and counts.
+</InterviewQ>
+
+<InterviewQ q="Explain a list comprehension. When would you not use one?">
+A list comprehension builds a new list in one line, such as `[a for a in amounts if a > 1000]`. It reads as a loop with a filter. Do not use one when the logic has several steps, when it needs nested loops, or when a plain loop with comments would be clearer.
+</InterviewQ>
+
+<InterviewQ q="How would you count how often each value appears, without using Counter?">
+Create an empty dict. For each value, set its count to `d.get(value, 0) + 1`. The `get` call gives 0 for a new key, so the first sighting works. At the end, the dict holds the count for each value.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between a shallow and a deep copy?">
+A shallow copy, such as `a.copy()` or `list(a)`, makes a new outer list, but the items inside are still shared. A deep copy, made with `copy.deepcopy`, copies the nested items too. For a flat list of numbers, a shallow copy is enough.
+</InterviewQ>
+
+<InterviewQ q="What is the time complexity of `in` for a list compared with a set?">
+For a list, `in` checks items one by one, so the time grows with the list length, which is O(n). For a set or dict, `in` uses a hash lookup, which takes about constant time on average, which is O(1). That is why a set is better for a large membership check.
+</InterviewQ>
+
+## Key takeaways
+
+- Pick the container by the job: list for order, dict for lookups, set for unique values, tuple for fixed values.
+- Use `d.get(key, 0)` to count without a KeyError.
+- A comprehension is a loop, a filter and a calculation in one line. Keep it short.
+- `sort()` returns `None`. Use `sorted()` when you need a new list.
+- A list of dicts is the same shape as table rows, so it leads straight into pandas.
+
+## Further reading
+
+<FurtherReading ids={["python-docs"]} />

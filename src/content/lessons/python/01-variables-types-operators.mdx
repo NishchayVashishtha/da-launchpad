@@ -1,0 +1,327 @@
+---
+title: "Python basics: variables, types and operators"
+description: "Store values, know their types and do arithmetic and comparisons."
+module: python
+order: 1
+estimatedMinutes: 30
+objectives:
+  - "Create variables with clear snake_case names"
+  - "Tell int, float, str, bool and None apart"
+  - "Use arithmetic, comparison and logical operators"
+  - "Format numbers for reports with f-strings and round"
+  - "Convert types safely and clean text before you do maths"
+tags: ["python", "basics", "types"]
+---
+
+## Learning objectives
+
+- Create variables with clear snake_case names.
+- Tell `int`, `float`, `str`, `bool` and `None` apart with `type()`.
+- Use arithmetic (`+`, `-`, `*`, `/`, `//`, `%`, `**`), comparison and logical operators.
+- Format money and percentages for a report with f-strings and `round()`.
+- Convert between types, and explain why `int("1,250")` fails.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Every analysis script starts with values. A UPI fee, a GST amount, a refund total or a "is this a high value transaction?" flag is a Python value with a type. Most bugs in analyst code come from one of three things: text that looks like a number, integer division that drops the paise, or a comparison that is written the wrong way round. This lesson covers those three traps before you touch any data.
+</RealWorld>
+
+## Concept
+
+### A variable is a labelled tiffin box
+
+Think of a variable as a labelled steel tiffin box. The label is the name, such as `amount`. The box holds one value, such as `2499.5`. You can swap what is inside the box, but the label stays the same.
+
+```python
+amount = 2499.5
+fee_pct = 0.9
+merchant = "Chai Stall"
+is_refund = False
+```
+
+Use `=` to put a value into a variable. Read it as "gets". Use snake_case names: lower case words joined with underscores. Good names say what the value means, such as `gmv_inr` or `txn_count`. Avoid names like `x1` or `data2`, and never use a Python keyword such as `for` or `class`.
+
+### Every value has a type
+
+The type tells Python what you can do with the value. Use `type()` to check it.
+
+| Type | Example | Meaning |
+|---|---|---|
+| `int` | `42` | whole number, no decimal point |
+| `float` | `2499.5` | number with decimals |
+| `str` | `"Chai Stall"` | text, always in quotes |
+| `bool` | `True` | yes or no |
+| `NoneType` | `None` | no value at all |
+
+```python
+print(type(42), type(42.0), type("42"), type(True), type(None))
+```
+
+Output:
+
+```
+<class 'int'> <class 'float'> <class 'str'> <class 'bool'> <class 'NoneType'>
+```
+
+The string `"42"` is not the number 42. You cannot add `"42" + 8`, because Python does not guess what you mean. This is why data read from a CSV file often needs a conversion step.
+
+### Arithmetic operators
+
+| Operator | Name | Example | Result |
+|---|---|---|---|
+| `+` `-` `*` | add, subtract, multiply | `5 * 3` | `15` |
+| `/` | true division | `10 / 4` | `2.5` |
+| `//` | floor division | `10 // 4` | `2` |
+| `%` | remainder | `10 % 4` | `2` |
+| `**` | power | `2 ** 3` | `8` |
+
+Three rules to remember:
+
+- `/` always gives a float, even when the answer is whole. `10 / 2` is `5.0`.
+- `//` drops the decimal part. It rounds down, so it is wrong for money.
+- `%` gives the remainder. `n % 2 == 0` is a simple way to test for an even number.
+
+### Comparison and logical operators
+
+Comparisons give a `bool`:
+
+```python
+amount = 56000.0
+print(amount > 50000)     # True
+print(amount == 56000)    # True
+print(amount != 0)        # True
+```
+
+Combine conditions with `and`, `or` and `not`. Use `in` to check membership, such as `"UPI" in ["UPI", "NEFT"]`.
+
+<Tip>
+A comparison uses `==` (two equals signs). A single `=` stores a value. Writing `if status = "Failed":` is a SyntaxError, so Python stops and tells you.
+</Tip>
+
+### Strings and f-strings
+
+Text has useful methods:
+
+- `len(s)` counts characters.
+- `s.upper()` and `s.lower()` change the case.
+- `s.strip()` removes spaces at both ends.
+- `s.replace("old", "new")` swaps text.
+- `s.split("-")` cuts text into a list at each dash.
+- `s[0:3]` takes characters 0, 1 and 2. The end index is not included.
+
+An **f-string** puts values inside text. Put the letter `f` before the quote and wrap the variable in braces:
+
+```python
+amount = 1234567.891
+print(f"Amount: ₹{amount:,.2f}")
+```
+
+Output:
+
+```
+Amount: ₹1,234,567.89
+```
+
+The part after the colon is the format. `,` adds commas, and `.2f` shows two decimals. This is how reports show money.
+
+### Float noise and rounding
+
+Computers store floats in binary, so some decimals are not exact:
+
+```python
+print(0.1 + 0.2)              # 0.30000000000000004
+print(0.1 + 0.2 == 0.3)       # False
+print(round(0.1 + 0.2, 2) == 0.3)  # True
+```
+
+Never compare floats with `==` after arithmetic. Round first, or compare with a small tolerance. For real money systems, teams often store paise as whole numbers, or use the `Decimal` type. You only need to know this idea for now.
+
+<FormulaCard title="Percentage change">
+In Python: `(new - old) / old * 100`. Example: old = 1000, new = 1200 gives `(1200 - 1000) / 1000 * 100`, which is `20.0`.
+</FormulaCard>
+
+### Converting types
+
+Use `int()`, `float()` and `str()` to convert. Conversion works only when the text looks like the number:
+
+```python
+print(int("250"))        # 250
+print(float("80.5"))     # 80.5
+print(str(1200))         # "1200"
+```
+
+Real data often has commas and symbols. `int("1,250")` fails. Clean the text first, then convert. You will do this many times in the lessons on messy data.
+
+## Worked examples
+
+### Example 1: UPI fee and net amount
+
+A customer pays ₹2,499.50 by UPI. The app charges a 0.9 percent fee. Find the fee and the amount the merchant gets.
+
+```python
+amount = 2499.5      # UPI payment in rupees
+fee_pct = 0.9        # 0.9 percent fee
+fee = amount * fee_pct / 100
+net = amount - fee
+print(f"Fee: ₹{fee:.2f}")
+print(f"Net: ₹{net:,.2f}")
+```
+
+**Output:**
+
+```
+Fee: ₹22.50
+Net: ₹2,477.00
+```
+
+The raw fee is about 22.4955. The f-string shows it as 22.50. The net amount uses the comma format so it reads well in a report.
+
+### Example 2: a text amount breaks the maths
+
+A CSV export stores the amount as text, with the rupee sign and a comma. Try to convert it straight away:
+
+```python
+amount_text = "₹1,250"
+float(amount_text)
+```
+
+**Output:**
+
+```
+ValueError: could not convert string to float: '₹1,250'
+```
+
+Remove the symbol and the comma first, then convert:
+
+```python
+clean = float(amount_text.replace("₹", "").replace(",", ""))
+print(clean, type(clean))
+```
+
+**Output:**
+
+```
+1250.0 <class 'float'>
+```
+
+Now the value is a number, and you can add, compare and round it.
+
+### Example 3: a flag with `and`
+
+A transaction is high value only when the amount is above ₹50,000 and the customer has full KYC. Test three transactions:
+
+```python
+amount, kyc = 72000.0, "FULL"
+print(amount > 50000 and kyc == "FULL")
+amount, kyc = 56000.0, "MIN"
+print(amount > 50000 and kyc == "FULL")
+amount, kyc = 900.0, "FULL"
+print(amount > 50000 and kyc == "FULL")
+```
+
+**Output:**
+
+```
+True
+False
+False
+```
+
+`and` needs both sides to be `True`. The second transaction is large, but its KYC is minimum, so it is not flagged.
+
+### Example 4: `/`, `//` and `%` on the same numbers
+
+A team has 7 transactions to check, and each batch holds 2 of them:
+
+```python
+txns = 7
+batch_size = 2
+print(txns / batch_size)   # 3.5
+print(txns // batch_size)  # 3
+print(txns % batch_size)   # 1
+```
+
+**Output:**
+
+```
+3.5
+3
+1
+```
+
+The true division gives 3.5 batches. The floor division says there are 3 full batches. The remainder 1 says one transaction is left over.
+
+## Common mistakes
+
+<CommonMistake>
+Using `=` when you mean `==`. `if amount = 5000:` is a SyntaxError. Use `==` in a condition, and `=` only to store a value.
+</CommonMistake>
+
+<CommonMistake>
+Adding a number and a string. `"5" + 5` raises a TypeError. Convert with `int("5") + 5`, which gives `10`.
+</CommonMistake>
+
+<CommonMistake>
+Expecting `/` to give a whole number. `10 / 4` gives `2.5`, not `2`. Use `//` only when you want to drop the decimal part on purpose, and never for money.
+</CommonMistake>
+
+<CommonMistake>
+Comparing floats with `==` after maths. `0.1 + 0.2 == 0.3` is False. Round the result first, then compare.
+</CommonMistake>
+
+<CommonMistake>
+Naming a variable `list`, `sum` or `str`. The name then hides the built-in function, and a later call such as `sum(values)` fails with "object is not callable". Use names such as `txn_list` or `total_amount`.
+</CommonMistake>
+
+<CommonMistake>
+Changing one character in a string with `s[0] = "x"`. Strings cannot change in place, so Python raises a TypeError. Build a new string instead, such as `"X" + s[1:]`.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="basics" module="python" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What is the result of `10 / 4` in Python 3?", options: ["2", "2.0", "2.5", "3"], answer: 2, explanation: "The `/` operator is true division. It always returns a float, so 10 / 4 is 2.5. Use // if you want 2." },
+  { q: "What does `type(\"42\")` return?", options: ["int", "float", "str", "bool"], answer: 2, explanation: "The quotes make it text, so the type is str. It is not the number 42, and you cannot add it to a number without converting it." },
+  { q: "What is the result of `7 % 3`?", options: ["2", "1", "0", "2.33"], answer: 1, explanation: "The % operator gives the remainder after division. 7 divided by 3 is 2 with 1 left over." },
+  { q: "What does `not (5 > 3 and 2 > 4)` evaluate to?", options: ["False", "True", "An error", "None"], answer: 1, explanation: "5 > 3 is True and 2 > 4 is False, so the and gives False. not False gives True." },
+  { q: "What does `f\"{1234567.891:,.1f}\"` print?", options: ["1234567.9", "1,234,567.89", "1,234,567.9", "1,234,568"], answer: 2, explanation: "The comma adds thousands separators and .1f keeps one decimal. The result is 1,234,567.9." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers ask basic type questions to see if you know why a number can look right and still be wrong. Show that you check types, handle decimals with care, and clean text before maths.
+</InterviewAlert>
+
+<InterviewQ q="What is the difference between mutable and immutable types? Give one example of each.">
+Immutable types cannot change after they are created. Examples are `int`, `float`, `str` and `tuple`. Mutable types can change in place. Examples are `list`, `dict` and `set`. So `s = "pay"` followed by `s[0] = "x"` fails, but `lst.append(5)` works on a list.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between `is` and `==`?">
+`==` checks whether two values are equal. `is` checks whether two names point to the same object in memory. For numbers and text, use `==`. Use `is` mainly to check for `None`, as in `if x is None`.
+</InterviewQ>
+
+<InterviewQ q="What do `/` and `//` return, and where would you use `%`?">
+`/` returns a float, so `7 / 2` is `3.5`. `//` returns the floor, so `7 // 2` is `3`. `%` returns the remainder, so `7 % 2` is `1`. I use `%` to test for even numbers and to find leftover items after splitting a batch.
+</InterviewQ>
+
+<InterviewQ q="Why does `0.1 + 0.2 != 0.3` in Python, and what would you do for money?">
+Floats are stored in binary, so some decimals cannot be exact. The sum is slightly more than 0.3. For money, round to 2 decimals before you compare or report. In a real payment system, store paise as whole integers or use the `Decimal` type.
+</InterviewQ>
+
+## Key takeaways
+
+- A variable is a label on a value, and every value has a type.
+- `/` always gives a float. `//` drops the decimal part and `%` gives the remainder.
+- Use `==` to compare and `=` to store.
+- f-strings such as `f"₹{x:,.2f}"` format numbers for reports.
+- Clean text such as `₹1,250` before you convert it to a number.
+
+## Further reading
+
+<FurtherReading ids={["python-docs", "kaggle-learn"]} />

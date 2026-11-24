@@ -1,0 +1,284 @@
+---
+title: "Text and dates in pandas"
+description: "Clean names, cities, rupee text and mixed date formats."
+module: python
+order: 12
+estimatedMinutes: 45
+objectives: ["Use .str methods to strip, change case, replace, extract and split text", "Convert rupee text such as 1,250 to a number", "Parse dates in two layouts, including DD-MM-YYYY", "Use the .dt accessor to get date parts", "Count by month and measure date gaps"]
+tags: ["python", "pandas", "strings", "datetime"]
+---
+
+## Learning objectives
+
+- Use `.str` methods to strip spaces, change case, replace text, extract digits and split values.
+- Convert rupee text such as `₹2,849.33` into a number.
+- Parse dates in two layouts, including DD-MM-YYYY, with `pd.to_datetime`.
+- Use the `.dt` accessor to get the year, month, weekday or hour.
+- Count rows by month and measure the number of days between two dates.
+
+## Why this matters for a Data Analyst job
+
+Real data arrives messy. A city appears as `Delhi`, `delhi` and `' DELHI '`. An amount is typed as `₹2,849.33`. A date is written as `2023-01-09` in one row and `09-01-2023` in the next. Until you clean these, every group and every total is wrong. Most of an analyst's first week goes into this kind of clean-up, so doing it well saves hours.
+
+<RealWorld>
+A retail analyst is asked for last quarter's sales by city. The export has 109 spellings of 20 cities, and half the amounts are text. After one cleaning step, the city count drops to 20 and the totals add up to the real figure. Without the cleaning, the report looks finished but every city is short.
+</RealWorld>
+
+## Concept
+
+### Analogy: text is a handwritten form
+
+Think of a form filled in by hand. One person writes `Delhi`, another writes `delhi`, a third leaves a space at the start. A clerk who sorts these forms must first make the writing look the same before filing. In pandas, `.str` methods do the clean-up for a whole column at once.
+
+```python
+c["city"] = c["city"].str.strip().str.title()
+```
+
+- `str.strip()` removes spaces at the start and end.
+- `str.title()` capitalises the first letter of each word.
+- `str.lower()` and `str.upper()` do the same job for one case.
+- `str.replace(pattern, new, regex=True)` swaps text that matches a pattern.
+- `str.extract(r"(\d+)")` pulls out the first group of digits.
+- `str.split("@")` breaks text at a symbol.
+
+Missing values need care. A `.str` method on a missing value returns a missing value, so it does not crash. But a `.str` method on a number column fails.
+
+### Rupee text becomes a number
+
+Some amounts in the data look like `₹2,849.33`. Pandas reads that as text, so `mean()` and `sum()` cannot use it. The recipe is always the same:
+
+<FormulaCard title="Rupee text to number">
+Remove the rupee sign, commas and spaces, then convert to float.
+
+`s.str.replace(r"[₹,\s]", "", regex=True).astype(float)`
+</FormulaCard>
+
+The square brackets form a set of characters to remove. Inside brackets, a dot or a plus is literal, but a backslash-s is a space. Forgetting the regex wrapper is a common error. Writing the pattern without `r` in front makes Python read the backslash as an escape character.
+
+<Tip>
+Always check the type before you do maths. `df["amount"].dtype` shows `object` or `str` for text, and `float64` for numbers. If you see text where you expect a number, clean the column first.
+</Tip>
+
+### Dates in two layouts
+
+A date like `2023-01-09` is ISO format: year, month, day. A date like `09-01-2023` is DD-MM-YYYY: day, month, year. The second layout is common in India. If you parse it with the wrong format, the day and month swap. `09-01-2023` becomes 1 September 2023.
+
+Pandas cannot know which layout a row uses, so you tell it. The safe method has three steps:
+
+1. Parse the column with the ISO format and `errors="coerce"`. Rows in the other layout become `NaT` (not a time).
+2. Parse the column again with the DD-MM-YYYY format and `errors="coerce"`.
+3. Combine the two results with `combine_first`. This fills each gap from the second parse.
+
+```python
+iso = pd.to_datetime(s, format="%Y-%m-%d", errors="coerce")
+dmy = pd.to_datetime(s, format="%d-%m-%Y", errors="coerce")
+dates = iso.combine_first(dmy)
+```
+
+The `errors="coerce"` argument turns bad values into `NaT` instead of raising an error. That is useful, but it can hide problems. Always count the `NaT` values after parsing.
+
+### The .dt accessor
+
+Once a column is a real date, `.dt` gives its parts:
+
+- `.dt.year`, `.dt.month`, `.dt.day`
+- `.dt.day_name()` gives `Monday`, `Tuesday` and so on.
+- `.dt.hour` gives the hour from 0 to 23.
+- `.dt.to_period("M")` gives the month, such as `2023-01`.
+- `.dt.strftime("%Y-%m")` gives the same month as text, which is easy to read in a table.
+
+Subtracting two date columns gives a timedelta. Use `.dt.days` to turn it into whole days.
+
+<CommonMistake>
+**Using .dt on a text column.** `.dt` works only on real datetime values. If the column is still text, parse it first. Otherwise pandas raises an error about the accessor.
+</CommonMistake>
+
+## Worked examples
+
+### Example 1: cleaning city names
+
+The `ecommerce` customer table has city names in many spellings. We compare the raw count with the cleaned count.
+
+```python
+c = load("ecommerce", "customers")
+print(c["city"].nunique())
+
+clean = c["city"].str.strip().str.title()
+print(clean.nunique())
+print(clean.value_counts().head(5))
+```
+
+**Output:**
+
+```
+109
+20
+city
+Delhi        588
+Mumbai       585
+Bengaluru    524
+Hyderabad    377
+Chennai      348
+Name: count, dtype: int64
+```
+
+The raw column has 109 different values, but there are only 20 real cities. Spaces and capital letters created the extra values. `Delhi` alone has 588 customers once every spelling is counted together. Missing cities stay missing. They are not turned into a city name.
+
+### Example 2: rupee text to a number
+
+The fintech `transactions` table stores `amount` as text in some rows. About 2,683 of the 22,300 unique transactions carry the rupee sign. We clean the column and then describe it.
+
+```python
+f = load("fintech", "transactions").drop_duplicates(subset="txn_id")
+print(f["amount"].head(3).tolist())
+
+amt = f["amount"].astype(str).str.replace(r"[₹,\s]", "", regex=True).astype(float)
+print(amt.describe().round(2))
+```
+
+**Output:**
+
+```
+['1978.38', '578.75', '942.89']
+count    22300.00
+mean      1384.64
+std       2894.86
+min         22.66
+25%        293.28
+50%        556.87
+75%       1361.83
+max      95484.05
+Name: amount, dtype: float64
+```
+
+The first three values look fine, but other rows read `₹2,849.33`. After cleaning, the whole column is a float, and `describe` works. The largest amount is about 95,484 rupees. That is far above the middle value, so it is worth a look. We keep it here, because a single large payment can be real.
+
+### Example 3: mixed order dates, two-step parse
+
+The `ecommerce` orders use both ISO and DD-MM-YYYY dates. We parse both ways and check that no row is left as `NaT`. Then we count orders by month.
+
+```python
+o = load("ecommerce", "orders").drop_duplicates(subset="order_id")
+iso = pd.to_datetime(o["order_date"], format="%Y-%m-%d", errors="coerce")
+dmy = pd.to_datetime(o["order_date"], format="%d-%m-%Y", errors="coerce")
+d = iso.combine_first(dmy)
+
+print("missing after parse:", d.isna().sum())
+print(d.dt.to_period("M").value_counts().sort_index().head(4))
+```
+
+**Output:**
+
+```
+missing after parse: 0
+order_date
+2023-01    356
+2023-02    309
+2023-03    305
+2023-04    353
+Freq: M, Name: count, dtype: int64
+```
+
+All 10,000 unique orders parsed, so the missing count is 0. Had any row failed both formats, it would show up here. Checking this count is the habit that stops silent errors.
+
+### Example 4: days between order and delivery
+
+Delivery days are the gap between `order_date` and `delivery_date`. Cancelled and returned orders have no delivery date, so they drop out of the average.
+
+```python
+dd = pd.to_datetime(o["delivery_date"], format="%Y-%m-%d", errors="coerce")
+days = (dd - d).dt.days
+print(round(days.mean(), 2), days.notna().sum())
+```
+
+**Output:**
+
+```
+3.03 9225
+```
+
+On average a delivery takes 3.03 days. The average uses 9,225 orders that have both dates. The other 775 orders are cancelled, returned or still missing a delivery date, so they are left out on purpose.
+
+## Common mistakes
+
+<CommonMistake>
+**Regex special characters left unescaped.** A dot in a pattern matches any character. To match a real dot, write `\.`. Test the pattern on two or three values before you run it on the whole column.
+</CommonMistake>
+
+<CommonMistake>
+**A .str method on a number column.** `.str` works only on text. Call `astype(str)` first if the column may hold numbers.
+</CommonMistake>
+
+<CommonMistake>
+**Day and month swapped.** `09-01-2023` is 9 January in India, but a US-style format reads it as 1 September. Always give an explicit format such as `%d-%m-%Y`.
+</CommonMistake>
+
+<CommonMistake>
+**Hiding bad values with coerce.** `errors="coerce"` is safe only if you count the `NaT` values afterwards. A silent gap in a date column shrinks every monthly total.
+</CommonMistake>
+
+<CommonMistake>
+**Comparing date strings.** Text dates sort in the wrong order unless they are ISO. Convert to real datetimes before you filter by a date range.
+</CommonMistake>
+
+<CommonMistake>
+**Using .dt on text.** Parse the column first. Then `.dt` gives the parts you need.
+</CommonMistake>
+
+<PracticeSet topic="text-dates" module="python" />
+
+## Practice questions
+
+Try these before you open the answers. Each one uses a real dataset on the site.
+
+- Count the distinct cities after cleaning the spaces and case.
+- Convert a list of rupee text values to numbers.
+- Parse a date column in two layouts and count rows by weekday.
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What does errors='coerce' do in pd.to_datetime?", options: ["It raises an error", "It turns a value that cannot be parsed into NaT", "It converts dates to text", "It sorts the column"], answer: 1, explanation: "coerce turns a value that does not match the format into NaT, so you can count the failures." },
+  { q: "Which .dt method gives the month name such as January?", options: [".dt.month", ".dt.month_name()", ".dt.to_period()", ".dt.strftime('%m')"], answer: 1, explanation: ".dt.month_name() returns the full month name as text." },
+  { q: "Which regex removes the rupee sign and commas?", options: ["r'[₹,\\s]'", "'₹,'", "r'\\d+'", "r'[a-z]'"], answer: 0, explanation: "The character class [₹,\\s] matches the rupee sign, commas and spaces, so replacing them with an empty string leaves digits and a dot." },
+  { q: "How do you get the number of days between two date columns?", options: ["d2 + d1", "(d2 - d1).dt.days", "d2 / d1", "d2 == d1"], answer: 1, explanation: "Subtracting dates gives a timedelta. The .dt.days accessor turns it into whole days." },
+  { q: "Why is the ISO format YYYY-MM-DD safe to sort as text?", options: ["It is shorter", "The year comes first, so alphabetical order matches date order", "It has no spaces", "It is always in UTC"], answer: 1, explanation: "With the year first, sorting as text gives the same order as sorting by date." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Cleaning questions come up in almost every analyst interview. Interviewers want to hear your steps, your checks and how you handle bad values.
+</InterviewAlert>
+
+<InterviewQ q="How would you clean a column with mixed date formats?">
+Parse each format separately with `errors="coerce"`, then combine the results with `combine_first`. Count the `NaT` values to confirm nothing was lost. Explain which format was tried first, because that decides how an ambiguous date like 03-04-2024 is read.
+</InterviewQ>
+
+<InterviewQ q="How do you pull digits out of a text column?">
+Use `str.extract` with a capture group, such as `str.extract(r"(\d+)")`. It returns the first match as text. Then convert it with `astype(int)` or `astype(float)`.
+</InterviewQ>
+
+<InterviewQ q="How do you calculate a month-over-month change?">
+Count rows per month with `dt.to_period("M")` or `resample("MS")`. Then use `pct_change()` on the monthly counts. Check that every month exists, because a missing month shifts the comparison.
+</InterviewQ>
+
+<InterviewQ q="Why strip and lower text before a groupby?">
+Without cleaning, `Delhi` and `' delhi '` become two groups. The totals split, and the top-city list is wrong. Stripping and changing case first gives one group per real value.
+</InterviewQ>
+
+<InterviewQ q="How do you handle timezones in date columns?">
+First check whether the timestamps carry a timezone. If the data is in India time, you can state that assumption and skip conversion. If it mixes zones, convert everything to one zone with `tz_localize` and `tz_convert` before you compare or group.
+</InterviewQ>
+
+## Key takeaways
+
+- Clean text first: `strip`, `title` and a regex for symbols.
+- Convert rupee text with `str.replace` and then `astype(float)`.
+- Parse dates with an explicit format for each layout, and use `combine_first`.
+- Use `errors="coerce"`, then count the `NaT` values to check.
+- Use `.dt` for date parts and `(d2 - d1).dt.days` for gaps.
+
+## Further reading
+
+<FurtherReading ids={["pandas-docs", "python-docs"]} />

@@ -1,0 +1,214 @@
+---
+title: "Git and GitHub basics for your portfolio"
+description: "Save versions of your work and publish it for recruiters."
+module: python
+order: 19
+estimatedMinutes: 35
+objectives:
+  - "Explain repository, commit and branch in plain words"
+  - "Run init, add, commit, status and log in a terminal"
+  - "Connect a remote repository and push to GitHub"
+  - "Write a .gitignore file and a project README"
+  - "Use a branch and a pull request for a bigger change"
+tags: ["git", "github", "portfolio"]
+---
+
+## Learning objectives
+
+- Explain a repository, a commit and a branch in plain words.
+- Run `git init`, `git add`, `git commit`, `git status` and `git log`.
+- Connect a remote repository and push your work to GitHub.
+- Write a `.gitignore` file and a project README.
+- Use a branch and a pull request for a bigger change.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Recruiters for analyst roles increasingly ask for a link to your work. A GitHub repository with a clear README, clean commits and no leaked data tells them that you can handle a real project. Git also protects you on the job. When an analysis breaks after a change, the history shows what changed and lets you go back. Knowing the basic commands is now a normal skill, not a bonus.
+</RealWorld>
+
+## Concept
+
+### Git is a save game with notes
+
+Git keeps a history of your project folder. Each save is a **commit**, with a short message that says what changed and when. You can go back to any commit, compare two of them, or see who changed a line. It runs on your own computer, with no internet needed.
+
+### GitHub is the cloud copy and the showcase
+
+GitHub stores a copy of your Git repository online. It shows your files, your README and your notebooks in a clean page. That page is what a recruiter sees. Git is the tool. GitHub is the website that hosts the repository.
+
+### The core flow
+
+Every change moves through three stages.
+
+1. **Working folder.** You edit files here.
+2. **Staging area.** `git add` picks the changes you want in the next commit.
+3. **Repository.** `git commit` saves the staged changes as a commit. `git push` sends the commits to GitHub.
+
+### The commands you need
+
+| Command | What it does |
+|---|---|
+| `git init` | Starts tracking a folder as a repository |
+| `git clone <url>` | Copies a repository from GitHub to your computer |
+| `git status` | Shows which files changed and which are staged |
+| `git add <file>` | Stages a file for the next commit |
+| `git commit -m "message"` | Saves the staged changes with a message |
+| `git log --oneline` | Lists past commits, one per line |
+| `git diff` | Shows the exact lines that changed |
+| `git switch -c <name>` | Creates a new branch and moves to it |
+| `git merge <name>` | Brings the work of a branch into the current one |
+| `git push` and `git pull` | Send your commits to GitHub, and fetch new ones |
+
+### Good commit messages
+
+Write one commit for one change. Use a short message in the present tense, such as `Add failure rate chart for banks` or `Remove duplicate txn_id rows`. The message `update` tells nobody anything, and it makes the history useless.
+
+### The .gitignore file
+
+A file named `.gitignore` lists the files and folders Git should skip. Put these in it for an analytics project: raw data, secrets, notebook checkpoints, Python cache folders and the virtual environment. Ignoring them keeps the repository small and safe.
+
+### Branches and pull requests
+
+A **branch** is a separate line of work. Use `main` for the stable version. For a bigger change, such as a new cleaning step, create a branch, make your commits there, and then merge it back. On GitHub, a **pull request** asks for a review before the merge. This is how most teams work.
+
+### The README
+
+The README is the front page of your project. It should answer: what problem, what data, what method, what you found and how to run it. A recruiter reads the top of it for less than a minute, so put the problem and the findings first.
+
+## Worked examples
+
+### Example 1: a first session in the terminal
+
+This sample session starts a new project, saves the first version and pushes it. Your hashes and dates will differ.
+
+```bash
+mkdir upi-failure-analysis
+cd upi-failure-analysis
+git init
+git status
+git add README.md .gitignore
+git commit -m "Add README and gitignore"
+git log --oneline
+git remote add origin https://github.com/your-username/upi-failure-analysis.git
+git push -u origin main
+```
+
+- `git status` lists the new files as untracked, meaning Git sees them but has not saved them yet.
+- `git add` stages the two files you want.
+- `git log --oneline` prints one line per commit, with a short id and the message.
+- `git push -u origin main` sends the commits to GitHub the first time. Later pushes only need `git push`.
+
+### Example 2: a .gitignore for an analytics project
+
+```text
+# Data (never commit raw or private files)
+data/raw/
+*.csv
+
+# Secrets
+.env
+
+# Python and Jupyter
+__pycache__/
+.ipynb_checkpoints/
+.venv/
+```
+
+The first rule keeps the raw data out. The `.env` rule keeps passwords and keys out. The last three lines skip files that the computer rebuilds on each machine. Keep small, clean summary files in the repository, so a reader can still see your results.
+
+### Example 3: a branch, a change and a merge
+
+Use a branch when a change is risky or big.
+
+```bash
+git switch -c add-bank-chart
+# edit the notebook, then:
+git add notebooks/eda.ipynb
+git commit -m "Add bank failure rate bar chart"
+git switch main
+git merge add-bank-chart
+```
+
+`git switch -c` creates the branch and moves into it. Your commit lives only on that branch, so `main` stays safe. `git merge` brings the change into `main` once you are happy with it.
+
+### Example 4: a README skeleton for an EDA project
+
+```text
+# UPI payment failure analysis
+
+One-line summary: which banks and apps fail most, and when.
+
+## Problem and questions
+## Data (source, row counts, known issues)
+## Method (cleaning steps, analysis steps)
+## Key findings (three to five, each with one number)
+## How to run (Python version, install command, notebook to open)
+## Project folders
+- data/ (not committed)
+- notebooks/
+- src/
+- reports/
+## Next steps
+```
+
+## Common mistakes
+
+- **Committing large raw data or secrets.** Once a file is in the history, deleting it later does not remove it from past commits. Add the file to `.gitignore` before the first commit.
+- **Writing "update" as the commit message.** A message like that tells nobody what changed. Write what the change does.
+- **Working on `main` for big changes.** One broken change then blocks everyone. Use a branch for anything bigger than a small fix.
+- **Forgetting `git add` before `git commit`.** Commit then says nothing is staged. Run `git status` to see what is staged.
+- **Panicking at a merge conflict.** Git marks the clashing lines with `<<<<<<<` and `>>>>>>>`. Open the file, keep the right version, remove the markers, then add and commit.
+- **A repository with no README.** Without a README, a recruiter cannot tell what the project is. Add one before you share the link.
+
+## Practice questions
+
+<PracticeSet topic="git" module="python" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Which command moves a changed file into the staging area?", options: ["git commit", "git push", "git add", "git log"], answer: 2, explanation: "git add stages a file so that the next commit includes it. Commit saves the staged changes; push sends them to GitHub." },
+  { q: "What is the difference between commit and push?", options: ["They are the same", "Commit saves a snapshot locally; push sends the commits to the remote repository", "Push saves locally; commit uploads to GitHub", "Commit deletes old files"], answer: 1, explanation: "Commit works offline on your computer. Push copies your commits to GitHub so others can see them." },
+  { q: "What does a .gitignore file do?", options: ["It hides files from the operating system", "It lists files and folders that Git should not track", "It sets the Git user name", "It stores passwords securely"], answer: 1, explanation: ".gitignore tells Git to skip matching files, such as raw data, secrets and cache folders." },
+  { q: "What does git status show?", options: ["The full history of every file", "Which files changed and which are staged for the next commit", "The remote server address only", "The size of the repository"], answer: 1, explanation: "git status is the first check before a commit. It lists modified, untracked and staged files." },
+  { q: "What is the difference between cloning and forking a repository?", options: ["Cloning copies a repository to your computer; forking makes your own copy on GitHub", "They are the same", "Forking deletes the original", "Cloning only works for private repositories"], answer: 0, explanation: "git clone downloads a repository to your machine. A fork is a copy on GitHub under your account, which you can then clone and change." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers ask basic Git questions to check that you can work in a team. They want to hear the flow of add, commit and push, the idea of a branch, and how you keep secrets out of a repository. A clear answer with one example beats a long list of commands.
+</InterviewAlert>
+
+<InterviewQ q="What is the difference between Git and GitHub?">
+Git is the version control tool that runs on my computer and records the history of my project. GitHub is a website that hosts Git repositories online, so others can see, clone and review them. I can use Git without GitHub, but I use GitHub to share my portfolio with recruiters and to back up my work.
+</InterviewQ>
+
+<InterviewQ q="What is a branch?">
+A branch is a separate line of commits. I use `main` for the stable version and create a branch for a new analysis or a risky change. When the work is tested, I merge it back. This keeps the main line working while I experiment.
+</InterviewQ>
+
+<InterviewQ q="How do you undo the last commit on your own computer?">
+If I want to keep the changes, I run `git reset --soft HEAD~1`, which removes the commit but keeps the files staged. If I want to throw the changes away, I use `git reset --hard HEAD~1`, which is destructive, so I only use it when I am sure. I never do this for commits that are already pushed to a shared branch.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between merge and rebase?">
+Merge joins two branches and keeps the history of both, with a merge commit. Rebase replays my commits on top of another branch, which makes a straight-line history. I merge when the branch is shared, and I rebase my own local work before I open a pull request.
+</InterviewQ>
+
+<InterviewQ q="What goes in a good README for a data project?">
+I start with the problem and the main findings, then the data source and its known issues, the method, how to run the project and the folder structure. A reviewer should understand the project in one minute and be able to run it in ten.
+</InterviewQ>
+
+## Key takeaways
+
+- Git saves snapshots of your project. The flow is add to stage, commit to save, and push to send to GitHub.
+- Write one commit per change, with a clear message in the present tense.
+- Use `.gitignore` to keep raw data, secrets and cache folders out of the repository before the first commit.
+- Use a branch for bigger changes, and a pull request to review them before they reach `main`.
+- The README is your front page. Lead with the problem and the findings, then explain how to run the project.
+
+## Further reading
+
+<FurtherReading ids={["git-docs", "github-docs"]} />

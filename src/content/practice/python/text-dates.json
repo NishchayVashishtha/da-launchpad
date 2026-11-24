@@ -1,0 +1,329 @@
+[
+  {
+    "id": "python-text-dates-001",
+    "module": "python",
+    "topic": "text-dates",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "A city manager wants the number of distinct cities in the customer list. City names have stray spaces and mixed casing, so clean them first. Count the distinct non-empty cities after `strip()` and `title()`. Assign the integer count to `result`.",
+    "dataset": "ecommerce",
+    "hint": "Use `.str.strip().str.title()`, then `nunique()`. `nunique` ignores missing values by default.",
+    "solutionCode": "c = load(\"ecommerce\", \"customers\")\ncity = c[\"city\"].str.strip().str.title()\nresult = int(city.nunique())",
+    "expectedOutput": {
+      "value": 20
+    },
+    "orderMatters": false,
+    "explanation": "Raw text such as `' Delhi '`, `'delhi'` and `'DELHI'` counts as three different values. `strip()` removes spaces at both ends, and `title()` makes the first letter of each word a capital. After that, all spellings of one city match, and `nunique` counts the real cities.",
+    "commonMistake": "Counting the raw column with `nunique()`. You get about 109 cities, because each spelling is counted as a new city.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "str",
+      "nunique",
+      "clean text"
+    ]
+  },
+  {
+    "id": "python-text-dates-002",
+    "module": "python",
+    "topic": "text-dates",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "A billing clerk gets rupee amounts as text. Convert the list `[\"₹1,250\", \"₹75.50\", \"300\"]` into a list of floats in the same order. Remove the rupee sign and commas, then convert. Assign the list to `result`.",
+    "dataset": "none",
+    "hint": "Use `str.replace` with a regex that drops the rupee sign and commas. Then cast to float.",
+    "solutionCode": "raw = [\"₹1,250\", \"₹75.50\", \"300\"]\nresult = pd.Series(raw).str.replace(r\"[₹,\\s]\", \"\", regex=True).astype(float).tolist()",
+    "expectedOutput": {
+      "value": [
+        1250,
+        75.5,
+        300
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "Python's `float()` cannot read a rupee sign or a comma. Removing them with a regex first leaves plain digits, and then `astype(float)` converts the whole Series at once. `tolist()` returns a normal Python list.",
+    "commonMistake": "Calling `float('₹1,250')` directly. Python raises a ValueError because of the rupee sign and the comma.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "regex",
+      "currency",
+      "astype"
+    ]
+  },
+  {
+    "id": "python-text-dates-003",
+    "module": "python",
+    "topic": "text-dates",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "The risk desk wants the average amount of successful payments. Use unique `txn_id` rows. The `amount` column is rupee text in some rows, so clean it first. Compute the mean amount of rows where `status` is `SUCCESS`, rounded to 2 decimals, and assign the number to `result`.",
+    "dataset": "fintech",
+    "hint": "Clean the text, dedupe, filter on `status`, then take the mean.",
+    "solutionCode": "t = load(\"fintech\", \"transactions\").drop_duplicates(subset=\"txn_id\").copy()\nt[\"amt\"] = t[\"amount\"].astype(str).str.replace(r\"[₹,\\s]\", \"\", regex=True).astype(float)\nresult = round(float(t.loc[t[\"status\"] == \"SUCCESS\", \"amt\"].mean()), 2)",
+    "expectedOutput": {
+      "value": 1381.83
+    },
+    "orderMatters": false,
+    "explanation": "The raw amount column is text, so `mean()` on it would fail or give the wrong answer. Removing the rupee sign and commas gives real numbers. Dedupe first so that no transaction counts twice.",
+    "commonMistake": "Averaging the raw text column. Pandas cannot average strings like `'₹2,849.33'`, so the code either errors out or returns a result that is not a rupee amount.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "mean",
+      "currency",
+      "dedupe"
+    ]
+  },
+  {
+    "id": "python-text-dates-004",
+    "module": "python",
+    "topic": "text-dates",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "The operations team wants to know which weekday has the most orders. Use unique `order_id` rows. `order_date` mixes ISO (`2023-01-09`) and DD-MM-YYYY (`01-01-2023`) formats. Count orders per weekday name and return a Series ordered Monday to Sunday. Assign it to `result`.",
+    "dataset": "ecommerce",
+    "hint": "Parse the dates in two passes, then use `dt.day_name()` and `reindex` with the weekday list.",
+    "solutionCode": "def parse2(col, iso_fmt, dmy_fmt):\n    return pd.to_datetime(col, format=iso_fmt, errors=\"coerce\").combine_first(pd.to_datetime(col, format=dmy_fmt, errors=\"coerce\"))\no = load(\"ecommerce\", \"orders\").drop_duplicates(subset=\"order_id\").copy()\nd = parse2(o[\"order_date\"], \"%Y-%m-%d\", \"%d-%m-%Y\")\nresult = d.dt.day_name().value_counts().reindex([\"Monday\", \"Tuesday\", \"Wednesday\", \"Thursday\", \"Friday\", \"Saturday\", \"Sunday\"])",
+    "expectedOutput": {
+      "columns": [
+        "order_date",
+        "count"
+      ],
+      "rows": [
+        [
+          "Monday",
+          1365
+        ],
+        [
+          "Tuesday",
+          1370
+        ],
+        [
+          "Wednesday",
+          1303
+        ],
+        [
+          "Thursday",
+          1377
+        ],
+        [
+          "Friday",
+          1298
+        ],
+        [
+          "Saturday",
+          1661
+        ],
+        [
+          "Sunday",
+          1626
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "Each date format gets its own parse pass, and `combine_first` fills gaps from the second pass. `dt.day_name()` gives the weekday of each date. `value_counts` counts the orders, and `reindex` puts the days in calendar order.",
+    "commonMistake": "Parsing the whole column with one guessed format. Pandas may raise an error, or it may read `03-01-2023` as March 1 instead of 3 January.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "to_datetime",
+      "dt",
+      "weekday"
+    ]
+  },
+  {
+    "id": "python-text-dates-005",
+    "module": "python",
+    "topic": "text-dates",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "The HR team wants the average tenure of employees as of 2025-01-01, in years. Use unique `employee_id` rows. `hire_date` mixes ISO and DD-MM-YYYY formats. Tenure is the number of days from hire date to 2025-01-01, divided by 365.25. Return the mean tenure rounded to 2 decimals as `result`.",
+    "dataset": "hr",
+    "hint": "Parse the two date layouts, subtract from `pd.Timestamp(\"2025-01-01\")`, then take `.dt.days`.",
+    "solutionCode": "def parse2(col, iso_fmt, dmy_fmt):\n    return pd.to_datetime(col, format=iso_fmt, errors=\"coerce\").combine_first(pd.to_datetime(col, format=dmy_fmt, errors=\"coerce\"))\ne = load(\"hr\", \"employees\").drop_duplicates(subset=\"employee_id\").copy()\nhired = parse2(e[\"hire_date\"], \"%Y-%m-%d\", \"%d-%m-%Y\")\ntenure_years = (pd.Timestamp(\"2025-01-01\") - hired).dt.days / 365.25\nresult = round(float(tenure_years.mean()), 2)",
+    "expectedOutput": {
+      "value": 3.76
+    },
+    "orderMatters": false,
+    "explanation": "Subtracting two dates gives a timedelta, and `.dt.days` turns it into whole days. Dividing by 365.25 converts days to years and averages out leap years. The mean skips any missing values.",
+    "commonMistake": "Parsing only the ISO hire dates. The DD-MM-YYYY rows become NaT and drop out, so the average covers a smaller and different group of employees.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "date math",
+      "tenure",
+      "to_datetime"
+    ]
+  },
+  {
+    "id": "python-text-dates-006",
+    "module": "python",
+    "topic": "text-dates",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "A support team has five customer emails in a Series: `asha@mailbox.in`, `ravi@mailbox.in`, `meera@corpnet.co.in`, `kabir@corpnet.co.in` and `zoya@freemail.com`. Count how many emails use each domain. Return a dict from domain to count. Assign it to `result`.",
+    "dataset": "none",
+    "hint": "Split each email on `@` and take the part after it. Then count with `value_counts`.",
+    "solutionCode": "emails = pd.Series([\"asha@mailbox.in\", \"ravi@mailbox.in\", \"meera@corpnet.co.in\", \"kabir@corpnet.co.in\", \"zoya@freemail.com\"])\ndomains = emails.str.split(\"@\").str[1]\nresult = {k: int(v) for k, v in domains.value_counts().items()}",
+    "expectedOutput": {
+      "value": {
+        "mailbox.in": 2,
+        "corpnet.co.in": 2,
+        "freemail.com": 1
+      }
+    },
+    "orderMatters": false,
+    "explanation": "`str.split(\"@\")` breaks each email into a local part and a domain. `str[1]` keeps the domain. `value_counts` counts each domain, and the dict comprehension turns the counts into plain integers.",
+    "commonMistake": "Splitting without taking an index. `str.split` returns a list per row, so the counts are of whole lists, and the result is not a count per domain.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "str.split",
+      "value_counts",
+      "dict"
+    ]
+  },
+  {
+    "id": "python-text-dates-007",
+    "module": "python",
+    "topic": "text-dates",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "The city ops team wants to know the busiest hours of the day for orders. Use unique `delivery_id` rows. `order_time` mixes ISO (`2024-03-05 19:10:00`) and DD-MM-YYYY (`05-03-2024 19:10:00`) timestamps. Count deliveries for each hour from 0 to 23 and return the top 3 hours as a DataFrame with columns `hour` and `orders`, most orders first. Break ties by the smaller hour. Assign it to `result`.",
+    "dataset": "food_delivery",
+    "hint": "Parse the timestamps in two passes, take `dt.hour`, then sort by orders (descending) and hour (ascending).",
+    "solutionCode": "d = load(\"food_delivery\", \"deliveries\").drop_duplicates(subset=\"delivery_id\").copy()\niso = pd.to_datetime(d[\"order_time\"], format=\"%Y-%m-%d %H:%M:%S\", errors=\"coerce\")\ndmy = pd.to_datetime(d[\"order_time\"], format=\"%d-%m-%Y %H:%M:%S\", errors=\"coerce\")\nhours = iso.combine_first(dmy).dt.hour.value_counts().rename_axis(\"hour\").reset_index(name=\"orders\")\nresult = hours.sort_values([\"orders\", \"hour\"], ascending=[False, True]).head(3).reset_index(drop=True)",
+    "expectedOutput": {
+      "columns": [
+        "hour",
+        "orders"
+      ],
+      "rows": [
+        [
+          20,
+          2207
+        ],
+        [
+          21,
+          1926
+        ],
+        [
+          19,
+          1726
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The ISO pass fills rows in the first layout and the DD-MM-YYYY pass fills the rest. `dt.hour` gives the hour of each order, and `value_counts` counts them. Sorting on two columns with a tie-breaker makes the top 3 list fixed.",
+    "commonMistake": "Parsing only the ISO rows, which is about 85 percent of the data. The DD-MM-YYYY rows become NaT and drop out, so every hour's count is too low.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "to_datetime",
+      "dt.hour",
+      "sort"
+    ]
+  },
+  {
+    "id": "python-text-dates-008",
+    "module": "python",
+    "topic": "text-dates",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "The growth team wants to know how long paid users wait between starting a trial and paying. Use unique `subscription_id` rows. Keep only rows with a `paid_start_date`. Both `trial_start_date` and `paid_start_date` may be in ISO or DD-MM-YYYY format. Compute the median number of days from trial start to paid start, rounded to 1 decimal, and assign it to `result`.",
+    "dataset": "subscription",
+    "hint": "Parse both date columns with the two-pass helper, subtract, take `.dt.days`, then use `median()`.",
+    "solutionCode": "def parse2(col, iso_fmt, dmy_fmt):\n    return pd.to_datetime(col, format=iso_fmt, errors=\"coerce\").combine_first(pd.to_datetime(col, format=dmy_fmt, errors=\"coerce\"))\ns = load(\"subscription\", \"subscriptions\").drop_duplicates(subset=\"subscription_id\").copy()\npaid = s[s[\"paid_start_date\"].notna()].copy()\ngap = (parse2(paid[\"paid_start_date\"], \"%Y-%m-%d\", \"%d-%m-%Y\") - parse2(paid[\"trial_start_date\"], \"%Y-%m-%d\", \"%d-%m-%Y\")).dt.days\nresult = round(float(gap.median()), 1)",
+    "expectedOutput": {
+      "value": 7
+    },
+    "orderMatters": false,
+    "explanation": "Both date columns need the two-pass parse, because trial dates use both layouts. Subtracting gives the gap in days for each paid user. The median is less affected by a few very long trials than the mean would be.",
+    "commonMistake": "Parsing only the ISO trial dates. The DD-MM-YYYY trial dates become NaT, so those users drop out of the median and the answer shifts.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "median",
+      "date math",
+      "to_datetime"
+    ]
+  },
+  {
+    "id": "python-text-dates-009",
+    "module": "python",
+    "topic": "text-dates",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "The finance team wants the number of successful transactions per month in 2024. Use unique `txn_id` rows. `txn_datetime` mixes ISO and DD-MM-YYYY timestamps. Return a DataFrame with columns `month` (format `yyyy-mm`) and `txns`, one row per month, sorted by month. Assign it to `result`.",
+    "dataset": "fintech",
+    "hint": "Parse the timestamps in two passes, keep `SUCCESS` rows from 2024, then use `strftime` and `groupby`.",
+    "solutionCode": "t = load(\"fintech\", \"transactions\").drop_duplicates(subset=\"txn_id\").copy()\niso = pd.to_datetime(t[\"txn_datetime\"], format=\"%Y-%m-%d %H:%M:%S\", errors=\"coerce\")\ndmy = pd.to_datetime(t[\"txn_datetime\"], format=\"%d-%m-%Y %H:%M:%S\", errors=\"coerce\")\nt[\"ts\"] = iso.combine_first(dmy)\nok = t[(t[\"status\"] == \"SUCCESS\") & (t[\"ts\"].dt.year == 2024)].copy()\nok[\"month\"] = ok[\"ts\"].dt.strftime(\"%Y-%m\")\nresult = ok.groupby(\"month\").size().reset_index(name=\"txns\")",
+    "expectedOutput": {
+      "columns": [
+        "month",
+        "txns"
+      ],
+      "rows": [
+        [
+          "2024-01",
+          924
+        ],
+        [
+          "2024-02",
+          871
+        ],
+        [
+          "2024-03",
+          966
+        ],
+        [
+          "2024-04",
+          903
+        ],
+        [
+          "2024-05",
+          992
+        ],
+        [
+          "2024-06",
+          952
+        ],
+        [
+          "2024-07",
+          1113
+        ],
+        [
+          "2024-08",
+          1025
+        ],
+        [
+          "2024-09",
+          1064
+        ],
+        [
+          "2024-10",
+          1288
+        ],
+        [
+          "2024-11",
+          1131
+        ],
+        [
+          "2024-12",
+          1094
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Both layouts are parsed before filtering, so no 2024 rows are lost. `strftime(\"%Y-%m\")` makes a month label, and `groupby` counts the rows for each label. The groupby output is already sorted by month.",
+    "commonMistake": "Parsing with one format string. The rows in the other layout become NaT, so the monthly counts come out too low, and some months can disappear.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 6,
+    "tags": [
+      "groupby",
+      "to_datetime",
+      "monthly"
+    ]
+  }
+]

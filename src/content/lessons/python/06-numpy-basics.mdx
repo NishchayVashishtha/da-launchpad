@@ -1,0 +1,303 @@
+---
+title: "NumPy: fast arrays for numbers"
+description: "Do maths on whole columns at once."
+module: python
+order: 6
+estimatedMinutes: 35
+objectives:
+  - "Create NumPy arrays and check their shape and dtype"
+  - "Use vectorised maths and broadcasting on whole arrays"
+  - "Select values with slices and boolean masks"
+  - "Use sum, mean, std, percentile and where"
+  - "Explain why NumPy is faster than plain Python lists and loops"
+tags: ["python", "numpy", "arrays"]
+---
+
+## Learning objectives
+
+- Create arrays with `np.array`, `np.arange` and `np.linspace`.
+- Check the `shape`, `dtype` and `ndim` of an array.
+- Apply one formula to every element at once, without a loop.
+- Select rows with a boolean mask such as `a[a > 5000]`.
+- Use aggregates (`sum`, `mean`, `std`, `percentile`) on the whole array or along one axis.
+- Replace values with `np.where`, and handle missing values with `np.nan`.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Every number column in pandas is a NumPy array under the hood. When you write `df["amount"] * 1.18`, NumPy does the work. A fraud analyst uses boolean masks to pick the risky rows. A finance team uses `np.where` to label each payment as High or Normal. A data scientist uses z-scores to find outliers. Knowing NumPy explains why pandas is fast, and why some errors (such as NaN results) appear.
+</RealWorld>
+
+## Concept
+
+### An array is a spreadsheet column
+
+Think of a NumPy array as one spreadsheet column. Type one formula in the first cell, and the spreadsheet fills it down for every row. NumPy does the same thing. You write the formula once, and it applies to every element.
+
+```python
+import numpy as np
+
+amounts = np.array([250, 1200, 80000, 45, 9100])
+print(amounts.shape, amounts.dtype, amounts.ndim)
+```
+
+The `shape` is `(5,)` for five values. The `dtype` is the type of each element, such as `int64`. The `ndim` is the number of dimensions: 1 for a column, 2 for a table.
+
+### Other ways to make arrays
+
+- `np.arange(0, 10, 3)` gives `0, 3, 6, 9`. The stop value is not included.
+- `np.linspace(0, 1, 5)` gives 5 evenly spaced numbers from 0 to 1.
+- `np.zeros(4)` gives four zeros.
+- `arr.reshape(4, 3)` changes a 12-value array into a 4 by 3 table, as long as the total count stays the same.
+
+### Vectorised maths and broadcasting
+
+Vectorised maths means one operation applies to every element. `amounts * 1.18` multiplies each value by 1.18. This is called broadcasting when a single number is stretched across the whole array.
+
+The same rule works between arrays of the same shape. `prices * quantities` multiplies each pair.
+
+<Tip>
+A plain Python list does not do this. `[1, 2, 3] * 2` repeats the list, and gives `[1, 2, 3, 1, 2, 3]`. An array multiplied by 2 doubles each value. Always be clear which one you have.
+</Tip>
+
+### Boolean masks: filter with a condition
+
+A comparison on an array gives an array of True and False. Put that mask inside square brackets to keep only the True positions.
+
+```python
+mask = amounts > 5000       # [False, False, True, False, True]
+big = amounts[mask]         # [80000, 9100]
+count = mask.sum()          # True counts as 1, so this is 2
+```
+
+To combine two conditions, use `&` for AND and `|` for OR. Put each condition in brackets, because `&` binds more tightly than `==` or `>`.
+
+### Aggregates and axes
+
+| Function | What it returns |
+|---|---|
+| `np.sum(a)` | The total |
+| `np.mean(a)` | The average |
+| `np.median(a)` | The middle value when sorted |
+| `np.std(a)` | The spread (population form, `ddof=0`) |
+| `np.percentile(a, 90)` | The value below which 90% of values fall |
+| `np.cumsum(a)` | A running total |
+| `np.diff(a)` | The change from one value to the next |
+
+For a 2-D table, `axis=0` works down each column, and `axis=1` works across each row.
+
+### np.where: the vector if-else
+
+`np.where(condition, value_if_true, value_if_false)` checks every element and picks one of two values. It is the NumPy form of an IF column in a spreadsheet.
+
+### Missing values: np.nan
+
+A missing number is written as `np.nan` (not a number). One NaN in an array makes `np.mean` return NaN as well. Use `np.nanmean` or `np.nansum` to skip the gaps. `np.isnan(a)` tells you which positions are missing.
+
+### Z-scores for outliers
+
+<FormulaCard title="Z-score">
+A z-score tells you how far a value sits from the average, in units of standard deviation. Write it as `z = (x - mean) / std`. In NumPy this is `(x - x.mean()) / x.std()`. Values with an absolute z above 2 or 3 are often treated as outliers.
+</FormulaCard>
+
+### Why NumPy is fast
+
+A Python loop checks types and handles each element one at a time. NumPy stores the values in one block of memory, of one type, and runs the maths in fast compiled code. For a few numbers the difference is small. For a million rows it can be many times faster.
+
+## Worked examples
+
+### Example 1: add GST, then find the mean and the max
+
+Five amounts in rupees. We add 18% GST to each, then find the average and the largest value.
+
+```python
+import numpy as np
+
+amounts = np.array([250, 1200, 80000, 45, 9100])
+with_gst = np.round(amounts * 1.18, 2)
+print(with_gst.tolist())
+print(amounts.mean())
+print(amounts.max())
+```
+
+**Output:**
+
+```
+[295.0, 1416.0, 94400.0, 53.1, 10738.0]
+18119.0
+80000
+```
+
+One line of code changed all five values. The mean is 18119.0, which is pulled up by the large 80,000 payment. The median would be 1200.0, a much smaller number. For skewed money data, check both.
+
+### Example 2: count the large amounts with a mask
+
+We want the amounts above 5,000 and how many there are.
+
+```python
+amounts = np.array([250, 1200, 80000, 45, 9100])
+large = amounts[amounts > 5000]
+print(large)
+print((amounts > 5000).sum())
+print(large.sum())
+```
+
+**Output:**
+
+```
+[80000  9100]
+2
+89100
+```
+
+The comparison gives a mask of True and False. Selecting with the mask keeps the two True positions. `sum()` on the mask counts the True values.
+
+### Example 3: label rows with np.where and handle a NaN
+
+We label each amount as High or Normal, then look at a list that has one missing value.
+
+```python
+import numpy as np
+
+amounts = np.array([250, 1200, 80000, 45, 9100])
+labels = np.where(amounts > 5000, "High", "Normal")
+print(labels)
+
+with_gap = np.array([250.0, 1200.0, np.nan, 45.0, 9100.0])
+print(np.mean(with_gap))
+print(np.nanmean(with_gap))
+```
+
+**Output:**
+
+```
+['Normal' 'Normal' 'High' 'Normal' 'High']
+nan
+2648.75
+```
+
+`np.mean` returns `nan` because the missing value spoils the total. `np.nanmean` skips it and divides by four values, not five.
+
+### Example 4: a 2-D table of payment volumes
+
+Rows are months, columns are payment apps. The numbers are fictional monthly transaction counts. We find each app's share of the total.
+
+```python
+import numpy as np
+
+volumes = np.array([
+    [120, 80, 40, 60],
+    [150, 90, 50, 70],
+    [180, 100, 60, 80],
+])
+app_totals = volumes.sum(axis=0)
+share = app_totals / app_totals.sum() * 100
+print(app_totals)
+print(np.round(share, 1))
+```
+
+**Output:**
+
+```
+[450 270 150 210]
+[41.7 25.  13.9 19.4]
+```
+
+`axis=0` adds down each column, so each app gets one total. Dividing each total by the grand total of 1,080 gives its share. `volumes.sum(axis=1)` would give monthly totals instead: `[300, 360, 420]`.
+
+### Example 5: a view can change the original
+
+A slice of an array is a view, not a copy, in most cases. Changing the slice changes the original.
+
+```python
+volumes = np.array([[120, 80, 40, 60], [150, 90, 50, 70], [180, 100, 60, 80]])
+first_two = volumes[:, :2]
+first_two[0, 0] = 999
+print(volumes[0, 0])
+```
+
+**Output:**
+
+```
+999
+```
+
+Use `.copy()` when you want an independent array: `first_two = volumes[:, :2].copy()`.
+
+## Common mistakes
+
+<CommonMistake>
+**Multiplying a plain list by a decimal.** `[250, 1200] * 1.18` raises a `TypeError`. Convert the list with `np.array` first.
+</CommonMistake>
+
+<CommonMistake>
+**Using `and` or `or` with arrays.** `(a > 1) and (a < 5)` raises a `ValueError`, because Python cannot decide the truth of a whole array. Use `&` and `|`, with brackets around each condition.
+</CommonMistake>
+
+<CommonMistake>
+**Using np.mean on data with NaN.** The result is `nan`, which hides the real answer. Use `np.nanmean` when gaps are expected, and count the missing values first.
+</CommonMistake>
+
+<CommonMistake>
+**Mixing integer and float types.** An `int64` array can hold only whole numbers, so `np.array([7]) // 2` gives 3, while `/` gives 3.5. Also, `np.array([1, 2, 3.5])` turns every value into a float.
+</CommonMistake>
+
+<CommonMistake>
+**Assuming a slice is a copy.** Changing a slice can change the original array. Call `.copy()` when you need a separate array.
+</CommonMistake>
+
+<CommonMistake>
+**Using the wrong axis.** `sum(axis=0)` gives column totals, but `sum(axis=1)` gives row totals. Check the shape of the result after every 2-D sum.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="numpy" module="python" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What does np.array([1, 2, 3]) * 2 give?", options: ["[1, 2, 3, 1, 2, 3]", "[2, 4, 6]", "[1, 2, 3, 2]", "An error"], answer: 1, explanation: "NumPy multiplies every element by 2. Plain Python lists would repeat the list instead." },
+  { q: "Which expression correctly selects values between 1 and 5 from array a?", options: ["a[1 < a < 5]", "a[(a > 1) and (a < 5)]", "a[(a > 1) & (a < 5)]", "a[a > 1 & a < 5]"], answer: 2, explanation: "Each condition is wrapped in brackets, and & joins them element by element. The and keyword fails on arrays." },
+  { q: "What does np.mean([1, np.nan, 3]) return?", options: ["2.0", "nan", "1.0", "An error"], answer: 1, explanation: "One NaN spoils the mean, so the result is nan. np.nanmean would return 2.0 by skipping the NaN." },
+  { q: "What does np.arange(0, 10, 3) return?", options: ["[0, 3, 6, 9, 10]", "[0, 3, 6, 9]", "[3, 6, 9]", "[0, 5, 10]"], answer: 1, explanation: "arange starts at 0 and steps by 3. It stops before 10, so the last value is 9." },
+  { q: "For a 2-D array, which call adds down each column?", options: ["sum(axis=0)", "sum(axis=1)", "sum()", "sum(axis=2)"], answer: 0, explanation: "axis=0 moves down the rows, so the result has one value for each column." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+NumPy questions in interviews test whether you can think in whole-array operations. Expect questions about broadcasting, views versus copies, NaN handling and the difference between the sample and population standard deviation.
+</InterviewAlert>
+
+<InterviewQ q="Why is NumPy faster than a Python list or a loop?">
+NumPy stores values of one type in one contiguous block of memory. Its functions run compiled code over the whole block, so it avoids the per-element checks that Python does for each item in a list. Using vectorised operations instead of a loop is the usual way to speed up numeric code.
+</InterviewQ>
+
+<InterviewQ q="Explain broadcasting with an example.">
+Broadcasting lets NumPy combine arrays of different shapes by stretching the smaller one. For example, `prices * 1.18` stretches the single number 1.18 across every price. A 2-D table of shape `(3, 4)` can be divided by a row of shape `(4,)`, and NumPy repeats that row for each of the 3 rows.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between a view and a copy?">
+A view shares memory with the original array, so changes to it change the original. A copy has its own memory. Basic slicing usually gives a view, while boolean masks and fancy indexing give copies. Use `.copy()` when you want to be sure the original is safe.
+</InterviewQ>
+
+<InterviewQ q="How would you replace outliers in an array?">
+Use `np.clip(a, lower, upper)` to cap values at a range, or use `np.where` to replace values that fail a test with a fixed value or the median. Decide first whether the outliers are errors or real but rare events. A 100x amount that is a typing error needs fixing, but a real large transfer should be kept and flagged.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between np.std with ddof=0 and ddof=1?">
+`ddof=0` divides the squared differences by n, which is the population standard deviation. `ddof=1` divides by n minus 1, which is the sample standard deviation, and is slightly larger. Use ddof=1 when your data is a sample of a larger group. Use ddof=0 when you have the full population, as in a z-score check on the values you hold.
+</InterviewQ>
+
+## Key takeaways
+
+- An array is like a spreadsheet column: write the formula once, and it applies to every element.
+- A boolean mask filters rows. Join conditions with `&` or `|`, and put brackets around each one.
+- `np.where` is the vector version of IF. It picks one of two values for each element.
+- One NaN makes `np.mean` return NaN. Use `np.nanmean` when you expect gaps.
+- Use `axis=0` for column totals and `axis=1` for row totals in a 2-D table.
+
+## Further reading
+
+<FurtherReading ids={["numpy-docs"]} />

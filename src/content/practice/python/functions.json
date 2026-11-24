@@ -1,0 +1,108 @@
+[
+  {
+    "id": "python-functions-001",
+    "module": "python",
+    "topic": "functions",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "A small lender quotes a flat-rate loan. Define `flat_monthly(principal, rate_pct, months)` that returns `principal * (1 + rate_pct / 100 * months / 12) / months`. Call it with 120000, 12 and 12, and assign the result to `result`.",
+    "dataset": "none",
+    "hint": "Put the formula after `return`. Then call the function with the three values.",
+    "solutionCode": "def flat_monthly(principal, rate_pct, months):\n    return principal * (1 + rate_pct / 100 * months / 12) / months\n\nresult = flat_monthly(120000, 12, 12)",
+    "expectedOutput": {
+      "value": 11200
+    },
+    "orderMatters": false,
+    "explanation": "The function takes three inputs and returns one value. The `return` keyword sends the answer back to the caller. Here the monthly amount is 120000 * 1.12 / 12, which is 11200.0.",
+    "commonMistake": "Writing `print(...)` instead of `return`. The function then returns None, so `result` is None.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "def",
+      "return",
+      "parameters"
+    ]
+  },
+  {
+    "id": "python-functions-002",
+    "module": "python",
+    "topic": "functions",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "Define `to_float(s)` that removes the ₹ sign and commas from a text amount and returns a float. Call it on `\"₹3,450.50\"` and assign the result to `result`.",
+    "dataset": "none",
+    "hint": "Clean the text inside the function first, then call `float()` on the cleaned text.",
+    "solutionCode": "def to_float(s):\n    return float(s.replace(\"₹\", \"\").replace(\",\", \"\"))\n\nresult = to_float(\"₹3,450.50\")",
+    "expectedOutput": {
+      "value": 3450.5
+    },
+    "orderMatters": false,
+    "explanation": "The function puts the cleaning steps in one place, so you can reuse them on every amount column. The float keeps the 50 paise, giving 3450.5.",
+    "commonMistake": "Calling `float(s)` on the raw text. The ₹ sign and comma make `float()` raise a ValueError.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "def",
+      "strings",
+      "conversion"
+    ]
+  },
+  {
+    "id": "python-functions-003",
+    "module": "python",
+    "topic": "functions",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Define `bucket(amount)` that returns \"S\" if the amount is below 1000, \"M\" if it is below 10000, and \"L\" otherwise. Apply it to the list `[500, 1000, 9999, 15000]` with a list comprehension and assign the new list to `result`.",
+    "dataset": "none",
+    "hint": "Use `if`, `elif` and `else` with `<`. Then call the function inside a list comprehension.",
+    "solutionCode": "def bucket(amount):\n    if amount < 1000:\n        return \"S\"\n    elif amount < 10000:\n        return \"M\"\n    else:\n        return \"L\"\n\nresult = [bucket(a) for a in [500, 1000, 9999, 15000]]",
+    "expectedOutput": {
+      "value": [
+        "S",
+        "M",
+        "M",
+        "L"
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "The checks run in order, and the first true branch wins. An amount of exactly 1000 is not below 1000, so it becomes \"M\". The result is ['S', 'M', 'M', 'L'].",
+    "commonMistake": "Using `<=` in the first check. Then 1000 becomes \"S\" and the boundary is wrong.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "def",
+      "if-elif-else",
+      "comprehension"
+    ]
+  },
+  {
+    "id": "python-functions-004",
+    "module": "python",
+    "topic": "functions",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Define `rank_names(rows)` for a quiz app. `rows` is a list of dicts with `name` and `score`. Return the names sorted by score from high to low. If two scores tie, sort those names A to Z. Call it on `[{\"name\": \"Meera\", \"score\": 88}, {\"name\": \"Arjun\", \"score\": 92}, {\"name\": \"Bina\", \"score\": 88}, {\"name\": \"Kabir\", \"score\": 75}]` and assign the list to `result`.",
+    "dataset": "none",
+    "hint": "Give `sorted` a key that is a tuple. Use the negative score so the high scores come first.",
+    "solutionCode": "def rank_names(rows):\n    ordered = sorted(rows, key=lambda r: (-r[\"score\"], r[\"name\"]))\n    return [r[\"name\"] for r in ordered]\n\nresult = rank_names([{\"name\": \"Meera\", \"score\": 88}, {\"name\": \"Arjun\", \"score\": 92}, {\"name\": \"Bina\", \"score\": 88}, {\"name\": \"Kabir\", \"score\": 75}])",
+    "expectedOutput": {
+      "value": [
+        "Arjun",
+        "Bina",
+        "Meera",
+        "Kabir"
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "The key `(-score, name)` sorts by score from high to low, then breaks ties by name from A to Z. Sorting by score alone would leave tied names in a random-looking order.",
+    "commonMistake": "Sorting only by score, which loses the tie rule. Meera and Bina can then appear in either order.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 6,
+    "tags": [
+      "sorted",
+      "lambda",
+      "tuple key"
+    ]
+  }
+]

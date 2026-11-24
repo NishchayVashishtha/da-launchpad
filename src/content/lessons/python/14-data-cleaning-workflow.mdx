@@ -1,0 +1,312 @@
+---
+title: "A repeatable data cleaning workflow"
+description: "Clean any messy table in the same eight steps."
+module: python
+order: 14
+estimatedMinutes: 45
+objectives:
+  - "Apply an eight-step cleaning checklist in the same order every time"
+  - "Build a clean function and keep the raw copy untouched"
+  - "Log the row count before and after each step"
+  - "Validate the result with asserts"
+  - "Save a cleaned file and its cleaning log"
+tags: ["python", "pandas", "cleaning", "workflow"]
+---
+
+## Learning objectives
+
+- Run the same eight cleaning steps on any messy table.
+- Write a `clean_*` function that takes a raw DataFrame and returns a clean one.
+- Log the row count before and after each step.
+- Use `assert` to catch a bad result early.
+- Save the cleaned file next to a short cleaning log.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Most of an analyst's time goes into cleaning, not charts. A team that cleans the same way every time gets the same answer every time. A team that cleans by hand, one step at a time with no notes, gets different answers from one week to the next. Interviewers often ask how you make cleaning repeatable, because a one-off fix is easy to forget and hard to explain.
+</RealWorld>
+
+## Concept
+
+Think of a kitchen before service. The cook lays out every ingredient, cuts them the same way, and only then starts cooking. This is called mise en place. Data cleaning works the same way. You follow the same order every time, so nothing gets skipped.
+
+### The eight steps
+
+1. **Load a raw copy.** Read the file and never overwrite it. Keep the raw copy read-only.
+2. **Inspect.** Check the shape, the data types, the blanks, the duplicates and the value counts.
+3. **Fix types.** Turn rupee text into numbers. Parse dates, including mixed formats.
+4. **Standardise text.** Strip spaces, fix case, and map synonyms such as `M` to `Male`.
+5. **Handle missing values.** Decide for each column: flag, fill or drop. Give a reason.
+6. **Remove duplicates.** Drop exact copies first, then repeated ids after the columns are clean.
+7. **Handle outliers.** Check flagged values against a domain rule before you change them.
+8. **Validate and export.** Run asserts, then save the cleaned file and a log.
+
+Keep the order. Type fixes come before dedupe, because two copies can look different until their types match.
+
+### A clean function
+
+Wrap the steps in one function. You can then run the same code on any month of data.
+
+```python
+import pandas as pd
+
+def clean_transactions(raw: pd.DataFrame):
+    log = []
+    df = raw.copy()
+    log.append(("load", len(df)))
+
+    df["amount"] = (
+        df["amount"].astype(str)
+        .str.replace(r"[₹,\s]", "", regex=True)
+        .astype(float)
+    )
+    log.append(("amount to number", len(df)))
+
+    df = df.drop_duplicates(subset=["txn_id"], keep="first")
+    log.append(("dedupe txn_id", len(df)))
+
+    return df, pd.DataFrame(log, columns=["step", "rows"])
+```
+
+`df.copy()` keeps the raw DataFrame unchanged. The function returns the log as a small table, so the cleaning is visible.
+
+`.pipe()` chains a function onto a DataFrame, so steps read top to bottom:
+
+```python
+clean = raw.pipe(fix_types).pipe(standardise_text).pipe(drop_repeats)
+```
+
+### Asserts
+
+An `assert` stops the program if a condition is false. Use it after cleaning to check the result.
+
+```python
+assert clean["txn_id"].is_unique, "txn_id still repeats"
+assert clean["amount"].ge(0).all(), "negative amount found"
+```
+
+If the check is true, nothing happens. If it is false, you get an `AssertionError` with your message. A failing assert is useful, because it stops a bad file from reaching the report.
+
+### The cleaning log
+
+Each step adds one row: the step name and the row count after it. A small table like this is easy to paste into a README or send to a manager.
+
+<FormulaCard title="8-step cleaning checklist">
+1 Load raw (read-only). 2 Inspect. 3 Fix types. 4 Standardise text. 5 Handle missing. 6 Remove duplicates. 7 Handle outliers. 8 Validate and export with a log.
+</FormulaCard>
+
+## Worked examples
+
+### Example 1: cleaning the employees table
+
+The HR file has three problems: gender codes, messy city text and dates in mixed formats. Start with the duplicates and the gender codes.
+
+```python
+import pandas as pd
+
+raw = pd.read_csv("public/data/csv/hr/employees.csv")
+emp = raw.drop_duplicates()
+emp = emp.assign(gender=emp["gender"].replace({"M": "Male", "F": "Female"}))
+print(emp["gender"].value_counts())
+```
+
+Output:
+
+```
+gender
+Male      1495
+Female     912
+```
+
+Next, the city column. It has 36 spellings before cleaning and 6 after. Strip and title case fix most of them.
+
+```python
+city = emp["city"].str.strip().str.title()
+print(city.nunique())
+print(city.isna().sum())
+```
+
+Output:
+
+```
+6
+49
+```
+
+The 49 blank cities stay blank, and that is a decision you record. Filling them with `"Unknown"` makes the blanks visible in reports.
+
+Hire dates come in two formats. Parse both explicitly, then check that none failed:
+
+```python
+hire = pd.to_datetime(emp["hire_date"], format="%Y-%m-%d", errors="coerce").combine_first(
+    pd.to_datetime(emp["hire_date"], format="%d-%m-%Y", errors="coerce")
+)
+print(hire.isna().sum())
+```
+
+Output:
+
+```
+0
+```
+
+Zero failures means both formats matched. Always check the failure count, because `errors="coerce"` turns a bad date into a blank instead of an error.
+
+The log for this table:
+
+| step | rows |
+|---|---|
+| load | 2412 |
+| drop exact duplicates | 2407 |
+
+### Example 2: a clean function for transactions
+
+The transactions file needs three fixes: rupee text to numbers, parsed datetimes and a dedupe by `txn_id`. The clean function from the Concept section does the first two steps, and we add the datetime step.
+
+```python
+import numpy as np
+
+def clean_txn(raw):
+    log = []
+    df = raw.copy()
+    log.append(("load", len(df)))
+    df["amount"] = df["amount"].astype(str).str.replace(r"[₹,\s]", "", regex=True).astype(float)
+    log.append(("amount to number", len(df)))
+    s = df["txn_datetime"].astype(str)
+    df["txn_datetime"] = pd.to_datetime(s, format="%Y-%m-%d %H:%M:%S", errors="coerce").combine_first(
+        pd.to_datetime(s, format="%d-%m-%Y %H:%M:%S", errors="coerce"))
+    log.append(("datetime parsed", len(df)))
+    df = df.drop_duplicates(subset=["txn_id"], keep="first")
+    log.append(("dedupe txn_id", len(df)))
+    return df, pd.DataFrame(log, columns=["step", "rows"])
+
+raw = pd.read_csv("public/data/csv/fintech/transactions.csv")
+clean, log = clean_txn(raw)
+print(log.to_string(index=False))
+```
+
+Output:
+
+```
+           step  rows
+           load 22389
+amount to number 22389
+ datetime parsed 22389
+   dedupe txn_id 22300
+```
+
+The row count drops only at the dedupe step, from 22,389 to 22,300. That is 89 rows, which matches the repeated `txn_id` count from lesson 13. The exact-copy count was only 47, so an exact dedupe on the raw file would have missed 42 repeats. Cleaning the types first made the copies match.
+
+### Example 3: validate with asserts
+
+Now check the result. Assert the things that must be true after cleaning.
+
+```python
+assert clean["txn_id"].is_unique, "txn_id still repeats"
+assert clean["txn_datetime"].notna().all(), "some datetimes failed to parse"
+print("all checks passed")
+```
+
+Output:
+
+```
+all checks passed
+```
+
+Now run the same check on the raw file. It fails, which is what you want.
+
+```python
+try:
+    assert raw["txn_id"].is_unique, "txn_id repeats in the raw file"
+except AssertionError as e:
+    print("AssertionError:", e)
+```
+
+Output:
+
+```
+AssertionError: txn_id repeats in the raw file
+```
+
+The failing assert tells you exactly which rule broke, so you do not have to guess.
+
+### Example 4: the cleaned amount total
+
+Once the amounts are numbers, you can report totals. Review very large amounts separately, and leave them out of the total with a stated limit.
+
+```python
+ok = clean[(clean["status"] == "SUCCESS") & (clean["amount"] <= 50000)]
+print(round(ok["amount"].sum(), 2))
+```
+
+Output:
+
+```
+29224601.28
+```
+
+The total covers successful payments up to ₹50,000. Payments above that go to manual review, and the report says so.
+
+## Common mistakes
+
+- **Cleaning in place on the only copy.** If a step goes wrong, you have no original. Keep the raw file untouched.
+- **Fixing types after dedupe.** Two copies can differ only in format. Fix types first, then dedupe.
+- **Coercing errors silently.** `errors="coerce"` turns bad values into blanks without a warning. Count the blanks after every conversion.
+- **Skipping validation.** Without asserts, a bad step passes quietly into the report.
+- **Mapping synonyms but forgetting blanks.** `replace` leaves `NaN` unchanged. Add a `fillna` step if blanks need a label.
+- **Irreproducible manual edits.** Editing a value in Excel and forgetting it leaves no trace. Put every fix in code.
+
+## Practice questions
+
+<PracticeSet topic="cleaning" module="python" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Which step comes first in a cleaning workflow?", options: ["Remove duplicates", "Fill missing values", "Inspect the data", "Export the file"], answer: 2, explanation: "Inspect first. You need the shape, types, blanks and duplicates before you choose any fix." },
+  { q: "Why use .pipe() to chain cleaning functions?", options: ["It makes the code run faster", "It keeps each step in a named function, read top to bottom", "It removes the need for asserts", "It saves the raw file automatically"], answer: 1, explanation: "Each function is one named step, and .pipe() chains them in order. That makes the workflow easy to read and test." },
+  { q: "What does an assert do when its condition is false?", options: ["It fixes the data", "It raises an AssertionError and stops", "It logs a warning and continues", "It drops the bad rows"], answer: 1, explanation: "An assert stops the program with an AssertionError. That prevents a bad result from reaching the report." },
+  { q: "How should you map M and F to Male and Female, and what must you remember about blanks?", options: ["df['gender'] = df['gender'] * 2", "replace({'M': 'Male', 'F': 'Female'}), and blanks stay blank unless you fill them", "drop every row where gender is M", "sort the column first"], answer: 1, explanation: "replace changes the codes, but it leaves NaN alone. Add fillna if blanks need a label." },
+  { q: "Why should you keep the raw copy untouched?", options: ["Raw files are always smaller", "So you can rerun the cleaning and check any step against the original", "Pandas cannot edit a DataFrame", "It makes the file faster to load"], answer: 1, explanation: "A raw copy lets you rerun the workflow, check a fix, and explain a number later." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers want a process, not a list of tricks. Describe the steps in order, say how you validated, and give one real example where cleaning changed a result.
+</InterviewAlert>
+
+<InterviewQ q="Describe your cleaning process.">
+I keep the raw file read-only and inspect it first: shape, types, blanks, duplicates and value counts. Then I fix types, standardise text, handle blanks, remove duplicates and check outliers, in that order. Each step has a row count in a log, and I finish with asserts before I export.
+</InterviewQ>
+
+<InterviewQ q="How do you make cleaning reproducible?">
+I wrap the steps in one function that takes a raw DataFrame and returns a clean one plus a log. The same code runs on every new file. I never make manual edits in a spreadsheet, because they leave no record.
+</InterviewQ>
+
+<InterviewQ q="How do you validate a cleaned table?">
+I use asserts for the rules that must hold, such as a unique id, no failed date parses and no negative amounts. I also compare row counts in the log with what I expect. A failing assert stops the run, so a bad file never reaches the report.
+</InterviewQ>
+
+<InterviewQ q="What is the biggest data issue you have found?">
+In a transactions file, 89 rows shared a transaction id, but only 47 were exact copies. The rest differed in amount and date format. Had I deduped before fixing the types, I would have kept the wrong copies and the totals would have been off.
+</InterviewQ>
+
+<InterviewQ q="Tell me about a time cleaning changed the answer.">
+Amounts stored as rupee text cannot be summed reliably, so a total built on the raw column is wrong. Converting the column to numbers first, and then checking the blank count with an assert, makes the total trustworthy. I put that check inside the cleaning function so it runs on every new file.
+</InterviewQ>
+
+## Key takeaways
+
+- Run the same eight steps in the same order every time.
+- Keep the raw copy read-only and write everything as code.
+- Fix types before you remove duplicates.
+- Log the row count after each step.
+- Validate with asserts and export only when they pass.
+
+<Download href="/downloads/eda-checklist.md" label="EDA checklist" />
+
+## Further reading
+
+<FurtherReading ids={["pandas-docs","kaggle-learn"]} />

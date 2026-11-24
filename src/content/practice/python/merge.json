@@ -1,0 +1,416 @@
+[
+  {
+    "id": "python-merge-001",
+    "module": "python",
+    "topic": "merge",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "The support team wants to know how many orders come from customers with no city on file. Keep one row per `order_id` and one row per `customer_id`. Return the count as a whole number.",
+    "dataset": "ecommerce",
+    "hint": "Left-join orders to customers on customer_id, then count the rows where the city is missing.",
+    "solutionCode": "orders = load(\"ecommerce\", \"orders\").drop_duplicates(subset=\"order_id\")\ncust = load(\"ecommerce\", \"customers\").drop_duplicates(subset=\"customer_id\")[[\"customer_id\", \"city\"]]\nm = orders.merge(cust, on=\"customer_id\", how=\"left\", validate=\"m:1\")\nresult = int(m[\"city\"].isna().sum())",
+    "expectedOutput": {
+      "value": 300
+    },
+    "orderMatters": false,
+    "explanation": "A left merge keeps every order, even when no customer matches. validate=\"m:1\" checks that customer_id is unique on the right, so a repeated customer cannot double the orders. The missing city count includes orders with no matching customer, which is what the support team needs.",
+    "commonMistake": "Dropping the repeated customer rows step. A repeated customer_id on the right side repeats each of that customer's orders, so the count is too high.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "merge",
+      "left-join",
+      "isna"
+    ]
+  },
+  {
+    "id": "python-merge-002",
+    "module": "python",
+    "topic": "merge",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "HR wants the number of employees in each department, by department name. Keep one row per `employee_id`. Join to the departments table to get the names. Return `department_name` and `headcount`, highest headcount first, then department name A to Z.",
+    "dataset": "hr",
+    "hint": "Merge employees with departments on department_id, then count with groupby.",
+    "solutionCode": "emp = load(\"hr\", \"employees\").drop_duplicates(subset=\"employee_id\")[[\"employee_id\", \"department_id\"]]\ndept = load(\"hr\", \"departments\")[[\"department_id\", \"department_name\"]]\nm = emp.merge(dept, on=\"department_id\", how=\"inner\", validate=\"m:1\")\nresult = (\n    m.groupby(\"department_name\").size().rename(\"headcount\").reset_index()\n    .sort_values([\"headcount\", \"department_name\"], ascending=[False, True])\n    .reset_index(drop=True)\n)",
+    "expectedOutput": {
+      "columns": [
+        "department_name",
+        "headcount"
+      ],
+      "rows": [
+        [
+          "Engineering",
+          833
+        ],
+        [
+          "Customer Support",
+          440
+        ],
+        [
+          "Sales",
+          349
+        ],
+        [
+          "Operations",
+          275
+        ],
+        [
+          "Marketing",
+          156
+        ],
+        [
+          "Product",
+          148
+        ],
+        [
+          "Finance",
+          103
+        ],
+        [
+          "Human Resources",
+          96
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The merge adds the department name to each employee row. Then groupby counts the employees in each name. validate=\"m:1\" makes sure the departments table has one row per department_id, so no employee is copied.",
+    "commonMistake": "Counting before the merge and then looking up names. This is fine, but merging a departments table with a repeated id first doubles every head count.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "merge",
+      "groupby",
+      "inner-join"
+    ]
+  },
+  {
+    "id": "python-merge-003",
+    "module": "python",
+    "topic": "merge",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Growth team wants to know how many registered users have never made a transaction as the sender. Keep one row per `user_id` from the users file. Use an anti-join. Return the count as a whole number.",
+    "dataset": "fintech",
+    "hint": "Left-join users to the transaction user ids with indicator=True. Rows marked left_only have no match.",
+    "solutionCode": "users = load(\"fintech\", \"users\").drop_duplicates(subset=\"user_id\")[[\"user_id\"]]\nsenders = load(\"fintech\", \"transactions\")[[\"user_id\"]].drop_duplicates()\nm = users.merge(senders, on=\"user_id\", how=\"left\", indicator=True)\nresult = int((m[\"_merge\"] == \"left_only\").sum())",
+    "expectedOutput": {
+      "value": 1127
+    },
+    "orderMatters": false,
+    "explanation": "indicator=True adds a _merge column that says whether each row came from the left table only, the right table only, or both. Rows that are left_only are users with no match, which is the anti-join. The sender list is made unique first, so the result is the same as a set difference.",
+    "commonMistake": "Using an inner join. It drops the unmatched users, so you count the active users instead of the inactive ones.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "merge",
+      "anti-join",
+      "indicator"
+    ]
+  },
+  {
+    "id": "python-merge-004",
+    "module": "python",
+    "topic": "merge",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Finance wants revenue by product category. Use `line_total` from the order items. Ignore order items where `unit_price` is more than 10 times the product MRP (these are entry errors). Clean the category names with stray spaces and capitals. Return `category` and `revenue` (sum, 2 decimals), highest revenue first, then category A to Z.",
+    "dataset": "ecommerce",
+    "hint": "Merge order items with products to get the category and MRP. Filter the rows. Then group and sum.",
+    "solutionCode": "items = load(\"ecommerce\", \"order_items\")\nprods = load(\"ecommerce\", \"products\").drop_duplicates(subset=\"product_id\").copy()\nprods[\"category\"] = prods[\"category\"].str.strip().str.title()\nm = items.merge(prods[[\"product_id\", \"category\", \"mrp\"]], on=\"product_id\", how=\"left\", validate=\"m:1\")\nm = m[m[\"unit_price\"] <= 10 * m[\"mrp\"]]\nrev = m.groupby(\"category\", as_index=False)[\"line_total\"].sum()\nrev[\"revenue\"] = rev[\"line_total\"].round(2)\nresult = (\n    rev[[\"category\", \"revenue\"]]\n    .sort_values([\"revenue\", \"category\"], ascending=[False, True])\n    .reset_index(drop=True)\n)",
+    "expectedOutput": {
+      "columns": [
+        "category",
+        "revenue"
+      ],
+      "rows": [
+        [
+          "Electronics",
+          28369456.94
+        ],
+        [
+          "Home & Kitchen",
+          11609730.36
+        ],
+        [
+          "Fashion",
+          8073308.37
+        ],
+        [
+          "Grocery",
+          2043756.2
+        ],
+        [
+          "Footwear",
+          969069.65
+        ],
+        [
+          "Beauty",
+          667601.06
+        ],
+        [
+          "Books",
+          579620.91
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The category lives in the products table, so we merge to get it. A left merge keeps every item, and validate=\"m:1\" checks that each product appears once. The price check compares each item with the product's MRP, so a 100x entry error is dropped without a fixed rupee cap.",
+    "commonMistake": "Filtering on unit_price alone, with a fixed cap such as 50,000. Some real electronics items cost more than that, so good rows are lost.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 8,
+    "tags": [
+      "merge",
+      "groupby",
+      "outliers"
+    ]
+  },
+  {
+    "id": "python-merge-005",
+    "module": "python",
+    "topic": "merge",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "The performance marketing team wants the click-to-conversion rate for each campaign. Keep one row per `click_id`. A click converts if it has a row in the conversions table. Return `campaign_name` and `conv_rate_pct` (2 decimals) for the top 5 campaigns, highest rate first, then campaign name A to Z.",
+    "dataset": "marketing",
+    "hint": "Left-merge clicks to conversions on click_id. Mark each click as converted or not, then merge the campaign names and take the mean.",
+    "solutionCode": "clicks = load(\"marketing\", \"clicks\").drop_duplicates(subset=\"click_id\")[[\"click_id\", \"campaign_id\"]]\nconv = load(\"marketing\", \"conversions\")[[\"click_id\"]].drop_duplicates().assign(has_conversion=1)\ncamp = load(\"marketing\", \"campaigns\")[[\"campaign_id\", \"campaign_name\"]]\nm = clicks.merge(conv, on=\"click_id\", how=\"left\", validate=\"1:1\")\nm[\"converted\"] = m[\"has_conversion\"].notna()\nm = m.merge(camp, on=\"campaign_id\", how=\"left\", validate=\"m:1\")\nrates = m.groupby(\"campaign_name\", as_index=False)[\"converted\"].mean()\nrates[\"conv_rate_pct\"] = (rates[\"converted\"] * 100).round(2)\nresult = (\n    rates[[\"campaign_name\", \"conv_rate_pct\"]]\n    .sort_values([\"conv_rate_pct\", \"campaign_name\"], ascending=[False, True])\n    .head(5)\n    .reset_index(drop=True)\n)",
+    "expectedOutput": {
+      "columns": [
+        "campaign_name",
+        "conv_rate_pct"
+      ],
+      "rows": [
+        [
+          "Diwali Dhamaka 2023 - Email",
+          11.97
+        ],
+        [
+          "Winter Wardrobe Email Series",
+          9.02
+        ],
+        [
+          "Diwali Dhamaka 2023 - Search",
+          8.77
+        ],
+        [
+          "Diwali Dhamaka 2024 - Search",
+          7.87
+        ],
+        [
+          "Diwali Dhamaka 2024 - WhatsApp",
+          7.66
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "A left merge keeps clicks with no conversion. The missing values in has_conversion become False, and the mean of that column is the conversion rate. An inner merge would drop every unconverted click and show 100 percent for each campaign.",
+    "commonMistake": "Using an inner merge with conversions. It keeps only the converted clicks, so every campaign shows a 100 percent rate.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "merge",
+      "left-join",
+      "rate"
+    ]
+  },
+  {
+    "id": "python-merge-006",
+    "module": "python",
+    "topic": "merge",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "Growth team wants to know which signup channels bring users who never start a subscription. Keep one row per `user_id` from the users file. Count those users by `acquisition_source`. Return `acquisition_source` and `no_subscription_users`, highest count first, then source A to Z.",
+    "dataset": "subscription",
+    "hint": "Use an anti-join: left-merge users to subscriptions on user_id with indicator=True, then keep the left_only rows.",
+    "solutionCode": "users = load(\"subscription\", \"users\").drop_duplicates(subset=\"user_id\")\nsubs = load(\"subscription\", \"subscriptions\")[[\"user_id\"]].drop_duplicates()\nm = users.merge(subs, on=\"user_id\", how=\"left\", indicator=True)\nnever = m[m[\"_merge\"] == \"left_only\"]\nresult = (\n    never.groupby(\"acquisition_source\").size().rename(\"no_subscription_users\").reset_index()\n    .sort_values([\"no_subscription_users\", \"acquisition_source\"], ascending=[False, True])\n    .reset_index(drop=True)\n)",
+    "expectedOutput": {
+      "columns": [
+        "acquisition_source",
+        "no_subscription_users"
+      ],
+      "rows": [
+        [
+          "Organic",
+          575
+        ],
+        [
+          "Google Ads",
+          470
+        ],
+        [
+          "Instagram",
+          367
+        ],
+        [
+          "Referral",
+          212
+        ],
+        [
+          "Play Store Feature",
+          141
+        ],
+        [
+          "Influencer",
+          127
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The anti-join finds users with no subscription row. Deduplicating users first means each person is counted once, even if the signup file repeats them. Grouping the left_only rows by acquisition_source gives the answer.",
+    "commonMistake": "Counting rows from the users file without dropping duplicates. The repeated users are counted twice, so the channel totals are too high.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "merge",
+      "anti-join",
+      "indicator"
+    ]
+  },
+  {
+    "id": "python-merge-007",
+    "module": "python",
+    "topic": "merge",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "Food team wants the average customer rating for each cuisine, using only restaurants with at least 30 ratings. Keep one row per `rating_id`. Count the ratings per restaurant first, keep only restaurants with 30 or more, then attach the cuisine. Return `cuisine`, `avg_rating` (overall_rating mean, 2 decimals), and `n` (number of ratings), sorted by avg_rating (highest first), then cuisine A to Z.",
+    "dataset": "food_delivery",
+    "hint": "Filter on restaurant rating counts before you merge in the cuisine. The filter is per restaurant, not per cuisine.",
+    "solutionCode": "ratings = load(\"food_delivery\", \"ratings\").drop_duplicates(subset=\"rating_id\")\nper_rest = ratings.groupby(\"restaurant_id\").size()\nkeep = per_rest[per_rest >= 30].index\nr = ratings[ratings[\"restaurant_id\"].isin(keep)]\nrest = load(\"food_delivery\", \"restaurants\").drop_duplicates(subset=\"restaurant_id\")[[\"restaurant_id\", \"cuisine\"]]\nm = r.merge(rest, on=\"restaurant_id\", how=\"left\", validate=\"m:1\")\nout = m.groupby(\"cuisine\").agg(avg_rating=(\"overall_rating\", \"mean\"), n=(\"rating_id\", \"count\")).reset_index()\nout[\"avg_rating\"] = out[\"avg_rating\"].round(2)\nresult = out.sort_values([\"avg_rating\", \"cuisine\"], ascending=[False, True]).reset_index(drop=True)",
+    "expectedOutput": {
+      "columns": [
+        "cuisine",
+        "avg_rating",
+        "n"
+      ],
+      "rows": [
+        [
+          "Biryani",
+          4.54,
+          41
+        ],
+        [
+          "Bengali",
+          4.37,
+          115
+        ],
+        [
+          "Pizza",
+          4.3,
+          238
+        ],
+        [
+          "Burgers",
+          4.13,
+          287
+        ],
+        [
+          "Chinese",
+          4.11,
+          302
+        ],
+        [
+          "North Indian",
+          4.1,
+          415
+        ],
+        [
+          "Gujarati Thali",
+          4.02,
+          322
+        ],
+        [
+          "South Indian",
+          3.98,
+          325
+        ],
+        [
+          "Healthy",
+          3.96,
+          272
+        ],
+        [
+          "Street Food",
+          3.94,
+          206
+        ],
+        [
+          "Desserts",
+          3.92,
+          277
+        ],
+        [
+          "Mughlai",
+          3.92,
+          106
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The 30-rating rule applies to each restaurant, so we count ratings per restaurant first. Only then do we attach the cuisine. validate=\"m:1\" checks that each restaurant has one row in the restaurants table, so ratings are not copied.",
+    "commonMistake": "Filtering by count after grouping by cuisine. That checks 30 ratings per cuisine, not per restaurant, so a cuisine with many small restaurants is wrongly kept.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 12,
+    "tags": [
+      "merge",
+      "groupby",
+      "filter",
+      "agg"
+    ]
+  },
+  {
+    "id": "python-merge-008",
+    "module": "python",
+    "topic": "merge",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "Payments team wants the most common failure pairs. Each pair is a bank and a failure code. Keep one row per `failed_txn_id`, and one row per `txn_id` in the transactions file. Get the bank for each failed transaction through a merge. Return the top 5 pairs as `bank`, `failure_code` and `failures` (count of failed rows), highest count first, then bank A to Z, then failure code A to Z.",
+    "dataset": "fintech",
+    "hint": "Clean the two tables, merge the failed rows to transactions to get the bank, then count by bank and failure_code.",
+    "solutionCode": "failed = load(\"fintech\", \"failed_transactions\").drop_duplicates(subset=\"failed_txn_id\")\ntxns = load(\"fintech\", \"transactions\").drop_duplicates(subset=\"txn_id\")[[\"txn_id\", \"bank\"]]\nm = failed.merge(txns, on=\"txn_id\", how=\"left\", validate=\"m:1\")\npairs = m.groupby([\"bank\", \"failure_code\"]).size().rename(\"failures\").reset_index()\nresult = (\n    pairs.sort_values([\"failures\", \"bank\", \"failure_code\"], ascending=[False, True, True])\n    .head(5)\n    .reset_index(drop=True)\n)",
+    "expectedOutput": {
+      "columns": [
+        "bank",
+        "failure_code",
+        "failures"
+      ],
+      "rows": [
+        [
+          "Kaveri Co-op Bank",
+          "BANK_SERVER_TIMEOUT",
+          42
+        ],
+        [
+          "Bharat Union Bank",
+          "UPI_SYSTEM_DOWN",
+          32
+        ],
+        [
+          "Bharat Union Bank",
+          "INSUFFICIENT_FUNDS",
+          28
+        ],
+        [
+          "Sundaram Bank",
+          "BANK_DECLINED",
+          27
+        ],
+        [
+          "Sundaram Bank",
+          "UPI_SYSTEM_DOWN",
+          27
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The failed table has one row per failure, but a single transaction can fail more than once after a retry. Merging to transactions gives the bank for each failure. Two tie-breakers keep the top 5 in the same order every time.",
+    "commonMistake": "Merging transactions without dropping its repeated txn_id rows. Each failure is then copied once per repeat, and the failure counts look bigger than they are.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 14,
+    "tags": [
+      "merge",
+      "groupby",
+      "top-n"
+    ]
+  }
+]

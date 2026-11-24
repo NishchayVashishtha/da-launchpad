@@ -1,0 +1,67 @@
+{
+  "filename": "03-fintech-failure-analysis",
+  "title": "Where do UPI payments fail?",
+  "dataset": "fintech",
+  "cells": [
+    {
+      "type": "markdown",
+      "source": "# Where do UPI payments fail?\n\nThis notebook finds where and when payments fail. You will compare banks, apps and hours, find the peak pattern, and write three findings.\n\nPut the CSV files for this dataset in a folder named `fintech` next to this notebook. The site zip has one folder per dataset. Run the cells from top to bottom."
+    },
+    {
+      "type": "code",
+      "source": "import pandas as pd\n\ndf = pd.read_csv(\"fintech/transactions.csv\").drop_duplicates(subset=\"txn_id\").copy()\ndf[\"ts\"] = pd.to_datetime(df[\"txn_datetime\"], format=\"%Y-%m-%d %H:%M:%S\", errors=\"coerce\").combine_first(\n    pd.to_datetime(df[\"txn_datetime\"], format=\"%d-%m-%Y %H:%M:%S\", errors=\"coerce\"))\ndf[\"hour\"] = df[\"ts\"].dt.hour\ndf[\"failed\"] = df[\"status\"].eq(\"FAILED\")\nprint(\"transactions after dedupe:\", len(df))"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 1: Overall status mix\n\nFirst check the whole picture. The failure rate is the share of rows with `status` equal to `FAILED`."
+    },
+    {
+      "type": "code",
+      "source": "print((df[\"status\"].value_counts(normalize=True) * 100).round(2))\nprint(\"overall failure rate %:\", round(df[\"failed\"].mean() * 100, 2))"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 2: Failure rate by bank\n\nA rate is better than a count when banks have different volumes."
+    },
+    {
+      "type": "code",
+      "source": "by_bank = df.groupby(\"bank\").agg(transactions=(\"txn_id\", \"size\"), failure_rate_pct=(\"failed\", \"mean\"))\nby_bank[\"failure_rate_pct\"] = (by_bank[\"failure_rate_pct\"] * 100).round(2)\nby_bank.sort_values(\"failure_rate_pct\", ascending=False)"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 3: Failure rate by payment app"
+    },
+    {
+      "type": "code",
+      "source": "by_app = df.groupby(\"payment_app\").agg(transactions=(\"txn_id\", \"size\"), failure_rate_pct=(\"failed\", \"mean\"))\nby_app[\"failure_rate_pct\"] = (by_app[\"failure_rate_pct\"] * 100).round(2)\nby_app.sort_values(\"failure_rate_pct\", ascending=False)"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 4: Failure rate by hour of the day\n\nLook for a shape. Are there hours that stand out?"
+    },
+    {
+      "type": "code",
+      "source": "by_hour = df.groupby(\"hour\")[\"failed\"].mean().mul(100).round(2)\nby_hour.rename(\"failure_rate_pct\").to_frame()"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 5: The peak pattern\n\nPivot the banks against the peak hours (9, 10, 18, 19 and 20). A bank that is high in many peak columns has a pattern, not bad luck."
+    },
+    {
+      "type": "code",
+      "source": "peak = df[df[\"hour\"].isin([9, 10, 18, 19, 20])]\npivot = pd.pivot_table(peak, index=\"bank\", columns=\"hour\", values=\"failed\", aggfunc=\"mean\") * 100\npivot.round(1)"
+    },
+    {
+      "type": "markdown",
+      "source": "## Step 6: Failure reasons\n\nThe failed table has one row per failed attempt. Remove exact duplicates, then count the codes."
+    },
+    {
+      "type": "code",
+      "source": "fails = pd.read_csv(\"fintech/failed_transactions.csv\").drop_duplicates()\nprint(\"failed attempts after dedupe:\", len(fails))\nfails[\"failure_code\"].value_counts()"
+    },
+    {
+      "type": "markdown",
+      "source": "## Findings template\n\nWrite three findings. For each one, give the evidence (a number from a table above) and the action.\n\n- Finding 1: the bank or app with the highest rate, and by how much.\n- Finding 2: the hours with the highest rate, and whether they match the peak pattern.\n- Finding 3: the most common failure code, and what it suggests (for example, a bank server issue or a balance issue).\n\nCaveat: a failure rate does not show the cause. Check with the bank or the app team before you act."
+    }
+  ]
+}

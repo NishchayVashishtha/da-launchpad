@@ -1,0 +1,298 @@
+---
+title: "Missing values, duplicates and outliers"
+description: "Find and fix the three most common data problems."
+module: python
+order: 13
+estimatedMinutes: 45
+objectives:
+  - "Detect missing values with isna and decide what to do with them"
+  - "Choose between dropping, filling and flagging"
+  - "Find and remove exact and key duplicates"
+  - "Detect outliers with the IQR rule and a z-score"
+  - "Decide whether to cap, remove or keep an outlier, and write it down"
+tags: ["python", "pandas", "cleaning", "missing", "duplicates", "outliers"]
+---
+
+## Learning objectives
+
+- Find blank cells with `isna()` and count them per column.
+- Decide when to drop, fill or flag a missing value.
+- Find duplicate rows with `duplicated()` and remove them with `drop_duplicates()`.
+- Tell an exact copy from a repeated key.
+- Flag outliers with the IQR rule and a z-score.
+- Choose cap, remove or keep, and record the decision.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Almost every real file has three problems: blank cells, repeated rows and a few values that look wrong. A UPI transaction file can repeat a payment after a network retry. A salary sheet can have one entry typed 100 times too big. If you do not find these problems, your totals and averages are wrong, and nobody notices until a manager questions a number. Interviewers ask about this on almost every data role, because it shows whether you check the data before you trust it.
+</RealWorld>
+
+## Concept
+
+Think of cleaning rice before cooking. You pick out the stones (outliers), remove the empty husks (missing values) and throw away the double packets (duplicates). You do not do it by eye. You do it with a clear rule for each problem.
+
+### Missing values
+
+A missing value is a blank cell. Pandas shows it as `NaN` (not a number) or `None`.
+
+Before you fix a blank, ask why it is blank. There are two common reasons:
+
+- **By design.** A cancelled order has no delivery time, because the order was never delivered. That blank is correct, not an error.
+- **By error.** A customer skipped the email field, or a file lost a value during export.
+
+Never fill blanks blindly. Filling a "by design" blank with a number makes the data lie.
+
+```python
+import pandas as pd
+
+users = pd.read_csv("users.csv")
+users.isna().sum()          # blanks per column
+users.isna().mean() * 100   # share of blanks per column, in percent
+users.dropna(subset=["city"])   # drop rows where city is blank
+users["city"].fillna("Unknown") # fill blanks with a label
+```
+
+Three choices, in order of how often you should use them:
+
+1. **Flag.** Add a column that says the value was missing. This keeps the information.
+2. **Fill.** Use a label such as `"Unknown"`, or a statistic such as the median.
+3. **Drop.** Remove the rows. Use this only when the blank row is useless.
+
+Use `dropna(how="all")` to remove only rows where every cell is blank. The default, `how="any"`, removes a row if one cell is blank, which often loses far too much data.
+
+### Duplicates
+
+A duplicate is a row that repeats. There are two kinds:
+
+- **Exact duplicate.** Every column is the same. Safe to drop.
+- **Key duplicate.** The id is the same, but other columns differ, for example the amount is text in one copy and a number in the other. Check the difference before you drop.
+
+```python
+df.duplicated().sum()                    # exact copies
+df.duplicated(subset=["txn_id"]).sum()   # repeated ids
+df.drop_duplicates()                     # keep the first exact copy
+df.drop_duplicates(subset=["txn_id"], keep="first")
+```
+
+`duplicated()` marks the second and later copies as `True`. The first copy is kept by default. That is why `keep="first"` is the normal choice.
+
+### Outliers
+
+An outlier is a value far away from the rest. It can be a real event (a big festival sale) or an error (a salary typed 100 times too big). Look at it before you decide.
+
+The **IQR rule** uses the middle half of the data:
+
+- Q1 is the 25th percentile and Q3 is the 75th percentile.
+- IQR is Q3 minus Q1.
+- Fences are Q1 minus 1.5 times IQR, and Q3 plus 1.5 times IQR.
+- Values outside the fences are flagged.
+
+<FormulaCard title="IQR fences">
+Lower fence = Q1 - 1.5 x IQR. Upper fence = Q3 + 1.5 x IQR. IQR = Q3 - Q1.
+</FormulaCard>
+
+```python
+q1, q3 = s.quantile([0.25, 0.75])
+iqr = q3 - q1
+low, high = q1 - 1.5 * iqr, q3 + 1.5 * iqr
+flagged = (s < low) | (s > high)
+```
+
+The **z-score** measures how many standard deviations a value is from the mean. It works well on data that is close to a bell shape. Money data is usually skewed, so the z-score is less useful there. Use it as a second check, not the first.
+
+Median is more robust than mean. A few huge values pull the mean up but barely move the median. So when outliers exist, report the median.
+
+Three decisions for a flagged value:
+
+- **Cap (winsorise).** Limit it to the fence value.
+- **Remove.** Drop it, but only after you confirm it is an error.
+- **Keep.** Keep it when it is real, and say so in your notes.
+
+Always write down what you did and how many rows it touched.
+
+## Worked examples
+
+### Example 1: missing values in the fintech users table
+
+The users file has three columns with blanks. Count them first.
+
+```python
+import pandas as pd
+
+users = pd.read_csv("public/data/csv/fintech/users.csv").drop_duplicates()
+print(users.isna().sum()[lambda s: s > 0])
+```
+
+Output:
+
+```
+phone      61
+city      149
+upi_id    179
+```
+
+Blank `city` is about 3.7% of rows. It is an error, not a design choice, so fill it with a label instead of dropping 149 users. After the cleaning from the next example, 148 blanks are left after dedupe:
+
+```python
+city = users["city"].str.strip().str.title()
+print(city.isna().sum())   # 148
+users["city"] = city.fillna("Unknown")
+```
+
+Blank `upi_id` is different. Some users simply have no UPI id, so keep those rows and do not fill them with a fake id.
+
+### Example 2: exact duplicates versus repeated ids
+
+The transactions file has 22,389 rows. Count the two kinds of repeat.
+
+```python
+raw = pd.read_csv("public/data/csv/fintech/transactions.csv")
+print(raw.duplicated().sum())                  # exact copies
+print(raw.duplicated(subset=["txn_id"]).sum()) # repeated ids
+```
+
+Output:
+
+```
+47
+89
+```
+
+Only 47 rows are exact copies. The 89 repeats include rows where the amount or date is written differently, such as `₹260.16` and `260.16`. Dropping on `txn_id` before cleaning would keep the wrong copy. The fix is in lesson 14.
+
+Drop the 47 exact copies first. Rows before: 22,389. Rows after: 22,342.
+
+```python
+clean_once = raw.drop_duplicates()
+print(len(clean_once))   # 22342
+```
+
+### Example 3: outliers in transaction amounts
+
+The `amount` column is text, so clean it first. Then apply the IQR rule.
+
+```python
+amt = raw["amount"].astype(str).str.replace(r"[₹,\s]", "", regex=True).astype(float)
+q1, q3 = amt.quantile([0.25, 0.75])
+iqr = q3 - q1
+low, high = q1 - 1.5 * iqr, q3 + 1.5 * iqr
+print(round(q1, 2), round(q3, 2), round(iqr, 2))
+print(round(low, 2), round(high, 2))
+print(int(((amt < low) | (amt > high)).sum()))
+```
+
+Output:
+
+```
+293.31 1363.33 1070.02
+-1311.72 2968.36
+2418
+```
+
+The IQR rule flags 2,418 rows, about 11% of transactions. Most of them are real. Payment amounts are skewed: many small payments and a long tail of large ones. Removing 2,418 real payments would be a serious mistake. So here we keep the rows and report the median (557.14) instead of the mean, which the big payments pull up.
+
+For a clear error, use a domain rule. Salary data is a better example. Salaries above ₹1 crore (10,000,000) are almost certainly typing mistakes for this company.
+
+```python
+sal = pd.read_csv("public/data/csv/hr/salaries.csv")
+ctc = sal["annual_ctc"].astype(str).str.replace(r"[₹,\s]", "", regex=True).astype(float)
+print(int((ctc > 10_000_000).sum()))   # 5
+print(round(ctc.mean(), 2), round(ctc[ctc <= 10_000_000].mean(), 2))
+```
+
+Output:
+
+```
+5
+1526031.18 1326550.82
+```
+
+Five rows, all above ₹1 crore, pull the mean up by about ₹2 lakh. Check them with HR, then remove or fix them and write it in the notes.
+
+### Example 4: missing values that are by design
+
+Delivery time is blank for cancelled orders. That is correct, so do not fill it with zero.
+
+```python
+d = pd.read_csv("public/data/csv/food_delivery/deliveries.csv").drop_duplicates()
+print(pd.crosstab(d["delivery_status"], d["actual_minutes"].isna()))
+print(round(d["actual_minutes"].mean(), 2))
+print(round(d["actual_minutes"].fillna(0).mean(), 2))
+```
+
+Output:
+
+```
+actual_minutes   False  True
+delivery_status
+Cancelled            0   711
+Delivered        14355     0
+44.88
+42.76
+```
+
+The blanks happen only on cancelled orders, so the pattern is by design. Filling them with 0 drops the average from 44.88 to 42.76 minutes. That is wrong. The right average is over delivered orders only.
+
+## Common mistakes
+
+- **Filling with the mean when there are outliers.** A few huge values move the mean. Use the median.
+- **Dropping every row that has any blank.** One blank column can remove most of the table. Check each column first.
+- **Dropping on a key when the copies differ.** You may keep the wrong version of the row. Clean the columns first, then decide.
+- **Treating by-design blanks as errors.** A cancelled order has no delivery time. Filling it corrupts the result.
+- **Removing outliers that are real.** A festival spike is a real event. Check before you remove.
+- **Cleaning without a log.** If nobody can see the row counts before and after, nobody can trust the result.
+
+## Practice questions
+
+<PracticeSet topic="missing" module="python" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "You call df.duplicated() on a table with 3 identical rows. How many rows does it mark True?", options: ["3", "2", "1", "0"], answer: 1, explanation: "The first copy is marked False and kept. The second and third copies are marked True, so two rows are flagged." },
+  { q: "What is the upper IQR fence when Q3 is 100 and IQR is 40?", options: ["140", "160", "120", "100"], answer: 1, explanation: "Upper fence = Q3 + 1.5 x IQR = 100 + 1.5 x 40 = 160." },
+  { q: "Why is the median a better summary than the mean for skewed money data?", options: ["It is always larger", "A few very large values move the mean much more than the median", "It ignores all missing values", "It is faster to compute"], answer: 1, explanation: "The median is the middle value, so a few extreme values barely change it. The mean adds every value, so big ones pull it up." },
+  { q: "Which call removes only rows where every cell is blank?", options: ["df.dropna()", "df.dropna(how=\"all\")", "df.fillna(0)", "df.drop_duplicates()"], answer: 1, explanation: "The default how=\"any\" drops a row when one cell is blank. how=\"all\" drops only rows where every cell is blank." },
+  { q: "A cancelled order has no delivery time. What is the right first step?", options: ["Fill the blank with zero", "Fill it with the mean", "Recognise the blank is by design and do not impute it", "Drop the column"], answer: 2, explanation: "The blank is correct because cancelled orders are never delivered. Filling it changes the meaning of the data." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers want to hear your reasoning, not a single function name. Say how you found the problem, why it happened, what you decided and what numbers changed.
+</InterviewAlert>
+
+<InterviewQ q="How do you handle missing data?">
+First I find out why the values are missing. If the blank is by design, like a cancelled order with no delivery time, I leave it. If it is an error, I either flag it, fill it with a label or statistic, or drop the rows, depending on how much the column matters. I always report the rows before and after.
+</InterviewQ>
+
+<InterviewQ q="What outlier detection methods do you use?">
+I start with the IQR rule, because it uses quartiles and is not thrown off by extreme values. Then I apply a domain rule, such as a salary above a set limit. I z-score only when the data is close to a bell shape. Before I remove any outlier, I check whether it is a real event.
+</InterviewQ>
+
+<InterviewQ q="Mean or median imputation?">
+Median, when the data is skewed. The mean moves a lot when a few values are very large. Money data is usually skewed, so median is the safer default. Mean is fine for roughly symmetric data.
+</InterviewQ>
+
+<InterviewQ q="How do you decide whether duplicates should be dropped?">
+I check exact copies first, because those are safe to drop. Then I check repeated ids where other columns differ. For those, I clean the columns first and check whether the copies become identical. I only drop after I know which copy I keep.
+</InterviewQ>
+
+<InterviewQ q="Tell me about a real example you cleaned.">
+In a transactions file, 89 rows shared a transaction id, but only 47 were exact copies. The rest differed in date and amount format. I cleaned the formats first, then removed the repeats. I wrote the row counts before and after so the team could check the result.
+</InterviewQ>
+
+## Key takeaways
+
+- Ask why a value is missing before you fix it. Some blanks are correct.
+- Count blanks, exact duplicates and repeated ids separately.
+- Use the IQR fences to flag outliers, then check each one against a domain rule.
+- Use the median when the data is skewed. Do not fill with the mean when outliers exist.
+- Write down every cleaning decision with the rows before and after.
+
+<Download href="/downloads/eda-checklist.md" label="EDA checklist" />
+
+## Further reading
+
+<FurtherReading ids={["pandas-docs","kaggle-learn"]} />

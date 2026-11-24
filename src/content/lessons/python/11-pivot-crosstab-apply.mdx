@@ -1,0 +1,284 @@
+---
+title: "pivot_table, crosstab and apply"
+description: "Reshape summaries like an Excel pivot and apply custom logic."
+module: python
+order: 11
+estimatedMinutes: 40
+objectives: ["Build a pivot_table with index, columns, values and aggfunc", "Add totals with margins", "Use crosstab with normalize to get shares", "Turn wide data into long data with melt", "Use pd.cut, np.select and map instead of slow row-wise apply"]
+tags: ["python", "pandas", "pivot", "apply"]
+---
+
+## Learning objectives
+
+- Build a `pivot_table` with `index`, `columns`, `values` and `aggfunc`.
+- Add row and column totals with `margins=True`.
+- Use `pd.crosstab` with `normalize` to get shares.
+- Turn wide data into long data with `melt`.
+- Use `pd.cut`, `np.select` and `.map` in place of slow row-wise `apply`.
+
+## Why this matters for a Data Analyst job
+
+Most business summaries start as a pivot table in Excel. A manager asks, "How many payments failed for each app?" You answer with a grid: apps down the side, statuses across the top. In pandas you write the same grid in one line. Once you know these tools, you can rebuild any Excel pivot in code, and you can repeat it every month without copying and pasting.
+
+<RealWorld>
+A payments analyst at a UPI company gets a new file every week. She uses one `pivot_table` to show failure counts by app and status. The same code runs again next week with no manual steps. Her team then uses the output to check which app needs attention first.
+</RealWorld>
+
+## Concept
+
+### Analogy: the Excel PivotTable, written as code
+
+An Excel PivotTable asks three questions. Which field goes in the rows? Which field goes across the columns? What number goes in each cell, and how should it be combined? In pandas, these three questions map to `index`, `columns` and `values`. The fourth question, how to combine the numbers, is `aggfunc`.
+
+```python
+import pandas as pd
+
+pd.pivot_table(df, index="payment_app", columns="status",
+               values="txn_id", aggfunc="count", fill_value=0)
+```
+
+- `index` is the row label. Each unique value becomes one row.
+- `columns` is the column label. Each unique value becomes one column.
+- `values` is the column that holds the numbers to combine.
+- `aggfunc` is how to combine them. Common choices are `"count"`, `"sum"` and `"mean"`.
+- `fill_value=0` replaces empty cells with 0 instead of NaN.
+
+<Tip>
+The default `aggfunc` is `"mean"`, not `"sum"`. If you want totals, write `aggfunc="sum"` on purpose. This one default causes more wrong reports than any other pivot mistake.
+</Tip>
+
+### Totals with margins
+
+`margins=True` adds an `All` row and an `All` column. The `All` cell is the total of the whole table, computed with the same `aggfunc`. Use it when a reader wants the grand total next to the breakdown.
+
+### crosstab and normalize
+
+`pd.crosstab(a, b)` is a shortcut for counting pairs. It works on two columns directly, with no `values` needed. Add `normalize` to turn counts into shares:
+
+- `normalize="index"` makes each row add up to 1 (or 100 percent). Use it for "what share of each type ended in each status?"
+- `normalize="columns"` makes each column add up to 1.
+- `normalize="all"` divides by the grand total.
+
+<FormulaCard title="Row share">
+Row share of a cell = cell count / total of its row. With `normalize="index"`, every row sums to 1.
+</FormulaCard>
+
+### melt: from wide to long
+
+A wide table has one column per period or category, such as `manager_rating` and `self_rating`. A long table has one row per measurement, with a column that says which measurement it is. Plotting and grouping are easier on long data. `melt` does this step:
+
+```python
+long = df.melt(id_vars="review_id", value_vars=["manager_rating", "self_rating"],
+               var_name="rating_type", value_name="rating")
+```
+
+`stack` and `unstack` do the same job on an index. `unstack` moves an index level into columns, which is how a `groupby` result becomes a grid.
+
+### apply is slow: prefer vectorised tools
+
+`apply(axis=1)` calls a Python function once per row. On a few hundred rows that is fine. On a lakh rows it is slow. Pandas has faster tools for most jobs:
+
+| Job | Slow way | Fast way |
+|---|---|---|
+| Map a value to a group | `apply(lambda x: ...)` | `.map(dict)` |
+| If-else on one column | `apply` with an `if` | `np.where(cond, a, b)` |
+| Several if-else rules | `apply` with `elif` | `np.select(conds, labels, default=...)` |
+| Text clean-up | loop over rows | `.str` methods |
+| Date parts | loop over rows | `.dt` accessor |
+
+`np.select` checks the conditions in order. The first true condition wins, so write the smallest band first.
+
+### Buckets with pd.cut
+
+`pd.cut` sorts numbers into bands. Set the edges with `bins` and the names with `labels`. The `right` argument decides which side of each band is included:
+
+- `right=True` (the default) makes bands like `(0, 500]`. A value of exactly 500 falls in the first band.
+- `right=False` makes bands like `[0, 500)`. A value of exactly 500 falls in the second band.
+
+Pick one and write it down, because the edge values change the counts.
+
+## Worked examples
+
+### Example 1: transaction counts by app and status
+
+The fintech `transactions` table has repeated `txn_id` rows. We drop them first, so each payment counts once. Then we build the grid with totals.
+
+```python
+txn = load("fintech", "transactions").drop_duplicates(subset="txn_id")
+
+table = pd.pivot_table(txn, index="payment_app", columns="status",
+                       values="txn_id", aggfunc="count",
+                       fill_value=0, margins=True)
+print(table)
+```
+
+**Output:**
+
+```
+status       FAILED  PENDING  SUCCESS    All
+payment_app                                 
+NammaPay        200       13     3709   3922
+PayZippy        162       16     7012   7190
+QuickPaisa      122       35     5286   5443
+RupeeRocket      50        9     2643   2702
+SabPay           67        7     2969   3043
+All             601       80    21619  22300
+```
+
+The `All` row and column give the totals. `PayZippy` has the most payments, and its failure count is 162 out of 7190 payments.
+
+### Example 2: status share for each transaction type
+
+A raw count hides the size of each group. A share is easier to compare. We use `crosstab` with `normalize="index"`, so each row adds up to 1.
+
+```python
+share = pd.crosstab(txn["txn_type"], txn["status"], normalize="index").round(3)
+print(share)
+```
+
+**Output:**
+
+```
+status    FAILED  PENDING  SUCCESS
+txn_type                          
+Bill Pay   0.026    0.004    0.971
+P2M        0.027    0.003    0.970
+P2P        0.026    0.003    0.971
+Recharge   0.033    0.006    0.961
+```
+
+Each row adds up to 1. `Recharge` has the highest failure share, at 3.3 percent. The shares of the four types are close to each other, so the difference is small.
+
+### Example 3: bucket order items by line total
+
+A pricing question: how many order items fall in each value band? `pd.cut` does the sorting, and `value_counts` counts each band. We set `right=False` so that a value of exactly 1000 goes into the second band.
+
+```python
+oi = load("ecommerce", "order_items")
+labels = ["Under 1000", "1000 to 4999", "5000 to 24999", "25000 and above"]
+band = pd.cut(oi["line_total"], bins=[0, 1000, 5000, 25000, float("inf")],
+              labels=labels, right=False)
+print(band.value_counts().reindex(labels))
+```
+
+**Output:**
+
+```
+line_total
+Under 1000         9810
+1000 to 4999       7721
+5000 to 24999      2451
+25000 and above     175
+Name: count, dtype: int64
+```
+
+Most items cost less than 5000 rupees. Only 175 items (about 1 in 115) cost 25000 rupees or more. `reindex(labels)` keeps the bands in price order, not in count order.
+
+### Example 4: map payment methods to groups, then pivot
+
+A raw `payment_method` has six values. Grouping them into two groups makes the report easier to read. `.map` with a dict does the grouping without a loop.
+
+```python
+pay = load("ecommerce", "payments")
+groups = {"UPI": "Digital", "Credit Card": "Digital", "Debit Card": "Digital",
+          "Netbanking": "Digital", "Wallet": "Digital", "COD": "Cash on delivery"}
+pay["group"] = pay["payment_method"].map(groups)
+
+print(pd.pivot_table(pay, index="group", columns="payment_status",
+                     values="payment_id", aggfunc="count", fill_value=0))
+```
+
+**Output:**
+
+```
+payment_status    Failed  Refunded  Success
+group                                      
+Cash on delivery     403         0     1885
+Digital              399       329     7383
+```
+
+Digital payments have the refunds. Cash on delivery has no refunds, because the customer pays the courier in cash.
+
+## Common mistakes
+
+<CommonMistake>
+**Trusting the default aggfunc.** `pivot_table` uses `mean` unless you say otherwise. A count table or a revenue table needs `aggfunc="count"` or `aggfunc="sum"`. Always write it out.
+</CommonMistake>
+
+<CommonMistake>
+**Empty cells that look like zero.** A combination that never happens becomes `NaN`. Use `fill_value=0` when zero is the right answer, so the table has no gaps and the totals add up.
+</CommonMistake>
+
+<CommonMistake>
+**Row-wise apply on a big table.** `df.apply(f, axis=1)` runs a Python function for every row. On a lakh rows it can take minutes. Use `np.select`, `np.where`, `.map` or `.str` instead.
+</CommonMistake>
+
+<CommonMistake>
+**Edge values in pd.cut.** With the default `right=True`, a value of exactly 500 goes into the band `(0, 500]`. Decide the edge rule first, and check one edge value by hand.
+</CommonMistake>
+
+<CommonMistake>
+**Normalising on the wrong axis.** `normalize="index"` gives row shares. `normalize="columns"` gives column shares. Picking the wrong one gives numbers that look plausible but answer a different question.
+</CommonMistake>
+
+<CommonMistake>
+**Pivoting before removing duplicates.** A repeated `txn_id` counts twice in every cell. Drop duplicates on the id column before you pivot.
+</CommonMistake>
+
+<PracticeSet topic="pivot" module="python" />
+
+## Practice questions
+
+Try these before you open the answers. Each one uses a real dataset on the site.
+
+- Count transactions by type and status, with duplicates removed.
+- Turn order statuses into percent shares for each sales channel.
+- Bucket order items into price bands and read the counts in band order.
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What is the default aggfunc of pd.pivot_table?", options: ["sum", "count", "mean", "max"], answer: 2, explanation: "pivot_table uses mean unless you set aggfunc. Set it on purpose for counts or totals." },
+  { q: "What does margins=True add to a pivot table?", options: ["A chart", "Row and column totals named All", "A sorted index", "Duplicate rows"], answer: 1, explanation: "margins=True adds an All row and an All column with the totals." },
+  { q: "Which crosstab option makes each row add up to 100 percent?", options: ["normalize='all'", "normalize='columns'", "normalize='index'", "normalize=True only"], answer: 2, explanation: "normalize='index' divides each cell by its row total, so each row sums to 1." },
+  { q: "Which tool is the fast choice for an if-else on one column?", options: ["apply with axis=1", "iterrows", "np.where", "a for loop"], answer: 2, explanation: "np.where runs as one vectorised step over the whole column, so it is much faster than a row-wise apply." },
+  { q: "What does pd.cut return?", options: ["A number for each row", "A category label (interval) for each row", "A sorted DataFrame", "A list of duplicates"], answer: 1, explanation: "pd.cut puts each value into a band and returns the band label for each row." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers like to ask about pivots because they test whether you know what goes into each cell, not just the syntax.
+</InterviewAlert>
+
+<InterviewQ q="What is the difference between pivot_table and groupby?">
+`groupby` gives a long result with one row per group. `pivot_table` is a `groupby` followed by a reshape. It spreads one column's values across the top, fills empty cells, and can add totals. Use `groupby` for a calculation, and `pivot_table` when the reader needs a grid.
+</InterviewQ>
+
+<InterviewQ q="When would you use apply, and when would you avoid it?">
+Use `apply` only when no vectorised tool fits. It calls Python once per row, so it is slow on big data. For if-else logic, use `np.where` or `np.select`. For lookups, use `.map` with a dict.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between crosstab and pivot_table?">
+`crosstab` counts pairs of columns, or sums a third one with `values`. It is a shortcut for the common count-and-share case. `pivot_table` is more flexible: it takes any `aggfunc` and handles missing combinations with `fill_value`.
+</InterviewQ>
+
+<InterviewQ q="Why is long format better for plotting?">
+Long data has one row per measurement and one column that names the measurement type. Plotting libraries and `groupby` can then split and colour by that column without any reshaping. Wide data has a column per category, which makes each chart need its own code.
+</InterviewQ>
+
+<InterviewQ q="How would you create age buckets?">
+Use `pd.cut` with clear `bins` and `labels`. State whether the edges are included with `right`. Check one edge value by hand before you trust the counts.
+</InterviewQ>
+
+## Key takeaways
+
+- `pivot_table` is the Excel PivotTable in code: `index`, `columns`, `values`, `aggfunc`.
+- The default `aggfunc` is `mean`. Set `sum` or `count` on purpose.
+- `pd.crosstab(..., normalize="index")` gives row shares that add up to 1.
+- Prefer `np.where`, `np.select`, `.map` and `.str` over row-wise `apply`.
+- Use `pd.cut` for bands, and set `right` so you know where each edge goes.
+
+## Further reading
+
+<FurtherReading ids={["pandas-docs", "excel-support"]} />

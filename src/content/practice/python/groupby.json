@@ -1,0 +1,550 @@
+[
+  {
+    "id": "python-groupby-001",
+    "module": "python",
+    "topic": "groupby",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "The operations team wants to know how many orders sit in each status. The orders file has repeated rows, so keep one row per `order_id` first. Return a Series of counts by `order_status`, sorted from highest to lowest.",
+    "dataset": "ecommerce",
+    "hint": "Drop the repeated order rows, then use value_counts() on order_status.",
+    "solutionCode": "orders = load(\"ecommerce\", \"orders\").drop_duplicates(subset=\"order_id\")\nresult = orders[\"order_status\"].value_counts().sort_values(ascending=False)",
+    "expectedOutput": {
+      "columns": [
+        "order_status",
+        "count"
+      ],
+      "rows": [
+        [
+          "Delivered",
+          9268
+        ],
+        [
+          "Cancelled",
+          566
+        ],
+        [
+          "RTO",
+          166
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "drop_duplicates(subset=\"order_id\") keeps one row for each order, even when the other columns differ by a date format. value_counts() is a shortcut for groupby(...).size() on one column. It returns a Series already sorted by count, and sort_values makes the order explicit.",
+    "commonMistake": "Using drop_duplicates() with no subset. About 41 orders have the same order_id but slightly different text in other columns, so the full-row check keeps them twice and the Delivered count goes up.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "groupby",
+      "dedupe",
+      "value_counts"
+    ]
+  },
+  {
+    "id": "python-groupby-002",
+    "module": "python",
+    "topic": "groupby",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "HR wants the current headcount of each department. Count only employees whose `employment_status` is Active, and count each `employee_id` once. Return a DataFrame with `department_id` and `headcount`, sorted by `department_id`.",
+    "dataset": "hr",
+    "hint": "Filter to Active rows, drop duplicate employee_id values, then group by department_id and count.",
+    "solutionCode": "emp = load(\"hr\", \"employees\")\nactive = emp[emp[\"employment_status\"] == \"Active\"].drop_duplicates(subset=\"employee_id\")\nresult = (\n    active.groupby(\"department_id\")\n    .size()\n    .rename(\"headcount\")\n    .reset_index()\n    .sort_values(\"department_id\")\n    .reset_index(drop=True)\n)",
+    "expectedOutput": {
+      "columns": [
+        "department_id",
+        "headcount"
+      ],
+      "rows": [
+        [
+          1,
+          693
+        ],
+        [
+          2,
+          240
+        ],
+        [
+          3,
+          130
+        ],
+        [
+          4,
+          292
+        ],
+        [
+          5,
+          88
+        ],
+        [
+          6,
+          80
+        ],
+        [
+          7,
+          208
+        ],
+        [
+          8,
+          125
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "size() counts rows in each group, including rows with missing values in other columns. Filtering first means exited employees are not in the headcount. rename() names the result column, and reset_index() turns the group keys back into normal columns.",
+    "commonMistake": "Counting all rows in the file. The file has 12 repeated employee rows and 545 exited employees, so the count is too high.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "groupby",
+      "size",
+      "headcount"
+    ]
+  },
+  {
+    "id": "python-groupby-003",
+    "module": "python",
+    "topic": "groupby",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "The marketing head wants the total ad spend for each campaign. Remove the repeated ad_spend rows, turn `spend_inr` into numbers (it has a rupee sign and commas in some rows), and show the top 5 campaigns by total spend. Return `campaign_id` and `total_spend` (2 decimals). Sort by spend (highest first), then by `campaign_id`.",
+    "dataset": "marketing",
+    "hint": "Clean the text money column first, then group by campaign_id and sum.",
+    "solutionCode": "ads = load(\"marketing\", \"ad_spend\").drop_duplicates(subset=\"ad_spend_id\").copy()\nads[\"spend\"] = ads[\"spend_inr\"].astype(str).str.replace(r\"[₹,\\s]\", \"\", regex=True).astype(float)\ntotals = ads.groupby(\"campaign_id\", as_index=False)[\"spend\"].sum()\ntotals[\"total_spend\"] = totals[\"spend\"].round(2)\nresult = (\n    totals.sort_values([\"total_spend\", \"campaign_id\"], ascending=[False, True])\n    .head(5)[[\"campaign_id\", \"total_spend\"]]\n    .reset_index(drop=True)\n)",
+    "expectedOutput": {
+      "columns": [
+        "campaign_id",
+        "total_spend"
+      ],
+      "rows": [
+        [
+          25,
+          134880.47
+        ],
+        [
+          17,
+          24868.75
+        ],
+        [
+          4,
+          20911.71
+        ],
+        [
+          9,
+          16388.21
+        ],
+        [
+          26,
+          14922.4
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "A sum over a text column gives wrong answers or an error, so we first remove the rupee sign and commas. groupby(..., as_index=False) gives a normal DataFrame, so we don't need reset_index() later. The sort uses campaign_id as a tie-breaker, so the top 5 list is always the same.",
+    "commonMistake": "Summing spend_inr directly. Pandas joins the text values together, or raises an error, so the total is not a number. Also, one row has a 100x entry error; this question does not remove it, so one campaign looks much bigger.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "groupby",
+      "sum",
+      "text-cleaning"
+    ]
+  },
+  {
+    "id": "python-groupby-004",
+    "module": "python",
+    "topic": "groupby",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "The payments team wants the failure rate of each payment app. Keep one row per `txn_id`. Failure rate is the share of all transactions in that app that have status FAILED, including PENDING ones in the denominator. Return `payment_app` and `failure_rate_pct` (percent, 2 decimals), highest rate first.",
+    "dataset": "fintech",
+    "hint": "Make a True/False column for FAILED. The mean of a True/False column is the share of True values.",
+    "solutionCode": "txns = load(\"fintech\", \"transactions\").drop_duplicates(subset=\"txn_id\").copy()\ntxns[\"is_failed\"] = txns[\"status\"].eq(\"FAILED\")\nrates = txns.groupby(\"payment_app\")[\"is_failed\"].mean() * 100\nresult = (\n    rates.round(2).rename(\"failure_rate_pct\").reset_index()\n    .sort_values([\"failure_rate_pct\", \"payment_app\"], ascending=[False, True])\n    .reset_index(drop=True)\n)",
+    "expectedOutput": {
+      "columns": [
+        "payment_app",
+        "failure_rate_pct"
+      ],
+      "rows": [
+        [
+          "NammaPay",
+          5.1
+        ],
+        [
+          "PayZippy",
+          2.25
+        ],
+        [
+          "QuickPaisa",
+          2.24
+        ],
+        [
+          "SabPay",
+          2.2
+        ],
+        [
+          "RupeeRocket",
+          1.85
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "The mean of a True/False column is the share of True values, so the group mean is the failure rate. We multiply by 100 for a percent. The denominator is every unique transaction in the app, so PENDING rows are counted, as the question asks.",
+    "commonMistake": "Using status == 'FAILED' on rows that are not de-duplicated. The 89 repeated txn_id rows count twice, and the rate for some apps moves by a fraction of a percent.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": [
+      "groupby",
+      "mean",
+      "rate"
+    ]
+  },
+  {
+    "id": "python-groupby-005",
+    "module": "python",
+    "topic": "groupby",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Product wants to know how many different users have ever held each plan. A user who moved between plans counts once for each plan they held. Return `plan` and `users`, highest users first, then plan name A to Z.",
+    "dataset": "subscription",
+    "hint": "nunique() counts distinct values. Group by plan and count distinct user_id.",
+    "solutionCode": "subs = load(\"subscription\", \"subscriptions\")\nresult = (\n    subs.groupby(\"plan\")[\"user_id\"].nunique()\n    .rename(\"users\").reset_index()\n    .sort_values([\"users\", \"plan\"], ascending=[False, True])\n    .reset_index(drop=True)\n)",
+    "expectedOutput": {
+      "columns": [
+        "plan",
+        "users"
+      ],
+      "rows": [
+        [
+          "Standard",
+          1626
+        ],
+        [
+          "Basic",
+          1001
+        ],
+        [
+          "Premium",
+          681
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "nunique() counts distinct user_id values inside each plan group. Repeated subscription rows for the same user, from renewals, count once. This is different from size(), which counts rows.",
+    "commonMistake": "Using size() or count(). These count subscription rows, so a user with three renewals is counted three times.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "groupby",
+      "nunique"
+    ]
+  },
+  {
+    "id": "python-groupby-006",
+    "module": "python",
+    "topic": "groupby",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Operations wants to know if weather changes delivery time. Use only delivered orders (delivery_status is Delivered), and keep one row per `delivery_id`. For each weather type, return the average `actual_minutes` (1 decimal) and the number of deliveries. Name them `avg_actual_minutes` and `deliveries`. Sort by weather A to Z.",
+    "dataset": "food_delivery",
+    "hint": "Filter to Delivered rows first. Then use named aggregation with .agg().",
+    "solutionCode": "d = load(\"food_delivery\", \"deliveries\").drop_duplicates(subset=\"delivery_id\")\nd = d[d[\"delivery_status\"] == \"Delivered\"]\nresult = (\n    d.groupby(\"weather\")\n    .agg(avg_actual_minutes=(\"actual_minutes\", \"mean\"), deliveries=(\"delivery_id\", \"count\"))\n    .round(1)\n    .reset_index()\n    .sort_values(\"weather\")\n    .reset_index(drop=True)\n)",
+    "expectedOutput": {
+      "columns": [
+        "weather",
+        "avg_actual_minutes",
+        "deliveries"
+      ],
+      "rows": [
+        [
+          "Clear",
+          44,
+          9890
+        ],
+        [
+          "Cloudy",
+          43.7,
+          2521
+        ],
+        [
+          "Heavy Rain",
+          53.9,
+          627
+        ],
+        [
+          "Rain",
+          49.5,
+          1252
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Named aggregation (`new_name=(column, function)`) lets you set output names in one step. Filtering before the group keeps cancelled orders, which have no actual_minutes, out of the average. count() counts non-missing values, so it works here because every delivered row has an id.",
+    "commonMistake": "Averaging over all rows. Cancelled orders have no actual_minutes value, so the average covers only some rows, and the question is answered for the wrong set of orders.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 6,
+    "tags": [
+      "groupby",
+      "named-agg"
+    ]
+  },
+  {
+    "id": "python-groupby-007",
+    "module": "python",
+    "topic": "groupby",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "The category manager wants the 10 biggest store and category combinations by units sold. Keep one row per `sale_id`. Return `store_id`, `category` and `total_units`, sorted by total units (highest first), then store_id, then category.",
+    "dataset": "retail",
+    "hint": "Group by two columns at once. Then sort and take the top 10.",
+    "solutionCode": "sales = load(\"retail\", \"sales\").drop_duplicates(subset=\"sale_id\")\ntotals = sales.groupby([\"store_id\", \"category\"], as_index=False)[\"quantity\"].sum()\ntotals = totals.rename(columns={\"quantity\": \"total_units\"})\nresult = (\n    totals.sort_values([\"total_units\", \"store_id\", \"category\"], ascending=[False, True, True])\n    .head(10)\n    .reset_index(drop=True)\n)",
+    "expectedOutput": {
+      "columns": [
+        "store_id",
+        "category",
+        "total_units"
+      ],
+      "rows": [
+        [
+          1,
+          "Grocery & Staples",
+          1541
+        ],
+        [
+          3,
+          "Grocery & Staples",
+          1529
+        ],
+        [
+          5,
+          "Grocery & Staples",
+          1514
+        ],
+        [
+          12,
+          "Grocery & Staples",
+          1473
+        ],
+        [
+          12,
+          "Personal Care",
+          1083
+        ],
+        [
+          5,
+          "Personal Care",
+          1070
+        ],
+        [
+          1,
+          "Personal Care",
+          1031
+        ],
+        [
+          3,
+          "Personal Care",
+          1020
+        ],
+        [
+          2,
+          "Grocery & Staples",
+          965
+        ],
+        [
+          16,
+          "Grocery & Staples",
+          897
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Passing a list of columns to groupby creates one group for each pair. as_index=False keeps store_id and category as normal columns. The sort has two tie-breakers, so equal totals always come out in the same order.",
+    "commonMistake": "Grouping by store_id only. The totals are for the whole store, so the category column you want is lost.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "groupby",
+      "multi-key",
+      "top-n"
+    ]
+  },
+  {
+    "id": "python-groupby-008",
+    "module": "python",
+    "topic": "groupby",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "The merchandising team wants the return rate for each product category. Return rate is the number of order items that have a row in the returns file, divided by all order items in that category. Category names have stray spaces and mixed capitals, so clean them first. Return `category` and `return_rate_pct` (2 decimals), highest rate first, then category A to Z.",
+    "dataset": "ecommerce",
+    "hint": "Make a True/False column that says whether each order item is in returns. Clean the category names before you group.",
+    "solutionCode": "items = load(\"ecommerce\", \"order_items\")\nprods = load(\"ecommerce\", \"products\")[[\"product_id\", \"category\"]].drop_duplicates(subset=\"product_id\").copy()\nprods[\"category\"] = prods[\"category\"].str.strip().str.title()\nreturned_items = load(\"ecommerce\", \"returns\")[\"order_item_id\"]\nitems = items.merge(prods, on=\"product_id\", how=\"left\")\nitems[\"was_returned\"] = items[\"order_item_id\"].isin(returned_items)\nrates = items.groupby(\"category\")[\"was_returned\"].mean() * 100\nresult = (\n    rates.round(2).rename(\"return_rate_pct\").reset_index()\n    .sort_values([\"return_rate_pct\", \"category\"], ascending=[False, True])\n    .reset_index(drop=True)\n)",
+    "expectedOutput": {
+      "columns": [
+        "category",
+        "return_rate_pct"
+      ],
+      "rows": [
+        [
+          "Fashion",
+          20.2
+        ],
+        [
+          "Footwear",
+          14.94
+        ],
+        [
+          "Electronics",
+          6.34
+        ],
+        [
+          "Home & Kitchen",
+          4.42
+        ],
+        [
+          "Beauty",
+          3.41
+        ],
+        [
+          "Books",
+          1.68
+        ],
+        [
+          "Grocery",
+          1.2
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "An order item is returned if its order_item_id is in the returns table. isin() checks that. The mean of the True/False column is the return rate. Cleaning the category names with strip() and title() merges 'books', ' Books' and 'BOOKS' into one group.",
+    "commonMistake": "Using an inner merge with returns. Only returned items survive the join, so every category shows 100 percent.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 9,
+    "tags": [
+      "groupby",
+      "merge",
+      "rate",
+      "text-cleaning"
+    ]
+  },
+  {
+    "id": "python-groupby-009",
+    "module": "python",
+    "topic": "groupby",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "Risk team wants to find users who put most of their money into one payment. For each user, use unique transactions with an amount of 50,000 or less (larger amounts are excluded for this report). Clean the rupee text in `amount`. Find each user's largest transaction as a share of their total amount across all their transactions. Keep only users with at least 5 SUCCESS transactions. Return the top 5 users by that share as `user_id` and `largest_share_pct` (2 decimals), highest first, then user_id.",
+    "dataset": "fintech",
+    "hint": "Group by user_id and use agg() with a sum and a max. Count SUCCESS rows separately, then keep only the users with enough of them.",
+    "solutionCode": "txns = load(\"fintech\", \"transactions\").drop_duplicates(subset=\"txn_id\").copy()\ntxns[\"amount\"] = txns[\"amount\"].astype(str).str.replace(r\"[₹,\\s]\", \"\", regex=True).astype(float)\ntxns = txns[txns[\"amount\"] <= 50000]\nper_user = txns.groupby(\"user_id\")[\"amount\"].agg(total=\"sum\", largest=\"max\")\nsuccess_counts = txns[txns[\"status\"] == \"SUCCESS\"].groupby(\"user_id\").size()\neligible = per_user[per_user.index.isin(success_counts[success_counts >= 5].index)].copy()\neligible[\"largest_share_pct\"] = (eligible[\"largest\"] / eligible[\"total\"] * 100).round(2)\nresult = (\n    eligible.reset_index()[[\"user_id\", \"largest_share_pct\"]]\n    .sort_values([\"largest_share_pct\", \"user_id\"], ascending=[False, True])\n    .head(5)\n    .reset_index(drop=True)\n)",
+    "expectedOutput": {
+      "columns": [
+        "user_id",
+        "largest_share_pct"
+      ],
+      "rows": [
+        [
+          1106,
+          95.97
+        ],
+        [
+          683,
+          93.24
+        ],
+        [
+          392,
+          93.08
+        ],
+        [
+          1002,
+          88.44
+        ],
+        [
+          2086,
+          88.4
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "agg() returns the sum and the max of the same group in one table. Dividing the max by the sum gives the share. The success filter uses a separate count, so the two rules do not mix. Clean text amounts before any sum, because pandas adds text values together without raising an error.",
+    "commonMistake": "Summing the raw amount column. It holds text such as '₹2,849.33', so the total is a joined string or an error, not a number.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 12,
+    "tags": [
+      "groupby",
+      "agg",
+      "share",
+      "text-cleaning"
+    ]
+  },
+  {
+    "id": "python-groupby-010",
+    "module": "python",
+    "topic": "groupby",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "Compensation team wants the top-paid employee in each department. Use each employee's latest salary row (highest effective_date). Clean the `annual_ctc` text (rupee sign and Indian commas). Ignore salary rows above 5,00,00,000 (data entry errors). Attach each employee's department_id from the employees file (one row per employee_id). Return `department_id`, `employee_id` and `annual_ctc`, one row per department, sorted by department_id.",
+    "dataset": "hr",
+    "hint": "Clean and filter salaries first. Then sort by date and take the last row per employee. Join to employees, sort by pay, and take the first row per department.",
+    "solutionCode": "sal = load(\"hr\", \"salaries\").copy()\nsal[\"annual_ctc\"] = sal[\"annual_ctc\"].astype(str).str.replace(r\"[₹,\\s]\", \"\", regex=True).astype(float)\nsal = sal[sal[\"annual_ctc\"] <= 50000000].copy()\nsal[\"effective_date\"] = pd.to_datetime(sal[\"effective_date\"])\nlatest = sal.sort_values([\"employee_id\", \"effective_date\", \"salary_id\"]).groupby(\"employee_id\").tail(1)\nemp = load(\"hr\", \"employees\").drop_duplicates(subset=\"employee_id\")[[\"employee_id\", \"department_id\"]]\nm = latest.merge(emp, on=\"employee_id\", how=\"inner\")\ntop = m.sort_values([\"department_id\", \"annual_ctc\", \"employee_id\"], ascending=[True, False, True]).groupby(\"department_id\").head(1)\nresult = top[[\"department_id\", \"employee_id\", \"annual_ctc\"]].reset_index(drop=True)",
+    "expectedOutput": {
+      "columns": [
+        "department_id",
+        "employee_id",
+        "annual_ctc"
+      ],
+      "rows": [
+        [
+          1,
+          144,
+          7751000
+        ],
+        [
+          2,
+          512,
+          40600000
+        ],
+        [
+          3,
+          505,
+          5330000
+        ],
+        [
+          4,
+          1074,
+          3324000
+        ],
+        [
+          5,
+          1269,
+          5154000
+        ],
+        [
+          6,
+          775,
+          5068000
+        ],
+        [
+          7,
+          2215,
+          35100000
+        ],
+        [
+          8,
+          418,
+          6581000
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Sorting by date and calling tail(1) per employee keeps the latest row. Sorting by pay and calling head(1) per department keeps the top earner. The 100x entry errors are removed before the sort, or one of them would be the top earner in its department.",
+    "commonMistake": "Sorting annual_ctc as text. '₹9,00,000' sorts above '₹12,00,000' as text, so the ranking is wrong. Convert to numbers first.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 14,
+    "tags": [
+      "groupby",
+      "sort",
+      "head",
+      "text-cleaning"
+    ]
+  }
+]

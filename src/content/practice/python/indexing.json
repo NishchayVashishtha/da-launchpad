@@ -1,0 +1,323 @@
+[
+  {
+    "id": "python-indexing-001",
+    "module": "python",
+    "topic": "indexing",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "The payments team wants to know how many transfers failed. Load `transactions` and return the number of rows where `status` is `FAILED`. Count raw rows, including duplicates.",
+    "dataset": "fintech",
+    "hint": "Build a True/False mask with `==`, then add it up. True counts as 1.",
+    "solutionCode": "df = load(\"fintech\", \"transactions\")\nmask = df[\"status\"] == \"FAILED\"\nresult = int(mask.sum())",
+    "expectedOutput": {
+      "value": 608
+    },
+    "orderMatters": false,
+    "explanation": "`df[\"status\"] == \"FAILED\"` gives a column of True and False values, one per row. `sum()` treats True as 1 and False as 0, so the total is the number of failed rows. PENDING rows are not counted.",
+    "commonMistake": "Counting `status != \"SUCCESS\"`. That also counts the PENDING rows, so the answer is too high.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "mask",
+      "boolean",
+      "sum"
+    ]
+  },
+  {
+    "id": "python-indexing-002",
+    "module": "python",
+    "topic": "indexing",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "The merchandising team wants to find bulk buying. Load `order_items` and return how many rows have a `quantity` of 5 or more. Return a plain integer.",
+    "dataset": "ecommerce",
+    "hint": "Use `>=` for \"5 or more\". Then count the True values.",
+    "solutionCode": "df = load(\"ecommerce\", \"order_items\")\nresult = int((df[\"quantity\"] >= 5).sum())",
+    "expectedOutput": {
+      "value": 45
+    },
+    "orderMatters": false,
+    "explanation": "`>=` means greater than or equal to, so the value 5 is included. The bracket around the comparison makes the mask, and `sum()` counts the True values.",
+    "commonMistake": "Using `> 5`. That drops the rows with exactly 5 units, so the count is too low.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "comparison",
+      "mask"
+    ]
+  },
+  {
+    "id": "python-indexing-003",
+    "module": "python",
+    "topic": "indexing",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "HR wants to know how many employees work fully remote. Load `employees` and return the number of rows where `work_mode` is `Remote`. Count raw rows, including duplicates.",
+    "dataset": "hr",
+    "hint": "Compare the column to the exact text `Remote`. Spelling and capital letters must match.",
+    "solutionCode": "df = load(\"hr\", \"employees\")\nresult = int((df[\"work_mode\"] == \"Remote\").sum())",
+    "expectedOutput": {
+      "value": 366
+    },
+    "orderMatters": false,
+    "explanation": "The comparison checks each row for the exact text `Remote`. Text comparison in pandas is case-sensitive, so `remote` in lower case would not match. `sum()` counts the matching rows.",
+    "commonMistake": "Typing `\"remote\"` in lower case. The count comes back as 0 with no error, which looks like a real answer but is wrong.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "mask",
+      "text comparison"
+    ]
+  },
+  {
+    "id": "python-indexing-004",
+    "module": "python",
+    "topic": "indexing",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "The marketing team wants the names of all Meta Ads campaigns. From `campaigns`, return the `campaign_name` values where `channel` is `Meta Ads`, as a sorted Python list.",
+    "dataset": "marketing",
+    "hint": "Use `.loc[mask, \"campaign_name\"]` to pick the rows and one column together. Then call `.tolist()` and `sorted()`.",
+    "solutionCode": "df = load(\"marketing\", \"campaigns\")\nmask = df[\"channel\"] == \"Meta Ads\"\nresult = sorted(df.loc[mask, \"campaign_name\"].tolist())",
+    "expectedOutput": {
+      "value": [
+        "Diwali Dhamaka 2023 - Meta",
+        "Festive Teaser 2024 - Meta",
+        "IPL 2024 Meta Reels",
+        "Monsoon Mania - Meta",
+        "Republic Day 2024 Meta",
+        "Summer Cooler Meta Carousel"
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "`.loc[mask, \"campaign_name\"]` keeps only the rows where the mask is True and only the name column. `tolist()` turns the Series into a plain list, and `sorted()` puts the names in alphabetical order.",
+    "commonMistake": "Returning the whole DataFrame, or a list in file order. The question asks for one column as a sorted list.",
+    "interviewFrequency": "low",
+    "estimatedMinutes": 4,
+    "tags": [
+      "loc",
+      "mask",
+      "list"
+    ]
+  },
+  {
+    "id": "python-indexing-005",
+    "module": "python",
+    "topic": "indexing",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "The fraud desk wants to review peer-to-peer transfers that were flagged but still went through. Load `transactions` and return the number of rows where `is_flagged` is 1, `txn_type` is `P2P`, and `status` is `SUCCESS`. Count raw rows.",
+    "dataset": "fintech",
+    "hint": "Make one mask for each condition. Join them with `&`, and put each mask in its own brackets.",
+    "solutionCode": "df = load(\"fintech\", \"transactions\")\nmask = (df[\"is_flagged\"] == 1) & (df[\"txn_type\"] == \"P2P\") & (df[\"status\"] == \"SUCCESS\")\nresult = int(mask.sum())",
+    "expectedOutput": {
+      "value": 50
+    },
+    "orderMatters": false,
+    "explanation": "Each comparison gives a True/False column. `&` means both sides must be True, row by row. The brackets around each comparison are required, because `&` binds more tightly than `==` in Python.",
+    "commonMistake": "Leaving out the brackets, as in `df[\"is_flagged\"] == 1 & df[\"txn_type\"] == \"P2P\"`. Python then reads the expression in the wrong order and raises an error, or returns the wrong rows.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "multiple conditions",
+      "&",
+      "parentheses"
+    ]
+  },
+  {
+    "id": "python-indexing-006",
+    "module": "python",
+    "topic": "indexing",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Finance wants the five biggest order lines by value. From `order_items`, return `order_item_id` and `line_total` for the top 5 rows by `line_total`, largest first. Break ties by `order_item_id`, smallest first. Return a DataFrame with a fresh 0 to 4 index.",
+    "dataset": "ecommerce",
+    "hint": "Sort by two columns at once. Give `ascending` a list with one True or False for each column.",
+    "solutionCode": "df = load(\"ecommerce\", \"order_items\")\nresult = df.sort_values([\"line_total\", \"order_item_id\"], ascending=[False, True]).head(5)[[\"order_item_id\", \"line_total\"]].reset_index(drop=True)",
+    "expectedOutput": {
+      "columns": [
+        "order_item_id",
+        "line_total"
+      ],
+      "rows": [
+        [
+          10709,
+          928122
+        ],
+        [
+          3856,
+          557051
+        ],
+        [
+          14262,
+          337183
+        ],
+        [
+          17066,
+          87048
+        ],
+        [
+          14513,
+          85351
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "`sort_values` with two keys sorts by `line_total` first, from high to low. If two rows have the same total, the second key puts the smaller `order_item_id` first. That makes the top five the same on every run. `head(5)` then keeps the first five rows.",
+    "commonMistake": "Sorting by `line_total` alone. When two rows tie, the order can change between runs, so the answer is not stable.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "sort_values",
+      "tie-break",
+      "head"
+    ]
+  },
+  {
+    "id": "python-indexing-007",
+    "module": "python",
+    "topic": "indexing",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "Operations wants to know how often rain caused long delays. From `deliveries`, count the rows where `delay_minutes` is more than 15 and `weather` is `Rain` or `Heavy Rain`. Count raw rows.",
+    "dataset": "food_delivery",
+    "hint": "Use `isin` for the two weather values. Cancelled orders have no delay value, so they drop out of a `>` comparison.",
+    "solutionCode": "df = load(\"food_delivery\", \"deliveries\")\nmask = (df[\"delay_minutes\"] > 15) & (df[\"weather\"].isin([\"Rain\", \"Heavy Rain\"]))\nresult = int(mask.sum())",
+    "expectedOutput": {
+      "value": 361
+    },
+    "orderMatters": false,
+    "explanation": "`isin` checks whether each weather value is in the list. A missing `delay_minutes` makes the comparison False, so cancelled orders that have no delay are not counted. The two masks are joined with `&` and then summed.",
+    "commonMistake": "Checking only `weather == \"Rain\"`. That leaves out the Heavy Rain deliveries, so the count is too low.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "isin",
+      "mask",
+      "missing values"
+    ]
+  },
+  {
+    "id": "python-indexing-008",
+    "module": "python",
+    "topic": "indexing",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "The retail team wants the store names in any city whose name contains `pu`, in any letter case. From `stores`, return the `store_name` values as a sorted Python list. Treat a missing city as no match.",
+    "dataset": "retail",
+    "hint": "`str.contains` checks for part of a word. Use `case=False` to ignore capital letters, and `na=False` for missing values.",
+    "solutionCode": "df = load(\"retail\", \"stores\")\nmask = df[\"city\"].str.contains(\"pu\", case=False, na=False)\nresult = sorted(df.loc[mask, \"store_name\"].tolist())",
+    "expectedOutput": {
+      "value": [
+        "Vasudha Express - Kharadi",
+        "Vasudha Supermarket - Aundh",
+        "Vasudha Supermarket - Dharampeth",
+        "Vasudha Supermarket - Malviya Nagar"
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "`str.contains` looks for the text anywhere inside each city name. `case=False` makes `PU`, `Pu` and `pu` all match. `na=False` makes a missing city return False instead of NaN, so the mask stays True or False only.",
+    "commonMistake": "Using the default `case=True`. A city written as `JAIPUR` would be missed, so the list is incomplete.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "str.contains",
+      "case",
+      "missing values"
+    ]
+  },
+  {
+    "id": "python-indexing-009",
+    "module": "python",
+    "topic": "indexing",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "The product team wants to know how many users outside iOS and Android signed up in 2024. From `users`, count the rows where `platform` is neither `iOS` nor `Android` and the signup happened in 2024. Some `signup_date` values are `YYYY-MM-DD` and others are `DD-MM-YYYY`. Count raw rows.",
+    "dataset": "subscription",
+    "hint": "Parse the dates in two passes: first the ISO format, then the day-first format. Fill the gaps with `combine_first`. Then check the year.",
+    "solutionCode": "df = load(\"subscription\", \"users\")\ntext = df[\"signup_date\"].astype(str).str.strip()\niso = pd.to_datetime(text, format=\"%Y-%m-%d\", errors=\"coerce\")\nday_first = pd.to_datetime(text, format=\"%d-%m-%Y\", errors=\"coerce\")\nsignup = iso.combine_first(day_first)\nmask = (signup.dt.year == 2024) & (~df[\"platform\"].isin([\"iOS\", \"Android\"]))\nresult = int(mask.sum())",
+    "expectedOutput": {
+      "value": 514
+    },
+    "orderMatters": false,
+    "explanation": "Each format is tried on its own, and `errors=\"coerce\"` turns a value that does not fit into a missing date instead of an error. `combine_first` keeps the ISO date where it worked and fills the rest from the day-first parse. The `~` flips the iOS/Android mask, so only the other platforms are kept.",
+    "commonMistake": "Comparing `signup_date` as text with `\"2024\"`. The day-first rows start with a day, not a year, so many 2024 signups are missed.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 8,
+    "tags": [
+      "dates",
+      "combine_first",
+      "~ negation"
+    ]
+  },
+  {
+    "id": "python-indexing-010",
+    "module": "python",
+    "topic": "indexing",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "HR wants a short list of recent senior hires for a leadership review. From `employees`, first drop exact duplicate rows. Keep employees hired on or after 1 January 2022 whose `job_level` is `Senior` or `Lead`. Sort by `hire_date` (earliest first), then `employee_id`. Return the first 10 rows as `employee_id` and `hire_date` in `YYYY-MM-DD` text, with a fresh 0 to 9 index.",
+    "dataset": "hr",
+    "hint": "Parse `hire_date` first so that it sorts as dates. Then filter with `isin` and `>=`, sort on two keys, and format the date at the end.",
+    "solutionCode": "df = load(\"hr\", \"employees\").drop_duplicates()\ntext = df[\"hire_date\"].astype(str).str.strip()\niso = pd.to_datetime(text, format=\"%Y-%m-%d\", errors=\"coerce\")\nday_first = pd.to_datetime(text, format=\"%d-%m-%Y\", errors=\"coerce\")\ndf[\"hire_dt\"] = iso.combine_first(day_first)\nmask = (df[\"hire_dt\"] >= \"2022-01-01\") & (df[\"job_level\"].isin([\"Senior\", \"Lead\"]))\nout = df.loc[mask].sort_values([\"hire_dt\", \"employee_id\"]).head(10)\nresult = pd.DataFrame({\"employee_id\": out[\"employee_id\"].values, \"hire_date\": out[\"hire_dt\"].dt.strftime(\"%Y-%m-%d\").values}).reset_index(drop=True)",
+    "expectedOutput": {
+      "columns": [
+        "employee_id",
+        "hire_date"
+      ],
+      "rows": [
+        [
+          976,
+          "2022-01-04"
+        ],
+        [
+          978,
+          "2022-01-07"
+        ],
+        [
+          982,
+          "2022-01-13"
+        ],
+        [
+          983,
+          "2022-01-13"
+        ],
+        [
+          985,
+          "2022-01-14"
+        ],
+        [
+          988,
+          "2022-01-16"
+        ],
+        [
+          992,
+          "2022-01-21"
+        ],
+        [
+          993,
+          "2022-01-21"
+        ],
+        [
+          995,
+          "2022-01-23"
+        ],
+        [
+          997,
+          "2022-01-25"
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Text dates such as `03-01-2022` sort in the wrong order, so the code turns them into real dates first, using the same two-format trick as before. Filtering and sorting then work on true dates. The last step writes the date back as ISO text so the answer is easy to read.",
+    "commonMistake": "Sorting the raw `hire_date` text. `DD-MM-YYYY` strings sort by day first, so a 2023 hire can appear before a 2019 hire.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 10,
+    "tags": [
+      "dates",
+      "isin",
+      "sort_values",
+      "head"
+    ]
+  }
+]

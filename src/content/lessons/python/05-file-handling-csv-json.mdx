@@ -1,0 +1,294 @@
+---
+title: "Reading and writing files: text, CSV, JSON"
+description: "Open files safely and load data into Python."
+module: python
+order: 5
+estimatedMinutes: 30
+objectives:
+  - "Open and close files with `with open`"
+  - "Read and write text files with the right mode and encoding"
+  - "Parse CSV with the csv module and with pandas"
+  - "Read and write JSON with json.loads and json.dumps"
+  - "Handle encoding problems and missing-file errors"
+tags: ["python", "files", "csv", "json"]
+---
+
+## Learning objectives
+
+- Open and close files with `with open(...)`, so you never forget to close them.
+- Pick the right file mode: read, write or append.
+- Set `encoding="utf-8"` so rupee signs and Hindi names do not break.
+- Parse CSV rows with the `csv` module and with `pd.read_csv`.
+- Turn a JSON string into a Python dict, and back again.
+- Catch a missing file with `try` and `except FileNotFoundError`.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Most data arrives as files. A bank exports a CSV of yesterday's UPI payments. A payment gateway sends a JSON log for each callback. A sales team shares an Excel file. Your first job each morning is often to open these files and check that they loaded correctly. A file that loads with the wrong encoding, or with a number stored as text, gives wrong totals with no error message. Knowing how files work saves hours of debugging.
+</RealWorld>
+
+## Concept
+
+### Opening a file is like opening a cupboard
+
+Think of a file as a cupboard. You open it, take out what you need, and close it. If you forget to close it, the cupboard stays open and the room gets messy. Python's `with` keyword is a helper that closes the cupboard for you, even when something goes wrong in the middle.
+
+```python
+with open("payments.txt", "r", encoding="utf-8") as f:
+    first_line = f.readline()
+# The file is closed here, automatically.
+```
+
+### File modes
+
+| Mode | Meaning | What happens to old content |
+|---|---|---|
+| `"r"` | read | Nothing is changed |
+| `"w"` | write | The old content is erased |
+| `"a"` | append | New lines are added at the end |
+
+Use `"w"` with care. Opening an existing file with `"w"` wipes it before you write a single line.
+
+### Encoding: the rupee sign problem
+
+A file stores letters as bytes. The `encoding` tells Python how to turn bytes into letters. Most Indian data files are UTF-8, which handles the rupee sign (₹) and Hindi text. If you do not say the encoding, Python may guess wrong, and you get garbled text such as `â‚¹`. Always write `encoding="utf-8"`.
+
+### Reading CSV with the csv module
+
+A CSV file is plain text with one row per line and commas between values. The `csv` module splits each line for you. `DictReader` is the friendliest version, because each row becomes a dict keyed by the header names.
+
+### Reading CSV with pandas
+
+`pd.read_csv` reads the whole file into a DataFrame in one step. It has many options:
+
+```python
+import pandas as pd
+
+df = pd.read_csv(
+    "transactions.csv",
+    usecols=["txn_id", "amount", "status"],  # only these columns
+    dtype={"txn_id": "int64"},                # force a type
+    parse_dates=["txn_datetime"],             # turn text into dates
+    na_values=["NA", "-"],                    # treat these as missing
+    nrows=1000,                               # read only the first 1,000 rows
+)
+```
+
+The code above is shown, not run. The browser Python on this site cannot open files from your disk, so the examples below use `load("fintech", "transactions")`. That function reads the same CSV that the practice questions use.
+
+### JSON: a dict in text form
+
+JSON stores data as keys and values, like a Python dict. `json.loads` turns a JSON string into a dict or list. `json.dumps` turns a dict back into a string. `indent=2` makes the output easy to read.
+
+Many APIs return nested JSON, where a dict holds another dict or a list. `pd.json_normalize` flattens nested JSON into a DataFrame with one column per field.
+
+### Missing files
+
+If the file name is wrong, Python raises `FileNotFoundError`. Catch it with `try` and `except`, so your script can print a clear message instead of crashing.
+
+```python
+try:
+    with open("daily_report.csv", encoding="utf-8") as f:
+        data = f.read()
+except FileNotFoundError:
+    print("The report is not in this folder yet.")
+```
+
+### Relative paths
+
+A path like `data/payments.csv` is read from the folder where you run the script, not from the folder where the script is saved. `pathlib.Path` makes paths easier to build, for example `Path("data") / "payments.csv"`.
+
+## Worked examples
+
+### Example 1: a CSV string read with DictReader
+
+We put four rows of CSV text into a string, then read it with `io.StringIO`. `StringIO` makes a string behave like a file. We add up the amounts for successful payments.
+
+```python
+import csv
+import io
+
+text = """txn_id,amount,status
+1,250.00,SUCCESS
+2,1200.50,FAILED
+3,80.00,SUCCESS
+4,45.75,SUCCESS"""
+
+total = 0.0
+for row in csv.DictReader(io.StringIO(text)):
+    if row["status"] == "SUCCESS":
+        total += float(row["amount"])
+
+print(round(total, 2))
+```
+
+**Output:**
+
+```
+375.75
+```
+
+Every value that `DictReader` returns is text. That is why we call `float()` before adding. The FAILED row is skipped, so the total is 250.00 + 80.00 + 45.75.
+
+### Example 2: load a real file and check its types
+
+Load the fintech `transactions` table and look at its shape and column types. The shape is rows first, then columns.
+
+```python
+df = load("fintech", "transactions")
+print(df.shape)
+print(df.dtypes)
+print(df.head(3))
+```
+
+**Output:**
+
+```
+(22389, 12)
+txn_id                int64
+user_id               int64
+merchant_id         float64
+receiver_user_id    float64
+txn_type                str
+txn_datetime            str
+amount                  str
+payment_app             str
+bank                    str
+device_os               str
+status                  str
+is_flagged            int64
+```
+
+| txn_id | user_id | merchant_id | receiver_user_id | txn_type | txn_datetime | amount | payment_app | bank | device_os | status | is_flagged |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | 922 | 270.0 | NaN | P2M | 2023-01-01 09:08:27 | 1978.38 | QuickPaisa | Sundaram Bank | Android | SUCCESS | 0 |
+| 2 | 970 | 400.0 | NaN | P2M | 2023-01-01 11:24:45 | 578.75 | PayZippy | Kaveri Co-op Bank | Android | SUCCESS | 0 |
+| 3 | 440 | 65.0 | NaN | Bill Pay | 01-01-2023 13:10:11 | 942.89 | PayZippy | Sundaram Bank | iOS | SUCCESS | 0 |
+
+The `amount` column has type text (`str`), even though it holds money. Some rows look like `₹992.51`, with a rupee sign. pandas cannot add text, so it keeps the whole column as text. The fix is a cleaning step, which you will learn in the messy-data lessons. The `txn_datetime` column also has two date formats, because the third row uses `DD-MM-YYYY`.
+
+Notice that `merchant_id` is `float64`, not `int64`. A column with blank values becomes a float, because NaN is a float. This is a common surprise when you load data.
+
+### Example 3: a JSON payment event
+
+A payment gateway sends one event as JSON. We read a nested field and write the event back out with indentation.
+
+```python
+import json
+
+raw = '{"event": "UPI_PAY", "txn": {"id": "T9001", "amount": "499.00", "bank": "Sundaram Bank"}, "status": "SUCCESS"}'
+event = json.loads(raw)
+print(event["txn"]["bank"])
+print(json.dumps(event, indent=2))
+```
+
+**Output:**
+
+```
+Sundaram Bank
+{
+  "event": "UPI_PAY",
+  "txn": {
+    "id": "T9001",
+    "amount": "499.00",
+    "bank": "Sundaram Bank"
+  },
+  "status": "SUCCESS"
+}
+```
+
+The first line reads a value two levels deep, using two sets of square brackets. Notice that `amount` is a string, `"499.00"`, not a number. JSON from APIs often sends numbers as text.
+
+### Example 4: read_csv options (shown, not run)
+
+These lines show the options you will use most often on real bank files. Try them on your own machine.
+
+```python
+df = pd.read_csv(
+    "transactions.csv",
+    dtype={"merchant_id": "Int64"},   # nullable integer, keeps blanks
+    parse_dates=["txn_datetime"],     # fails on mixed formats unless you clean first
+    na_values=["NA", "-", ""],        # these count as missing
+)
+```
+
+`dtype` stops pandas from guessing. `parse_dates` turns text into real dates, but it needs one date format. When a file has `2023-01-01` and `01-01-2023` in the same column, you parse each format separately and combine the results.
+
+## Common mistakes
+
+<CommonMistake>
+**Forgetting `encoding="utf-8"`.** The rupee sign turns into `â‚¹` and Hindi names turn into question marks. Always set the encoding when you open a text file.
+</CommonMistake>
+
+<CommonMistake>
+**Opening a file without `with`.** If an error happens before `close()`, the file stays open. Use `with open(...)`, which closes it for you.
+</CommonMistake>
+
+<CommonMistake>
+**Adding amounts that are text.** `"1,250.50"` is not a number. Remove the comma and convert with `float()` first. Otherwise you get an error or a joined string.
+</CommonMistake>
+
+<CommonMistake>
+**Letting pandas guess the type of a phone or ID column.** Leading zeros disappear, and a phone number may turn into a float such as `8157578000.0`. Set `dtype={"phone": "str"}` to keep it as text.
+</CommonMistake>
+
+<CommonMistake>
+**Writing with `index=True` by default.** `df.to_csv("out.csv")` adds an extra unnamed column with row numbers. Use `df.to_csv("out.csv", index=False)`.
+</CommonMistake>
+
+<CommonMistake>
+**Assuming a JSON key always exists.** `event["txn"]` raises a `KeyError` if the key is missing. Use `event.get("txn", {})` when a field may be absent.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="file-handling" module="python" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "Which file mode erases the old content before writing?", options: ["\"r\"", "\"a\"", "\"w\"", "\"x\""], answer: 2, explanation: "Mode \"w\" opens the file for writing and empties it first. Mode \"a\" keeps the old content and adds to the end." },
+  { q: "What type must you pass to json.loads?", options: ["A dict", "A list", "A string", "A DataFrame"], answer: 2, explanation: "json.loads reads text. It returns a dict or list. To read a file, read it to a string first, or use json.load on the open file." },
+  { q: "You write df.to_csv('out.csv', index=False). What does index=False do?", options: ["It sorts the rows", "It stops the row numbers from being written as an extra column", "It stops the file from being saved", "It writes only the header"], answer: 1, explanation: "By default pandas writes the row index as the first column. index=False leaves it out, so the file has only your real columns." },
+  { q: "Why is the amount column in transactions stored as text?", options: ["pandas cannot read CSV files", "Some rows have a rupee sign and commas, so pandas cannot treat the whole column as numbers", "The column is empty", "CSV files store all numbers as text"], answer: 1, explanation: "Rows such as ₹992.51 contain a symbol. One non-numeric value makes pandas keep the whole column as text." },
+  { q: "What is the main benefit of using with open(...) as f?", options: ["The file opens faster", "The file is closed automatically, even if an error happens", "The file can be read twice", "The file is encrypted"], answer: 1, explanation: "The with block closes the file when the block ends, including when an error stops the code early." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers ask about files to see whether you can handle real data, not just clean examples. They want to know how you deal with bad encoding, large files and inconsistent types, and whether you check the result after loading.
+</InterviewAlert>
+
+<InterviewQ q="How would you read a 5 GB CSV file that does not fit in memory?">
+Read it in chunks with `pd.read_csv(path, chunksize=100_000)`. Each chunk is a DataFrame that you process and then discard. Load only the columns you need with `usecols`, and set `dtype` to smaller types, such as `category` for repeated text. For repeated analysis, convert the file to Parquet once, because Parquet is smaller and faster to read.
+</InterviewQ>
+
+<InterviewQ q="When would you use CSV, JSON or Parquet?">
+CSV is simple, readable and works everywhere, but it has no types, so every load needs checks. JSON suits nested data from APIs, where each record can have different fields. Parquet stores types and is compressed, so it is the best choice for large analytical tables. For a bank export that you share with Excel users, CSV is usually the right answer.
+</InterviewQ>
+
+<InterviewQ q="A CSV has some broken lines with extra commas. What would you do?">
+First, find the bad lines. With `pd.read_csv`, use `on_bad_lines="warn"` to see them, or `on_bad_lines="skip"` to drop them, but log how many rows were dropped. Better, check the source system, because a comma inside a text field often needs quotes. Always report the number of skipped rows, so the total is not silently wrong.
+</InterviewQ>
+
+<InterviewQ q="What does the with statement do when you open a file?">
+It creates a context in which the file is open. When the indented block ends, Python calls the file's close method automatically, even if an exception happens inside the block. This prevents file locks and data loss from unflushed writes.
+</InterviewQ>
+
+<InterviewQ q="How do you read nested JSON into a table?">
+Use `pd.json_normalize` on the list of records. It turns nested keys into column names like `txn.amount`. If a field holds a list, such as order items, first flatten that list with a loop, so that each item becomes its own row, and keep the parent id on each row.
+</InterviewQ>
+
+## Key takeaways
+
+- Always open files with `with open(...)`, so they close automatically.
+- Set `encoding="utf-8"` for Indian data, so rupee signs and Hindi text survive.
+- Check `df.dtypes` after every load. A column that looks numeric may be text.
+- `json.loads` turns JSON text into a dict. Values that look like numbers may still be strings.
+- Write with `index=False` unless you really want the row numbers.
+
+## Further reading
+
+<FurtherReading ids={["python-docs", "pandas-docs"]} />

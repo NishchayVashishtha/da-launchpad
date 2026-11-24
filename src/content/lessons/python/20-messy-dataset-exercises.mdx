@@ -1,0 +1,214 @@
+---
+title: "10 messy-data mini exercises"
+description: "Clean real-looking dirty tables and answer a business question each time."
+module: python
+order: 20
+estimatedMinutes: 90
+objectives:
+  - "Spot rupee text, mixed dates, duplicates, casing and outliers quickly"
+  - "Apply a fixed cleaning workflow before any calculation"
+  - "Produce a checked number and explain your assumptions"
+tags: ["python", "cleaning", "practice", "messy-data"]
+---
+
+## Learning objectives
+
+- Spot the common messes in a raw export in under five minutes.
+- Clean money text, mixed dates, duplicate rows and casing in the right order.
+- Check a result with simple sanity numbers before you share it.
+- State the assumptions behind every answer.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+A Pune fintech analyst gets a payments export every Monday. The amounts have rupee signs, the dates use two formats, and some rows appear twice. The analyst who cleans it in a clear, repeatable way is the one trusted with the weekly report.
+</RealWorld>
+
+## Concept
+
+Real company data is rarely clean. A payment export, a salary sheet or a click log often has the same problems. The tables in this lesson are built the same way: they look real, and they have real messes.
+
+**How to use this lesson.** For each exercise, do four things in order:
+
+1. **Inspect.** Look at the first rows, the data types and the odd values.
+2. **List the messes.** Use the table below as a checklist.
+3. **Clean.** Fix one mess at a time. Check the row count after each step.
+4. **Answer and check.** Produce the exact output, then test it with a sanity check.
+
+### Problem Spotter
+
+These are the messes in the practice tables. They are real patterns in the site data, so check the numbers yourself.
+
+| Table and column | The mess | Size in the data |
+|---|---|---|
+| `fintech.transactions.amount` | Text, with rupee signs and commas | About 2,700 rows |
+| `fintech.transactions.amount` | Entry errors, far above normal | 9 successful payments above 50,000 |
+| `fintech.transactions.txn_datetime` | Two formats, `2023-01-01 09:08:27` and `01-01-2023 13:10:11` | About 3,400 rows in the second format |
+| `fintech.transactions` | Same `txn_id` twice | 89 rows |
+| `ecommerce.orders.order_date` | Two date formats | About 1,860 rows in day-first form |
+| `ecommerce.orders.total_amount` | Text with rupee signs | About 1,180 rows |
+| `ecommerce.orders` | Same `order_id` twice | About 100 rows |
+| `ecommerce.returns.refund_amount` | Indian grouping, such as `₹5,758.29` | About 900 rows, plus 153 blanks |
+| `hr.salaries.annual_ctc` | Text, plus 5 rows about 100x too big | About 1,600 text rows |
+| `hr.employees.gender` | `M` and `F` instead of `Male` and `Female` | About 150 rows |
+| `hr.employees` | Same `employee_id` twice | 12 rows |
+| `subscription.subscriptions.price_inr` | Text, with rupee signs and commas | About 1,360 rows |
+| `subscription.users.signup_date` | Two date formats | About 780 rows in day-first form |
+| `retail.sales.net_amount_inr` | Text, with rupee signs and commas | About 6,100 rows |
+| `retail.sales.sale_id` | Same `sale_id` twice | 350 rows |
+| `retail.sales.payment_mode` | Casing and extra spaces, such as `' upi  '` | About 8% of rows |
+| `food_delivery.deliveries.order_value` | Text, with rupee signs | About 2,260 rows |
+| `food_delivery.deliveries.city` | Casing and extra spaces, such as `' delhi '` | About 420 rows (3 in 100) |
+| `food_delivery.promo_usage.promo_code` | Casing and extra spaces | About 170 rows (3 in 100) |
+| `marketing.clicks.city` | Blank cities, plus casing problems | 651 blank rows |
+| `marketing.clicks.click_time` | Two date formats | About 2,500 rows in day-first form |
+
+### Four reusable helpers
+
+Paste these at the top of your code. Each practice solution also defines them, so every exercise runs on its own.
+
+```python
+def clean_inr(s):
+    # Remove the rupee sign, commas and spaces, then convert to numbers.
+    return pd.to_numeric(s.astype(str).str.replace(r"[₹,\s]", "", regex=True), errors="coerce")
+
+def parse_mixed_date(s):
+    # Try the ISO format first, then the day-first format. Anything else becomes NaT.
+    iso = pd.to_datetime(s, format="%Y-%m-%d", errors="coerce")
+    dmy = pd.to_datetime(s, format="%d-%m-%Y", errors="coerce")
+    return iso.combine_first(dmy)
+
+def parse_mixed_datetime(s):
+    iso = pd.to_datetime(s, format="%Y-%m-%d %H:%M:%S", errors="coerce")
+    dmy = pd.to_datetime(s, format="%d-%m-%Y %H:%M:%S", errors="coerce")
+    return iso.combine_first(dmy)
+```
+
+`errors="coerce"` turns a value that does not match into a blank date or a blank number. Count the blanks after each step. A blank you did not expect is a clue that a new format has appeared.
+
+### The cleaning workflow
+
+1. Load the table and look at `head()`, `dtypes` and `value_counts()` for text columns.
+2. Clean money columns with `clean_inr`.
+3. Parse date columns with the two-format helpers.
+4. Standardise text with `str.strip()`, then `str.title()` for names and cities, or `str.upper()` for codes.
+5. Drop duplicates by the id column. Do this after steps 2 to 4, so the copies match.
+6. Remove entry errors. State the rule, for example "above 50,000 is an error".
+7. Filter, group and calculate.
+8. Check the result with sanity numbers.
+
+<Tip>Dedupe after cleaning. Two copies of a row can look different, such as `₹260.16` and `260.16`. Once the format is fixed, the copies match and `drop_duplicates` removes them.</Tip>
+
+<FormulaCard title="Sanity check">
+row count after each step, then the sum of the final table compared with the filtered total, then min and max of each number column
+</FormulaCard>
+
+## Worked examples
+
+### Example 1: payments per app (exercise 1)
+
+The question asks for successful payment value per app, after cleaning and removing duplicates. Here is the core of the solution. The helpers from the Concept section come first.
+
+```python
+t = load("fintech", "transactions")
+t["amount"] = clean_inr(t["amount"])
+t["txn_datetime"] = parse_mixed_datetime(t["txn_datetime"])
+t = t.drop_duplicates(subset="txn_id", keep="last")
+ok = t[(t["status"] == "SUCCESS") & (t["amount"] <= 50000)]
+res = ok.groupby("payment_app", as_index=False)["amount"].sum()
+res["total_amount"] = res["amount"].round(0)
+result = (res[["payment_app", "total_amount"]]
+          .sort_values(["total_amount", "payment_app"], ascending=[False, True])
+          .reset_index(drop=True))
+```
+
+The output is:
+
+| payment_app | total_amount |
+|---|---|
+| PayZippy | 9221460 |
+| QuickPaisa | 7158744 |
+| NammaPay | 5089844 |
+| SabPay | 4043412 |
+| RupeeRocket | 3711142 |
+
+Each line fixes one mess. The amount becomes a number before the sum. The duplicates go away before the group-by, so each payment counts once. The cap at 50,000 removes the entry errors before the totals are built.
+
+### Example 2: checking that the answer is right
+
+A total that looks right is not proof. Check the numbers at each step.
+
+| Step | Rows |
+|---|---|
+| Raw file | 22,389 |
+| After dropping duplicate `txn_id` | 22,300 (89 removed) |
+| After keeping `SUCCESS` | 21,619 |
+| After dropping amounts above 50,000 | 21,610 (9 removed) |
+
+Next, compare the money. The kept amounts add up to 29,224,601.28 before rounding. The five rounded totals in the table above add up to 29,224,602. The gap of 0.72 comes only from rounding each app to 0 decimals. If the gap were large, you would look for a missing app, a missing filter or a duplicate you did not drop.
+
+Last, look at the min and max of `amount` after cleaning. A minimum near zero or a maximum near 1,00,000 tells you where to look next.
+
+<InterviewAlert>Interviewers want to hear your checks, not only your code. Say how many rows you started with, how many you removed, and why.</InterviewAlert>
+
+## Common mistakes
+
+<CommonMistake>Summing the raw `amount` text. The result is an error or joined strings, not a number. Always run `clean_inr` first.</CommonMistake>
+
+<CommonMistake>Dropping duplicates before fixing the formats. The copies still look different, so duplicates stay in and the totals grow.</CommonMistake>
+
+<CommonMistake>Parsing `05-01-2023` with a month-first format. The date becomes 1 May, not 5 January, and the monthly totals move with no error message.</CommonMistake>
+
+<CommonMistake>Cleaning only the column you see. A table often has the same mess in two columns, such as `amount` and `total_amount`. Check every money and date column.</CommonMistake>
+
+<CommonMistake>Trusting `NaT` or blanks silently. Count them after each parse. A blank date can drop a whole month from the answer.</CommonMistake>
+
+<CommonMistake>Not stating assumptions. If you drop rows above 50,000, say so. If you treat blank refunds as not counted, say so. The reader must know what was excluded to trust the number.</CommonMistake>
+
+## Practice questions
+
+Each exercise lists its mess, its cleaning steps and the exact output. Work through them in order, and use the Problem Spotter table as your checklist.
+
+<PracticeSet topic="messy" module="python" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What is the first step with a messy export?", options: ["Write the final answer", "Inspect the data and list the messes", "Delete every duplicate row"], answer: 1, explanation: "Inspect first. You cannot clean what you have not found. head, dtypes and value_counts show most messes in minutes." },
+  { q: "Which cleaning step turns a text amount such as ₹1,299 into a number?", options: ["Remove the rupee sign, commas and spaces, then convert to numbers", "Use len() on the text", "Sort the column as text"], answer: 0, explanation: "The helper removes the rupee sign, commas and spaces. Then pd.to_numeric converts the rest into numbers that can be summed." },
+  { q: "Why should you drop duplicates after cleaning the text?", options: ["Copies can look different until the formats are fixed", "drop_duplicates only works on numbers", "It makes the file smaller"], answer: 0, explanation: "A copy written as 260.16 and a copy written as 260.16 with a rupee sign look different. After cleaning, the copies match and are removed correctly." },
+  { q: "A column mixes 2023-01-05 and 05-01-2023. What is the safest approach?", options: ["Parse each explicit format and combine the results", "Use dayfirst=True for every row and hope", "Drop every row that contains a dash"], answer: 0, explanation: "Parse each format on its own with errors set to coerce, then combine. Rows that fit neither format become blank, so you can count and inspect them." },
+  { q: "Your total is 2 percent away from the finance number. What is the best first check?", options: ["Compare row counts and totals at each cleaning step", "Round every number to 0 decimals", "Assume finance is wrong"], answer: 0, explanation: "Counts and totals at each step show exactly where rows or money went missing or got added. That is faster than guessing." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>Interviewers test your process more than your speed. Explain what you check, in what order, and what you do when a number looks wrong.</InterviewAlert>
+
+<InterviewQ q="You get a messy export on your first day. What do you do in the first 30 minutes?">
+Look at the first rows, the column types and the value counts of text columns. List every mess I can see: money as text, mixed dates, duplicate ids, casing. Count each one. Then I tell the manager what I found and what I will clean, before I answer any business question.
+</InterviewQ>
+
+<InterviewQ q="How do you know your cleaning was right?">
+I check row counts at each step and compare the totals with a known number, such as the finance report or a total from the source system. I look at min and max for each number column. I also look for blanks that appeared after parsing. If a count or a total does not match, I trace it step by step before I share anything.
+</InterviewQ>
+
+<InterviewQ q="A total differs from the finance team's number by 2 percent. What do you check?">
+First, the date range and the filters, because a month boundary or a status filter is the most common cause. Then duplicates, because a double count can add a few percent. Then the money cleaning, such as rupee text that did not convert, and blank values. I also ask finance which rules they used, such as whether refunds are netted off.
+</InterviewQ>
+
+<InterviewQ q="How did you handle outliers in your cleaning?">
+I first checked whether the extreme values were entry errors, such as a value that is 100 times too big. I used a clear rule, such as dropping amounts above a set limit, and I wrote the rule down. I also reported how many rows the rule removed, so the business can judge whether the rule is too strict.
+</InterviewQ>
+
+## Key takeaways
+
+- Inspect and list the messes before you clean anything.
+- Clean money text and parse dates with explicit formats before any calculation.
+- Standardise casing and spaces before you group, or one city splits into many.
+- Drop duplicates by id after cleaning, and state every filter and rule you used.
+- Validate with row counts, totals and min and max, then state your assumptions.
+
+## Further reading
+
+<FurtherReading ids={["pandas-docs", "kaggle-learn"]} />

@@ -1,0 +1,301 @@
+---
+title: "Functions: write reusable analysis steps"
+description: "Package logic so you can reuse and test it."
+module: python
+order: 3
+estimatedMinutes: 30
+objectives:
+  - "Define functions with parameters, default values and return"
+  - "Explain why return is different from print"
+  - "Call functions with keyword arguments"
+  - "Write a short docstring and a simple assert test"
+  - "Use lambda for a one-line rule inside sorted"
+tags: ["python", "functions"]
+---
+
+## Learning objectives
+
+- Define a function with parameters, default values and a `return` value.
+- Explain why `return` is different from `print`.
+- Call a function with positional and keyword arguments.
+- Write a one-line docstring and a small `assert` test.
+- Use a `lambda` as a short key for `sorted`.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Analysts repeat the same cleaning steps many times. A GST rate, a rupee cleaner or a "bucket this amount" rule should be written once and reused. A function gives that step a name. Once you have `clean_rupee()`, you can apply it to every amount column in a file, and fix it in one place if the rule changes.
+</RealWorld>
+
+## Concept
+
+### A function is a recipe card
+
+Think of a pressure-cooker recipe card. The steps stay the same every time. The ingredients change. A function works the same way: the steps are the body, and the inputs are the parameters.
+
+```python
+def gst(amount, rate=0.18):
+    """Return the GST on an amount, rounded to 2 decimals."""
+    return round(amount * rate, 2)
+```
+
+- `def` starts the function.
+- `amount` and `rate` are **parameters**, the names inside the recipe.
+- `rate=0.18` is a **default value**. You can skip it when you call the function.
+- The triple-quoted line is a **docstring**. It explains the function to the next reader.
+- `return` sends the answer back to whoever called the function.
+
+### return versus print
+
+This is the most common beginner bug. `print` shows a value on the screen, but the function does not give that value back to the program. `return` gives the value back so you can store it.
+
+```python
+def gst_print(amount):
+    print(round(amount * 0.18, 2))
+
+def gst_return(amount):
+    return round(amount * 0.18, 2)
+
+result = gst_print(2499)   # prints 449.82, but result is None
+```
+
+A function with no `return` gives back `None`. So `result` is `None`, and the next step of your code breaks.
+
+### Positional, keyword and default arguments
+
+You can pass arguments by position or by name:
+
+```python
+gst(2499)               # uses the default rate 0.18
+gst(2499, 0.05)         # positional: rate is 0.05
+gst(amount=2499, rate=0.05)   # keyword: clear and safe
+```
+
+Keyword arguments make calls easy to read, especially when a function has several inputs.
+
+### Returning several values
+
+A function can return more than one value, separated by commas. Python packs them into a tuple, and you can unpack them into separate names:
+
+```python
+def summary(values):
+    return min(values), max(values), round(sum(values) / len(values), 2)
+
+low, high, average = summary([1200, 450, 9800, 3100])
+```
+
+### *args and **kwargs (brief)
+
+`*args` collects any number of positional values into a tuple. `**kwargs` collects any number of keyword values into a dict. You will see them in library code. Use them rarely in analysis scripts, because a plain parameter list is easier to read.
+
+### Scope: local and global names
+
+A variable made inside a function is **local**. It disappears when the function ends. A variable made outside is **global**. A function can read a global name, but changing it needs the `global` keyword. Most analysts avoid `global` completely. Pass values in as parameters and return the result.
+
+### Mutable default arguments
+
+Default values are created once, when Python reads the `def` line. A default list is shared by every call:
+
+```python
+def add_item(item, bag=[]):
+    bag.append(item)
+    return bag
+
+first = add_item("a")
+second = add_item("b")
+print(first, second)
+```
+
+Output:
+
+```
+['a', 'b'] ['a', 'b']
+```
+
+Both names point to the same list. Use `None` as the default and create the list inside the function instead.
+
+### lambda for tiny rules
+
+A `lambda` is a short, unnamed function. It fits on one line and is useful as a `key` for `sorted`:
+
+```python
+txns = [{"id": "T1", "amt": 450}, {"id": "T2", "amt": 9800}, {"id": "T3", "amt": 1200}]
+by_amount = sorted(txns, key=lambda r: r["amt"], reverse=True)
+```
+
+Use a `def` when the rule has more than one step or needs a name. Use a `lambda` only for a short key.
+
+### Test a function with assert
+
+An `assert` checks that a value is right. If the check is False, Python stops with an error. This is a quick way to test a cleaning function:
+
+```python
+assert gst(1000) == 180.0
+assert clean_rupee("₹1,250") == 1250.0
+```
+
+If both lines run with no error, the checks pass.
+
+## Worked examples
+
+### Example 1: GST with a default rate
+
+Use the default 18 percent, then override the rate for a 5 percent item.
+
+```python
+def gst(amount, rate=0.18):
+    return round(amount * rate, 2)
+
+print(gst(2499))
+print(gst(2499, rate=0.05))
+print(gst(1000))
+```
+
+**Output:**
+
+```
+449.82
+124.95
+180.0
+```
+
+The first call uses the default rate. The second call passes `rate=0.05` by keyword, so the default is not used.
+
+### Example 2: clean a rupee amount in one place
+
+Some amounts come as text, and some cells are empty (`None`). The function returns `None` for an empty cell, so the cleaning does not crash.
+
+```python
+def clean_rupee(text):
+    if text is None:
+        return None
+    return float(text.replace("₹", "").replace(",", "").strip())
+
+values = ["₹1,250", " ₹3,450.50 ", "880", None]
+print([clean_rupee(v) for v in values])
+```
+
+**Output:**
+
+```
+[1250.0, 3450.5, 880.0, None]
+```
+
+The `strip()` call removes the spaces around the second value. The list comprehension applies the function to every item.
+
+### Example 3: return three values at once
+
+A summary function gives the minimum, maximum and average of a list of payments.
+
+```python
+def summary(values):
+    return min(values), max(values), round(sum(values) / len(values), 2)
+
+low, high, average = summary([1200, 450, 9800, 3100])
+print(low, high, average)
+```
+
+**Output:**
+
+```
+450 9800 3637.5
+```
+
+The unpacking line gives each value its own name. You can use `low` and `high` later without indexing the tuple.
+
+### Example 4: sort records by amount with a lambda
+
+Sort three transactions from the largest amount to the smallest.
+
+```python
+txns = [{"id": "T1", "amt": 450}, {"id": "T2", "amt": 9800}, {"id": "T3", "amt": 1200}]
+print(sorted(txns, key=lambda r: r["amt"], reverse=True))
+print(txns)
+```
+
+**Output:**
+
+```
+[{'id': 'T2', 'amt': 9800}, {'id': 'T3', 'amt': 1200}, {'id': 'T1', 'amt': 450}]
+[{'id': 'T1', 'amt': 450}, {'id': 'T2', 'amt': 9800}, {'id': 'T3', 'amt': 1200}]
+```
+
+`sorted` returns a new list. The original `txns` list is unchanged, as the second line shows.
+
+## Common mistakes
+
+<CommonMistake>
+Using `print` where you need `return`. The function prints 449.82 but returns `None`, so `result` is `None` and later steps fail.
+</CommonMistake>
+
+<CommonMistake>
+A mutable default argument such as `def f(x, acc=[])`. The list is shared across calls, so the second call sees items from the first call. Use `acc=None` and create the list inside the function.
+</CommonMistake>
+
+<CommonMistake>
+Forgetting the parentheses when you call a function. `gst` shows the function object, but `gst(2499)` runs it. Writing `result = gst` stores the function, not the answer.
+</CommonMistake>
+
+<CommonMistake>
+Changing a global variable inside a function without `global`. Once the function assigns to a name, Python treats it as local everywhere in that function. Reading it first then raises an UnboundLocalError. Pass the value in as a parameter.
+</CommonMistake>
+
+<CommonMistake>
+Swapping the order of positional arguments. With `def subtract(a, b): return a - b`, the call `subtract(100, 250)` runs without an error and gives -150. Use keyword arguments when the order is not obvious.
+</CommonMistake>
+
+<CommonMistake>
+A branch with no `return`. If only the `if` branch returns, the other branch gives `None` and the column gets blanks. Make sure every path ends with a `return`.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="functions" module="python" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What does a function return if it has no `return` statement?", options: ["0", "None", "An empty string", "It raises an error"], answer: 1, explanation: "Python gives back None when a function reaches its end without a return. Printing inside the function does not count as a return." },
+  { q: "Given `def f(a, b=2): return a + b`, what is `f(1)`?", options: ["1", "2", "3", "An error"], answer: 2, explanation: "b is not passed, so it uses the default 2. The function returns 1 + 2, which is 3." },
+  { q: "What does `(lambda x: x * 2)(5)` return?", options: ["5", "10", "25", "x * 2"], answer: 1, explanation: "The lambda takes x as 5 and returns x * 2, which is 10." },
+  { q: "After `add_item(\"a\")` and then `add_item(\"b\")` on `def add_item(item, bag=[])`, what does the second call return?", options: ["['b']", "['a', 'b']", "An error", "None"], answer: 1, explanation: "The default list is created once and shared. The first call adds 'a', so the second call adds 'b' to the same list." },
+  { q: "Which statement about `sorted(txns, key=lambda r: r[\"amt\"], reverse=True)` is correct?", options: ["It sorts from low to high", "It sorts from high to low by amt", "It sorts by id", "It changes txns in place"], answer: 1, explanation: "reverse=True puts the largest amt first. sorted returns a new list and leaves txns unchanged." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers check whether you know the difference between returning a value and printing it. They also look for the mutable default trap and whether you can write a small, clean cleaning function on the spot.
+</InterviewAlert>
+
+<InterviewQ q="What is the difference between return and print?">
+`print` shows a value on screen and gives nothing back to the program. `return` sends the value back to the caller, so you can store it or use it in another step. A function with no `return` gives `None`.
+</InterviewQ>
+
+<InterviewQ q="What are *args and **kwargs?">
+`*args` collects extra positional values into a tuple. `**kwargs` collects extra keyword values into a dict. They let a function accept a flexible number of inputs. In analysis code, a plain parameter list is usually clearer.
+</InterviewQ>
+
+<InterviewQ q="What is a lambda, and when should you not use one?">
+A lambda is a short unnamed function written on one line, such as `lambda r: r["amt"]`. It is handy as a `key` for `sorted`. Do not use one for a rule with several steps, or one that you need to test and reuse. Use `def` for those.
+</InterviewQ>
+
+<InterviewQ q="Why are mutable default arguments dangerous?">
+The default value is created once, when the function is defined. A default list or dict is shared by every call, so data from one call leaks into the next. Use `None` as the default and create the list inside the function.
+</InterviewQ>
+
+<InterviewQ q="Write a function that cleans a currency string such as ₹1,250.50 and returns a float.">
+Remove the rupee sign, remove the commas and any spaces, then call `float()`. Handle `None` at the start so empty cells do not crash the script. A good answer returns `None` for empty input and a float for every other input.
+</InterviewQ>
+
+## Key takeaways
+
+- A function names one step. Parameters are its inputs.
+- `return` gives a value back. `print` only shows it.
+- Default values make common calls short. Keyword arguments make them clear.
+- Avoid mutable default arguments. Use `None` and create the object inside the function.
+- A `lambda` is fine for a one-line key in `sorted`.
+
+## Further reading
+
+<FurtherReading ids={["python-docs"]} />

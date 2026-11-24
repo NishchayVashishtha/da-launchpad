@@ -1,0 +1,291 @@
+---
+title: "pandas first steps: Series and DataFrame"
+description: "Load a table and look at it properly."
+module: python
+order: 7
+estimatedMinutes: 40
+objectives:
+  - "Explain the difference between a Series and a DataFrame"
+  - "Load a CSV with load() and inspect it with shape, dtypes, head, info and describe"
+  - "Select one column or several columns, and know why the brackets matter"
+  - "Add a computed column in one line, without a loop"
+  - "Count values and get proportions with value_counts"
+  - "Spot a text column that should be a number, and fix it"
+tags: ["python", "pandas", "dataframe", "series"]
+---
+
+## Learning objectives
+
+- Explain what a pandas Series and a DataFrame are, in plain words.
+- Load a table with `load()` and look at its size, its column types and its first rows.
+- Select one column, or several columns, and know what each returns.
+- Add a new column with one line of arithmetic, without a loop.
+- Count categories and get shares with `value_counts`.
+- Recognise a number stored as text, and fix it before you calculate with it.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Every analyst task starts with a table. A payments team sends you a file of transactions. A retail chain sends you a sales export. Before you calculate anything, you need to know how many rows there are, what each column holds, and whether a number has been saved as text. Interviewers often give a messy CSV and ask "what would you check first?" A clear first look, done in four or five lines of pandas, is the answer they want. Skipping this step is how a wrong revenue number reaches a senior manager.
+</RealWorld>
+
+## Concept
+
+### Series and DataFrame
+
+Think of a DataFrame as an Excel sheet inside Python. It has rows, columns and a header row with names. Each **column** on its own is a **Series**. A Series is a list of values that also has an **index**, which is the row label on the left.
+
+| Object | What it is | Excel picture |
+|---|---|---|
+| `Series` | one column with an index | one column |
+| `DataFrame` | many Series side by side, sharing one index | the whole sheet |
+
+You will almost always get a DataFrame from `load()`. You get a Series when you pick one column out of it.
+
+```python
+orders = load("ecommerce", "orders")   # a DataFrame
+status = orders["order_status"]        # a Series
+```
+
+### First look, in order
+
+Real files are messy, so use the same first-look routine every time. Run each line and read the output before you go on.
+
+1. `df.shape` gives `(rows, columns)`.
+2. `df.dtypes` shows the type of each column. Numbers should be `int64` or `float64`.
+3. `df.head()` shows the first five rows, so you can see the real values.
+4. `df.isna().sum()` counts the missing values in each column.
+5. `df.describe()` gives count, mean, min, max and the quartiles for number columns.
+
+`df.info()` combines steps 1, 2 and 4 into one call. It is a good first command when you do not know the table yet.
+
+### Selecting columns: one bracket or two
+
+The number of brackets decides the type you get back.
+
+```python
+df["order_status"]          # one set of brackets: Series
+df[["order_status", "city"]]  # double brackets: DataFrame
+```
+
+A common error is writing `df["a", "b"]`. That is not a list of columns. It is a tuple key, and pandas raises an error. Always use a list inside the brackets when you want several columns.
+
+### Adding a column
+
+You do not need a loop to add a column. Arithmetic on a column works on every row at once.
+
+```python
+items["gross"] = items["quantity"] * items["unit_price"]
+```
+
+This is called a **vectorised** operation. It is fast and easy to read. Looping over rows with `iterrows()` gives the same answer far more slowly, and you should avoid it on real data.
+
+### Counting values
+
+`value_counts()` counts how many times each value appears in a column. It sorts the result from the largest count to the smallest. Add `normalize=True` to get shares that add up to 1.
+
+```python
+orders["order_status"].value_counts(normalize=True)
+```
+
+`value_counts()` skips missing values by default, so check `isna()` as well.
+
+### Text that should be a number
+
+In pandas, a text column holds strings. If one value in a money column is written as `"₹1,234.50"`, pandas stores the whole column as text. Arithmetic then fails, and `mean()` raises an error. You must clean the text first. We do this in the messy-data lessons. For now, remember this rule: if `dtypes` shows `str` or `object` for a money column, stop and clean it before you calculate.
+
+<Tip>
+Read `dtypes` before you read anything else. A money column that shows `str` is a warning sign, not a finding. Look at a few raw values and decide how to clean them.
+</Tip>
+
+<Warning>
+Methods such as `drop`, `sort_values` and `rename` return a new DataFrame. They do not change the original unless you assign the result back, or pass `inplace=True`. Writing `df.drop("notes", axis=1)` on its own line does nothing to `df`.
+</Warning>
+
+## Worked examples
+
+### Example 1: the shape and types of the orders table
+
+We load the `orders` table from the ecommerce dataset and look at its size and types.
+
+```python
+orders = load("ecommerce", "orders")
+print(orders.shape)
+print(orders.dtypes.to_string())
+print(orders[["order_id", "customer_id", "order_date", "order_status", "total_amount"]].head(3).to_string(index=False))
+```
+
+**Output:**
+
+```text
+(10100, 11)
+order_id             int64
+customer_id          int64
+order_date             str
+order_time             str
+order_status           str
+sales_channel          str
+coupon_code            str
+discount_amount    float64
+shipping_fee       float64
+total_amount           str
+delivery_date          str
+ order_id  customer_id order_date order_status total_amount
+        1          452 01-01-2023    Cancelled      5542.95
+        2          718 2023-01-01    Delivered       339.68
+        3          934 2023-01-01    Delivered       2599.2
+```
+
+There are 10,100 rows and 11 columns. The IDs and the two discount and shipping numbers are numbers. `total_amount` shows `str`, so pandas read it as text. Also note that `order_date` mixes two formats, `01-01-2023` and `2023-01-01`. Both are shown in the head, so the mix is easy to miss. You will handle dates in a later lesson.
+
+### Example 2: how many orders are delivered?
+
+`value_counts` answers the question in one line. Here we ask for shares.
+
+```python
+orders["order_status"].value_counts(normalize=True).round(3)
+```
+
+**Output:**
+
+```text
+order_status
+Delivered    0.926
+Cancelled    0.057
+RTO          0.017
+```
+
+About 92.6% of orders are delivered, 5.7% are cancelled and 1.7% come back as RTO (return to origin, when the courier could not deliver). The three shares add up to 1. Without `normalize=True` you get the raw counts, 9,357, 574 and 169.
+
+### Example 3: a text money column breaks the mean
+
+We try to find the average order value directly. It fails.
+
+```python
+orders["total_amount"].mean()
+```
+
+**Output:**
+
+```text
+TypeError: Cannot perform reduction 'mean' with string dtype
+```
+
+The error tells you the column is text. Some values are plain numbers such as `5542.95`. Others contain a rupee sign or a thousands comma. We remove those characters, then convert the text to float.
+
+```python
+clean = orders["total_amount"].astype(str).str.replace(r"[₹,\s]", "", regex=True).astype(float)
+print(int(orders["total_amount"].str.contains("₹").sum()))
+print(round(clean.mean(), 2))
+```
+
+**Output:**
+
+```text
+1184
+5419.91
+```
+
+About 1,184 values carry a rupee sign. After cleaning, the average order total is ₹5,419.91. The same cleaning step is what you will use again in later lessons.
+
+### Example 4: describe() tells a story
+
+On `order_items`, the `line_total` column is a number. We call `describe()` to see its spread.
+
+```python
+order_items = load("ecommerce", "order_items")
+order_items["line_total"].describe().round(2)
+```
+
+**Output:**
+
+```text
+count     20157.00
+mean       2708.14
+std        9256.93
+min          37.76
+25%         398.46
+50%        1045.66
+75%        2855.16
+max       928122.00
+```
+
+The median is 1,045.66, but the mean is 2,708.14. A mean well above the median means a few very large values pull the average up. The maximum of 928,122 is far above the 75th percentile of 2,855. It is a data-entry error: a unit price 100 times too high. Our practice data has a few of these on purpose. Always read `describe()` for the story, not only for the numbers.
+
+## Common mistakes
+
+<CommonMistake>
+Treating a text money column as a number. `dtypes` shows `str` for it, and `mean()` either fails or gives nonsense. Check `dtypes` first, then clean the column.
+</CommonMistake>
+
+<CommonMistake>
+Using `df["a", "b"]` for two columns. Use a list inside single brackets for one column, or double brackets for a DataFrame: `df[["a", "b"]]`.
+</CommonMistake>
+
+<CommonMistake>
+Forgetting that `inplace` methods return nothing, or that `drop` returns a new frame. Write `df = df.drop(columns="notes")`, or assign the result to a new name.
+</CommonMistake>
+
+<CommonMistake>
+Using `len(df)` when you want the number of columns. `len(df)` counts rows. Use `df.shape[1]` for columns.
+</CommonMistake>
+
+<CommonMistake>
+Looping with `iterrows()` to add a column. A one-line calculation such as `df["gross"] = df["quantity"] * df["unit_price"]` is faster and easier to check.
+</CommonMistake>
+
+<CommonMistake>
+Calculating a mean on a column with a huge outlier and reporting it as the typical value. Compare the mean with the median from `describe()` before you trust the number.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="pandas-basics" module="python" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "A DataFrame has 500 rows and 8 columns. What does df.shape return?", options: ["500", "8", "(500, 8)", "(8, 500)"], answer: 2, explanation: "shape returns a tuple of (rows, columns). Rows come first." },
+  { q: "What is the difference between df[\"city\"] and df[[\"city\"]]?", options: ["They are the same", "The first returns a Series, the second returns a DataFrame", "The first returns a DataFrame, the second returns a Series", "The second one raises an error"], answer: 1, explanation: "Single brackets give one column as a Series. Double brackets give a DataFrame, even with only one column inside." },
+  { q: "Which call is the best first step to see column types and missing counts together?", options: ["df.head(1)", "df.info()", "df.sum()", "df.drop_duplicates()"], answer: 1, explanation: "info() shows each column's non-null count and dtype in one view. head() shows values, but not types or the count of missing values." },
+  { q: "You want the share of each status in a column, where the shares add up to 1. Which call do you use?", options: ["df[\"status\"].value_counts()", "df[\"status\"].value_counts(normalize=True)", "df[\"status\"].unique()", "df[\"status\"].count()"], answer: 1, explanation: "normalize=True divides each count by the total, so the output is a share between 0 and 1 for each value." },
+  { q: "df.drop(\"notes\", axis=1) is written on its own line with no assignment. What happens to df?", options: ["The column notes is removed from df", "A new DataFrame is returned and df is unchanged", "df is sorted by notes", "An error is raised"], answer: 1, explanation: "drop returns a new DataFrame. Without an assignment or inplace=True, the original df keeps the notes column." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers want to see a routine, not a memorised command. Say what you check first, why you check it, and what a surprising result would tell you. A candidate who says "I look at dtypes and missing values before any calculation" usually scores well on this topic.
+</InterviewAlert>
+
+<InterviewQ q="What is the difference between a Series and a DataFrame?">
+A Series is one column of values with an index. A DataFrame is a table made of several Series that share the same index. Picking one column with single brackets gives a Series, and double brackets give a DataFrame. In a DataFrame, each column can have its own type, which is why `dtypes` matters.
+</InterviewQ>
+
+<InterviewQ q="What do head, info and describe each tell you?">
+`head()` shows real sample values, so I can see the format of each column. `info()` shows the column types and how many values are missing. `describe()` shows the spread of number columns: count, mean, min, max and quartiles. Together they answer three questions: what the data looks like, whether types are right, and whether any numbers look odd.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between df['a'] and df[['a']]?">
+Both select column a. The first returns a Series, a one-dimensional object. The second returns a one-column DataFrame. The type matters when you chain methods. A Series has helpers such as `str` and `dt`, while a DataFrame has `merge` and `groupby`.
+</InterviewQ>
+
+<InterviewQ q="How do you check data quality before you analyse a new file?">
+I start with `shape` and `dtypes` to see the size and types. Then I read `head()` for the real values, count missing values with `isna().sum()`, check for duplicate rows, and run `describe()` to spot outliers. If a money column is text, I clean it before any calculation. I write down what I found, because it changes how I read every number after it.
+</InterviewQ>
+
+<InterviewQ q="Should you use inplace=True?">
+Usually no. Most pandas methods return a new object, and assigning it back (`df = df.drop(...)`) is clear and easy to chain. `inplace=True` returns nothing, so you cannot chain calls, and it makes it harder to trace where a change came from. Many pandas maintainers have also moved away from it.
+</InterviewQ>
+
+## Key takeaways
+
+- A DataFrame is a table of columns, and each column is a Series with an index. `load()` gives you a DataFrame.
+- Run the first-look routine every time: `shape`, `dtypes`, `head`, missing counts, `describe`.
+- One bracket gives a Series, and double brackets give a DataFrame. Use a list for several columns.
+- Add computed columns in one line with vectorised arithmetic. Avoid loops over rows.
+- `value_counts(normalize=True)` gives shares. A text money column must be cleaned before you do maths.
+
+## Further reading
+
+<FurtherReading ids={["pandas-docs", "kaggle-learn"]} />

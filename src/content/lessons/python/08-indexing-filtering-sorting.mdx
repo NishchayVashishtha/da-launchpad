@@ -1,0 +1,271 @@
+---
+title: "Selecting rows: loc, iloc, filters and sort"
+description: "Pull out exactly the rows and columns you need."
+module: python
+order: 8
+estimatedMinutes: 40
+objectives:
+  - "Use loc to select by label and iloc to select by position"
+  - "Filter rows with boolean masks, combining conditions with &, | and ~"
+  - "Use isin, between, str.contains and query to filter"
+  - "Sort by several columns and take the top N rows"
+  - "Assign values safely with .loc"
+tags: ["python", "pandas", "loc", "iloc", "filter", "sort"]
+---
+
+## Learning objectives
+
+- Use `loc` to pick rows and columns by their label.
+- Use `iloc` to pick rows and columns by their position.
+- Filter rows with a boolean mask and combine conditions with `&`, `|` and `~`.
+- Use `isin`, `between`, `str.contains` and `query` for common filters.
+- Sort by more than one column, and take the top N rows with a stable tie-break.
+- Change values safely with `.loc[mask, "column"] = value`.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Most analyst questions start with a filter. "How many transfers failed?" "Which Prime customers live in Pune?" "Show the five biggest order lines." Each of these is a row selection followed by a count, a sort or a sum. A payments team that gets the filter wrong reports the wrong failure rate, and nobody notices until a month later. Being fluent with masks and `loc` lets you answer these questions in one clear line, and lets your reviewer check the logic at a glance.
+</RealWorld>
+
+## Concept
+
+### loc versus iloc
+
+Think of a classroom. `loc` finds a student by roll number. The roll number is the label. `iloc` finds the student by seat position, first bench, second bench and so on. The position does not care about the roll number.
+
+| Call | Picks by | Slice end |
+|---|---|---|
+| `df.loc[2:4]` | index label | included (2, 3 and 4) |
+| `df.iloc[2:5]` | position | excluded (positions 2, 3 and 4) |
+
+With a default index, labels and positions match, so both calls below return the same three rows.
+
+```python
+df.loc[2:4]
+df.iloc[2:5]
+```
+
+The difference becomes important after you filter. A filtered DataFrame keeps its original labels, so `iloc` and `loc` can point at different rows.
+
+### Boolean masks
+
+A **mask** is a column of True and False values, one per row. You build it with a comparison and use it to keep the True rows.
+
+```python
+failed = txns[txns["status"] == "FAILED"]
+```
+
+To combine conditions, use `&` for AND, `|` for OR and `~` for NOT. Put each condition in its own brackets, because `&` and `|` bind more tightly than `==`.
+
+```python
+mask = (txns["status"] == "FAILED") & (txns["txn_type"] == "P2M")
+```
+
+Note that `and` and `or` do not work on columns. Use `&` and `|`.
+
+### Other filters
+
+- `isin(["Pune", "Delhi"])` checks whether a value is in a list.
+- `between(a, b)` checks a range, with both ends included.
+- `isna()` and `notna()` check for missing values. Never compare with `== None` or `== NaN`.
+- `str.contains("text", case=False, na=False)` checks for part of a word, ignoring capitals. `na=False` makes missing values count as no match.
+- `query("amount > 5000")` reads like a sentence and does the same job as a mask.
+
+### Sorting and top N
+
+`sort_values` takes a list of columns and a matching list of `ascending` flags. Add a second key as a tie-breaker, so that rows with the same value always come out in the same order.
+
+```python
+items.sort_values(["line_total", "order_item_id"], ascending=[False, True]).head(5)
+```
+
+`nlargest` is shorter, but it does not give you a clear tie-break, so the sort form is safer when the answer is checked.
+
+### Safe assignment
+
+A mask on its own only selects. To change the values in some rows, use `.loc` with the mask and the column together.
+
+```python
+df.loc[mask, "status_group"] = "review"
+```
+
+Writing `df[df.a == 1]["b"] = 0` may change a temporary copy and leave `df` untouched. That is the source of the SettingWithCopy warning.
+
+<Tip>
+Build each condition as its own named mask first, check its `sum()`, then combine them. This makes the logic easy to read and easy to check.
+</Tip>
+
+## Worked examples
+
+### Example 1: failed peer-to-merchant payments
+
+We count UPI transactions that failed and were paid to a merchant (txn type P2M).
+
+```python
+txns = load("fintech", "transactions")
+failed_p2m = txns[(txns["status"] == "FAILED") & (txns["txn_type"] == "P2M")]
+print(len(failed_p2m))
+print(failed_p2m[["txn_id", "txn_datetime", "amount", "bank"]].head(3).to_string(index=False))
+```
+
+**Output:**
+
+```text
+332
+ txn_id        txn_datetime  amount                   bank
+     39 2023-01-03 06:05:19 4888.19    Himalaya Trust Bank
+    191 2023-01-09 15:05:22 1366.68 Rajdhani National Bank
+    356 17-01-2023 10:59:20  417.76      Kaveri Co-op Bank
+```
+
+There are 332 failed P2M rows. Notice that the third row's date is `17-01-2023`, a day-first format. The filter still works, because it checks `status` and `txn_type`, not the date.
+
+### Example 2: Prime customers in Pune, with stray spaces
+
+Some city names in the file have extra spaces. We strip them before we compare.
+
+```python
+customers = load("ecommerce", "customers")
+city = customers["city"].str.strip()
+prime_pune = customers[(customers["is_prime"] == 1) & (city == "Pune")]
+print(len(prime_pune), len(customers[(customers["is_prime"] == 1) & (customers["city"] == "Pune")]))
+print(prime_pune[["customer_id", "full_name", "city"]].head(3).to_string(index=False))
+```
+
+**Output:**
+
+```text
+47 44
+ customer_id      full_name city
+          18   Sanjay Mehta Pune
+          73  Simran Saxena Pune
+         152 Sandeep Kapoor Pune
+```
+
+Without stripping, the answer is 44. With stripping, it is 47. The three missing rows had a city like `" Pune"` or `"Pune "`, so an exact comparison missed them. Always check text columns for spaces and case before you filter on them.
+
+### Example 3: the five biggest order lines
+
+We want the five largest `line_total` values. Ties are broken by `order_item_id`, so the result is the same on every run.
+
+```python
+oi = load("ecommerce", "order_items")
+top5 = oi.sort_values(["line_total", "order_item_id"], ascending=[False, True]).head(5)
+print(top5[["order_item_id", "product_id", "line_total"]].to_string(index=False))
+```
+
+**Output:**
+
+```text
+ order_item_id  product_id  line_total
+         10709         234    928122.0
+          3856         341    557051.0
+         14262         209    337183.0
+         17066         409     87048.0
+         14513         357     85351.0
+```
+
+The top line is 928,122. That is the 100x unit-price error we saw in the previous lesson, not a real sale. A sorted top list shows outliers first, so it is a good way to find them. You will clean such rows in the messy-data lessons.
+
+### Example 4: loc and iloc on the same rows
+
+We take the same three rows, once by label and once by position.
+
+```python
+print(oi.loc[2:4, ["order_item_id", "product_id", "quantity", "line_total"]].to_string())
+print(oi.iloc[2:5][["order_item_id", "product_id", "quantity", "line_total"]].to_string())
+```
+
+**Output:**
+
+```text
+   order_item_id  product_id  quantity  line_total
+2              3         287         1      300.14
+3              4          80         2      290.68
+4              5         303         1     2386.23
+   order_item_id  product_id  quantity  line_total
+2              3         287         1      300.14
+3              4          80         2      290.68
+4              5         303         1     2386.23
+```
+
+Both calls return the same rows here, because the index is the default 0, 1, 2 and so on. The index labels are 2, 3 and 4 in both cases. If you filtered first, the labels would skip numbers, and the two calls would no longer match.
+
+## Common mistakes
+
+<CommonMistake>
+Using `and` or `or` between two column conditions. Python raises an error, or compares the whole columns instead of row by row. Use `&` and `|`.
+</CommonMistake>
+
+<CommonMistake>
+Leaving out the brackets around each condition. `df["a"] == 1 & df["b"] == 2` is read in the wrong order. Always write `(df["a"] == 1) & (df["b"] == 2)`.
+</CommonMistake>
+
+<CommonMistake>
+Comparing with `== NaN` or `== None`. Missing values never equal anything, so the filter returns no rows. Use `isna()` or `notna()`.
+</CommonMistake>
+
+<CommonMistake>
+Using `iloc` with labels after a filter. The rows keep their old labels, so `iloc[0]` may not be the row you expect. Use `reset_index(drop=True)` when you need a clean 0 to n-1 index.
+</CommonMistake>
+
+<CommonMistake>
+Writing `df[df.a == 1]["b"] = 0` and expecting `df` to change. The filter creates a copy. Use `df.loc[df.a == 1, "b"] = 0` instead.
+</CommonMistake>
+
+<CommonMistake>
+Sorting text that looks like numbers, such as `"₹1,250"`. The text sorts character by character, so `"₹900"` comes after `"₹1,250"`. Convert to a number first.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="indexing" module="python" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What does df.loc[2:4] return on a DataFrame with a default index?", options: ["Two rows", "Three rows, labels 2, 3 and 4", "Three rows, positions 2, 3 and 4 only", "An error"], answer: 1, explanation: "loc slices by label and includes the end label, so labels 2, 3 and 4 are all returned." },
+  { q: "Which expression gives rows that are NOT in the Delhi city list?", options: ["df[\"city\"].isin([\"Delhi\"])", "~df[\"city\"].isin([\"Delhi\"])", "df[\"city\"] != \"Delhi\" and True", "df[\"city\"].str.contains(\"Delhi\")"], answer: 1, explanation: "~ flips a True/False mask. The first option keeps Delhi rows, and the last one is not a valid mask here." },
+  { q: "Which is the correct pattern for adding a value to matching rows safely?", options: ["df[df.a == 1][\"b\"] = 0", "df.loc[df.a == 1, \"b\"] = 0", "df.iloc[df.a == 1, \"b\"] = 0", "df[\"b\"][df.a == 1] = 0"], answer: 1, explanation: "A single .loc call with a mask and a column writes into the original DataFrame, without a copy." },
+  { q: "You sort by amount descending, and two rows tie. How do you keep the result stable?", options: ["Sort by amount only", "Add a second key such as an ID, in ascending order", "Use nlargest and trust it", "Shuffle the rows first"], answer: 1, explanation: "A second sort key breaks ties the same way every run. Without one, tied rows can come out in any order." },
+  { q: "A text filter on a city column misses rows with extra spaces. What is the best fix?", options: ["Use == with a longer string", "Strip the spaces with str.strip() before the comparison", "Use iloc instead of loc", "Remove the rows with spaces"], answer: 1, explanation: "str.strip() removes leading and trailing spaces, so the comparison matches the cleaned text." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers test whether you know the difference between labels and positions, and whether you can write a multi-condition filter without a syntax error. Show your masks and say how you checked the row count.
+</InterviewAlert>
+
+<InterviewQ q="What is the difference between loc and iloc?">
+`loc` selects by the index label, and `iloc` selects by integer position. With a default index they look the same, but after filtering the labels can skip numbers. Then `loc[2:4]` and `iloc[2:5]` can return different rows, so I pick the one that matches what I mean.
+</InterviewQ>
+
+<InterviewQ q="Why do you use & instead of and when you filter a DataFrame?">
+`and` tests one whole truth value, but a filter needs a True or False answer for every row. `&` compares the two masks row by row. Each condition also needs its own brackets, because `&` binds more tightly than `==`.
+</InterviewQ>
+
+<InterviewQ q="What causes a SettingWithCopyWarning?">
+It appears when you assign to a slice that pandas might treat as a copy, such as `df[df.a == 1]["b"] = 0`. The safe fix is one `.loc` call, `df.loc[df.a == 1, "b"] = 0`, which writes into the original DataFrame.
+</InterviewQ>
+
+<InterviewQ q="How would you get the top 3 rows per group?">
+I sort by the group key and the value, then use `groupby` with `head(3)` on the sorted frame. This keeps the top three within each group, with a tie-breaker so the result is stable.
+</InterviewQ>
+
+<InterviewQ q="How do you filter rows where a text column contains a word, ignoring case and missing values?">
+I use `str.contains("word", case=False, na=False)`. `case=False` ignores capital letters, and `na=False` makes missing values count as no match, so the mask stays True or False.
+</InterviewQ>
+
+## Key takeaways
+
+- `loc` selects by label and includes the end of a slice. `iloc` selects by position and excludes the end.
+- A mask is a True/False column. Combine masks with `&`, `|` and `~`, and put each condition in brackets.
+- Sort with a tie-breaker when the answer must be stable, and check the top rows for outliers.
+- Strip and normalise text before you filter on it, because a stray space changes the count.
+- Change values only through `.loc` with a mask and a column name.
+
+## Further reading
+
+<FurtherReading ids={["pandas-docs"]} />

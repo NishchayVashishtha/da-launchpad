@@ -1,0 +1,328 @@
+---
+title: "Charts with matplotlib and seaborn"
+description: "Pick the right chart and draw it in a few lines."
+module: python
+order: 16
+estimatedMinutes: 45
+objectives:
+  - "Choose a chart type from the question you need to answer"
+  - "Draw line, bar, histogram, box and heatmap charts with matplotlib and seaborn"
+  - "Label titles, axes and units so a chart reads on its own"
+  - "Use seaborn for grouped views with hue"
+  - "Spot and avoid misleading charts"
+tags: ["python", "matplotlib", "seaborn", "visualization"]
+---
+
+## Learning objectives
+
+- Choose a chart type from the question you need to answer.
+- Draw line, bar, histogram, box and heatmap charts with matplotlib and seaborn.
+- Label titles, axes and units so a chart reads on its own.
+- Use seaborn with `hue` to compare groups in one chart.
+- Spot and avoid misleading charts.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+A business leader rarely reads a table. They look at a chart in a meeting, and they decide in about five seconds. A payments head who sees a failure rate chart with the bars sorted and labelled can act on it that day. A chart that is badly built, with a cut axis or ten pie slices, can send the team in the wrong direction. Most analyst jobs in fintech, e-commerce and consulting expect you to make charts in Python or Excel, and to explain why you picked each one.
+</RealWorld>
+
+## Concept
+
+### Every chart answers one question
+
+Think of a chart as a sentence. It has one subject and one message. If you need three messages, draw three charts. A chart that tries to say everything says nothing.
+
+### The chart chooser
+
+Start with the question, then pick the chart.
+
+| Question you want answered | Chart | Why |
+|---|---|---|
+| How does a number change over time? | Line | Time runs left to right, so the trend is easy to follow. |
+| How do categories compare? | Bar | Bar length is easy to compare. |
+| How are values spread out? | Histogram or box plot | Shows the middle, the spread and the outliers. |
+| Is there a link between two numbers? | Scatter plot | Each dot is one row, so the pattern shows. |
+| How strongly are many numbers related? | Heatmap of a correlation table | One colour grid shows every pair at once. |
+| What share of the whole does each part hold? | Bar, or a pie with 2 to 3 slices | Pies are hard to read beyond three slices. |
+
+### matplotlib: the base library
+
+matplotlib is the drawing toolkit that most Python charts are built on. You create a figure and an axes object, then call a method on the axes.
+
+```python
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots()          # one figure with one axes (one chart)
+ax.plot(x, y)                     # line; use ax.bar, ax.hist, ax.scatter too
+ax.set_title("What the chart says")
+ax.set_xlabel("Month")            # name and unit on each axis
+ax.set_ylabel("Number of transactions")
+plt.tight_layout()                # stops labels from being cut off
+plt.show()                        # draws the chart in the notebook
+```
+
+### seaborn: grouped charts in fewer lines
+
+seaborn sits on top of matplotlib. It takes a DataFrame, does the grouping for you, and adds good default colours. The `hue` argument splits each group by a second column, so one call draws several series.
+
+```python
+import seaborn as sns
+
+sns.barplot(data=df, x="bank", y="failure_pct", hue="channel")
+```
+
+- `sns.barplot` shows the average of a value for each group, with a small error line.
+- `sns.histplot` draws a histogram.
+- `sns.boxplot` draws the median, the middle half and the outliers.
+- `sns.scatterplot` draws one dot per row.
+- `sns.heatmap(df.corr(numeric_only=True), annot=True)` draws a correlation grid.
+
+### Prepare the data first, then plot
+
+Most chart bugs come from the data, not the drawing code. Shape the data before you plot it. For a bar chart, group the data and sort it. For a histogram, use the clean numeric column. Drawing from raw, dirty data gives a wrong chart with no error message.
+
+<Tip>
+Plotting code is short. The real work is the data preparation: removing duplicates, converting text like `₹1,250` to numbers, and grouping at the right level. Do that first and the chart almost draws itself.
+</Tip>
+
+### Good chart habits
+
+- Bars start at zero. A bar's length is the message.
+- Sort bars from largest to smallest, unless the categories have a natural order such as months.
+- Use no more than five colours. Use one colour and highlight the one bar that matters.
+- Write a title that states the insight, for example "Kaveri Co-op Bank fails 3 times as often as the average bank".
+- Avoid 3-D effects. They bend the shapes and make the values hard to read.
+
+<Warning>
+This site runs Python in the browser, and the browser runner cannot draw charts. The chart code in this lesson is shown for you to run in Jupyter, Colab or VS Code. The practice questions check the data you would plot, or ask you to explain a chart in words.
+</Warning>
+
+The code below uses the messy `transactions` table from the fintech dataset. Save the CSV files in a `fintech/` folder next to your notebook. Each example first cleans the data the same way.
+
+```python
+import pandas as pd
+
+t = pd.read_csv("fintech/transactions.csv").drop_duplicates(subset="txn_id")
+
+def clean_amount(s):
+    # "₹2,849.33" becomes 2849.33
+    return s.astype(str).str.replace(r"[₹,\s]", "", regex=True).astype(float)
+
+# Some dates are ISO (2023-01-19) and some are day first (19-01-2023).
+iso = pd.to_datetime(t["txn_datetime"], format="%Y-%m-%d %H:%M:%S", errors="coerce")
+dmy = pd.to_datetime(t["txn_datetime"], format="%d-%m-%Y %H:%M:%S", errors="coerce")
+t["ts"] = iso.combine_first(dmy)
+t["amt"] = clean_amount(t["amount"])
+t["failed"] = t["status"].eq("FAILED")
+```
+
+After the cleaning, the table has 22,300 unique transactions. The `drop_duplicates` step removes 89 extra rows that repeat a `txn_id`. The date check parses every row with one of the two formats, so no date is lost.
+
+## Worked examples
+
+### Example 1: a line chart for a trend
+
+The question is "how did monthly volume move over two years?" That is a trend, so use a line.
+
+```python
+monthly = t.groupby(t["ts"].dt.to_period("M")).size()
+monthly.index = monthly.index.to_timestamp()
+
+fig, ax = plt.subplots(figsize=(10, 4))
+ax.plot(monthly.index, monthly.values, marker="o")
+ax.set_title("Transactions per month, Jan 2023 to Dec 2024")
+ax.set_xlabel("Month")
+ax.set_ylabel("Number of transactions")
+plt.tight_layout()
+plt.show()
+```
+
+**Selected months from the real data:**
+
+| Month | Transactions |
+|---|---|
+| Jan 2023 | 707 |
+| Feb 2023 | 658 |
+| Oct 2023 | 896 |
+| Nov 2023 | 965 |
+| Jan 2024 | 941 |
+| Oct 2024 | 1,327 |
+| Dec 2024 | 1,114 |
+
+**What the chart shows:** the line climbs over the two years, from about 700 a month to over 1,300 at the October 2024 peak. Each February dips a little below January. The line makes the festive peak and the growth visible at a glance, which a table of 24 numbers does not.
+
+### Example 2: a bar chart for comparing groups
+
+The question is "which bank fails most often?" Groups are compared, so use a bar chart, sorted, starting at zero.
+
+```python
+rates = (t.groupby("bank")["failed"]
+           .agg(attempts="size", failed="sum"))
+rates["failure_pct"] = (rates["failed"] / rates["attempts"] * 100).round(2)
+rates = rates.sort_values("failure_pct", ascending=False)
+
+fig, ax = plt.subplots(figsize=(9, 5))
+ax.bar(rates.index, rates["failure_pct"], color="#4c72b0")
+ax.set_title("Kaveri Co-op Bank fails far more often than other banks")
+ax.set_xlabel("Bank")
+ax.set_ylabel("Failed transactions (%)")
+ax.tick_params(axis="x", rotation=45)
+ax.set_ylim(0, 7)
+plt.tight_layout()
+plt.show()
+```
+
+**Real output, all 8 banks:**
+
+| Bank | Attempts | Failed | Failure % |
+|---|---|---|---|
+| Kaveri Co-op Bank | 1,700 | 103 | 6.06 |
+| PayNova Small Finance Bank | 782 | 23 | 2.94 |
+| Sundaram Bank | 4,658 | 121 | 2.60 |
+| Coromandel Bank | 1,959 | 50 | 2.55 |
+| Himalaya Trust Bank | 3,077 | 75 | 2.44 |
+| Bharat Union Bank | 5,097 | 120 | 2.35 |
+| Malabar Savings Bank | 1,315 | 29 | 2.21 |
+| Rajdhani National Bank | 3,712 | 80 | 2.16 |
+
+**What the chart shows:** Kaveri Co-op Bank stands out at 6.06 percent. The other seven banks sit between 2.16 and 2.94 percent, so the first bar is about twice as tall as the rest. The bars start at zero, which keeps that gap honest.
+
+### Example 3: a histogram and a box plot for spread
+
+The question is "how are transaction amounts spread out, and are there outliers?" A histogram shows the shape. A box plot shows the middle and the outliers. Amounts have a long right tail, so use a log scale in the histogram.
+
+```python
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(11, 4))
+
+sns.histplot(t["amt"], bins=60, ax=ax1)
+ax1.set_xscale("log")                     # spreads out the small amounts
+ax1.set_title("Most payments are small")
+ax1.set_xlabel("Amount (INR, log scale)")
+
+sns.boxplot(x=t["amt"], ax=ax2)
+ax2.set_title("Outliers sit far to the right")
+ax2.set_xlabel("Amount (INR)")
+
+plt.tight_layout()
+plt.show()
+```
+
+**Real summary numbers behind the two charts:**
+
+| Measure | Value (INR) |
+|---|---|
+| Median | 556.87 |
+| Mean | 1,384.64 |
+| 75th percentile | 1,361.83 |
+| Upper outlier fence (Q3 + 1.5 x IQR) | 2,964.65 |
+| Rows above the fence | 2,406 |
+| Rows above 50,000 | 10 |
+
+| Amount band (INR) | Transactions |
+|---|---|
+| Up to 500 | 10,240 |
+| 500 to 1,000 | 4,756 |
+| 1,000 to 3,000 | 4,927 |
+| 3,000 to 10,000 | 2,050 |
+| 10,000 to 50,000 | 317 |
+| Above 50,000 | 10 |
+
+**What the charts show:** the histogram has a tall left side. Most payments are under 1,000 INR, and the bars shrink as the amounts grow. The mean (1,384.64) is much higher than the median (556.87), which is a sign of a long right tail. The box plot shows the same thing: the box is compressed on the left, and a line of dots stretches to the right. The 10 rows above 50,000 INR are the extreme points. Check them before you delete anything, because some may be real large transfers.
+
+### Example 4: a heatmap for many correlations at once
+
+The question is "which delivery numbers move together?" Use a correlation table and draw it as a heatmap. The delivery data comes from the food delivery dataset, with duplicates removed and `order_value` cleaned.
+
+```python
+d = pd.read_csv("food_delivery/deliveries.csv").drop_duplicates(subset="delivery_id")
+num = pd.DataFrame({
+    "distance_km": d["distance_km"],
+    "promised_minutes": d["promised_minutes"],
+    "actual_minutes": d["actual_minutes"],
+    "delay_minutes": d["delay_minutes"],
+    "order_value": clean_amount(d["order_value"]),
+    "delivery_fee": d["delivery_fee"],
+})
+
+corr = num.corr().round(2)   # pandas skips the NULL minutes of cancelled orders
+fig, ax = plt.subplots(figsize=(7, 6))
+sns.heatmap(corr, annot=True, cmap="coolwarm", vmin=-1, vmax=1, ax=ax)
+ax.set_title("Delivery numbers: how strongly they move together")
+plt.tight_layout()
+plt.show()
+```
+
+**Real correlation values:**
+
+| | distance_km | promised_minutes | actual_minutes | delay_minutes | order_value | delivery_fee |
+|---|---|---|---|---|---|---|
+| distance_km | 1.00 | 0.96 | 0.70 | 0.19 | 0.01 | 0.40 |
+| promised_minutes | 0.96 | 1.00 | 0.74 | 0.21 | 0.02 | 0.36 |
+| actual_minutes | 0.70 | 0.74 | 1.00 | 0.81 | 0.01 | 0.26 |
+| delay_minutes | 0.19 | 0.21 | 0.81 | 1.00 | 0.01 | 0.07 |
+| order_value | 0.01 | 0.02 | 0.01 | 0.01 | 1.00 | -0.28 |
+| delivery_fee | 0.40 | 0.36 | 0.26 | 0.07 | -0.28 | 1.00 |
+
+**What the heatmap shows:** the diagonal is always 1.00, because each column matches itself. The strongest pair is `promised_minutes` with `distance_km` (0.96), since longer trips get longer promises. The next strongest is `actual_minutes` with `delay_minutes` (0.81), which is expected because delay is part of the actual time. `order_value` is almost unrelated to the time columns. Remember that correlation shows a straight-line link only. It does not prove that one column causes the other.
+
+## Common mistakes
+
+- **Cutting the bar axis.** Starting a bar chart at 90 makes a 2 percent gap look like 50 percent. Bars start at zero. Use a dot plot if you need a close-up.
+- **Leaving bars unsorted.** The reader must hunt for the best and worst group. Sort the bars, unless the categories have a natural order such as months.
+- **Using a pie chart with ten slices.** Ten slices of similar size cannot be compared by eye. Use a sorted bar chart.
+- **Missing titles, labels and units.** A chart titled "Chart 1" with an axis called "value" tells the reader nothing. Write the insight as the title and name each axis with its unit.
+- **Plotting raw, dirty data.** Text amounts like `₹2,849.33` will not plot as numbers, and a 100 times outlier squashes every other bar to a line. Clean and check the data first.
+- **Forgetting `plt.show()` or mixing figures.** In a script, nothing appears without `plt.show()`. In a notebook, a second `plt.subplots()` in the same cell can put two charts on top of each other. Create one figure per chart.
+
+## Practice questions
+
+<PracticeSet topic="viz" module="python" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "A product manager asks how daily orders changed across 18 months. Which chart fits best?", options: ["Pie chart", "Line chart", "Scatter plot with no time axis", "Box plot"], answer: 1, explanation: "A number changing over time is a trend. A line chart puts time on the x-axis and joins the points, so the rise and the dips are easy to follow." },
+  { q: "In seaborn, what does the hue argument do?", options: ["It changes the chart size", "It splits each group by a second column and gives each part its own colour", "It sorts the bars", "It removes outliers"], answer: 1, explanation: "hue adds a second grouping. For example, bars for each bank can be split by channel, with one colour per channel, in a single call." },
+  { q: "When should you use a histogram instead of a bar chart?", options: ["When you compare the average sales of five stores", "When you want to see how the values of one numeric column are spread out", "When the data is text", "When you have only two categories"], answer: 1, explanation: "A histogram bins a numeric column and shows the shape of its spread, including the tail. A bar chart compares separate categories." },
+  { q: "What should be the input to a seaborn heatmap that shows which numbers move together?", options: ["The raw text columns", "A correlation table, such as df.corr(numeric_only=True)", "A list of all row numbers", "A dictionary of city names"], answer: 1, explanation: "A correlation table has one row and one column for each numeric field, and each cell holds a value between -1 and 1. The heatmap colours each cell so the strong pairs stand out." },
+  { q: "Why is a pie chart with 10 slices a poor choice?", options: ["Pie charts cannot show percentages", "Small slices of similar size are hard to compare by eye, and the labels crowd together", "Pie charts only work with dates", "Pie charts need a log scale"], answer: 1, explanation: "Humans compare lengths much better than angles or areas. With ten similar slices, the reader cannot rank them, so a sorted bar chart is clearer." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers check whether you choose a chart from the question, not from habit. They want to hear the chart type, the data preparation, and a sentence on what the reader should take away. Mention a misleading chart you know how to fix.
+</InterviewAlert>
+
+<InterviewQ q="How do you choose a chart for a business question?">
+I start with the question. If it asks how a number changes over time, I use a line chart. If it compares groups, I use a sorted bar chart. If it asks about spread or outliers, I use a histogram or a box plot. Before I draw, I write the one message the chart should carry, and I check that the data is clean and grouped at the right level.
+</InterviewQ>
+
+<InterviewQ q="How would you show the distribution of transaction amounts and their outliers?">
+I would use a histogram for the shape, with a log scale because amounts have a long right tail. Then I would use a box plot to show the median, the middle half and the outliers. I would report the median and the mean together, because a large gap between them signals skew. Before I call a value an outlier, I check whether it is a data entry error or a real large transfer.
+</InterviewQ>
+
+<InterviewQ q="Give an example of a misleading chart and how you would fix it.">
+A common example is a bar chart with the y-axis starting at 90. Small differences look huge. The fix is to start the axis at zero, sort the bars, and write a title that states the real gap. If the gap is small, I say so in the title instead of making it look big.
+</InterviewQ>
+
+<InterviewQ q="What is the difference between matplotlib and seaborn?">
+matplotlib is the base drawing library. It gives full control over every part of a chart, but it takes more lines. seaborn is built on top of matplotlib. It takes a DataFrame directly, groups the data for you and adds the hue argument, so a grouped chart takes one line. I use seaborn for quick grouped views and matplotlib when I need to fine-tune the layout.
+</InterviewQ>
+
+<InterviewQ q="How would you show three variables in one chart?">
+I can use a scatter plot with the x and y axes for two numbers and the colour or size of each dot for the third. For a grouped view, I can use hue for a categorical third variable. If the chart gets crowded, I would split it into small multiples, one chart per group on a shared axis, instead of cramming everything into one plot.
+</InterviewQ>
+
+## Key takeaways
+
+- Each chart answers one question. Choose the chart type from the question: line for trend, bar for comparison, histogram or box for spread, scatter for relationship, heatmap for a correlation grid.
+- Shape the data before you plot. Clean the text amounts, parse both date formats and remove duplicates first.
+- Sort bars, start them at zero, label every axis with its unit, and write a title that states the insight.
+- Use seaborn with `hue` for grouped views, and matplotlib when you need full control.
+- Watch for misleading charts: truncated axes, too many colours, pies with many slices and 3-D effects.
+
+## Further reading
+
+<FurtherReading ids={["matplotlib-docs", "seaborn-docs"]} />

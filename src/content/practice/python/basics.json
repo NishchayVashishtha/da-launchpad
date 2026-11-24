@@ -1,0 +1,96 @@
+[
+  {
+    "id": "python-basics-001",
+    "module": "python",
+    "topic": "basics",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "A food app charges 18% GST on its ₹2,499 yearly plan. Assign the GST amount to `result`, rounded to 2 decimals.",
+    "dataset": "none",
+    "hint": "Multiply the price by 18 and divide by 100. Round the answer at the end.",
+    "solutionCode": "gst = 2499 * 18 / 100\nresult = round(gst, 2)",
+    "expectedOutput": {
+      "value": 449.82
+    },
+    "orderMatters": false,
+    "explanation": "The `/` operator always gives a float, so 2499 * 18 / 100 keeps the paise. `round(gst, 2)` trims the answer to two decimals, which is how money is shown on a bill.",
+    "commonMistake": "Writing `18 // 100` (floor division). It gives 0, so the whole GST line is 0.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "arithmetic",
+      "float",
+      "rounding"
+    ]
+  },
+  {
+    "id": "python-basics-002",
+    "module": "python",
+    "topic": "basics",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "A payroll sheet stores a salary as the text `salary_text = \"₹1,25,000\"` (Indian comma style). Convert it to an int and assign it to `result`.",
+    "dataset": "none",
+    "hint": "Remove the ₹ sign and the commas first, then convert the text to an int.",
+    "solutionCode": "salary_text = \"₹1,25,000\"\nresult = int(salary_text.replace(\"₹\", \"\").replace(\",\", \"\"))",
+    "expectedOutput": {
+      "value": 125000
+    },
+    "orderMatters": false,
+    "explanation": "`int()` only accepts plain digits. Removing the symbol and commas with `replace` leaves `125000`, which `int()` can read. This is the same cleaning step you will use on messy money columns later.",
+    "commonMistake": "Calling `int(salary_text)` directly. It raises a ValueError because of the ₹ sign and commas, so the script stops with no result.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": [
+      "types",
+      "conversion",
+      "strings"
+    ]
+  },
+  {
+    "id": "python-basics-003",
+    "module": "python",
+    "topic": "basics",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "Two UPI refunds were `a = 1250.0` and `b = 480.5` rupees. Assign the average of the two amounts, rounded to 2 decimals, to `result`.",
+    "dataset": "none",
+    "hint": "Add the two amounts, then divide by 2. Use `/`, not `//`.",
+    "solutionCode": "a = 1250.0\nb = 480.5\nresult = round((a + b) / 2, 2)",
+    "expectedOutput": {
+      "value": 865.25
+    },
+    "orderMatters": false,
+    "explanation": "The average is (a + b) / 2 = 865.25. Brackets make the addition happen before the division. Using `//` would drop the paise and give 865.0.",
+    "commonMistake": "Writing `a + b / 2`. Python divides first, so the answer is 1490.25, which is not the average.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": [
+      "arithmetic",
+      "precedence"
+    ]
+  },
+  {
+    "id": "python-basics-004",
+    "module": "python",
+    "topic": "basics",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "A KYC form has the name `name = \"  asha VERMA \"`. Clean it for a report: remove the extra spaces and use title case. Assign the cleaned text to `result`.",
+    "dataset": "none",
+    "hint": "Use `.strip()` to remove spaces at both ends. Then use `.title()` to set the case.",
+    "solutionCode": "name = \"  asha VERMA \"\nresult = name.strip().title()",
+    "expectedOutput": {
+      "value": "Asha Verma"
+    },
+    "orderMatters": false,
+    "explanation": "`strip()` removes spaces at the start and end, and `title()` makes the first letter of each word capital. The result is \"Asha Verma\". Strings never change in place, so the result must be saved to a new value.",
+    "commonMistake": "Using only `.title()` and forgetting `.strip()`. The result keeps the leading and trailing spaces, so it no longer matches the other records.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "strings",
+      "cleaning"
+    ]
+  }
+]

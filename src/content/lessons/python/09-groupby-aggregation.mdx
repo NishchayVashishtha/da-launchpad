@@ -1,0 +1,298 @@
+---
+title: "groupby: summarise by category"
+description: "Split, summarise, combine: the heart of analysis."
+module: python
+order: 9
+estimatedMinutes: 45
+objectives: ["Use groupby with one or many keys", "Name your totals with named aggregation", "Add group totals back with transform", "Rank rows inside each group", "Calculate rates as sum divided by sum", "Reset the index so results are plain tables"]
+tags: ["python", "pandas", "groupby", "aggregation"]
+---
+
+## Learning objectives
+
+- Use `groupby` with one key and with many keys.
+- Name your totals in one step with named aggregation.
+- Add a group total back to every row with `transform`.
+- Pick the top rows inside each group.
+- Calculate a rate the right way: sum divided by sum.
+- Use `reset_index()` so results are plain tables you can merge or export.
+
+## Why this matters for a Data Analyst job
+
+<RealWorld>
+Almost every report you will build is a group summary. "Failures by bank." "Orders by channel." "Top product in each category." In SQL this is `GROUP BY`. In pandas it is `groupby`. A fintech analyst may run this check on UPI data every morning, so a wrong group total can reach the risk team before anyone notices.
+</RealWorld>
+
+## Concept
+
+Think of a pile of bills on your desk. You sort them into piles by month. Then you add up each pile. That is the whole idea. pandas calls it **split, apply, combine**:
+
+1. **Split** the rows into groups by a key, such as `bank`.
+2. **Apply** a summary to each group, such as a count or a sum.
+3. **Combine** the summaries into one table.
+
+```python
+import pandas as pd
+
+def load(dataset, table):      # the runner gives you this function
+    ...
+
+txns = load("fintech", "transactions").drop_duplicates(subset="txn_id")
+txns.groupby("bank")["amount"].sum()        # one total per bank
+```
+
+### One key, one column, one summary
+
+`df.groupby("c")["v"].sum()` groups by `c`, then adds up `v` in each group. You can use `mean`, `min`, `max`, `count`, `size` or `nunique` in the same way.
+
+### Several summaries at once: named aggregation
+
+Use `.agg()` with names on the left. This gives clear column names in one step.
+
+```python
+txns.groupby("bank").agg(
+    transactions=("txn_id", "count"),
+    total_amount=("amount", "sum"),
+)
+```
+
+### size, count and nunique are not the same
+
+- `size()` counts rows in each group, including missing values.
+- `count()` counts non-missing values in one column.
+- `nunique()` counts distinct values, such as distinct customers.
+
+<FormulaCard title="Rate = sum(events) / sum(attempts)">
+Calculate a rate from totals, not from a mean of rates. Example: failure rate = count of FAILED rows divided by all rows. A True or False column has a mean. That mean is the share of True values, so `groupby(...)["is_failed"].mean()` gives the rate directly.
+</FormulaCard>
+
+Here is why it matters. Using the cleaned transactions table, the simple average of the 8 bank failure rates is 2.91 percent. The pooled rate, with all failed rows divided by all rows, is 2.70 percent. Banks with fewer transactions count just as much in the simple average. Always use the pooled rate for a business answer.
+
+### Many keys give a MultiIndex
+
+Passing a list of columns makes one group for each pair. Use `as_index=False` to keep the keys as normal columns, or call `reset_index()` at the end.
+
+```python
+df.groupby(["store_id", "category"], as_index=False)["quantity"].sum()
+```
+
+### transform keeps the row count
+
+`agg` gives one row per group. `transform` gives one value for each original row. This is how you get each row's share of its group.
+
+```python
+items["order_total"] = items.groupby("order_id")["line_total"].transform("sum")
+```
+
+The new column has the same length as `items`. You can now divide one column by the other.
+
+### Top rows inside each group
+
+Sort the table, then take the first rows of each group:
+
+```python
+ranked = df.sort_values(["category", "units"], ascending=[True, False])
+top_one = ranked.groupby("category").head(1)
+```
+
+### Missing keys are dropped by default
+
+`groupby` drops rows where the key is missing. Pass `dropna=False` to keep a row for the missing key. In the customers table, 139 of the 4,500 unique customers have no city. Here is what happens:
+
+```python
+customers.groupby("city").size().sum()                # 4361: the 139 missing cities are left out
+customers.groupby("city", dropna=False).size()        # same groups, plus one row for the missing city
+```
+
+<Tip>
+Before a groupby, check the key column. Count the missing values and look for spelling variants such as `Pune` and ` pune`. A groupby treats them as different groups. Clean the key first.
+</Tip>
+
+### SQL bridge
+
+`groupby` is `GROUP BY`. Named aggregation is the same as `SELECT COUNT(*) AS transactions`. A filter on the result after the aggregation is `HAVING` in SQL. In pandas you filter the grouped result like any other table.
+
+## Worked examples
+
+All examples use the messy CSV files that `load()` reads. Each one removes the repeated rows first. Output shown here is the real output from running the code.
+
+### Example 1: failure rate by bank
+
+We keep one row per `txn_id`. Then we use a True or False column for FAILED and take the mean.
+
+```python
+txns = load("fintech", "transactions").drop_duplicates(subset="txn_id").copy()
+txns["is_failed"] = txns["status"].eq("FAILED")
+
+by_bank = txns.groupby("bank")["is_failed"].agg(
+    transactions="size", failed="sum", failure_rate_pct="mean"
+)
+by_bank["failure_rate_pct"] = (by_bank["failure_rate_pct"] * 100).round(2)
+result = by_bank.sort_values("failure_rate_pct", ascending=False)
+```
+
+| bank | transactions | failed | failure_rate_pct |
+|---|---|---|---|
+| Kaveri Co-op Bank | 1700 | 103 | 6.06 |
+| PayNova Small Finance Bank | 782 | 23 | 2.94 |
+| Sundaram Bank | 4658 | 121 | 2.60 |
+| Coromandel Bank | 1959 | 50 | 2.55 |
+| Himalaya Trust Bank | 3077 | 75 | 2.44 |
+| Bharat Union Bank | 5097 | 120 | 2.35 |
+| Malabar Savings Bank | 1315 | 29 | 2.21 |
+| Rajdhani National Bank | 3712 | 80 | 2.16 |
+
+Kaveri Co-op Bank stands out. Its failure rate is more than twice the next bank. This is the first lead to check by hour and by error code.
+
+### Example 2: orders and cancel share by sales channel
+
+Here we need two numbers: the count of orders, and the share that were cancelled. The cancel share is a mean of a True or False column.
+
+```python
+orders = load("ecommerce", "orders").drop_duplicates(subset="order_id").copy()
+orders["is_cancelled"] = orders["order_status"].eq("Cancelled")
+
+by_channel = orders.groupby("sales_channel").agg(
+    orders=("order_id", "count"),
+    cancelled=("is_cancelled", "sum"),
+    cancel_pct=("is_cancelled", "mean"),
+)
+by_channel["cancel_pct"] = (by_channel["cancel_pct"] * 100).round(2)
+result = by_channel.sort_values("orders", ascending=False)
+```
+
+| sales_channel | orders | cancelled | cancel_pct |
+|---|---|---|---|
+| Android App | 4982 | 292 | 5.86 |
+| Website | 2087 | 117 | 5.61 |
+| iOS App | 1665 | 92 | 5.53 |
+| Mobile Web | 1266 | 65 | 5.13 |
+
+Android App has the most orders. Its cancel share is also the highest, but the gap is small.
+
+### Example 3: each item's share of its order with transform
+
+We want each item's share of its order's rupee total. First we remove the 12 entry errors. These are rows where the unit price is more than 10 times the product MRP. The code uses a merge to get the MRP. You will learn merge in the next lesson.
+
+```python
+items = load("ecommerce", "order_items")
+mrp = load("ecommerce", "products")[["product_id", "mrp"]].drop_duplicates(subset="product_id")
+items = items.merge(mrp, on="product_id", how="left")
+items = items[items["unit_price"] <= 10 * items["mrp"]].copy()
+
+items["order_total"] = items.groupby("order_id")["line_total"].transform("sum")
+items["share_pct"] = (items["line_total"] / items["order_total"] * 100).round(1)
+result = items[items["order_id"] == 1][["order_item_id", "line_total", "order_total", "share_pct"]]
+```
+
+| order_item_id | line_total | order_total | share_pct |
+|---|---|---|---|
+| 1 | 611.15 | 5542.95 | 11.0 |
+| 2 | 4631.66 | 5542.95 | 83.6 |
+| 3 | 300.14 | 5542.95 | 5.4 |
+
+Each row keeps its own line. Its share is worked out from its order's total. Item 2 is 83.6 percent of the order, so one expensive item drives the basket.
+
+### Example 4: top product per category by units sold
+
+Units are a better measure here than rupees, because the price errors do not affect them. The category sits in the products table, so we clean it and merge it in.
+
+```python
+products = load("ecommerce", "products").drop_duplicates(subset="product_id").copy()
+products["category"] = products["category"].str.strip().str.title()
+
+units = load("ecommerce", "order_items")[["product_id", "quantity"]].merge(
+    products[["product_id", "category", "product_name"]], on="product_id", how="left"
+)
+by_product = units.groupby(["category", "product_name"], as_index=False)["quantity"].sum()
+by_product = by_product.rename(columns={"quantity": "units"})
+ranked = by_product.sort_values(["category", "units", "product_name"], ascending=[True, False, True])
+result = ranked.groupby("category").head(1).reset_index(drop=True)
+```
+
+| category | product_name | units |
+|---|---|---|
+| Beauty | PureNeem Skincare 841 | 126 |
+| Books | Kitaab Press Kid 717 | 354 |
+| Electronics | VoltEdge Smartwatche 609 | 1170 |
+| Fashion | Threadly Jean 411 | 331 |
+| Footwear | RunMate Sandal 151 | 110 |
+| Grocery | Masala Mandi Dry Fruit 544 | 650 |
+| Home & Kitchen | Lakshmi Home Bedding 794 | 208 |
+
+The tie-breaker on `product_name` keeps the answer stable if two products sell the same units.
+
+## Common mistakes
+
+<CommonMistake>
+**Averaging averages.** Taking the mean of a column of rates gives every group the same weight. A bank with 782 transactions counts as much as one with 5,097. For a business rate, divide the total events by the total attempts.
+</CommonMistake>
+
+<CommonMistake>
+**Using `size` when you meant `count`, or the reverse.** `size()` counts rows. `count()` skips missing values in that column. If a column has blanks, the two numbers differ. `nunique()` is the one to use for distinct customers.
+</CommonMistake>
+
+<CommonMistake>
+**Forgetting `reset_index()` before a merge.** A groupby result keeps its keys in the index. A merge on a column name will fail, or find nothing, until you call `reset_index()` or use `as_index=False`.
+</CommonMistake>
+
+<CommonMistake>
+**Grouping on dirty keys.** `Pune`, ` Pune` and `PUNE` become three groups. Strip spaces and fix the case first, as shown in example 4.
+</CommonMistake>
+
+<CommonMistake>
+**Skipping the dedupe step.** The orders file repeats about 100 order ids. A count after a groupby on the repeated file is too high. Always drop repeats by the id column before you group.
+</CommonMistake>
+
+<CommonMistake>
+**Summing a text money column.** A column such as `₹2,849.33` is text. Pandas joins text values together without an error. Convert it to a number first.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet topic="groupby" module="python" />
+
+## Mini quiz
+
+<Quiz questions={[
+  { q: "What is the difference between size() and count() on the same group?", options: ["They are always equal", "size() counts rows, count() counts non-missing values in one column", "count() counts rows, size() counts non-missing values", "size() only works on numbers"], answer: 1, explanation: "size() counts every row in the group. count() skips missing values in the column you name, so the two can differ when a column has blanks." },
+  { q: "A column is_failed holds True or False. What does groupby on a bank with mean() on is_failed give you?", options: ["The number of failures", "The share of True values, which is the failure rate", "The sum of the flags", "An error, because mean needs numbers"], answer: 1, explanation: "True counts as 1 and False as 0, so the mean is the share of True values. Multiply by 100 for a percent." },
+  { q: "What does groupby do with rows where the key column is missing?", options: ["It puts them in a group called Unknown", "It drops them, unless you pass dropna=False", "It raises an error", "It fills the key with zero"], answer: 1, explanation: "By default, groupby drops rows whose key is missing. Use dropna=False to keep them as their own group." },
+  { q: "Which code gives an output column called total_units with the sum of quantity?", options: ["df.groupby('store_id').sum('total_units')", "df.groupby('store_id').agg(total_units=('quantity', 'sum'))", "df.groupby('store_id')['quantity'].total_units", "df.groupby('store_id').rename('total_units')"], answer: 1, explanation: "Named aggregation uses the form new_name=(column, function). The other options are not valid or do not name the output." },
+  { q: "You call groupby('order_id')['line_total'].transform('sum'). What is true about the result?", options: ["It has one row per order", "It has the same number of rows as the input", "It always has fewer rows than the input", "It is a text column"], answer: 1, explanation: "transform returns one value for every input row, so you can divide each row by its group total. agg is the one that gives one row per group." }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers test whether you know split, apply, combine and whether you can name the right aggregate. They also check the rate trap. Answer with a short example and a sentence on why the denominator matters.
+</InterviewAlert>
+
+<InterviewQ q="How do groupby, agg and transform differ?">
+`groupby` splits the rows into groups. `agg` then gives one summary row for each group, so the output is shorter than the input. `transform` gives back a value for each original row, so the output has the same length as the input. I use transform to add a group total to every row, for example each item's share of its order. The apply method is the most flexible, but it is slower, so I use it only when agg and transform cannot do the job.
+</InterviewQ>
+
+<InterviewQ q="How would you find the top 3 products in each category?">
+First, I clean the category text and keep one row per product. Then I sort by category and by units sold, highest first. Last, I use groupby on category with head(3). The sort does the ranking, and head keeps the first three rows in each group. I add a second sort key, the product name, so ties come out in a fixed order.
+</InterviewQ>
+
+<InterviewQ q="Why is the mean of group rates wrong for a company-wide failure rate?">
+A mean of rates gives each group the same weight, even when one group has a tiny number of transactions. In our data, the simple average of the bank failure rates is 2.91 percent, but the pooled rate is 2.70 percent. For a company rate, I add up the failed rows and divide by all rows.
+</InterviewQ>
+
+<InterviewQ q="How do you count distinct customers per month?">
+I make a month column from the order date, then use groupby on that month and call nunique on the customer id. nunique counts each customer once, even if they placed several orders. Size or count would count orders, which is a different number.
+</InterviewQ>
+
+## Key takeaways
+
+- `groupby` is split, apply, combine. It is the same idea as `GROUP BY`.
+- Use named aggregation with `.agg()` to name your outputs.
+- A rate is sum divided by sum. The mean of a True or False column gives that rate.
+- `transform` gives one value per original row, so you can compare each row with its group.
+- Clean the keys and drop repeated ids before you group, or the totals will be wrong.
+- Use `reset_index()` or `as_index=False` so the results are plain tables.
+
+## Further reading
+
+<FurtherReading ids={["pandas-docs", "mode-sql"]} />

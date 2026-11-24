@@ -1,0 +1,447 @@
+[
+  {
+    "id": "python-pivot-001",
+    "module": "python",
+    "topic": "pivot",
+    "difficulty": "easy",
+    "language": "python",
+    "question": "The payments team wants to see how many transactions reached each status for each transaction type. Drop duplicate rows by `txn_id` first. Build a table with one row per `txn_type` and one column per `status`, with 0 in empty cells. Assign the DataFrame to `result`.",
+    "dataset": "fintech",
+    "hint": "Use `pd.pivot_table` with `aggfunc=\"count\"` and `fill_value=0`. Remove duplicates before you pivot.",
+    "solutionCode": "t = load(\"fintech\", \"transactions\").drop_duplicates(subset=\"txn_id\")\nresult = pd.pivot_table(t, index=\"txn_type\", columns=\"status\", values=\"txn_id\", aggfunc=\"count\", fill_value=0).reset_index()",
+    "expectedOutput": {
+      "columns": [
+        "txn_type",
+        "FAILED",
+        "PENDING",
+        "SUCCESS"
+      ],
+      "rows": [
+        [
+          "Bill Pay",
+          72,
+          11,
+          2740
+        ],
+        [
+          "P2M",
+          329,
+          43,
+          11915
+        ],
+        [
+          "P2P",
+          141,
+          16,
+          5268
+        ],
+        [
+          "Recharge",
+          59,
+          10,
+          1696
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "A pivot table groups rows by the `index` column and spreads the values of the `columns` column across the top. Dropping duplicate `txn_id` rows first makes sure each payment is counted once. `aggfunc=\"count\"` counts the rows in each cell, and `fill_value=0` turns empty cells into 0 instead of NaN.",
+    "commonMistake": "Skipping the duplicate drop. The repeated `txn_id` rows are counted twice, so the totals are higher than the real number of payments.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": [
+      "pivot",
+      "pivot_table",
+      "count"
+    ]
+  },
+  {
+    "id": "python-pivot-002",
+    "module": "python",
+    "topic": "pivot",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "The sales team wants to know how each sales channel's orders end. Use unique `order_id` rows only. Build a table with one row per `sales_channel` and one column per `order_status`. Each cell should show the percent of that channel's orders, rounded to 1 decimal. Assign the DataFrame to `result` with `sales_channel` as a normal column.",
+    "dataset": "ecommerce",
+    "hint": "Use `pd.crosstab` with `normalize=\"index\"`, then multiply by 100 to get percent.",
+    "solutionCode": "o = load(\"ecommerce\", \"orders\").drop_duplicates(subset=\"order_id\")\nshare = pd.crosstab(o[\"sales_channel\"], o[\"order_status\"], normalize=\"index\") * 100\nresult = share.round(1).reset_index()",
+    "expectedOutput": {
+      "columns": [
+        "sales_channel",
+        "Cancelled",
+        "Delivered",
+        "RTO"
+      ],
+      "rows": [
+        [
+          "Android App",
+          5.9,
+          92.5,
+          1.6
+        ],
+        [
+          "Mobile Web",
+          5.1,
+          93.6,
+          1.3
+        ],
+        [
+          "Website",
+          5.6,
+          92.5,
+          1.9
+        ],
+        [
+          "iOS App",
+          5.5,
+          92.8,
+          1.7
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "`normalize=\"index\"` divides each cell by its row total, so each channel's row adds up to 100 percent. Multiplying by 100 turns the shares into percent. Rounding to 1 decimal keeps the table easy to read.",
+    "commonMistake": "Using `normalize=True` or `normalize=\"all\"`. That divides by the grand total of all orders, so each row no longer adds to 100 percent and every channel looks smaller than it is.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": [
+      "crosstab",
+      "normalize",
+      "percent"
+    ]
+  },
+  {
+    "id": "python-pivot-003",
+    "module": "python",
+    "topic": "pivot",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "The product team wants a quick view of how the subscription plans split across statuses. Drop duplicate `subscription_id` rows first. Count subscriptions for each `plan` (rows) and each `status` (columns). Assign the DataFrame to `result` with `plan` as a normal column.",
+    "dataset": "subscription",
+    "hint": "`pd.crosstab` counts rows for each pair of values. Use `reset_index()` to turn the plan names back into a column.",
+    "solutionCode": "s = load(\"subscription\", \"subscriptions\").drop_duplicates(subset=\"subscription_id\")\nresult = pd.crosstab(s[\"plan\"], s[\"status\"]).reset_index()",
+    "expectedOutput": {
+      "columns": [
+        "plan",
+        "active",
+        "cancelled",
+        "trial_expired",
+        "trialing"
+      ],
+      "rows": [
+        [
+          "Basic",
+          145,
+          216,
+          631,
+          9
+        ],
+        [
+          "Premium",
+          112,
+          103,
+          455,
+          11
+        ],
+        [
+          "Standard",
+          282,
+          335,
+          985,
+          24
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "`pd.crosstab` builds a grid of counts. Each cell counts the subscriptions that have that plan and that status. The grid is easy to compare across statuses because every plan is one row.",
+    "commonMistake": "Using `groupby([\"plan\", \"status\"]).size()` and reading it as a grid. The counts are right, but the result is a long list, so comparing statuses across plans is hard.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": [
+      "crosstab",
+      "counts"
+    ]
+  },
+  {
+    "id": "python-pivot-004",
+    "module": "python",
+    "topic": "pivot",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "The city operations lead wants the average delivery fee for each city and payment mode. Use only delivered orders (`delivery_status` is `Delivered`) and unique `delivery_id` rows. City names have stray spaces and mixed casing, so clean them with `strip()` and `title()` first. Build a table with one row per city and one column per `payment_mode`, rounded to 1 decimal. Assign it to `result` with `city` as a normal column.",
+    "dataset": "food_delivery",
+    "hint": "Clean the city column first. Then filter to delivered rows and use `pd.pivot_table` with `aggfunc=\"mean\"`.",
+    "solutionCode": "d = load(\"food_delivery\", \"deliveries\").drop_duplicates(subset=\"delivery_id\").copy()\nd = d[d[\"delivery_status\"] == \"Delivered\"].copy()\nd[\"city\"] = d[\"city\"].str.strip().str.title()\nresult = pd.pivot_table(d, index=\"city\", columns=\"payment_mode\", values=\"delivery_fee\", aggfunc=\"mean\").round(1).reset_index()",
+    "expectedOutput": {
+      "columns": [
+        "city",
+        "Card",
+        "Cash on Delivery",
+        "UPI",
+        "Wallet"
+      ],
+      "rows": [
+        [
+          "Ahmedabad",
+          26.4,
+          24.8,
+          26,
+          29.1
+        ],
+        [
+          "Bengaluru",
+          27.3,
+          25.3,
+          26.7,
+          25.7
+        ],
+        [
+          "Chennai",
+          28.1,
+          29.9,
+          26.3,
+          26
+        ],
+        [
+          "Delhi",
+          27.4,
+          26.8,
+          27.1,
+          27.4
+        ],
+        [
+          "Hyderabad",
+          26.6,
+          24.2,
+          26.2,
+          26.8
+        ],
+        [
+          "Jaipur",
+          27,
+          24.9,
+          24.9,
+          25.2
+        ],
+        [
+          "Kolkata",
+          24.6,
+          29.2,
+          28.2,
+          31.1
+        ],
+        [
+          "Lucknow",
+          25,
+          29.3,
+          29.5,
+          28
+        ],
+        [
+          "Mumbai",
+          25.3,
+          27.9,
+          26.8,
+          29.2
+        ],
+        [
+          "Pune",
+          27.2,
+          27.6,
+          28.9,
+          33.3
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "The city column has spellings such as `' delhi  '` and `'Delhi'` for the same city. Cleaning them first makes each city one row. The pivot then averages the delivery fee inside each city and payment mode cell.",
+    "commonMistake": "Skipping the city clean-up. `' delhi  '` and `'Delhi'` become two rows, so each city's average covers only part of its deliveries and the city count goes up.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 7,
+    "tags": [
+      "pivot_table",
+      "mean",
+      "clean text"
+    ]
+  },
+  {
+    "id": "python-pivot-005",
+    "module": "python",
+    "topic": "pivot",
+    "difficulty": "medium",
+    "language": "python",
+    "question": "The pricing team wants to know how many order items fall into each unit price band: under 500, 500 to 1999, and 2000 and above. Use the `unit_price` column of `order_items`. Return a Series with the count for each band, in that order, and the band names as the index. Assign it to `result`.",
+    "dataset": "ecommerce",
+    "hint": "Use `pd.cut` with `bins=[0, 500, 2000, np.inf]` and `right=False`. Then count with `value_counts()` and reindex in band order.",
+    "solutionCode": "oi = load(\"ecommerce\", \"order_items\")\nlabels = [\"Under 500\", \"500 to 1999\", \"2000 and above\"]\nband = pd.cut(oi[\"unit_price\"], bins=[0, 500, 2000, np.inf], labels=labels, right=False)\nresult = band.value_counts().reindex(labels)",
+    "expectedOutput": {
+      "columns": [
+        "unit_price",
+        "count"
+      ],
+      "rows": [
+        [
+          "Under 500",
+          6974
+        ],
+        [
+          "500 to 1999",
+          7521
+        ],
+        [
+          "2000 and above",
+          5662
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "`pd.cut` assigns each price to a band. `right=False` makes each band include its left edge and exclude its right edge, so a price of exactly 500 goes to the 500 to 1999 band. Counting the bands gives the result, and `reindex` puts them in the order the pricing team wants.",
+    "commonMistake": "Keeping the default `right=True`. A price of exactly 500 then falls in the Under 500 band, and the counts for the two bands move by one edge value each time the team checks them.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 5,
+    "tags": [
+      "pd.cut",
+      "bands",
+      "value_counts"
+    ]
+  },
+  {
+    "id": "python-pivot-006",
+    "module": "python",
+    "topic": "pivot",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "The store chain wants net sales by category for the first three months of 2023. Use unique `sale_id` rows. The `net_amount_inr` column is rupee text in some rows, and `sale_datetime` mixes ISO and DD-MM-YYYY formats. Build one row per month (format `yyyy-mm`, for `2023-01` to `2023-03`) and one column per category, with the net sales summed and rounded to 2 decimals. Use 0 for empty cells. Assign the DataFrame to `result` with `month` as a normal column.",
+    "dataset": "retail",
+    "hint": "Clean the amount text, parse the date with two formats, then pivot with `aggfunc=\"sum\"`.",
+    "solutionCode": "s = load(\"retail\", \"sales\").drop_duplicates(subset=\"sale_id\").copy()\ns[\"net\"] = s[\"net_amount_inr\"].astype(str).str.replace(r\"[₹,\\s]\", \"\", regex=True).astype(float)\niso = pd.to_datetime(s[\"sale_datetime\"], format=\"%Y-%m-%d %H:%M:%S\", errors=\"coerce\")\ndmy = pd.to_datetime(s[\"sale_datetime\"], format=\"%d-%m-%Y %H:%M:%S\", errors=\"coerce\")\ns[\"month\"] = iso.combine_first(dmy).dt.strftime(\"%Y-%m\")\nt = s[s[\"month\"].isin([\"2023-01\", \"2023-02\", \"2023-03\"])]\nresult = pd.pivot_table(t, index=\"month\", columns=\"category\", values=\"net\", aggfunc=\"sum\", fill_value=0).round(2).reset_index()",
+    "expectedOutput": {
+      "columns": [
+        "month",
+        "Apparel",
+        "Electronics Accessories",
+        "Grocery & Staples",
+        "Home & Kitchen",
+        "Home Decor",
+        "Personal Care"
+      ],
+      "rows": [
+        [
+          "2023-01",
+          317573.24,
+          146636.67,
+          285519.92,
+          308452.92,
+          66012.05,
+          126449.6
+        ],
+        [
+          "2023-02",
+          193260.4,
+          99274.08,
+          196792.12,
+          196814,
+          43361.02,
+          108791.66
+        ],
+        [
+          "2023-03",
+          210382.36,
+          110637.6,
+          224338,
+          353459.63,
+          51842.07,
+          110058.37
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "The cleaning steps come first: remove the rupee sign and commas, then convert the text to float. Two parse passes handle both date layouts, and `strftime` turns each date into a `yyyy-mm` label. The pivot then sums net sales for each month and category.",
+    "commonMistake": "Summing the raw text column. Pandas joins the strings instead of adding the numbers, so the total is a long string of digits and symbols, not a rupee amount.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 12,
+    "tags": [
+      "pivot_table",
+      "sum",
+      "dates",
+      "text cleaning"
+    ]
+  },
+  {
+    "id": "python-pivot-007",
+    "module": "python",
+    "topic": "pivot",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "The HR analytics team wants to compare how managers and employees rate performance. Use unique `review_id` rows. Reshape the table so that `manager_rating` and `self_rating` sit in one `rating_type` column and their values sit in one `rating` column. Return a DataFrame with one row per `rating_type` and the mean `rating` as `average_rating`, rounded to 2 decimals.",
+    "dataset": "hr",
+    "hint": "Use `melt` to turn the two rating columns into rows, then group by `rating_type`.",
+    "solutionCode": "p = load(\"hr\", \"performance_reviews\").drop_duplicates(subset=\"review_id\")\nlong = p.melt(id_vars=\"review_id\", value_vars=[\"manager_rating\", \"self_rating\"], var_name=\"rating_type\", value_name=\"rating\")\nresult = long.groupby(\"rating_type\").agg(average_rating=(\"rating\", \"mean\")).round(2).reset_index()",
+    "expectedOutput": {
+      "columns": [
+        "rating_type",
+        "average_rating"
+      ],
+      "rows": [
+        [
+          "manager_rating",
+          3.21
+        ],
+        [
+          "self_rating",
+          3.65
+        ]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "`melt` is the reverse of a pivot. It keeps `review_id` as the identifier and stacks the two rating columns into rows. A long table is easier to group, filter and plot, because the rating type is a value, not a column name.",
+    "commonMistake": "Skipping the duplicate drop on `review_id`. The repeated reviews are counted twice, so both averages move a little away from the true values.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 10,
+    "tags": [
+      "melt",
+      "wide to long",
+      "groupby"
+    ]
+  },
+  {
+    "id": "python-pivot-008",
+    "module": "python",
+    "topic": "pivot",
+    "difficulty": "hard",
+    "language": "python",
+    "question": "The risk team wants to tag each transaction by size. Use unique `txn_id` rows. The `amount` column is rupee text in some rows, so clean it first. Tag an amount as `Small` if it is under 500, `Medium` if it is under 5000, and `Large` otherwise. Return a Series with the share of transactions in each segment as a percent, rounded to 1 decimal, in the order Small, Medium, Large. Assign it to `result`.",
+    "dataset": "fintech",
+    "hint": "Build the conditions in a list and use `np.select`. The first matching condition wins, so write the smallest band first.",
+    "solutionCode": "t = load(\"fintech\", \"transactions\").drop_duplicates(subset=\"txn_id\").copy()\nt[\"amt\"] = t[\"amount\"].astype(str).str.replace(r\"[₹,\\s]\", \"\", regex=True).astype(float)\nconds = [t[\"amt\"] < 500, t[\"amt\"] < 5000]\nseg = np.select(conds, [\"Small\", \"Medium\"], default=\"Large\")\nshare = pd.Series(seg).value_counts(normalize=True).mul(100).round(1)\nresult = share.reindex([\"Small\", \"Medium\", \"Large\"])",
+    "expectedOutput": {
+      "columns": [
+        "index",
+        "proportion"
+      ],
+      "rows": [
+        [
+          "Small",
+          45.9
+        ],
+        [
+          "Medium",
+          48.9
+        ],
+        [
+          "Large",
+          5.2
+        ]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "`np.select` checks the conditions in order and returns the label of the first one that is true. Because the `Small` rule comes first, a 300 rupee transaction gets `Small`. `value_counts(normalize=True)` gives shares, and `mul(100)` turns them into percent.",
+    "commonMistake": "Writing the `< 5000` rule first. Then every transaction under 5000 matches `Medium`, including the small ones, and the Small segment is empty.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": [
+      "np.select",
+      "segments",
+      "value_counts"
+    ]
+  }
+]
