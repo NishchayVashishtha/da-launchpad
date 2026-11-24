@@ -116,10 +116,12 @@ export default function Dashboard({ modules, flashcardIds, plan, name, quickLink
           {modules.map((m) => {
             const dl = m.lessonIds.filter((id) => s.lessons[id]).length, dq = m.questionIds.filter((id) => s.questions[id]?.doneAt).length;
             const t = m.lessonIds.length + m.questionIds.length; const p = t ? Math.round(((dl + dq) / t) * 100) : 0;
+            const isSpecial = m.slug === 'projects' || m.slug === 'job-search' || m.slug === 'cheat-sheets';
+            const badgeText = m.slug === 'projects' ? '8 projects' : m.slug === 'job-search' ? 'toolkit' : m.slug === 'cheat-sheets' ? '9 guides' : (t ? `${p}%` : 'soon');
             return (
               <div key={m.slug} style={{ marginBottom: '.6rem' }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '.88rem' }}><a href={url(`/${m.slug}/`)}>{m.title}</a><span className="muted">{t ? `${p}%` : 'soon'}</span></div>
-                <div className="bar" role="progressbar" aria-label={`${m.title} progress`} aria-valuenow={p} aria-valuemin={0} aria-valuemax={100}><i style={{ width: `${p}%` }} /></div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '.88rem' }}><a href={url(`/${m.slug}/`)}>{m.title}</a><span className="muted">{badgeText}</span></div>
+                <div className="bar" role="progressbar" aria-label={`${m.title} progress`} aria-valuenow={isSpecial ? 100 : p} aria-valuemin={0} aria-valuemax={100}><i style={{ width: `${isSpecial ? 100 : p}%` }} /></div>
               </div>
             );
           })}

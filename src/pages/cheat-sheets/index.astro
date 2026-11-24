@@ -5,6 +5,7 @@ import Base from '../../layouts/Base.astro';
 <Base
   title="Data Analyst Cheat Sheets & Quick Reference"
   description="Printable one-page reference sheets: SQL, Excel, pandas, Matplotlib/Seaborn, DAX, Statistics formulas, A/B testing checklist, EDA checklist, and Business KPIs."
+  sidebar
 >
   <div style="max-width: 68rem; margin: 0 auto; padding-bottom: 4rem;">
     {/* Page Header */}
@@ -516,18 +517,19 @@ DIVIDE([Total Sales] - [Sales Prior Year], [Sales Prior Year])</code></pre>
   .badge-link {
     display: inline-block;
     padding: 0.35rem 0.75rem;
-    background: var(--bg-subtle, #f3f4f6);
-    border: 1px solid var(--border, #e5e7eb);
+    background: var(--surface-2);
+    border: 1px solid var(--border);
     border-radius: 6px;
     font-size: 0.85rem;
     font-weight: 500;
     text-decoration: none;
-    color: inherit;
+    color: var(--text);
     transition: all 0.15s ease;
   }
   .badge-link:hover {
-    border-color: var(--accent, #2563eb);
-    color: var(--accent, #2563eb);
+    border-color: var(--brand);
+    color: var(--brand);
+    background: var(--surface);
   }
   .sheet-section {
     margin-bottom: 2rem;
@@ -555,8 +557,8 @@ DIVIDE([Total Sales] - [Sales Prior Year], [Sales Prior Year])</code></pre>
     letter-spacing: 0.05em;
     padding: 0.2rem 0.5rem;
     border-radius: 4px;
-    background: var(--accent-subtle, #dbeafe);
-    color: var(--accent, #2563eb);
+    background: var(--brand-soft);
+    color: var(--brand);
   }
   .grid-2 {
     display: grid;
@@ -581,15 +583,15 @@ DIVIDE([Total Sales] - [Sales Prior Year], [Sales Prior Year])</code></pre>
     gap: 1.25rem;
   }
   .check-box {
-    background: var(--card-subtle, #f9fafb);
-    border: 1px solid var(--border, #e5e7eb);
+    background: var(--surface);
+    border: 1px solid var(--border);
     padding: 1.25rem;
     border-radius: 8px;
   }
   .check-box h4 {
     margin: 0 0 0.75rem;
     font-size: 1rem;
-    color: var(--accent, #2563eb);
+    color: var(--brand);
   }
   .check-box ul {
     margin: 0 0 0 1.2rem;
@@ -605,11 +607,11 @@ DIVIDE([Total Sales] - [Sales Prior Year], [Sales Prior Year])</code></pre>
   }
   .dense-table th, .dense-table td {
     padding: 0.5rem 0.75rem;
-    border: 1px solid var(--border, #e5e7eb);
+    border: 1px solid var(--border);
     text-align: left;
   }
   .dense-table th {
-    background: var(--table-header, #f3f4f6);
+    background: var(--surface-2);
     font-weight: 600;
   }
   pre {

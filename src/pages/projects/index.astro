@@ -1,0 +1,84 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { url } from '../../lib/url';
+
+const projects = (await getCollection('projects'))
+  .filter((p) => !p.data.draft)
+  .sort((a, b) => a.data.order - b.data.order);
+---
+
+<Base
+  title="Portfolio Projects"
+  description="8 production-grade portfolio projects with real-world datasets, SQL analysis, Python modeling, Power BI dashboards, and interview talking points."
+  sidebar
+>
+  <div style="max-width: 56rem; margin: 0 auto; padding-bottom: 3rem;">
+    <nav aria-label="Breadcrumb" class="muted" style="font-size: 0.85rem; margin-bottom: 0.5rem;">
+      <a href={url('/')}>Home</a> / Projects
+    </nav>
+
+    <h1 style="margin: 0 0 0.5rem; font-size: 2.2rem;">Portfolio Projects</h1>
+    <p class="muted" style="font-size: 1.05rem; margin: 0 0 2rem;">
+      Eight end-to-end, interview-ready data analytics projects built on realistic relational SQLite datasets featuring authentic operational noise, Indian business contexts, and complete executive deliverables.
+    </p>
+
+    <div style="display: grid; gap: 1.25rem;">
+      {projects.map((p) => {
+        const d = p.data;
+        return (
+          <div
+            class="card"
+            style="padding: 1.5rem; border-radius: 10px; border: 1px solid var(--border, #e5e7eb); transition: transform 0.15s ease;"
+          >
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.75rem;">
+              <span class="chip" style="font-weight: 700; text-transform: uppercase; font-size: 0.75rem; color: var(--brand);">
+                Project {d.order}
+              </span>
+              <span class="chip" style="font-size: 0.8rem;">
+                ⏱️ ~{d.estimatedHours} Hours
+              </span>
+            </div>
+
+            <h2 style="margin: 0 0 0.6rem; font-size: 1.3rem;">
+              <a href={url(`/projects/${p.id}/`)} style="text-decoration: none; color: inherit;">
+                {d.title}
+              </a>
+            </h2>
+
+            <p style="margin: 0 0 1rem; font-size: 0.92rem; line-height: 1.5; color: var(--text-subtle, #4b5563);">
+              {d.businessProblem}
+            </p>
+
+            <div style="margin-bottom: 1.25rem;">
+              <div style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--muted); margin-bottom: 0.4rem;">
+                Skills &amp; Tools Used
+              </div>
+              <div style="display: flex; flex-wrap: wrap; gap: 0.35rem;">
+                {d.skillsUsed.map((s: string) => (
+                  <span class="chip" style="font-size: 0.75rem; padding: 0.15rem 0.5rem;">
+                    {s}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border, #e5e7eb); padding-top: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+              <span class="muted" style="font-size: 0.82rem;">
+                📦 {d.deliverables.length} Deliverables: SQL scripts, Python notebooks, executive memos
+              </span>
+
+              <a
+                href={url(`/projects/${p.id}/`)}
+                class="btn btn-primary"
+                style="font-size: 0.88rem; padding: 0.45rem 1rem;"
+              >
+                View Full Build Guide →
+              </a>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+</Base>

@@ -6,7 +6,13 @@ import { getLessons, SHOW_DRAFTS } from '../../lib/content';
 import { url } from '../../lib/url';
 import ModuleProgress from '../../components/react/ModuleProgress';
 
-export function getStaticPaths() { return MODULES.map((m) => ({ params: { module: m.slug }, props: { mod: m } })); }
+export function getStaticPaths() {
+  const standalonePages = new Set(['projects', 'job-search', 'cheat-sheets']);
+  return MODULES.filter((m) => !standalonePages.has(m.slug)).map((m) => ({
+    params: { module: m.slug },
+    props: { mod: m },
+  }));
+}
 const { mod } = Astro.props;
 const lessons = (await getLessons({ includeDrafts: false })).filter((l) => l.module === mod.slug);
 const practice = (await getCollection('practice')).map((e) => e.data).filter((q) => q.module === mod.slug);
