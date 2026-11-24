@@ -1,5 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
+import { url } from '../../lib/url';
 ---
 
 <Base
@@ -26,10 +27,10 @@ import Base from '../../layouts/Base.astro';
         >
           🖨️ Print / Save as PDF
         </button>
-        <a href="/tools/flashcards/" class="btn btn-secondary">
+        <a href={url('/tools/flashcards/')} class="btn btn-secondary">
           🗂️ Flashcards (520+)
         </a>
-        <a href="/tools/glossary/" class="btn btn-secondary">
+        <a href={url('/tools/glossary/')} class="btn btn-secondary">
           📖 Glossary (320+)
         </a>
       </div>

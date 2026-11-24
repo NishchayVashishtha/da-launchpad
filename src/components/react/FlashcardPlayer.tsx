@@ -181,7 +181,7 @@ export default function FlashcardPlayer({ cards }: Props) {
           flexWrap: 'wrap',
           gap: '0.5rem',
           fontSize: '0.82rem',
-          background: 'var(--card-bg, #f9fafb)',
+          background: 'var(--surface-2)',
         }}
       >
         <span style={{ fontWeight: 600 }}>Leitner Spaced Repetition:</span>
@@ -226,8 +226,8 @@ export default function FlashcardPlayer({ cards }: Props) {
               minHeight: '260px',
               padding: '2.5rem 2rem',
               borderRadius: '12px',
-              border: '2px solid var(--border, #e5e7eb)',
-              background: isFlipped ? 'var(--card-flip-bg, #f0fdf4)' : 'var(--card-bg, #ffffff)',
+              border: isFlipped ? '2px solid #10b981' : '2px solid var(--border, #e5e7eb)',
+              background: isFlipped ? 'var(--surface-2)' : 'var(--surface)',
               boxShadow: '0 4px 14px rgba(0,0,0,0.06)',
               cursor: 'pointer',
               display: 'flex',
@@ -240,11 +240,11 @@ export default function FlashcardPlayer({ cards }: Props) {
               userSelect: 'none',
             }}
           >
-            <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: isFlipped ? '#166534' : 'var(--muted, #888)', marginBottom: '1rem' }}>
+            <div style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: isFlipped ? '#10b981' : 'var(--muted, #888)', marginBottom: '1rem' }}>
               {isFlipped ? 'Answer / Explanation (Click or Space to flip back)' : 'Question (Click or Space to flip)'}
             </div>
 
-            <div style={{ fontSize: isFlipped ? '1.15rem' : '1.35rem', fontWeight: isFlipped ? 400 : 600, lineHeight: 1.5, color: isFlipped ? '#14532d' : 'inherit' }}>
+            <div style={{ fontSize: isFlipped ? '1.15rem' : '1.35rem', fontWeight: isFlipped ? 400 : 600, lineHeight: 1.5, color: 'inherit' }}>
               {isFlipped ? currentCard.back : currentCard.front}
             </div>
 
@@ -262,8 +262,8 @@ export default function FlashcardPlayer({ cards }: Props) {
                 padding: '0.9rem 1.25rem',
                 borderRadius: '8px',
                 border: '1px solid #ef4444',
-                background: '#fef2f2',
-                color: '#b91c1c',
+                background: 'rgba(239, 68, 68, 0.1)',
+                color: '#ef4444',
                 fontSize: '1rem',
                 fontWeight: 600,
                 cursor: 'pointer',
@@ -284,8 +284,8 @@ export default function FlashcardPlayer({ cards }: Props) {
                 padding: '0.9rem 1.25rem',
                 borderRadius: '8px',
                 border: '1px solid #10b981',
-                background: '#ecfdf5',
-                color: '#047857',
+                background: 'rgba(16, 185, 129, 0.1)',
+                color: '#10b981',
                 fontSize: '1rem',
                 fontWeight: 600,
                 cursor: 'pointer',
