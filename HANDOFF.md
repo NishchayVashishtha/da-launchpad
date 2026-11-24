@@ -106,7 +106,13 @@ They are NOT yet checked in a browser.
    - Replaced `interview-sql-071` with Top-3 highest-spending customer ranking per city using `ROW_NUMBER() OVER (PARTITION BY ...)` with clean data handling (`UPPER(TRIM(city))`) tested against `ecommerce.sqlite`.
    - Verified `statistics-2.json` vs `statistics.json`: 0 duplicate questions, clean progression from foundational descriptive/probability concepts (25 Qs) to advanced A/B testing/regression concepts (35 Qs).
    - All 4 gates green (audit 475 questions, check:mdx 179 files, validate 491 solutions, build 215 pages).
-5. **Reviewer pass** (`.briefs/reviewer.md`, FIX mode, Haiku) on the interview banks + Phase 5 content, plus a blind check on any new MCQs.
+5. **[DONE] Reviewer pass** (`.briefs/reviewer.md`, FIX mode) on interview banks + Phase 5 content:
+   - Fixed `business-churn-004` and `business-churn-005` case sensitivity in SQLite (`LOWER(billing_cycle) = 'monthly'`) and refreshed expected output with real database values.
+   - Added 3rd `<InterviewQ>` to business lessons 09–14, and expanded word count of lesson 11 to >1,200 words.
+   - Enriched 57 business practice explanations and common mistakes with detailed analytical takeaways and failure modes (all explanations $\ge 25$ words, common mistakes $\ge 12$ words).
+   - Enriched `interview-pr-final-004` common mistake text.
+   - Re-ran quality lint: 0 warnings across all business and interview modules (total warnings reduced from 184 to 110, all remaining warnings are in start-here).
+   - Generated review report in `reports/review-phase5.md`. All 4 gates green (check:mdx 179 files, validate 491 runnable passed, audit passed, build 215 pages + 184 indexed).
 6. **Browser smoke test** of the tool pages and the Python runner in Pyodide (pandas version may differ from the local pandas 3). Use a Sonnet agent.
 7. **Phase 6:**
    - Projects (8): Sonnet outlines, then Haiku writers.

@@ -305,8 +305,8 @@
         ]
       ]
     },
-    "explanation": "High-intent channels exhibit superior click-to-purchase rates: Email (8.16%) and Google Search (5.98%) significantly outperform top-of-funnel discovery channels like YouTube (0.85%) and Influencer (0.57%).",
-    "commonMistake": "Joining clicks directly to conversions without pre-aggregating, multiplying rows.",
+    "explanation": "High-intent channels exhibit superior click-to-purchase rates: Email (8.16%) and Google Search (5.98%) significantly outperform top-of-funnel discovery channels like YouTube (0.85%) and Influencer (0.57%). Allocating acquisition budgets toward high-converting intent channels maximizes marketing ROI.",
+    "commonMistake": "Joining clicks directly to conversions without pre-aggregating by channel first, multiplying rows and heavily distorting conversion percentages.",
     "interviewFrequency": "high",
     "estimatedMinutes": 5,
     "tags": [
@@ -326,7 +326,7 @@
     "hint": "Divide delivered revenue by delivered orders (360,000 / 800).",
     "solution": "Average Order Value (AOV):\n\n$$\\text{AOV} = \\frac{\\text{Delivered Revenue}}{\\text{Delivered Orders}} = \\frac{360000}{800} = 450$$\n\nAverage Order Value is Rs 450.",
     "explanation": "AOV represents basket size. If the brand wishes to grow revenue without acquiring more traffic, lifting AOV through cross-selling and bundling is a primary lever.",
-    "commonMistake": "Dividing orders by revenue instead of revenue by orders.",
+    "commonMistake": "Dividing orders by revenue instead of revenue by orders, yielding orders per rupee rather than average order value in rupees.",
     "interviewFrequency": "high",
     "estimatedMinutes": 2,
     "tags": [
@@ -349,7 +349,7 @@
     "hint": "Divide total marketing spend by newly acquired customers (90,000 / 300).",
     "solution": "Customer Acquisition Cost (CAC):\n\n$$\\text{CAC} = \\frac{\\text{Total Marketing Ad Spend}}{\\text{New Customers Acquired}} = \\frac{90000}{300} = 300$$\n\nThe brand spent exactly Rs 300 to acquire each new customer.",
     "explanation": "Paid CAC measures campaign efficiency. If the customer only generates Rs 200 in gross margin over their entire lifetime, a Rs 300 CAC represents value destruction.",
-    "commonMistake": "Dividing new customers by spend, yielding 0.0033.",
+    "commonMistake": "Dividing new customers by spend instead of spend by new customers, yielding customers per rupee rather than CAC in rupees.",
     "interviewFrequency": "high",
     "estimatedMinutes": 2,
     "tags": [
@@ -395,7 +395,7 @@
     "hint": "Divide LTV by CAC (2616.25 / 255.0).",
     "solution": "LTV:CAC Ratio:\n\n$$\\text{LTV : CAC} = \\frac{2616.25}{255} = 10.259... \\approx 10.3$$\n\nThe LTV:CAC ratio is 10.3x.",
     "explanation": "In SaaS economics, an LTV:CAC ratio above 3.0x is considered healthy. An exceptional ratio of 10.3x indicates that the business is under-spending on acquisition and could aggressively scale marketing budget to capture market share.",
-    "commonMistake": "Dividing CAC by LTV instead of LTV by CAC.",
+    "commonMistake": "Dividing CAC by LTV instead of LTV by CAC, inverting the health ratio and confusing payback viability with risk.",
     "interviewFrequency": "high",
     "estimatedMinutes": 2,
     "tags": [

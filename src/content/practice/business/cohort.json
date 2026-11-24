@@ -244,7 +244,7 @@
       ]
     },
     "explanation": "Monthly trial-to-paid conversion stayed relatively stable throughout 2024 (Jan 35.0%, Feb 31.2%, Mar 32.7%, Apr 38.2%), demonstrating that the initial trial activation step remained healthy even before churn emerged.",
-    "commonMistake": "Dividing paid users by total registered users rather than trial starters.",
+    "commonMistake": "Dividing paid users by total registered users rather than trial starters, which confounds registration onboarding friction with trial conversion efficiency.",
     "interviewFrequency": "high",
     "estimatedMinutes": 4,
     "tags": [
@@ -436,7 +436,7 @@
       ]
     },
     "explanation": "This cohort retention matrix computes engagement decay over time. Relative month indexes (0, 1, 2) normalize time across different signup cohorts, allowing like-for-like comparison of retention curves.",
-    "commonMistake": "Using event_timestamp instead of event_time or forgetting LOWER(event_name).",
+    "commonMistake": "Using event_timestamp instead of event_time or forgetting LOWER(event_name), which causes case-sensitive string matching to omit valid user events.",
     "interviewFrequency": "high",
     "estimatedMinutes": 6,
     "tags": [
@@ -530,7 +530,7 @@
     "dataset": "none",
     "hint": "Multiply the cohort size (50) by the expected baseline churn rate (0.22).",
     "solution": "Expected cancellations under baseline performance:\n\n$$\\text{Expected Cancellations} = 50 \\times 0.22 = 11.0$$\n\nUnder normal conditions, leadership would expect approximately 11 cancellations. Observing 27 actual cancellations represents 16 excess lost customers (+145% above expected).",
-    "explanation": "Establishing expected baseline volumes allows analysts to quantify excess churn and prioritize root cause investigations based on statistical deviation.",
+    "explanation": "Establishing expected baseline volumes allows analysts to quantify excess churn and prioritize root cause investigations based on statistical deviation. Comparing actual cancellations against historical seasonal benchmarks prevents false alarms caused by predictable cyclical swings.",
     "commonMistake": "Dividing 50 by 22 or confusing expected churn count with actual observed churn.",
     "interviewFrequency": "high",
     "estimatedMinutes": 3,

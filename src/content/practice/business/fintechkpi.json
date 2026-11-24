@@ -150,7 +150,7 @@
       ]
     },
     "explanation": "Average ticket sizes vary significantly by transaction nature: Bill Pay (Rs 1,884.3) and P2M (Rs 1,499.1) have higher average order values than P2P (Rs 1,192.9) and mobile Recharges (Rs 333.0).",
-    "commonMistake": "Including failed or pending transactions in the average ticket calculation.",
+    "commonMistake": "Including failed or pending transactions in the average ticket calculation, which distorts realized commercial value and miscalculates revenue averages.",
     "interviewFrequency": "medium",
     "estimatedMinutes": 4,
     "tags": [
@@ -357,7 +357,7 @@
     "dataset": "none",
     "hint": "Divide attended consultations by total booked consultations and multiply by 100.",
     "solution": "Consultation Completion Rate:\n$$\\text{Completion Rate} = \\left(\\frac{1176}{1400}\\right) \\times 100 = 84.0\\%$$\n\nExactly 84.0% of scheduled appointments were fulfilled, while 16.0% were lost to cancellations, technical drop-offs, or patient no-shows.",
-    "explanation": "Consultation completion rate measures telehealth fulfillment efficiency. The unfulfilled 16% represents wasted clinical slot capacity and patient access friction.",
+    "explanation": "Consultation completion rate measures telehealth fulfillment efficiency. The unfulfilled 16% represents wasted clinical slot capacity and patient access friction, signaling operational bottlenecks in doctor scheduling, connectivity, or patient communication.",
     "commonMistake": "Dividing attended appointments by dropped appointments (1176 / 224 = 525%) rather than total bookings.",
     "interviewFrequency": "medium",
     "estimatedMinutes": 3,

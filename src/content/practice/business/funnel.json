@@ -19,7 +19,7 @@
         ]
       ]
     },
-    "explanation": "Event tracking logs frequently contain case discrepancies across client platforms. Converting event_name to lowercase using LOWER() ensures all signup events are captured without undercounting.",
+    "explanation": "Event tracking logs frequently contain case discrepancies across client platforms. Converting event_name to lowercase using LOWER() ensures all signup events are captured without undercounting, preventing fragmentation across iOS, Android, and web instrumentation logs.",
     "commonMistake": "Filtering strictly for event_name = 'signup', which ignores uppercase 'SIGNUP' entries and returns an undercounted result.",
     "interviewFrequency": "high",
     "estimatedMinutes": 3,
@@ -93,7 +93,7 @@
         ]
       ]
     },
-    "explanation": "Out of 3,308 distinct trial activations, 1,193 subscribers transitioned into paying status, yielding an overall trial-to-paid conversion rate of 36.06%.",
+    "explanation": "Out of 3,308 distinct trial activations, 1,193 subscribers transitioned into paying status, yielding an overall trial-to-paid conversion rate of 36.06%. This metric serves as a vital indicator of product onboarding effectiveness and free-to-paid value perception.",
     "commonMistake": "Dividing paid subscriptions by total registered users (5,200) instead of total trial activations (3,308).",
     "interviewFrequency": "high",
     "estimatedMinutes": 3,
@@ -142,7 +142,7 @@
       ]
     },
     "explanation": "Conversion varies dramatically by platform: iOS leads at 45.9% (382 / 833), Web follows at 39.6% (199 / 502), while Android lags significantly at 31.0% (612 / 1,973) despite accounting for the vast majority of trial starts.",
-    "commonMistake": "Joining directly without de-duplicating users and subscriptions, distorting trial counts.",
+    "commonMistake": "Joining directly without de-duplicating users and subscriptions first, which causes Cartesian multiplication of rows and severely distorts conversion counts.",
     "interviewFrequency": "high",
     "estimatedMinutes": 4,
     "tags": [
@@ -208,7 +208,7 @@
       ]
     },
     "explanation": "Influencer marketing has by far the lowest trial-to-paid conversion at 16.0% (86 / 536), while word-of-mouth Referral leads at 47.1% (196 / 416) and Instagram delivers 43.9% (235 / 535). Influencer campaigns generate top-of-funnel curiosity but poor monetization intent.",
-    "commonMistake": "Sorting descending instead of ascending or omitting the paid_start_date filter.",
+    "commonMistake": "Sorting descending instead of ascending or omitting the paid_start_date filter, which yields incorrect chronological funnel steps and flawed drop-off calculations.",
     "interviewFrequency": "high",
     "estimatedMinutes": 4,
     "tags": [

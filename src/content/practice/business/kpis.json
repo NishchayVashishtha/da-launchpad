@@ -16,7 +16,11 @@
     "commonMistake": "Dividing delivered revenue by all 458 placed orders, resulting in Rs 4,496.82 instead of Rs 4,868.90.",
     "interviewFrequency": "high",
     "estimatedMinutes": 3,
-    "tags": ["kpi", "aov", "ecommerce"]
+    "tags": [
+      "kpi",
+      "aov",
+      "ecommerce"
+    ]
   },
   {
     "id": "business-kpis-002",
@@ -32,7 +36,11 @@
     "commonMistake": "Treating total downloads or page views as output KPIs, which leads teams to optimize for traffic rather than qualified buyers.",
     "interviewFrequency": "high",
     "estimatedMinutes": 5,
-    "tags": ["kpi", "framework", "vanity-metrics"]
+    "tags": [
+      "kpi",
+      "framework",
+      "vanity-metrics"
+    ]
   },
   {
     "id": "business-kpis-003",
@@ -51,7 +59,11 @@
     "commonMistake": "Inverting numerator and denominator or calculating the drop-off percentage (36.4%) instead of the conversion percentage.",
     "interviewFrequency": "high",
     "estimatedMinutes": 3,
-    "tags": ["kpi", "conversion", "funnel"]
+    "tags": [
+      "kpi",
+      "conversion",
+      "funnel"
+    ]
   },
   {
     "id": "business-kpis-004",
@@ -70,7 +82,11 @@
     "commonMistake": "Dividing successful transactions by failed transactions (21619 / 601 = 35.97) instead of the total transaction base.",
     "interviewFrequency": "high",
     "estimatedMinutes": 3,
-    "tags": ["fintech", "kpi", "upi"]
+    "tags": [
+      "fintech",
+      "kpi",
+      "upi"
+    ]
   },
   {
     "id": "business-kpis-005",
@@ -89,7 +105,11 @@
     "commonMistake": "Dividing patient-days by the bed count alone (1968 / 120 = 16.4) without multiplying by the 30 operating days.",
     "interviewFrequency": "medium",
     "estimatedMinutes": 4,
-    "tags": ["healthcare", "kpi", "capacity"]
+    "tags": [
+      "healthcare",
+      "kpi",
+      "capacity"
+    ]
   },
   {
     "id": "business-kpis-006",
@@ -104,11 +124,15 @@
     "expectedOutput": {
       "value": 4.8
     },
-    "explanation": "ALOS is a crucial efficiency and clinical utilization metric. Shorter ALOS with low readmissions indicates effective clinical pathways and faster bed turnover.",
+    "explanation": "ALOS is a crucial efficiency and clinical utilization metric. Shorter ALOS with low readmissions indicates effective clinical pathways and faster bed turnover, allowing healthcare facilities to optimize operating margins while maintaining quality patient outcomes.",
     "commonMistake": "Dividing patient-days by total bed count (1968 / 120 = 16.4) rather than patient discharges.",
     "interviewFrequency": "medium",
     "estimatedMinutes": 3,
-    "tags": ["healthcare", "kpi", "operations"]
+    "tags": [
+      "healthcare",
+      "kpi",
+      "operations"
+    ]
   },
   {
     "id": "business-kpis-007",
@@ -124,7 +148,11 @@
     "commonMistake": "Tracking only average TAT while ignoring P90 latency or failing to include a diagnostic error/re-run guardrail.",
     "interviewFrequency": "high",
     "estimatedMinutes": 5,
-    "tags": ["healthcare", "diagnostics", "guardrail"]
+    "tags": [
+      "healthcare",
+      "diagnostics",
+      "guardrail"
+    ]
   },
   {
     "id": "business-kpis-008",
@@ -143,7 +171,11 @@
     "commonMistake": "Dividing no-shows by attended appointments (175 / 1075 = 16.3%) rather than total bookings.",
     "interviewFrequency": "medium",
     "estimatedMinutes": 3,
-    "tags": ["healthcare", "operations", "no-show"]
+    "tags": [
+      "healthcare",
+      "operations",
+      "no-show"
+    ]
   },
   {
     "id": "business-kpis-009",
@@ -159,7 +191,11 @@
     "commonMistake": "Focusing solely on website conversion or traffic without inspecting margin after returns and variable fulfillment costs.",
     "interviewFrequency": "high",
     "estimatedMinutes": 5,
-    "tags": ["unit-economics", "profitability", "ecommerce"]
+    "tags": [
+      "unit-economics",
+      "profitability",
+      "ecommerce"
+    ]
   },
   {
     "id": "business-kpis-010",
@@ -178,6 +214,10 @@
     "commonMistake": "Dividing 544 directly by 2,400 without dividing by the 2-year duration, giving 22.67% instead of 11.33%.",
     "interviewFrequency": "medium",
     "estimatedMinutes": 4,
-    "tags": ["hr", "attrition", "annualization"]
+    "tags": [
+      "hr",
+      "attrition",
+      "annualization"
+    ]
   }
 ]

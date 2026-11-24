@@ -264,6 +264,15 @@ I treat a disproven hypothesis as valuable progress, not failure:
 3. **Advance to the Next Branch**: Pivot immediately to the next MECE branch: *"Having eliminated date-of-month congestion, I will now investigate partner bank rail stability and time-of-day traffic concentration."*
 </InterviewQ>
 
+<InterviewQ q="You have 30 minutes in a case interview to diagnose why daily active users fell 15% last week. How do you allocate your time?">
+I allocate the 30 minutes across four structured phases:
+
+1. **Clarify & Scope (Minutes 0–5)**: Confirm metric definition, verify whether the drop was sudden or gradual, check if other platforms (iOS vs Android vs Web) or geographies were affected, and rule out instrumentation / logging bugs.
+2. **Structure the MECE Tree (Minutes 5–10)**: Lay out an external vs internal hypothesis tree. External: competitor campaign, app store outage, holiday/festival effect. Internal: app release / bug, payment rail failure, marketing ad spend pause.
+3. **Deep Dive & Hypothesis Testing (Minutes 10–22)**: Walk through each branch with the interviewer using data cues, eliminating non-factors and isolating the root driver.
+4. **Synthesize & Recommend (Minutes 22–30)**: Deliver an executive synthesis: state the primary root cause, estimate financial or customer impact, provide a 3-part action plan (immediate fix, short-term mitigation, long-term guardrail), and propose ongoing monitoring metrics.
+</InterviewQ>
+
 ## Key takeaways
 
 - Never jump straight into SQL; always execute the 6-step framework: Clarify, Structure, Inspect, Analyze, Synthesize, and Recommend.

@@ -230,6 +230,15 @@ I would conduct a two-step fairness audit:
    - *Equal Opportunity (False Negative Rate Parity)*: Compare the rate at which truly creditworthy applicants are rejected across different cohorts. If creditworthy individuals from specific postal codes are rejected at twice the benchmark rate, the model exhibits systemic bias.
 </InterviewQ>
 
+<InterviewQ q="Under the DPDP Act 2023, what changes must an analytics team make when handling user event tracking pipelines?">
+The Digital Personal Data Protection (DPDP) Act 2023 shifts data handling from blanket collection to purpose limitation and explicit consent:
+
+1. **Purpose Limitation**: Analytics teams can only process personal data (phone numbers, email hashes, geolocation) for purposes explicitly disclosed at the point of consent.
+2. **Data Minimization & Pseudonymization**: Event streaming pipelines (e.g. Kafka / Segment) must scrub raw PII at the ingestion boundary, replacing phone numbers and device IDs with pseudonymous surrogate user tokens.
+3. **Right to Erasure (Data Principal Rights)**: Data engineering must implement automated deletion scripts that cascade "forget me" requests across transactional databases, data lakes, and analytics feature stores.
+4. **Auditability & Retention**: Data retention policies must be strictly enforced—historical behavioral logs without an active commercial or legal purpose must be purged or permanently aggregated after the defined retention window.
+</InterviewQ>
+
 ## Key takeaways
 
 - Classify every data column: Direct PII (encrypt & mask), Sensitive Personal Data (strict RBAC), and Safe Aggregates.

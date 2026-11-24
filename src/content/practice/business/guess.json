@@ -16,7 +16,11 @@
     "commonMistake": "Forgetting the 40% penetration rate and multiplying the entire 20 Lakh population by 2 cups (giving 4,000,000).",
     "interviewFrequency": "high",
     "estimatedMinutes": 2,
-    "tags": ["guesstimate", "market-sizing", "mental-math"]
+    "tags": [
+      "guesstimate",
+      "market-sizing",
+      "mental-math"
+    ]
   },
   {
     "id": "business-guess-002",
@@ -31,11 +35,15 @@
     "expectedOutput": {
       "value": 100
     },
-    "explanation": "Mastering conversions between Indian numbering terms (lakh, crore) and Western millions and billions is essential for business case interviews in India.",
+    "explanation": "Mastering conversions between Indian numbering terms (lakh, crore) and Western millions and billions is essential for business case interviews in India. Fluidly converting 1 Crore to 10 Million and 100 Crore to 1 Billion ensures seamless communication with international and domestic stakeholders.",
     "commonMistake": "Confusing 1 Crore with 10 Lakh (which is 1 Million) or 1,000 Lakh.",
     "interviewFrequency": "high",
     "estimatedMinutes": 1,
-    "tags": ["indian-numbering", "conversions", "basics"]
+    "tags": [
+      "indian-numbering",
+      "conversions",
+      "basics"
+    ]
   },
   {
     "id": "business-guess-003",
@@ -54,7 +62,11 @@
     "commonMistake": "Slipping by a power of 10 when converting between crore and numeric zeros (e.g. entering 36,000,000).",
     "interviewFrequency": "high",
     "estimatedMinutes": 3,
-    "tags": ["fintech", "guesstimate", "upi-volume"]
+    "tags": [
+      "fintech",
+      "guesstimate",
+      "upi-volume"
+    ]
   },
   {
     "id": "business-guess-004",
@@ -69,11 +81,15 @@
     "expectedOutput": {
       "value": 1560000
     },
-    "explanation": "Supply-side bottom-up estimation multiplies clinical capacity (doctors) by daily throughput (patients per day), operating duration (days per month), and unit pricing (fee).",
+    "explanation": "Supply-side bottom-up estimation multiplies clinical capacity (doctors) by daily throughput (patients per day), operating duration (days per month), and unit pricing (fee). This structured approach validates market size estimates against real-world physical and operational constraints.",
     "commonMistake": "Using a 30-day operating month for an outpatient clinic that closes on Sundays, or dropping a doctor from the multiplication.",
     "interviewFrequency": "medium",
     "estimatedMinutes": 3,
-    "tags": ["healthcare", "bottom-up", "revenue-estimation"]
+    "tags": [
+      "healthcare",
+      "bottom-up",
+      "revenue-estimation"
+    ]
   },
   {
     "id": "business-guess-005",
@@ -92,7 +108,11 @@
     "commonMistake": "Multiplying 2,000,000 directly by 1.5 without dividing by the 1,000 baseline, giving an absurd 3,000,000 beds.",
     "interviewFrequency": "medium",
     "estimatedMinutes": 2,
-    "tags": ["healthcare", "capacity-planning", "ratios"]
+    "tags": [
+      "healthcare",
+      "capacity-planning",
+      "ratios"
+    ]
   },
   {
     "id": "business-guess-006",
@@ -107,11 +127,15 @@
     "expectedOutput": {
       "value": 1333
     },
-    "explanation": "Density ratios establish quick retail universe sizes. A city of 2 million people supports approximately 1,333 retail chemist shops.",
-    "commonMistake": "Rounding down to 1,300 or calculating 2,000,000 / 150 = 13,333.",
+    "explanation": "Density ratios establish quick retail universe sizes. A city of 2 million people supports approximately 1,333 retail chemist shops, providing a solid, verifiable baseline for pharmaceutical distribution models and market coverage planning.",
+    "commonMistake": "Rounding down prematurely or calculating 2,000,000 / 150 = 13,333 due to misplaced decimal zeroes in population arithmetic.",
     "interviewFrequency": "medium",
     "estimatedMinutes": 2,
-    "tags": ["retail-census", "density-estimation", "pharma"]
+    "tags": [
+      "retail-census",
+      "density-estimation",
+      "pharma"
+    ]
   },
   {
     "id": "business-guess-007",
@@ -130,7 +154,11 @@
     "commonMistake": "Reporting the answer in raw rupees (6,000,000,000) instead of Rs Crore (600), or making a zero error during crore division.",
     "interviewFrequency": "high",
     "estimatedMinutes": 4,
-    "tags": ["tam", "market-sizing", "telehealth"]
+    "tags": [
+      "tam",
+      "market-sizing",
+      "telehealth"
+    ]
   },
   {
     "id": "business-guess-008",
@@ -145,11 +173,15 @@
     "expectedOutput": {
       "value": 360
     },
-    "explanation": "Bottom-up sizing validates demand-side estimates by analyzing the operating economics of physical suppliers (labs x capacity x days x price = Rs 360 Crore).",
+    "explanation": "Bottom-up sizing validates demand-side estimates by analyzing the operating economics of physical suppliers (labs x capacity x days x price = Rs 360 Crore). Cross-verifying supply throughput against population demand bounds the estimation safely.",
     "commonMistake": "Operating days error (e.g. using 365 days when labs operate 300 days) or converting to crore incorrectly.",
     "interviewFrequency": "high",
     "estimatedMinutes": 4,
-    "tags": ["diagnostics", "market-sizing", "bottom-up"]
+    "tags": [
+      "diagnostics",
+      "market-sizing",
+      "bottom-up"
+    ]
   },
   {
     "id": "business-guess-009",
@@ -161,11 +193,15 @@
     "dataset": "none",
     "hint": "Segment by households, target economic class, ordering penetration, meal occasions, and market share.",
     "solution": "Step-by-Step Guesstimate Structure:\n\n1. **Clarify Scope**: Geography = City limits of Tier-1 city (80 Lakh population); Metric = Total daily fulfilled orders for FoodKart.\n2. **Household Conversion**: Average Indian urban household size $\\approx 4.0$ members $\\rightarrow$ $8,000,000 / 4.0 = 20 \\text{ Lakh households}$.\n3. **Economic Segmentation**: \n   - Affluent / Upper-Middle Class (sec A/B, smartphone, disposable income) $\\approx 30\\% = 6 \\text{ Lakh households}$.\n   - Middle / Lower-Middle Class $\\approx 40\\% = 8 \\text{ Lakh households}$ (order rarely).\n   - Lower Income $\\approx 30\\% = 6 \\text{ Lakh households}$ (zero online delivery).\n4. **Order Frequency (Demand Occasions)**:\n   - 6 Lakh Affluent: order an average of 1.5 times per week $\\rightarrow 600,000 \\times 1.5 / 7 \\approx 128,500 \\text{ orders/day}$.\n   - 8 Lakh Middle: order 1 time every 2 weeks (0.5/week) $\\rightarrow 800,000 \\times 0.5 / 7 \\approx 57,000 \\text{ orders/day}$.\n   - Total Market Demand $\\approx 185,500 \\approx 1.85 \\text{ Lakh orders/day}$.\n5. **Market Share**: FoodKart holds a 45% market share in this city (competing with one rival holding 50% and direct restaurants holding 5%):\n   $$\\text{FoodKart Daily Orders} = 185,500 \\times 0.45 \\approx 83,500 \\text{ orders/day}$$\n6. **Sanity Check**: 83,500 orders across a fleet of 8,000 active delivery riders yields $\\approx 10.4$ deliveries per rider per day, which matches operational logistics realities.",
-    "explanation": "A great guesstimate response demonstrates structured segmentation, reasonable economic assumptions, clear meal occasion frequency, market share adjustments, and a fleet capacity sanity check.",
+    "explanation": "A great guesstimate response demonstrates structured segmentation, reasonable economic assumptions, clear meal occasion frequency, market share adjustments, and a fleet capacity sanity check. Structuring the answer clearly impresses interviewers even if exact numbers differ slightly.",
     "commonMistake": "Assuming that all 80 Lakh people order food online, or failing to convert population into households.",
     "interviewFrequency": "high",
     "estimatedMinutes": 5,
-    "tags": ["food-delivery", "guesstimate-framework", "sanity-check"]
+    "tags": [
+      "food-delivery",
+      "guesstimate-framework",
+      "sanity-check"
+    ]
   },
   {
     "id": "business-guess-010",
@@ -181,6 +217,10 @@
     "commonMistake": "Relying on a single method without sanity checking against retail outlet density or transaction throughput.",
     "interviewFrequency": "high",
     "estimatedMinutes": 6,
-    "tags": ["triangulation", "guesstimate-reconciliation", "fintech-merchants"]
+    "tags": [
+      "triangulation",
+      "guesstimate-reconciliation",
+      "fintech-merchants"
+    ]
   }
 ]

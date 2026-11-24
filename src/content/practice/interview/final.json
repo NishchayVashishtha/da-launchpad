@@ -69,7 +69,7 @@
     },
     "orderMatters": true,
     "explanation": "Running a simple 3-line query on the morning of an interview warms up your fingers and syntax reflexes without causing intellectual fatigue. PayZippy leads volume with 7,190 transactions, followed by QuickPaisa and NammaPay.",
-    "commonMistake": "Failing to deduplicate transactions before aggregating counts.",
+    "commonMistake": "Failing to deduplicate transactions before aggregating counts, which leads to inflated volume numbers due to duplicate transaction logging.",
     "interviewFrequency": "medium",
     "estimatedMinutes": 3,
     "tags": ["final", "warm-up", "fintech", "aggregation"]

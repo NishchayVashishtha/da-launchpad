@@ -235,6 +235,18 @@ I would evaluate the feature across three distinct phases:
    - *Support Contact Rate*: Complaints regarding incorrect split calculations or double debits.
 </InterviewQ>
 
+<InterviewQ q="If product leadership asks you to increase DAU by 20% next quarter, how would you respond as a data analyst?">
+I would respond by clarifying the underlying business objective and auditing the metric's incentives:
+
+1. **Deconstruct the Goal**: I would analyze where the requested 20% growth is expected to come from—new user acquisition, resurrection of dormant users, or increased session frequency among existing users.
+2. **Examine Quality of Activity**: I would ensure DAU is defined as Daily Active *Transacting* Users rather than passive app opens. A marketing push sending spam push notifications might artificially spike vanity opens without driving completed transactions.
+3. **Establish Guardrails**: I would set guardrail metrics to monitor alongside DAU:
+   - App uninstalls and notification opt-out rates.
+   - Net transaction success rate and support ticket volume.
+   - Long-term 30-day retention of newly acquired daily users.
+4. **Data-Driven Roadmap**: I would provide product leadership with historical cohort data identifying drop-off points in the core funnel, proposing measurable feature enhancements rather than superficial vanity nudges.
+</InterviewQ>
+
 ## Key takeaways
 
 - Never give a bare formula in response to an interview question; use the 5-part template (Goal, Formula, Edge Cases, Slicing, Guardrails).

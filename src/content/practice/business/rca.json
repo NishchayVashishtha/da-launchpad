@@ -29,7 +29,7 @@
       ]
     },
     "explanation": "In November 2024, DesiCart fulfilled 496 delivered orders generating Rs 2,591,559. In December 2024, delivered orders dropped to 423 generating Rs 2,059,545. Delivered revenue contracted by -20.53% (-Rs 532,014), confirming a significant top-line drop.",
-    "commonMistake": "Summing unfulfilled orders (cancelled and RTO), which distorts realized revenue figures.",
+    "commonMistake": "Summing unfulfilled orders (cancelled and RTO) alongside delivered orders, which distorts realized revenue figures with non-monetized transaction records.",
     "interviewFrequency": "high",
     "estimatedMinutes": 3,
     "tags": [
@@ -83,7 +83,7 @@
       ]
     },
     "explanation": "Every single sales channel fell in December: Website (-21.1%), iOS App (-19.4%), Mobile Web (-15.6%), and Android App (-8.8%). Because the drop was universal across all platforms rather than isolated to one app build, the root cause is systemic customer demand rather than a technical software crash.",
-    "commonMistake": "Dividing by dec_orders instead of nov_orders in the percentage change formula.",
+    "commonMistake": "Dividing by dec_orders instead of nov_orders in the percentage change formula, calculating base dilution rather than month-over-month growth.",
     "interviewFrequency": "high",
     "estimatedMinutes": 5,
     "tags": [
@@ -386,7 +386,7 @@
     "dataset": "none",
     "hint": "Dedicate exactly one clear sentence to each of the 6 framework steps: Clarify, Validate Data, External Context, Decompose, Test Hypotheses, Conclude.",
     "solution": "A 6-sentence structured response using the RCA framework:\n\n1. First, I would clarify the problem by confirming whether 'sales' means gross merchandise value or delivered revenue, verifying the exact dates, and measuring the magnitude against the prior week and the same week last year.\n2. Second, I would validate data hygiene with engineering to ensure tracking webhooks, payment reconciliation jobs, and attribution logging were operating normally without data loss or duplicate drops.\n3. Third, I would check external and calendar context, including public holidays, major festive hangover periods, competitor sales events, and weather disruptions.\n4. Fourth, I would decompose the 15% drop via our metric tree into Orders versus Average Order Value, and segment additively across channels (Android, iOS, Web) and product categories.\n5. Fifth, I would formulate and test specific hypotheses for the moving branch, checking whether the leak was driven by checkout payment failures, out-of-stock bestsellers, or lower ad spend.\n6. Finally, I would synthesize the findings into an executive summary quantifying the root cause, estimate the recovered revenue, and recommend concrete remediation steps to leadership.",
-    "explanation": "Delivering a disciplined, 6-sentence answer shows interviewers that you possess a systematic mental model rather than relying on haphazard guesswork.",
+    "explanation": "Delivering a disciplined, 6-sentence answer shows interviewers that you possess a systematic mental model rather than relying on haphazard guesswork. Structuring hypotheses from macro-environment to internal code releases establishes clear analytical credibility.",
     "commonMistake": "Immediately guessing causes ('Maybe competitors offered bigger discounts!') without outlining a structured diagnostic methodology.",
     "interviewFrequency": "high",
     "estimatedMinutes": 5,

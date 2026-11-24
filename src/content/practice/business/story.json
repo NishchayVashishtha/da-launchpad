@@ -13,7 +13,11 @@
     "commonMistake": "Leaving the slide title as 'Monthly TPV Overview' or 'Payment Volume Analysis', forcing stakeholders to guess what the data means.",
     "interviewFrequency": "high",
     "estimatedMinutes": 3,
-    "tags": ["data-storytelling", "action-titles", "executive-communication"]
+    "tags": [
+      "data-storytelling",
+      "action-titles",
+      "executive-communication"
+    ]
   },
   {
     "id": "business-story-002",
@@ -29,7 +33,11 @@
     "commonMistake": "Recommending a 3D pie chart or an area chart for 3 discrete categorical numbers.",
     "interviewFrequency": "high",
     "estimatedMinutes": 2,
-    "tags": ["visualization", "chart-selection", "bar-chart"]
+    "tags": [
+      "visualization",
+      "chart-selection",
+      "bar-chart"
+    ]
   },
   {
     "id": "business-story-003",
@@ -45,7 +53,11 @@
     "commonMistake": "Beginning with a technical monologue describing SQL queries and data tables before stating the commercial finding.",
     "interviewFrequency": "high",
     "estimatedMinutes": 4,
-    "tags": ["bluf", "executive-summary", "data-storytelling"]
+    "tags": [
+      "bluf",
+      "executive-summary",
+      "data-storytelling"
+    ]
   },
   {
     "id": "business-story-004",
@@ -57,11 +69,15 @@
     "dataset": "none",
     "hint": "Address the 14-slice pie, the dual axes, the truncated zero baseline, and the missing timeframe.",
     "solution": "Four major visualization flaws and fixes:\n\n1. **14-Slice Pie Chart**: Human perception cannot distinguish small angle differences across 14 wedges, and color legends become unreadable.\n   - *Fix*: Replace with a sorted horizontal bar chart highlighting the top 5 channels, grouping the remaining 9 into an 'Other Channels' bucket.\n2. **Dual Vertical Y-Axes (Rupees vs %)**: Dual axes confuse audiences because scales can be arbitrarily adjusted to force correlation where none exists.\n   - *Fix*: Separate into two stacked, synchronized visual charts—one displaying Ad Spend trend, and the other displaying Conversion Rate % directly below it with shared time coordinates.\n3. **Truncated Y-Axis on Bar Chart (Starting at 85%)**: Truncating the baseline exaggerates minor differences (a move from 87% to 90% appears as a $4\\times$ visual explosion).\n   - *Fix*: Always anchor bar chart baselines strictly at zero ($0\\%$). Use line charts if zooming in on narrow variance is necessary.\n4. **Missing Reporting Date Range & Source**: Audiences cannot determine whether the performance reflects last week, last quarter, or last year.\n   - *Fix*: Add a clear subtitle and footnote specifying the exact date window and data source (e.g. *'Data Source: Marketing Ingestion Pipeline, Oct 1 – Dec 31, 2024'*).",
-    "explanation": "Eliminating chart junk, un-anchored axes, and unreadable pie charts prevents visual deception and builds stakeholder confidence in analytical rigor.",
-    "commonMistake": "Failing to recognize that truncating bar chart axes creates visual distortion.",
+    "explanation": "Eliminating chart junk, un-anchored axes, and unreadable pie charts prevents visual deception and builds stakeholder confidence in analytical rigor. Clear typography, meaningful baselines, and thoughtful color accents ensure reports communicate business insights effortlessly.",
+    "commonMistake": "Failing to recognize that truncating bar chart axes creates visual distortion by exaggerating small percentage differences between categories.",
     "interviewFrequency": "high",
     "estimatedMinutes": 5,
-    "tags": ["data-viz-best-practices", "chart-critique", "storytelling"]
+    "tags": [
+      "data-viz-best-practices",
+      "chart-critique",
+      "storytelling"
+    ]
   },
   {
     "id": "business-story-005",
@@ -77,7 +93,11 @@
     "commonMistake": "Reading raw formulas or statistical definitions of null hypotheses to clinical executives.",
     "interviewFrequency": "high",
     "estimatedMinutes": 4,
-    "tags": ["statistics-to-business", "communication", "ab-testing"]
+    "tags": [
+      "statistics-to-business",
+      "communication",
+      "ab-testing"
+    ]
   },
   {
     "id": "business-story-006",
@@ -89,11 +109,15 @@
     "dataset": "none",
     "hint": "Recommend shipping the feature exclusively on Mobile Web while preserving the Desktop baseline, and test further.",
     "solution": "Executive Recommendation Slide Outline:\n\n**Action Headline**: Deploy Free Shipping Banner Exclusively to Mobile Web Users to Capture +2.3 pp Lift, While Preserving the Current Desktop Checkout Layout.\n\n**Key Findings & Nuance**:\n- **Overall Success Masks Segment Heterogeneity**: While top-line conversion grew from 10.57% to 11.72% ($+9.4\\%$ revenue/user), the entire gain was concentrated among Mobile shoppers ($+2.34\\text{ pp}$ lift).\n- **Desktop Regression**: On Desktop displays, the prominent banner pushed the order summary below the fold, causing a $-1.44\\text{ pp}$ conversion drop.\n\n**Strategic Recommendation & Implementation Plan**:\n1. **Segmented Rollout**: Release the banner to 100% of Mobile Web and Mobile App traffic where customer responsiveness is verified.\n2. **Desktop Rollback & Redesign**: Revert Desktop Web to the Control design immediately to protect high-AOV desktop transactions.\n3. **Follow-Up Iteration**: Task UX with designing a non-intrusive header banner for Desktop that does not obstruct the checkout button, and test in a 14-day follow-up experiment.",
-    "explanation": "Great analysts do not simply say 'The test won, roll it out everywhere.' Spotting segment-level divergence prevents hurting valuable segments while maximizing wins.",
+    "explanation": "Great analysts do not simply say that the test won and roll it out everywhere without scrutiny. Spotting segment-level divergence prevents hurting valuable segments while maximizing wins, ensuring that mobile web or international users are not degraded by desktop-optimized features.",
     "commonMistake": "Recommending an all-or-nothing rollout to all devices without addressing the Desktop decline.",
     "interviewFrequency": "high",
     "estimatedMinutes": 5,
-    "tags": ["ab-testing", "recommendations", "segmentation"]
+    "tags": [
+      "ab-testing",
+      "recommendations",
+      "segmentation"
+    ]
   },
   {
     "id": "business-story-007",
@@ -105,11 +129,15 @@
     "dataset": "none",
     "hint": "State the problem and failure rate upfront, quantify the excess failures, and propose smart switch throttling/routing with auto-retry.",
     "solution": "Professional Executive Email to COO:\n\n**Subject**: Urgent: Kaveri Co-op Bank Peak-Hour UPI Reliability & Routing Action\n\nHi Priya,\n\nOur payment switch audit has identified a localized reliability bottleneck at Kaveri Co-op Bank during evening peak hours (18:00–20:00 IST):\n\n- **Failure Concentration**: Kaveri's failure rate spikes to **9.98%** at peak (vs 4.77% regular hours and a 2.19% peer bank benchmark). \n- **Root Cause**: All recorded failures are `BANK_SERVER_TIMEOUT`, indicating server capacity throttling at their core switch.\n- **Impact**: While Kaveri accounts for only 7.6% of platform transactions, it generates over 35% of all evening customer transaction failures.\n\n**Recommended Actions**:\n1. **Dynamic Switch Throttling**: Configure our switch to throttle and route non-urgent Kaveri transactions through secondary settlement rails between 18:00 and 20:00.\n2. **Automated 2-Minute Smart Retry**: Implement background retries for timeouts (which achieve a 74.1% success rate in historical data).\n3. **Banking Escalation**: Partner Operations will share this empirical log with Kaveri's tech leadership today to demand dedicated TPS bandwidth.\n\nBest regards,\nNishchay Vashishtha",
-    "explanation": "Executive emails must be concise, structured, and action-oriented. Stating the root cause with numbers and offering three concrete technical mitigations enables fast executive approval.",
+    "explanation": "Executive emails must be concise, structured, and action-oriented. Stating the root cause with numbers and offering three concrete technical mitigations enables fast executive approval, accelerating incident recovery and building organizational trust.",
     "commonMistake": "Writing a long, unstructured narrative without bullet points, numbers, or a clear recommendation.",
     "interviewFrequency": "high",
     "estimatedMinutes": 5,
-    "tags": ["executive-email", "incident-communication", "fintech"]
+    "tags": [
+      "executive-email",
+      "incident-communication",
+      "fintech"
+    ]
   },
   {
     "id": "business-story-008",
@@ -125,6 +153,10 @@
     "commonMistake": "Becoming defensive, re-reading SQL query outputs, or accusing the executive of ignoring facts.",
     "interviewFrequency": "high",
     "estimatedMinutes": 5,
-    "tags": ["stakeholder-objections", "influence", "collaboration"]
+    "tags": [
+      "stakeholder-objections",
+      "influence",
+      "collaboration"
+    ]
   }
 ]

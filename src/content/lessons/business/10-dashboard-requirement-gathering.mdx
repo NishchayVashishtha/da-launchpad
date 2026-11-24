@@ -218,6 +218,15 @@ I would not arbitrarily pick one side or allow confusion:
 3. **Documentation & Alignment**: I would add an info tooltip on each visual documenting the respective data source and calculation logic, ensuring leadership speaks a unified financial language.
 </InterviewQ>
 
+<InterviewQ q="After delivering a dashboard, you notice that weekly active viewers have dropped by 80% over two months. What steps do you take?">
+A drop in dashboard usage indicates either that the operational decision cycle changed or that the report stopped solving a high-friction problem:
+
+1. **Audit Usage Telemetry**: I would review Power BI / Tableau usage metrics to identify whether all user tiers stopped visiting, or whether only executives dropped off while frontline operations managers still use it.
+2. **Conduct User Feedback Interviews**: I would interview 3–5 representative stakeholders, asking questions such as: "What decision do you make every Monday?", "Where are you currently looking for that data?", and "Is the dashboard load time, layout, or data latency impeding your workflow?"
+3. **Check Data Accuracy & Latency**: I would verify if an unannounced schema migration or failed refresh schedule caused data discrepancies that eroded user trust.
+4. **Actionable Redesign or Deprecation**: If user requirements evolved, I would streamline the report to focus on their top 3 critical daily decisions; if the workflow became obsolete, I would safely deprecate the report to reduce maintenance debt.
+</InterviewQ>
+
 ## Key takeaways
 
 - Never write SQL or open a BI tool until you have completed an 8-question stakeholder discovery interview.

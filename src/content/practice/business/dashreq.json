@@ -9,11 +9,15 @@
     "dataset": "none",
     "hint": "Think about audience, decision-making, KPI definitions, update frequency, filters, and access controls.",
     "solution": "Six essential requirement-gathering questions:\n\n1. **Target Audience & Role**: Who is the primary user of this dashboard (e.g., C-level executives, shift supervisors, or ground fleet dispatchers)?\n2. **Decision-Making Context**: What specific operational decisions or actions will this dashboard trigger, and what happens if a metric turns red?\n3. **Core KPI Definitions**: Which 5 to 7 specific metrics must be tracked, and what are their exact formulas, data sources, and business owners?\n4. **Update Frequency & Data Freshness**: How often does the data need to refresh (real-time streaming, hourly batch, or daily at 8:00 AM)?\n5. **Filters & Drill-Down Slices**: Which specific dimensions do stakeholders need to slice by (e.g., by City, Issuing Bank, Store Format, or Category)?\n6. **Access Control & Privacy Boundaries**: Who should have access to this dashboard, and does it contain sensitive customer PII or health data that must be masked?",
-    "explanation": "Asking these 6 scoping questions upfront prevents scope creep and ensures the dashboard serves an actionable operational purpose rather than becoming unused shelfware.",
+    "explanation": "Asking these 6 scoping questions upfront prevents scope creep and ensures the dashboard serves an actionable operational purpose rather than becoming unused shelfware. Defining decisions, users, metrics, latency, filters, and alert thresholds before designing visuals guarantees business utility.",
     "commonMistake": "Immediately opening Power BI or Tableau to build charts before clarifying the audience, core decisions, and KPI definitions.",
     "interviewFrequency": "high",
     "estimatedMinutes": 4,
-    "tags": ["dashboard-requirements", "stakeholder-scoping", "bi"]
+    "tags": [
+      "dashboard-requirements",
+      "stakeholder-scoping",
+      "bi"
+    ]
   },
   {
     "id": "business-dashreq-002",
@@ -25,11 +29,15 @@
     "dataset": "none",
     "hint": "Consider continuous temporal data and human visual perception of trends.",
     "solution": "A **continuous line chart** (with time on the horizontal x-axis and TPV on the vertical y-axis) is the most appropriate visual type.\n\nLine charts connect discrete chronological observations with continuous slope segments, allowing human visual perception to instantly detect overall growth trajectories, seasonal festive peaks, and month-over-month rate changes far more effectively than tall, cluttered bars.",
-    "explanation": "Line charts are the gold standard for continuous time series. They eliminate visual clutter and highlight trajectory, slope, and seasonal anomalies.",
+    "explanation": "Line charts are the gold standard for continuous time series. They eliminate visual clutter and highlight trajectory, slope, and seasonal anomalies, allowing business leaders to spot inflection points and performance dips across monthly trends at a glance.",
     "commonMistake": "Recommending a pie chart or 24 crowded vertical bars to show a multi-year monthly time series.",
     "interviewFrequency": "high",
     "estimatedMinutes": 2,
-    "tags": ["visualization", "chart-selection", "time-series"]
+    "tags": [
+      "visualization",
+      "chart-selection",
+      "time-series"
+    ]
   },
   {
     "id": "business-dashreq-003",
@@ -41,11 +49,15 @@
     "dataset": "none",
     "hint": "Translate 'how payments are doing' into volume, reliability, bank health, error causes, and user reach.",
     "solution": "5-KPI Operational Specification for UPI Switch Director:\n\n1. **Settled TPV (Rupees & Volume)**: Total realized payment volume in Rs Crore and total count of successful transactions today, compared against the 7-day rolling baseline.\n2. **Platform Technical Success Rate %**: Realized success percentage (`Success / Total Distinct Attempts * 100`), with an automated amber alert at $< 98.0\\%$ and red alert at $< 97.0\\%$.\n3. **Worst-Performing Issuing Bank (by Volume-Weighted Failures)**: Identifies which major banking partner is currently dragging down switch performance (e.g., Kaveri Co-op Bank at 9.98% peak failure).\n4. **Top Technical Failure Code Distribution**: Breakdown of active failure causes (`UPI_SYSTEM_DOWN`, `BANK_SERVER_TIMEOUT`, `NETWORK_ERROR`) to diagnose internal switch vs external bank outages.\n5. **Active Transacting Users Today**: Hourly count of unique individuals transacting, validating customer reach and platform adoption.",
-    "explanation": "Transforming vague stakeholder statements into concrete, actionable KPI scorecards with clear operational thresholds is the core responsibility of a lead BI analyst.",
+    "explanation": "Transforming vague stakeholder statements into concrete, actionable KPI scorecards with clear operational thresholds is the core responsibility of a lead BI analyst. Setting unambiguous performance targets and alert triggers allows managers to take immediate corrective operational action.",
     "commonMistake": "Leaving the request open-ended and building 20 miscellaneous charts without alert thresholds or operational focus.",
     "interviewFrequency": "high",
     "estimatedMinutes": 5,
-    "tags": ["fintech", "kpi-spec", "dashboard-design"]
+    "tags": [
+      "fintech",
+      "kpi-spec",
+      "dashboard-design"
+    ]
   },
   {
     "id": "business-dashreq-004",
@@ -57,11 +69,15 @@
     "dataset": "none",
     "hint": "Include criteria for data refresh, filter functionality, cell suppression privacy, and metric calculation accuracy.",
     "solution": "User Acceptance Criteria (UAC) for Clinic No-Show Dashboard:\n\n1. **Data Freshness**: The dashboard must automatically refresh daily by 7:30 AM IST from the production hospital information management system (HIMS).\n2. **Accuracy & Reconciliation**: The monthly count of total booked appointments, completed consultations, and no-shows must match the audited financial billing ledger with $0.00$ discrepancy.\n3. **Filter Functionality**: Users must be able to filter by Specialty (Cardiology, Orthopedics, Pediatrics), Doctor, Appointment Time Slot (Morning vs Evening), and Patient Type (New vs Follow-up), with all visuals updating in $< 2$ seconds.\n4. **Privacy & Cell Suppression**: Any demographic reporting cut where total patient appointments is less than 10 ($n < 10$) must automatically display `'<10'` to comply with DPDP privacy rules.\n5. **Export Capability**: Clinic administrative heads must be able to export filtered aggregate summaries to a secure CSV or Excel sheet with one click.",
-    "explanation": "Acceptance criteria define the explicit boundary between an in-development project and an approved production artifact, preventing endless subjective rework.",
+    "explanation": "Acceptance criteria define the explicit boundary between an in-development project and an approved production artifact, preventing endless subjective rework. Aligning on automated reconciliation checks and sign-off criteria ensures technical integrity and build confidence.",
     "commonMistake": "Writing vague acceptance criteria like 'dashboard must look clean and work well' without measurable performance and privacy thresholds.",
     "interviewFrequency": "medium",
     "estimatedMinutes": 4,
-    "tags": ["acceptance-criteria", "bi-project-management", "healthcare"]
+    "tags": [
+      "acceptance-criteria",
+      "bi-project-management",
+      "healthcare"
+    ]
   },
   {
     "id": "business-dashreq-005",
@@ -77,7 +93,11 @@
     "commonMistake": "Arbitrarily picking one definition and forcing the other executive to accept it, or blending both into an inconsistent average.",
     "interviewFrequency": "high",
     "estimatedMinutes": 5,
-    "tags": ["stakeholder-alignment", "metric-governance", "bi-design"]
+    "tags": [
+      "stakeholder-alignment",
+      "metric-governance",
+      "bi-design"
+    ]
   },
   {
     "id": "business-dashreq-006",
@@ -89,11 +109,15 @@
     "dataset": "none",
     "hint": "Organize using the classic F-pattern: KPI summary cards on top, primary time-series trend in the middle, and multi-dimensional breakdowns below.",
     "solution": "Executive 6-Visual Layout (F-Pattern):\n\n**Top Tier: High-Level Pulse (Top-Left to Top-Right)**\n1. **Visual 1 (KPI Card Trio)**: Delivered Revenue (Rs Lakh), Delivered Orders, and Realized AOV—each with Month-over-Month % change indicators.\n2. **Visual 2 (KPI Card Pair)**: Overall Order Return Rate % and Cancellation Rate % (operational guardrails with green/red RAG status).\n\n**Middle Tier: Trajectory & Momentum**\n3. **Visual 3 (Line Chart)**: 12-Month Delivered Revenue and Order Volume Trend (shows growth trajectory and seasonal festive peaks).\n4. **Visual 4 (Horizontal Bar Chart)**: Revenue & Growth Contribution by Product Category (highlights top revenue generators like Fashion vs Electronics).\n\n**Bottom Tier: Segment Diagnostic & Performance Table**\n5. **Visual 5 (Stacked Bar / Donut)**: Order Share by Sales Channel (Android App vs iOS App vs Website vs Mobile Web).\n6. **Visual 6 (Detailed Performance Matrix Table)**: Top 10 Geographic Cities by Delivered Revenue, Return Rate, and AOV (actionable operational detail for supply chain and regional marketing).\n\n**Justification**: This hierarchy follows human eye-tracking: executives scan the top row for health in 5 seconds, review trajectory in 20 seconds, and diagnose regional drivers at the bottom.",
-    "explanation": "Executive dashboards must resist the temptation to display every database column. The 6-visual layout delivers total situational awareness without visual fatigue.",
+    "explanation": "Executive dashboards must resist the temptation to display every database column. The 6-visual layout delivers total situational awareness without visual fatigue, focusing user attention on primary KPIs, trend trajectories, and regional breakdowns.",
     "commonMistake": "Retaining 15 different pie charts or placing detailed raw transaction tables at the top of the dashboard.",
     "interviewFrequency": "high",
     "estimatedMinutes": 6,
-    "tags": ["dashboard-design", "ui-ux", "layout-optimization"]
+    "tags": [
+      "dashboard-design",
+      "ui-ux",
+      "layout-optimization"
+    ]
   },
   {
     "id": "business-dashreq-007",
@@ -109,7 +133,12 @@
     "commonMistake": "Including raw patient names and diagnoses directly in BI dashboards viewed by non-clinical administrative staff.",
     "interviewFrequency": "high",
     "estimatedMinutes": 5,
-    "tags": ["healthcare", "privacy", "dpdp", "rbac"]
+    "tags": [
+      "healthcare",
+      "privacy",
+      "dpdp",
+      "rbac"
+    ]
   },
   {
     "id": "business-dashreq-008",
@@ -125,6 +154,10 @@
     "commonMistake": "Either saying 'No, that wasn't in the spec' bluntly, or immediately agreeing to ad-hoc changes that delay other company deliverables.",
     "interviewFrequency": "high",
     "estimatedMinutes": 5,
-    "tags": ["scope-creep", "stakeholder-management", "communication"]
+    "tags": [
+      "scope-creep",
+      "stakeholder-management",
+      "communication"
+    ]
   }
 ]

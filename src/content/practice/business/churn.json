@@ -51,7 +51,7 @@
         ]
       ]
     },
-    "explanation": "Across all historical paid subscribers, the cumulative churn rate is 54.8% (654 of 1,193 paid subscriptions).",
+    "explanation": "Across all historical paid subscribers, the cumulative churn rate is 54.8% (654 of 1,193 paid subscriptions). Tracking this baseline metric over time enables product and growth teams to evaluate whether onboarding initiatives successfully extend customer lifetime.",
     "commonMistake": "Dividing by total registered users (5,200) or total trial starters (3,308) rather than paid subscribers.",
     "interviewFrequency": "high",
     "estimatedMinutes": 3,
@@ -109,15 +109,35 @@
     "topic": "churn",
     "difficulty": "medium",
     "language": "sql",
-    "question": "Analyze churn across tier levels for monthly subscribers. For distinct paid subscriptions on the 'monthly' billing cycle, return the `plan` ('Basic', 'Standard', 'Premium'), total paid subscribers as `paid`, and the churn percentage rounded to one decimal place as `churn_pct`. Order by `churn_pct` descending.",
+    "question": "Analyze churn across tier levels for monthly subscribers. For distinct paid subscriptions on the 'Monthly' billing cycle, return the `plan` ('Basic', 'Standard', 'Premium'), total paid subscribers as `paid`, and the churn percentage rounded to one decimal place as `churn_pct`. Order by `churn_pct` descending.",
     "dataset": "subscription",
-    "hint": "Filter WHERE paid_start_date IS NOT NULL AND billing_cycle = 'monthly', group by plan, and sort by churn_pct DESC.",
-    "solutionSql": "WITH s AS (\n  SELECT DISTINCT * FROM subscriptions\n)\nSELECT\n  plan,\n  COUNT(*) AS paid,\n  ROUND(AVG(CASE WHEN status = 'cancelled' THEN 100.0 ELSE 0.0 END), 1) AS churn_pct\nFROM s\nWHERE paid_start_date IS NOT NULL AND billing_cycle = 'monthly'\nGROUP BY plan\nORDER BY churn_pct DESC;",
+    "hint": "Filter WHERE paid_start_date IS NOT NULL AND LOWER(billing_cycle) = 'monthly', group by plan, and sort by churn_pct DESC.",
+    "solutionSql": "WITH s AS (\n  SELECT DISTINCT * FROM subscriptions\n)\nSELECT\n  plan,\n  COUNT(*) AS paid,\n  ROUND(AVG(CASE WHEN status = 'cancelled' THEN 100.0 ELSE 0.0 END), 1) AS churn_pct\nFROM s\nWHERE paid_start_date IS NOT NULL AND LOWER(billing_cycle) = 'monthly'\nGROUP BY plan\nORDER BY churn_pct DESC;",
     "expectedOutput": {
-      "columns": [],
-      "rows": []
+      "columns": [
+        "plan",
+        "paid",
+        "churn_pct"
+      ],
+      "rows": [
+        [
+          "Basic",
+          302,
+          67.2
+        ],
+        [
+          "Standard",
+          517,
+          61.7
+        ],
+        [
+          "Premium",
+          179,
+          55.3
+        ]
+      ]
     },
-    "explanation": "Monthly churn declines as tier tier price increases: Basic monthly subscribers churn at 67.2% (203 of 302), Standard monthly subscribers churn at 61.7% (319 of 517), and Premium monthly subscribers churn at 55.3% (99 of 179). Higher-tier users exhibit stronger product commitment.",
+    "explanation": "Monthly churn declines as tier price increases: Basic monthly subscribers churn at 67.2% (203 of 302), Standard monthly subscribers churn at 61.7% (319 of 517), and Premium monthly subscribers churn at 55.3% (99 of 179). Higher-tier users exhibit stronger product commitment.",
     "commonMistake": "Failing to filter billing_cycle = 'monthly', which dilutes tier churn rates with annual subscriptions.",
     "interviewFrequency": "high",
     "estimatedMinutes": 4,
@@ -133,13 +153,29 @@
     "topic": "churn",
     "difficulty": "medium",
     "language": "sql",
-    "question": "Calculate the Monthly Recurring Revenue (MRR) lost to cancellations across plans. For distinct paid subscriptions on 'monthly' billing with `status = 'cancelled'`, return `plan` and the total monthly rupee revenue lost as `lost_mrr` (sum of `price_inr`). Order by `lost_mrr` descending.",
+    "question": "Calculate the Monthly Recurring Revenue (MRR) lost to cancellations across plans. For distinct paid subscriptions on 'Monthly' billing with `status = 'cancelled'`, return `plan` and the total monthly rupee revenue lost as `lost_mrr` (sum of `price_inr`). Order by `lost_mrr` descending.",
     "dataset": "subscription",
-    "hint": "Sum price_inr for cancelled monthly paid subscriptions grouped by plan.",
-    "solutionSql": "WITH s AS (\n  SELECT DISTINCT * FROM subscriptions\n)\nSELECT\n  plan,\n  SUM(price_inr) AS lost_mrr\nFROM s\nWHERE paid_start_date IS NOT NULL AND billing_cycle = 'monthly' AND status = 'cancelled'\nGROUP BY plan\nORDER BY lost_mrr DESC;",
+    "hint": "Sum price_inr for cancelled monthly paid subscriptions (LOWER(billing_cycle) = 'monthly') grouped by plan.",
+    "solutionSql": "WITH s AS (\n  SELECT DISTINCT * FROM subscriptions\n)\nSELECT\n  plan,\n  SUM(price_inr) AS lost_mrr\nFROM s\nWHERE paid_start_date IS NOT NULL AND LOWER(billing_cycle) = 'monthly' AND status = 'cancelled'\nGROUP BY plan\nORDER BY lost_mrr DESC;",
     "expectedOutput": {
-      "columns": [],
-      "rows": []
+      "columns": [
+        "plan",
+        "lost_mrr"
+      ],
+      "rows": [
+        [
+          "Standard",
+          95381
+        ],
+        [
+          "Premium",
+          49401
+        ],
+        [
+          "Basic",
+          30247
+        ]
+      ]
     },
     "explanation": "Standard accounts for the largest absolute recurring revenue loss (Rs 95,381/month across 319 cancellations at Rs 299/mo), followed by Premium (Rs 49,401/month across 99 cancellations at Rs 499/mo) and Basic (Rs 30,247/month across 203 cancellations at Rs 149/mo).",
     "commonMistake": "Summing annual subscription prices into monthly lost revenue without dividing by 12.",
@@ -256,7 +292,7 @@
     "dataset": "none",
     "hint": "Divide discontinued patients by the starting enrollment pool (128 / 400 * 100).",
     "solution": "Patient Dropout Rate:\n\n$$\\text{Patient Dropout Rate} = \\left(\\frac{128}{400}\\right) \\times 100 = 32.0\\%$$\n\nNearly one in three enrolled patients dropped out within the first 90 days of the chronic care regime.",
-    "explanation": "In healthcare programmes, patient drop-out is clinical churn. High early drop-out indicates treatment friction, lack of caregiver engagement, or perceived lack of improvement.",
+    "explanation": "In healthcare programmes, patient drop-out is clinical churn. High early drop-out indicates treatment friction, lack of caregiver engagement, or perceived lack of improvement. Intervening during the first 30 days is critical to ensuring patient adherence and treatment efficacy.",
     "commonMistake": "Dividing by remaining patients (128 / 272 = 47.1%) rather than the enrolled cohort.",
     "interviewFrequency": "medium",
     "estimatedMinutes": 2,
