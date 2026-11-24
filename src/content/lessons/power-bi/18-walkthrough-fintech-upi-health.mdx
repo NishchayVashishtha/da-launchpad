@@ -41,7 +41,7 @@ A good fintech analyst knows that a small percentage on millions of transactions
 
 <Download href="/data/zip/fintech.zip" label="fintech.zip" />
 
-Four CSV files: `users` (about 4,000), `merchants` (400), `transactions` (about 22,000 over 2023 and 2024) and `failed_transactions` (about 630 failure records with codes and retry result).
+Four CSV files: `users` (about 4,000), `merchants` (400), `transactions` (about 22,000 over 2023 and 2024) and `failed_transactions` (about 600 failure records with codes and retry result).
 
 <Warning>
 The data has deliberate problems: about 90 duplicate transaction rows, duplicate users, amounts as text like "₹1,250", dates as DD-MM-YYYY, inconsistent city casing, and a few extreme amounts. P2P rows have no merchant, and non-P2P rows have no receiver user, and that is by design, not an error.
@@ -62,7 +62,7 @@ The `PENDING` status (80 rows, 0.4%) stays in the denominator in this walkthroug
 
 **Transactions**
 
-1. Remove Duplicates on `txn_id` (leaves 22,000).
+1. Remove Duplicates on `txn_id` (leaves 22,300).
 2. `amount`: remove "₹" and ",", then set type to Decimal.
 3. `txn_datetime`: convert using the English (India) locale so DD-MM-YYYY HH:MM:SS parses.
 4. Add `txn_date = DateTime.Date([txn_datetime])` and `txn_hour = Time.Hour(DateTime.Time([txn_datetime]))`. Remove `txn_datetime` to keep cardinality low, or keep it in a separate query for reference.
@@ -138,21 +138,21 @@ Notes:
 
 ### Step 4: Page-by-page layout
 
-**Page 1, Health overview.** Title: "UPI failure rate is 2.85%, and failed payments were worth about ₹9.2 lakh".
+**Page 1, Health overview.** Title: "UPI failure rate is 2.7%, and failed payments were worth about ₹9.0 lakh".
 
 - Slicers: Year, Transaction type.
 - Cards: Total Txns, GMV (Successful), Failure Rate %, Retry Recovery %.
 - Line chart: Total Txns by month, with Failure Rate % as a second small chart below.
 - Column chart: Total Txns by hour of day.
 
-**Page 2, Where failures concentrate.** Title: "Kaveri Co-op Bank fails 8.1% of payments, about 3 times most banks".
+**Page 2, Where failures concentrate.** Title: "Kaveri Co-op Bank fails 6.1% of payments, more than twice most banks".
 
 - Bar: Failure Rate % by bank (sorted), Kaveri highlighted.
 - Bar: Failure Rate % by payment app.
 - Column chart: Failure Rate % by hour, and a second series for Kaveri only (use a measure).
 - Matrix: Bank by Is Peak Hour with Failure Rate %.
 
-**Page 3, Why payments fail.** Title: "Server timeouts are 53% of Kaveri failures; network errors recover on retry, empty wallets do not".
+**Page 3, Why payments fail.** Title: "Server timeouts are 41% of Kaveri failures; network errors recover on retry, empty wallets do not".
 
 - Bar: Failed Txns by `failure_code`.
 - Bar: Retry Recovery % by `failure_code`.
@@ -162,31 +162,31 @@ Notes:
 
 ## Worked examples
 
-All numbers below are computed from the cleaned data (22,000 unique transactions, 627 failed).
+All numbers below are computed from the cleaned data (22,300 unique transactions, 601 failed).
 
 ### Insight 1: The headline
 
-- Total transactions: **22,000**; GMV on successful payments: **₹2.91 crore** (₹29,120,824).
-- Failure rate: **2.85%** (627 failed), and about 0.4% pending. Successful average ticket is about ₹1,368.
-- Value of failed payments is about **₹9.2 lakh**. Roughly 52% of failed payments were retried and **55.6%** of those retries succeeded.
-- Volume grew from 9,463 transactions in 2023 to 12,537 in 2024 (+32%), while the failure rate stayed flat at about 2.8 to 2.9%. October 2024 was the busiest month at 1,327 transactions. Weekend days run about 10% busier than weekdays.
+- Total transactions: **22,300**; GMV on successful payments: **₹2.99 crore** (₹29,873,883).
+- Failure rate: **2.7%** (601 failed), and about 0.4% pending. Successful average ticket is about ₹1,382.
+- Value of failed payments is about **₹9.0 lakh**. Roughly 48% of failed payments were retried and **57.7%** of those retries succeeded.
+- Volume grew from 9,613 transactions in 2023 to 12,687 in 2024 (+32%), while the failure rate fell from 2.85% to 2.58%. October 2024 was the busiest month at 1,327 transactions. Per day, weekends run about 8% busier than weekdays, and they fail less often (2.3% against 2.9%).
 
 ### Insight 2: One bank stands out
 
 | Bank | Transactions | Failure rate |
 |---|---|---|
-| Kaveri Co-op Bank | 1,770 | 8.1% |
-| PayNova Small Finance Bank | 758 | 4.1% |
-| Coromandel Bank | 1,967 | 2.9% |
-| Bharat Union Bank | 5,170 | 2.4% |
-| Himalaya Trust Bank | 2,985 | 2.3% |
-| Sundaram Bank | 4,517 | 2.2% |
-| Rajdhani National Bank | 3,535 | 2.2% |
-| Malabar Savings Bank | 1,298 | 1.9% |
+| Kaveri Co-op Bank | 1,700 | 6.1% |
+| PayNova Small Finance Bank | 782 | 2.9% |
+| Sundaram Bank | 4,658 | 2.6% |
+| Coromandel Bank | 1,959 | 2.6% |
+| Himalaya Trust Bank | 3,077 | 2.4% |
+| Bharat Union Bank | 5,097 | 2.4% |
+| Malabar Savings Bank | 1,315 | 2.2% |
+| Rajdhani National Bank | 3,712 | 2.2% |
 
-Kaveri Co-op Bank handles 8% of transactions but about **23% of failures** (143 of 627), which is **+5.2 points** above the overall rate.
+Kaveri Co-op Bank handles 8% of transactions but about **17% of failures** (103 of 601), which is **+3.4 points** above the overall rate.
 
-Payment apps differ little: QuickPaisa 3.3% to RupeeRocket 2.7%. Android is 2.9% against iOS 2.5%. The differences are small, so the real story is the bank, not the app.
+NammaPay is the exception at **5.1%**, and its four outage windows explain it (see Insight 5). Outside those windows NammaPay fails 2.3%, close to the other apps, which range from 1.9% (RupeeRocket) to 2.3% (PayZippy and QuickPaisa). Android is 2.7% against iOS 2.6%. So the bank is still the main story, and the app gap comes mostly from outages.
 
 ### Insight 3: Peak hours hurt Kaveri most
 
@@ -194,43 +194,59 @@ Using peak hours of 9 to 10 and 18 to 20:
 
 | Group | Peak-hour failure rate | Other hours |
 |---|---|---|
-| Kaveri Co-op Bank | 14.9% | 3.6% |
+| Kaveri Co-op Bank | 10.3% | 3.2% |
 | All other banks | 2.6% | 2.3% |
 
-Between 18:00 and 20:59 Kaveri fails **15.6%** against about 2.7% for other banks. Of Kaveri's failures, **76 of 143** carry the code `BANK_SERVER_TIMEOUT`, which points to the bank's servers under load. Evening 18 to 20 is also the busiest period, with about 25% of all transactions.
+Between 18:00 and 20:59 Kaveri fails **10.5%** (47 of 449 payments) against about 2.6% for other banks. In that window, **25 of its 47 failures** carry the code `BANK_SERVER_TIMEOUT`, which points to the bank's servers under load. Across the whole day, **42 of Kaveri's 103 failures** carry that code. Evening 18 to 20 is also the busiest period, with about 25% of all transactions.
 
 ### Insight 4: Why payments fail and what recovers
 
 | Failure code | Failures | Retry success |
 |---|---|---|
-| INSUFFICIENT_FUNDS | 163 | 19.7% |
-| BANK_DECLINED | 119 | 59.6% |
-| NETWORK_ERROR | 90 | 64.8% |
-| INCORRECT_PIN | 89 | 86.1% |
-| BANK_SERVER_TIMEOUT | 75 | 62.3% |
-| LIMIT_EXCEEDED | 70 | 67.9% |
-| UPI_SYSTEM_DOWN | 21 | 61.5% |
+| INSUFFICIENT_FUNDS | 138 | 13.5% |
+| BANK_DECLINED | 99 | 66.7% |
+| NETWORK_ERROR | 69 | 67.3% |
+| INCORRECT_PIN | 71 | 84.0% |
+| BANK_SERVER_TIMEOUT | 42 | 74.1% |
+| LIMIT_EXCEEDED | 64 | 65.0% |
+| UPI_SYSTEM_DOWN | 118 | 61.0% |
 
-Technical failures (network, timeout) recover on retry about 62 to 65% of the time, wrong PIN recovers 86% of the time, but insufficient funds recovers only about 20%. An automatic or one-tap retry would help the first group; a balance-low nudge could help the second.
+Technical failures (network errors and bank timeouts) recover on retry about 67 to 74% of the time, wrong PIN recovers 84% of the time, but insufficient funds recovers only about 14%. An automatic or one-tap retry would help the first group; a balance-low nudge could help the second.
 
 ### Insight 5: Outages and salary days
 
-On the two Diwali-evening outage windows (12 Nov 2023 and 31 Oct 2024, 18:00 to 21:59) there are only 25 transactions in this extract, but **84%** of them failed, and `UPI_SYSTEM_DOWN` appears on 21 failures. On the 1st to 3rd of each month the failure rate is **3.6%** against 2.8% on other days, about 30% higher, as many people pay bills and salaries at once.
+NammaPay had four outage windows in this extract. Each one shows a spike in failures:
+
+| Date | Hours | Attempts | Failed | Failure rate |
+|---|---|---|---|---|
+| 14 Mar 2023 | 10:00 to 12:59 | 76 | 32 | 42.1% |
+| 21 Sep 2023 | 18:00 to 20:59 | 77 | 31 | 40.3% |
+| 6 Feb 2024 | 09:00 to 11:59 | 75 | 25 | 33.3% |
+| 16 Jul 2024 | 19:00 to 21:59 | 76 | 30 | 39.5% |
+
+Together these windows hold 304 NammaPay attempts, and **38.8%** of them failed, against **2.3%** outside the windows. All 118 `UPI_SYSTEM_DOWN` failures in the extract fall inside these windows. The salary-day idea does not show here: payments on the 1st to 3rd of the month fail at 2.6%, against 2.7% on other days.
 
 <Tip>
-For a small sample such as 25 transactions, tell the reader the sample size. Put the count in a tooltip so readers do not over-trust a percentage.
+For a small sample such as 76 transactions, tell the reader the sample size. Put the count in a tooltip so readers do not over-trust a percentage.
 </Tip>
 
 ### Insight 6: A note on fraud flags
 
-Only 19 transactions (0.09%) carry `is_flagged = 1` in this extract, all for ordinary amounts. Do not build a fraud story from them; mention it as a data limitation and a topic for a deeper project.
+302 transactions (1.35%) carry `is_flagged = 1`. They are dataset flags, not confirmed fraud, but they follow clear patterns:
+
+- Late night, 23:00 to 04:59: 5.0% flagged, against 1.3% at other hours.
+- Accounts less than 30 days old at payment time: 7.2%, against 1.1% for older accounts.
+- Amount more than 3 times the payer's median amount: 3.6%, against 0.9%.
+- Travel (5.5%) and Electronics (4.9%) merchants, against about 1% for other categories.
+
+Flagged amounts run from ₹33 to about ₹72,600 (average ₹2,906), and none of the flagged payments failed. Use these patterns to explain the flags, and do not call them confirmed fraud without a case review.
 
 ### Recommendations
 
-1. Escalate to Kaveri Co-op Bank with the evidence: 8.1% failure rate and peak-hour timeouts. Consider routing or a "try another account" prompt.
+1. Escalate to Kaveri Co-op Bank with the evidence: 6.1% failure rate and peak-hour timeouts. Consider routing or a "try another account" prompt.
 2. Add one-tap retry for network errors and timeouts.
 3. Show a balance reminder when insufficient-funds failure is likely.
-4. Add capacity alerts for the evening peak and the first three days of each month.
+4. Add capacity alerts for the evening peak, and an outage alert for NammaPay's `UPI_SYSTEM_DOWN` failures.
 5. Track the failure rate weekly by bank in this dashboard.
 
 ## Common mistakes
@@ -248,7 +264,7 @@ Not saying whether PENDING is in the denominator. Another analyst may exclude it
 </CommonMistake>
 
 <CommonMistake>
-Over-reading tiny samples. The outage windows have only 25 transactions; say so.
+Over-reading tiny samples. Each outage window has only about 75 attempts; say so.
 </CommonMistake>
 
 <CommonMistake>
@@ -262,10 +278,10 @@ Filling in missing merchant ids for P2P rows. They are null by design.
 ## Mini quiz
 
 <Quiz questions={[
-  { q: "What is the overall failure rate in the cleaned data?", options: ["About 0.5%", "About 2.85%", "About 15%", "About 40%"], answer: 1, explanation: "627 failed out of 22,000 transactions is about 2.85%." },
-  { q: "Which bank has the highest failure rate?", options: ["Bharat Union Bank", "Sundaram Bank", "Kaveri Co-op Bank", "Malabar Savings Bank"], answer: 2, explanation: "Kaveri Co-op Bank fails about 8.1% of payments." },
+  { q: "What is the overall failure rate in the cleaned data?", options: ["About 0.5%", "About 2.7%", "About 15%", "About 40%"], answer: 1, explanation: "601 failed out of 22,300 transactions is about 2.7%." },
+  { q: "Which bank has the highest failure rate?", options: ["Bharat Union Bank", "Sundaram Bank", "Kaveri Co-op Bank", "Malabar Savings Bank"], answer: 2, explanation: "Kaveri Co-op Bank fails about 6.1% of payments." },
   { q: "Why use ALL(Transactions[bank]) instead of ALL(Transactions)?", options: ["It is shorter", "It removes only the bank filter and keeps other slicers", "It is required for COUNTROWS", "It speeds up refresh"], answer: 1, explanation: "A benchmark should keep the date and type context." },
-  { q: "Which failure code recovers least on retry?", options: ["INCORRECT_PIN", "NETWORK_ERROR", "INSUFFICIENT_FUNDS", "BANK_SERVER_TIMEOUT"], answer: 2, explanation: "Only about 20% of insufficient-funds retries succeed." },
+  { q: "Which failure code recovers least on retry?", options: ["INCORRECT_PIN", "NETWORK_ERROR", "INSUFFICIENT_FUNDS", "BANK_SERVER_TIMEOUT"], answer: 2, explanation: "Only about 14% of insufficient-funds retries succeed." },
   { q: "How should you treat null merchant_id on P2P transactions?", options: ["Delete the rows", "Fill with zero", "Leave null, it is by design", "Replace with the user id"], answer: 2, explanation: "P2P payments have no merchant, so null is correct." }
 ]} />
 
@@ -276,7 +292,7 @@ Fintech interviews love failure-rate questions: "How would you define it? How wo
 </InterviewAlert>
 
 <InterviewQ q="How would you investigate a rise in UPI failure rate?">
-First confirm the definition and the data (duplicates, pending). Then segment: by bank, payment app, device, hour and failure code, and compare to a benchmark. In my project, one bank (Kaveri Co-op) had 8.1% against 2.9% overall, concentrated in peak hours with server-timeout codes. That tells me it is a bank capacity issue, not an app bug. I would then check recent changes, outages and month-start effects.
+First confirm the definition and the data (duplicates, pending). Then segment: by bank, payment app, device, hour and failure code, and compare to a benchmark. In my project, one bank (Kaveri Co-op) had 6.1% against 2.7% overall, concentrated in peak hours with server-timeout codes. That tells me it is a bank capacity issue, not an app bug. I would then check recent changes, outages and month-start effects.
 </InterviewQ>
 
 <InterviewQ q="Why use CALCULATE with ALL for a benchmark measure?">
@@ -284,7 +300,7 @@ CALCULATE changes the filter context, and ALL on the bank column removes only th
 </InterviewQ>
 
 <InterviewQ q="Which failures can the product team fix?">
-Technical failures, like network errors and timeouts, recover on retry about 62 to 65% of the time, so automatic or one-tap retry helps. Insufficient funds recovers only about 20%, so a low balance nudge is better. Bank-side timeouts need escalation to the bank.
+Technical failures, like network errors and timeouts, recover on retry about 67 to 74% of the time, so automatic or one-tap retry helps. Insufficient funds recovers only about 14%, so a low balance nudge is better. Bank-side timeouts need escalation to the bank.
 </InterviewQ>
 
 ## Key takeaways
@@ -292,7 +308,8 @@ Technical failures, like network errors and timeouts, recover on retry about 62 
 - Define failure rate and say how PENDING is treated.
 - Clean duplicates, text amounts and mixed date formats before measuring.
 - Use ALL on one column for benchmarks, and CALCULATE for segment rates.
-- One bank (8.1%) drove a disproportionate share of failures, concentrated at peak hours.
+- One bank (6.1%) drove about 17% of failures from under 8% of volume, concentrated at peak hours.
+- NammaPay's four outage windows, not its everyday rate, explain its high failure rate.
 - Retry recovery differs by failure code, so recommendations should too.
 
 ## Further reading

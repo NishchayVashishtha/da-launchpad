@@ -162,13 +162,13 @@ Failed Txns = CALCULATE ( COUNTROWS ( Transactions ), Transactions[status] = "FA
 Failure Rate % = DIVIDE ( [Failed Txns], COUNTROWS ( Transactions ) )
 ```
 
-When a slicer picks a bank with no transactions in the selected month, `COUNTROWS` is blank and `DIVIDE` returns blank, so the card shows empty instead of an error. On the cleaned sample the overall rate is 627 of 22,088 transactions, 2.8%.
+When a slicer picks a bank with no transactions in the selected month, `COUNTROWS` is blank and `DIVIDE` returns blank, so the card shows empty instead of an error. On the cleaned sample the overall rate is 601 of 22,300 transactions, 2.7%.
 
 | Bank | Failure Rate % |
 |------|----------------|
-| Kaveri Co-op Bank | 8.1% |
-| PayNova Small Finance Bank | 4.1% |
-| Malabar Savings Bank | 1.9% |
+| Kaveri Co-op Bank | 6.1% |
+| PayNova Small Finance Bank | 2.9% |
+| Malabar Savings Bank | 2.2% |
 
 (The three banks shown are real values from the cleaned data.)
 

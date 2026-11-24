@@ -245,10 +245,10 @@ In `transactions`, `merchant_id` is NULL for person-to-person transfers. See wha
 
 | all_txns | inner_rows | left_rows |
 |---|---|---|
-| 22088 | 16701 | 22088 |
+| 22389 | 16952 | 22389 |
 
 
-The `INNER JOIN` loses 5,387 rows (all the P2P transfers) because NULL cannot match anything. The `LEFT JOIN` keeps all 22,088 rows. If you want "revenue by merchant category" the inner join is right (P2P has no merchant). If you want "total transaction count", an inner join would undercount by about a quarter. Know which question you are answering.
+The `INNER JOIN` loses 5,437 rows (all the P2P transfers) because NULL cannot match anything. The `LEFT JOIN` keeps all 22,389 rows. If you want "revenue by merchant category" the inner join is right (P2P has no merchant). If you want "total transaction count", an inner join would undercount by about a quarter. Know which question you are answering.
 
 ### Example 7: joining three tables
 

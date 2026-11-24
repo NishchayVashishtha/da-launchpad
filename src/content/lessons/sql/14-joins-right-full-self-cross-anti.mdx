@@ -227,12 +227,12 @@ LIMIT 6;`} title="Every app x type combination (CROSS JOIN)" />
 
 | payment_app | txn_type | txns |
 |---|---|---|
-| RupeeRocket | Recharge | 202 |
-| SabPay | Recharge | 220 |
-| NammaPay | Recharge | 283 |
-| RupeeRocket | Bill Pay | 363 |
-| SabPay | Bill Pay | 371 |
-| NammaPay | Bill Pay | 438 |
+| RupeeRocket | Recharge | 219 |
+| SabPay | Recharge | 224 |
+| NammaPay | Recharge | 324 |
+| RupeeRocket | Bill Pay | 334 |
+| SabPay | Bill Pay | 391 |
+| QuickPaisa | Recharge | 420 |
 
 
 The lowest cells are shown first. Every combination has transactions in this data, so there are no zeros here. In a smaller slice (one city, one week) zeros would appear, and because the grid was built first they would show as `0` instead of silently missing from the chart. We used `COUNT(x.txn_id)`, not `COUNT(*)`, so an empty combination counts as 0 and not 1.
@@ -250,7 +250,7 @@ WHERE t.txn_id IS NULL;`} title="Anti-join with LEFT JOIN ... IS NULL" />
 
 | never_received |
 |---|
-| 1047 |
+| 985 |
 
 
 <SqlPlayground dataset="fintech" query={`SELECT COUNT(DISTINCT u.user_id) AS never_received
@@ -262,10 +262,10 @@ WHERE NOT EXISTS (SELECT 1 FROM transactions AS t
 
 | never_received |
 |---|
-| 1047 |
+| 985 |
 
 
-Both agree: 1,047 users. Now `NOT IN` written naively:
+Both agree: 985 users. Now `NOT IN` written naively:
 
 <SqlPlayground dataset="fintech" query={`SELECT COUNT(DISTINCT user_id) AS never_received
 FROM users
@@ -290,10 +290,10 @@ WHERE user_id NOT IN (SELECT receiver_user_id
 
 | never_received |
 |---|
-| 1047 |
+| 985 |
 
 
-Now it matches 1,047 again. Rule of thumb: default to `NOT EXISTS`.
+Now it matches 985 again. Rule of thumb: default to `NOT EXISTS`.
 
 ## Common mistakes
 

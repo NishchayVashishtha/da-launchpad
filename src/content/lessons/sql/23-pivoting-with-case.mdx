@@ -189,13 +189,13 @@ ORDER BY payment_app;`} title="Failure rate matrix" />
 
 | payment_app | txns | p2p_fail_pct | p2m_fail_pct | billpay_fail_pct | recharge_fail_pct |
 |---|---|---|---|---|---|
-| NammaPay | 3556 | 2.52 | 3.06 | 3.2 | 3.18 |
-| PayZippy | 7243 | 3.13 | 2.47 | 2.84 | 1.53 |
-| QuickPaisa | 5513 | 2.94 | 3.36 | 3.84 | 2.47 |
-| RupeeRocket | 2697 | 3.11 | 2.68 | 2.5 | 1.5 |
-| SabPay | 2991 | 3.15 | 2.56 | 2.17 | 4.09 |
+| NammaPay | 3922 | 5.43 | 4.73 | 4.92 | 6.83 |
+| PayZippy | 7190 | 1.98 | 2.32 | 2.19 | 2.75 |
+| QuickPaisa | 5443 | 2.17 | 2.23 | 1.91 | 3.1 |
+| RupeeRocket | 2702 | 1.36 | 1.95 | 1.81 | 2.75 |
+| SabPay | 3043 | 2.19 | 2.41 | 2.07 | 0.89 |
 
-SabPay recharges fail the most (4.09 percent), while PayZippy recharges fail the least (1.53 percent). Reading a matrix like this is much faster than scanning 20 rows of a long table.
+NammaPay recharges fail the most (6.83 percent), while SabPay recharges fail the least (0.89 percent). Reading a matrix like this is much faster than scanning 20 rows of a long table.
 
 ### Example 4: unpivot with UNION ALL
 

@@ -117,20 +117,20 @@ ORDER BY month;`} title="MoM growth of successful UPI transactions" />
 
 | month | txns | prev_month | change | growth_pct |
 |---|---|---|---|---|
-| 2023-01 | 683 | NULL | NULL | NULL |
-| 2023-02 | 644 | 683 | -39 | -5.7 |
-| 2023-03 | 672 | 644 | 28 | 4.3 |
-| 2023-04 | 693 | 672 | 21 | 3.1 |
-| 2023-05 | 724 | 693 | 31 | 4.5 |
-| 2023-06 | 769 | 724 | 45 | 6.2 |
-| 2023-07 | 776 | 769 | 7 | 0.9 |
-| 2023-08 | 770 | 776 | -6 | -0.8 |
-| 2023-09 | 747 | 770 | -23 | -3.0 |
-| 2023-10 | 871 | 747 | 124 | 16.6 |
+| 2023-01 | 690 | NULL | NULL | NULL |
+| 2023-02 | 641 | 690 | -49 | -7.1 |
+| 2023-03 | 715 | 641 | 74 | 11.5 |
+| 2023-04 | 705 | 715 | -10 | -1.4 |
+| 2023-05 | 730 | 705 | 25 | 3.5 |
+| 2023-06 | 779 | 730 | 49 | 6.7 |
+| 2023-07 | 775 | 779 | -4 | -0.5 |
+| 2023-08 | 771 | 775 | -4 | -0.5 |
+| 2023-09 | 789 | 771 | 18 | 2.3 |
+| 2023-10 | 867 | 789 | 78 | 9.9 |
 
 Showing the first 10 of 24 rows.
 
-The first month has `NULL` for `prev_month` because nothing comes before it. October shows the Diwali bump (about +16 percent in 2023 and +18 percent in 2024). Always check what the first row looks like and decide whether NULL is acceptable.
+The first month has `NULL` for `prev_month` because nothing comes before it. October shows the Diwali bump (about +10 percent in 2023 and +21 percent in 2024). Always check what the first row looks like and decide whether NULL is acceptable.
 
 ### Example 2: days between orders with LAG and LEAD
 

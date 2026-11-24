@@ -199,14 +199,14 @@ LIMIT 5;`} title="Bank failure rate against the overall rate" />
 
 | bank | txns | fail_pct | overall_pct | gap |
 |---|---|---|---|---|
-| Kaveri Co-op Bank | 1779 | 8.09 | 2.85 | 5.24 |
-| PayNova Small Finance Bank | 760 | 4.08 | 2.85 | 1.23 |
-| Coromandel Bank | 1973 | 2.84 | 2.85 | -0.01 |
-| Bharat Union Bank | 5188 | 2.41 | 2.85 | -0.44 |
-| Himalaya Trust Bank | 3002 | 2.3 | 2.85 | -0.55 |
+| Kaveri Co-op Bank | 1703 | 6.11 | 2.72 | 3.39 |
+| PayNova Small Finance Bank | 783 | 2.94 | 2.72 | 0.22 |
+| Coromandel Bank | 1974 | 2.63 | 2.72 | -0.09 |
+| Sundaram Bank | 4675 | 2.59 | 2.72 | -0.13 |
+| Himalaya Trust Bank | 3096 | 2.49 | 2.72 | -0.23 |
 
 
-Kaveri Co-op Bank fails 8.09 percent of the time against an overall 2.85 percent. That is a gap of 5.24 percentage points, so it needs attention from the payments partnership team. We used `CROSS JOIN` because `overall` has just one row; each bank row gets the same overall number attached.
+Kaveri Co-op Bank fails 6.11 percent of the time against an overall 2.72 percent. That is a gap of 3.39 percentage points, so it needs attention from the payments partnership team. We used `CROSS JOIN` because `overall` has just one row; each bank row gets the same overall number attached.
 
 ### Example 4: a recursive CTE builds a date series
 

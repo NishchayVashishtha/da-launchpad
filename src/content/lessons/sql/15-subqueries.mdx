@@ -186,10 +186,10 @@ Which users have at least one failed transaction? We want users, so each user sh
 
 | users_with_exists | rows_with_join |
 |---|---|
-| 492 | 631 |
+| 493 | 608 |
 
 
-With `EXISTS`, 492 users are counted. The join version returns 631 rows, because a user with three failed transactions appears three times (and users with duplicate rows appear more). If you wrote `COUNT(*)` on the join you would report 631 "users". `EXISTS` is correct here because it asks only "is there at least one failed transaction?".
+With `EXISTS`, 493 users are counted. The join version returns 608 rows, because a user with three failed transactions appears three times (and users with duplicate rows appear more). If you wrote `COUNT(*)` on the join you would report 608 "users". `EXISTS` is correct here because it asks only "is there at least one failed transaction?".
 
 ### Example 4: correlated subquery, latest salary per employee
 
