@@ -7,7 +7,7 @@
     "language": "sql",
     "question": "Which product `category` values (as stored) have more than 50 products? Return `category` and `products`, ordered by `category`.",
     "dataset": "ecommerce",
-    "hint": "HAVING COUNT(*) > 50.",
+    "hint": "Count the products per category first, then filter the counted groups.",
     "solutionSql": "SELECT category, COUNT(*) AS products FROM products GROUP BY category HAVING COUNT(*) > 50 ORDER BY category",
     "expectedOutput": {
       "columns": [
@@ -34,8 +34,8 @@
       ]
     },
     "orderMatters": true,
-    "explanation": "HAVING filters groups after counting.",
-    "commonMistake": "Using WHERE COUNT(*) > 50.",
+    "explanation": "GROUP BY category counts the products in each category. HAVING then keeps only the groups where COUNT(*) is more than 50. Results are sorted by category so the order is fixed.",
+    "commonMistake": "Writing WHERE COUNT(*) > 50 fails with a 'misuse of aggregate' error, because WHERE runs before any groups exist, so no count is available yet.",
     "interviewFrequency": "high",
     "estimatedMinutes": 3,
     "tags": [
@@ -51,7 +51,7 @@
     "language": "sql",
     "question": "Which cleaned cities (lower case, trimmed) have more than 2000 deliveries? Return `city` and `deliveries`, ordered by `deliveries` descending then `city`.",
     "dataset": "food_delivery",
-    "hint": "Clean the key, then HAVING.",
+    "hint": "Group by the cleaned city text, not the raw column.",
     "solutionSql": "SELECT LOWER(TRIM(city)) AS city, COUNT(*) AS deliveries FROM deliveries GROUP BY LOWER(TRIM(city)) HAVING COUNT(*) > 2000 ORDER BY deliveries DESC, city",
     "expectedOutput": {
       "columns": [
@@ -74,8 +74,8 @@
       ]
     },
     "orderMatters": true,
-    "explanation": "Group on the cleaned key so spelling variants combine before the threshold is applied.",
-    "commonMistake": "Applying HAVING to a raw, messy key.",
+    "explanation": "LOWER and TRIM make 'Mumbai ' and 'mumbai' the same value. GROUP BY then counts each cleaned city as one group. HAVING keeps only cities with more than 2000 deliveries, and the sort uses the count first.",
+    "commonMistake": "Grouping by the raw city column with HAVING COUNT(*) > 2000 splits one city into several spellings, so a city with a large total can be dropped because no single spelling reaches 2000.",
     "interviewFrequency": "medium",
     "estimatedMinutes": 3,
     "tags": [
@@ -114,8 +114,8 @@
       ]
     },
     "orderMatters": true,
-    "explanation": "Row condition in WHERE, group condition in HAVING.",
-    "commonMistake": "Putting employment_status in HAVING.",
+    "explanation": "WHERE keeps only the 'Exited' rows before grouping. COUNT(DISTINCT employee_id) then counts each person once, even if they have more than one row. HAVING keeps only the departments with at least 100 such people.",
+    "commonMistake": "Leaving the status out of WHERE and checking it in HAVING counts all employees, not only exited ones, so departments with many active staff can pass the 100 check wrongly.",
     "interviewFrequency": "high",
     "estimatedMinutes": 6,
     "tags": [
@@ -131,7 +131,7 @@
     "language": "sql",
     "question": "Which `payment_app` values have an average SUCCESS transaction `amount` above 1350? Return `payment_app` and `avg_amount` (2 decimals), ordered by `payment_app`.",
     "dataset": "fintech",
-    "hint": "WHERE status, HAVING AVG.",
+    "hint": "Filter the status first, then check the average for each app.",
     "solutionSql": "SELECT payment_app, ROUND(AVG(amount), 2) AS avg_amount FROM transactions WHERE status = 'SUCCESS' GROUP BY payment_app HAVING AVG(amount) > 1350 ORDER BY payment_app",
     "expectedOutput": {
       "columns": [
@@ -154,8 +154,8 @@
       ]
     },
     "orderMatters": true,
-    "explanation": "The average is computed on successful rows only because WHERE ran first.",
-    "commonMistake": "Filtering the status in HAVING after averaging all rows.",
+    "explanation": "WHERE keeps only SUCCESS rows before grouping, so the average uses successful payments only. HAVING then keeps the apps whose average is above 1350. ROUND only changes how the number is shown.",
+    "commonMistake": "Leaving out the WHERE and averaging every transaction, including FAILED ones, gives a different average, so an app can pass or fail the 1350 check wrongly.",
     "interviewFrequency": "medium",
     "estimatedMinutes": 6,
     "tags": [
@@ -171,7 +171,7 @@
     "language": "sql",
     "question": "Which campaign `channel` values have a total `budget_inr` above 50000? Return `channel` and `total_budget`, ordered by `total_budget` descending then `channel`.",
     "dataset": "marketing",
-    "hint": "HAVING SUM(...) > 50000.",
+    "hint": "Sum the budget for each channel, then filter the sums.",
     "solutionSql": "SELECT channel, SUM(budget_inr) AS total_budget FROM campaigns GROUP BY channel HAVING SUM(budget_inr) > 50000 ORDER BY total_budget DESC, channel",
     "expectedOutput": {
       "columns": [
@@ -194,8 +194,8 @@
       ]
     },
     "orderMatters": true,
-    "explanation": "HAVING can use any aggregate, even one not in SELECT.",
-    "commonMistake": "Using WHERE SUM(...).",
+    "explanation": "SUM(budget_inr) adds up the budget for each channel. HAVING tests that total against 50000, so only channels with a large enough total stay. HAVING can use any aggregate, even one you do not show in SELECT.",
+    "commonMistake": "Writing WHERE SUM(budget_inr) > 50000 fails with a 'misuse of aggregate' error, since WHERE cannot see the sums.",
     "interviewFrequency": "medium",
     "estimatedMinutes": 6,
     "tags": [
@@ -211,7 +211,7 @@
     "language": "sql",
     "question": "Among merchant payments (rows with a non-NULL `merchant_id`), find merchants with at least 30 transactions and a failure rate above 5 percent. Return `merchant_id`, `txns`, `failure_pct` (2 decimals), ordered by `failure_pct` descending then `merchant_id`.",
     "dataset": "fintech",
-    "hint": "Two conditions in HAVING, both aggregates.",
+    "hint": "Write both aggregate tests inside HAVING and join them with AND.",
     "solutionSql": "SELECT merchant_id, COUNT(*) AS txns, ROUND(100.0 * SUM(status = 'FAILED') / COUNT(*), 2) AS failure_pct FROM transactions WHERE merchant_id IS NOT NULL GROUP BY merchant_id HAVING COUNT(*) >= 30 AND 100.0 * SUM(status = 'FAILED') / COUNT(*) > 5 ORDER BY failure_pct DESC, merchant_id",
     "expectedOutput": {
       "columns": [
@@ -303,8 +303,8 @@
       ]
     },
     "orderMatters": true,
-    "explanation": "Repeat the rate expression in HAVING because the alias is not available there in strict databases.",
-    "commonMistake": "Using the alias failure_pct inside HAVING (fails outside SQLite and MySQL).",
+    "explanation": "WHERE drops the rows with NULL merchant_id first. Each group then gets its total count and its failure share. HAVING keeps merchants with at least 30 transactions and a rate above 5. The rate repeats the expression because PostgreSQL does not allow an output alias in HAVING, while SQLite and MySQL do.",
+    "commonMistake": "Using 100 * SUM(...) / COUNT(*) without 100.0 uses integer division, so 6 failures out of 110 gives 5 instead of 5.45 and the merchant is wrongly dropped.",
     "interviewFrequency": "medium",
     "estimatedMinutes": 10,
     "tags": [

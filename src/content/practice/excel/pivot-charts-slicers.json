@@ -9,8 +9,8 @@
     "dataset": "none",
     "hint": "Trend over time and comparison of categories need different charts.",
     "solution": "**Model answer:** Monthly trend: **line chart** (shows change over time, one point per month). Category sizes: **sorted bar chart** (bar length is easy to compare, labels are readable). Avoid pie charts for six categories and 3D charts.",
-    "explanation": "Choose the chart from the question being asked.",
-    "commonMistake": "Using one chart type for every question.",
+    "explanation": "A line chart shows change over time, so each month is one point on the trend. A sorted bar chart is better for comparing category sizes, because readers can compare bar lengths easily. Each question gets the chart that answers it.",
+    "commonMistake": "Using a pie chart or a 3D chart for six categories. The slices look alike and the 3D angle distorts the values, so readers cannot tell which category is largest.",
     "interviewFrequency": "medium",
     "estimatedMinutes": 3,
     "tags": [
@@ -28,8 +28,8 @@
     "dataset": "none",
     "hint": "Add Count of sale_id to the pivot to see transactions. Use the timeline's Quarters view and select Q1 to Q4 of 2024.",
     "solution": "**Steps:** Pivot with Rows = `category`, Values = Sum of `net_amount_inr` and Count of `sale_id`. Insert Slicer > `store_region`. Insert Timeline > `sale_date`. Click West; in the timeline drag from Jan 2024 to Dec 2024.\n\n**Expected result:** net sales ₹9,05,725 from 663 transactions (the grand total row of the pivot).",
-    "explanation": "Slicers and timelines apply filters to the pivot, and the chart follows.",
-    "commonMistake": "Forgetting to clear slicers before saving the file.",
+    "explanation": "The slicer and timeline filter the pivot, and the pivot chart follows those filters. Selecting West and all of 2024 leaves only the matching rows, so the grand total shows net sales of 9,05,725 from 663 transactions.",
+    "commonMistake": "Leaving a slicer or timeline on a filter and then sharing the file. The next viewer sees only West 2024 sales and may take it for the company total.",
     "interviewFrequency": "high",
     "estimatedMinutes": 8,
     "tags": [

@@ -9,8 +9,8 @@
     "dataset": "none",
     "hint": "Convert to the table tbl_employees first. Attrition_flag is 1 for leavers.",
     "solution": "**Formulas:** Headcount `=ROWS(tbl_employees)` = 2,400. Leavers `=SUM(tbl_employees[attrition_flag])` = 544. Attrition % `=Leavers/Headcount` = 22.7%. Regretted losses `=SUM(tbl_employees[regretted_loss])` = 67. Average CTC `=AVERAGE(tbl_employees[latest_annual_ctc_inr])` = ₹15,98,948 (about 16.0 lakh).",
-    "explanation": "KPIs are simple formulas over the table, kept in named cells so cards can link to them.",
-    "commonMistake": "Dividing by a typed number instead of counting rows.",
+    "explanation": "Each KPI is a short formula over the Excel table, so it updates when rows change. ROWS counts the table rows, SUM adds the 0/1 flags, and AVERAGE gives the mean pay. Keep each result in one named cell so the dashboard cards can link to it.",
+    "commonMistake": "Dividing leavers by a typed headcount of 2,400. If 100 new rows are added and the typed value stays, the rate shows 22.7% instead of the true 21.8%.",
     "interviewFrequency": "high",
     "estimatedMinutes": 6,
     "tags": [
@@ -28,8 +28,8 @@
     "dataset": "none",
     "hint": "Use Average of attrition_flag for the rate. Sort the pivot by the rate.",
     "solution": "**Steps:** Rows = `department_name`; Values = Count of `employee_id`, Sum of `attrition_flag`, Average of `attrition_flag` (format %). Sort descending by the average. Insert a bar chart; insert a slicer for `work_mode` and connect it.\n\n**Expected result:** Customer Support 440 / 148 / 33.6%; Sales 349 / 109 / 31.2%; Operations 275 / 67 / 24.4%; Engineering 833 / 140 / 16.8%; Human Resources 96 / 16 / 16.7%; Marketing 156 / 26 / 16.7%; Product 148 / 23 / 15.5%; Finance 103 / 15 / 14.6%. Highest: Customer Support and Sales.\n\n**Why rate:** Engineering has more leavers (140) than Sales (109), but it is a much bigger department, so its rate is half.",
-    "explanation": "The average of a 0/1 flag is the share of ones.",
-    "commonMistake": "Sorting by leaver count and blaming the biggest department.",
+    "explanation": "The average of a 0/1 flag is the share of rows that are 1, here the share of leavers. Sum counts leavers and Count gives headcount. Sorting by the average puts the highest attrition rate at the top of the bar chart.",
+    "commonMistake": "Sorting the chart by leaver count, so Engineering with 140 leavers looks like the bigger problem than Sales with 109. Its rate is only 16.8%, against 31.2% for Sales.",
     "interviewFrequency": "high",
     "estimatedMinutes": 18,
     "tags": [

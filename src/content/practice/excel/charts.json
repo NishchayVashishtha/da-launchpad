@@ -9,8 +9,8 @@
     "dataset": "none",
     "hint": "Think relationship, comparison, part of whole.",
     "solution": "**Model answer:** (a) **Scatter plot**: both are numbers and you want to see if they move together. (b) **Column or bar chart**: compares seven categories; keep weekday order natural (Mon to Sun). (c) **Stacked bar or a simple pie/doughnut**: only 4 parts of a whole, label each part directly.",
-    "explanation": "The chart type should match the question.",
-    "commonMistake": "Using a pie chart for seven weekdays or more.",
+    "explanation": "A scatter plot shows whether two numbers move together, so it fits distance and delay. A column chart compares one measure across categories, such as weekdays. A pie or doughnut works only for a few parts of one whole, such as four payment modes.",
+    "commonMistake": "Drawing a pie chart for seven weekdays. The slices become too thin to compare, so Monday and Tuesday look the same even when their counts differ by a lot.",
     "interviewFrequency": "high",
     "estimatedMinutes": 4,
     "tags": [
@@ -28,8 +28,8 @@
     "dataset": "none",
     "hint": "Count and minutes have different scales. Use COUNTIFS and AVERAGEIFS in a small table, then Insert > Combo.",
     "solution": "**Table (from formulas):** Clear: 1,388 orders, 1.31 min; Cloudy: 360 orders, 1.81 min; Rain: 154 orders, 6.56 min; Heavy Rain: 98 orders, 12.71 min.\n\n**Steps:** Select the table, Insert > Combo, set orders to Clustered Column and average delay to Line with Secondary Axis ticked. Title: 'Heavy rain doubles the delay, though few orders are affected'.\n\n**Why secondary axis:** orders reach 1,388 while delay is below 13. On one axis the line would look flat.",
-    "explanation": "Different units and magnitudes need separate axes.",
-    "commonMistake": "Leaving both on the same axis so the line looks flat.",
+    "explanation": "Orders go up to 1,388, but the average delay is only 1 to 13 minutes. On one axis the delay line would sit almost flat. A secondary axis gives the line its own scale, so the jump for Heavy Rain is visible.",
+    "commonMistake": "Keeping both series on the primary axis. The delay line sits near zero, so Heavy Rain at 12.71 minutes looks no different from Clear at 1.31 minutes.",
     "interviewFrequency": "medium",
     "estimatedMinutes": 8,
     "tags": [
