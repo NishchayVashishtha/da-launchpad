@@ -1,0 +1,117 @@
+---
+title: "Operations Dashboard Design: Loan Collections"
+industry: "KPI & Dashboard Design"
+difficulty: easy
+type: mock-case
+estimatedMinutes: 30
+---
+
+## Problem
+
+You are interviewing for a Business Intelligence / Operations Analyst role at "GraminPay Finance", an Indian non-banking financial company (NBFC) managing a retail loan portfolio of ₹250 Crore across 80,000 active micro-borrowers.
+
+The Head of Collections Operations walks in with a whiteboard marker:
+> *"My field managers and tele-calling teams currently manage debt recovery through 15 separate Excel spreadsheets emailed every morning. We have no centralized visibility into delinquent accounts. I need you to design our very first executive operations dashboard in Power BI. What core KPIs would you track, how would you structure the layout hierarchy, how often should the data refresh, and how do we ensure field officers actually use it?"*
+
+You have 25 minutes to define the operational metrics, sketch the visual interface, and present an implementation roadmap.
+
+## Clarifying questions to ask
+
+1. **Target Audience & Core Decisions:** *"Who are the primary daily users of this dashboard—the C-suite leadership evaluating macro portfolio risk, or tele-calling supervisors allocating daily call queues?"*
+   - *Interviewer response:* The primary user is the Head of Collections and regional team leads making daily calling and field escalation decisions.
+2. **Delinquency Bucket Structure:** *"How does GraminPay segment loan delinquency? Do we track Days Past Due (DPD) across standard buckets (DPD 1–30, DPD 31–60, DPD 61–90, DPD 90+)?"*
+   - *Interviewer response:* Yes, standard RBI delinquency buckets: Current (0 DPD), Bucket 1 (1–30 DPD), Bucket 2 (31–60 DPD), and Bucket 3+ (61+ DPD).
+3. **Data Infrastructure & Refresh SLA:** *"How often does repayment data update from our core banking and payment gateway systems?"*
+   - *Interviewer response:* Core banking syncs overnight (batch at 02:00 AM), while digital UPI collections stream via webhook every hour.
+4. **Actionable Triggers:** *"What specific operational intervention should occur when a metric turns red (e.g., reallocating tele-callers or assigning field recovery agents)?"*
+   - *Interviewer response:* Supervisors reallocate calling queues and escalate chronic non-responders to physical branch visit teams.
+
+## Suggested structure
+
+Deconstruct the dashboard architecture into user persona, core metric tree, visual layout, and operational governance:
+
+```
+Collections Operations Dashboard
+  ├── 1. Primary Operational Metric Tree
+  │     ├── Collection Efficiency % = (Collected Amount / Total Overdue Due)
+  │     ├── Roll Rate % = Accounts migrating from Bucket N to Bucket N+1
+  │     ├── Contact Rate % = Answered Calls / Total Dialed Accounts
+  │     └── Promise-to-Pay (PTP) Kept Rate % = Honored PTPs / Total Logged PTPs
+  ├── 2. Information Architecture & Visual Hierarchy
+  │     ├── Level 1: Executive KPI Cards (High-Level Summary)
+  │     ├── Level 2: Trendlines & Delinquency Migration Charts
+  │     └── Level 3: Drill-Down Operational Queue Table (Account-Level Actions)
+  ├── 3. Filtering & Slice Dimensions
+  │     ├── Delinquency Bucket (1–30 DPD, 31–60 DPD, 61–90 DPD)
+  │     ├── Region / Branch / Tele-Calling Team Lead
+  │     └── Loan Product (Two-Wheeler, Micro-Business, Personal)
+  └── 4. Adoption & Review Ritual
+        ├── Daily 09:15 AM Stand-Up Review Ritual
+        └── Real-Time Alerting for Threshold Breaches
+```
+
+## Analysis plan
+
+### 1. The Core KPI Scorecard (Definitions & Formulas)
+
+| KPI Name | Formula | Business Target | Why It Matters |
+|---|---|---|---|
+| **Collection Efficiency %** | `Total Collected Amount / Demand Due Amount` | `>= 94.0%` | Primary financial recovery benchmark. |
+| **Bucket 1 to 2 Roll Rate** | `Loans migrating from DPD 1–30 to 31–60 / Total Bucket 1 Loans` | `<= 8.0%` | Leading indicator of default; stopping migration early saves accounts. |
+| **Borrower Contact Rate** | `Unique Connected Calls / Total Overdue Accounts Dialed` | `>= 65.0%` | Measures tele-calling reach and invalid phone numbers. |
+| **Promise-to-Pay (PTP) Kept Rate** | `PTPs where payment received on promised date / Total PTPs logged` | `>= 70.0%` | Measures borrower commitment honesty and agent negotiation quality. |
+| **Overdue Portfolio at Risk (PAR 30+)** | `Total Outstanding Principal on DPD > 30 / Total Portfolio Principal` | `<= 4.5%` | Macro regulatory and credit risk metric for executive leadership. |
+
+### 2. Interface Wireframe & Visual Hierarchy
+
+Leverage strong visual hierarchy (grouping, whitespace, and progressive disclosure):
+
+```
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│  GRAMINPAY COLLECTIONS COMMAND CENTER              [Date Filter] [Region] [Bucket] ▾   │
+├──────────────┬──────────────┬──────────────┬──────────────┬────────────────────────────┤
+│ COLLECTION   │ ROLL RATE    │ PTP KEPT %   │ CONTACT RATE │ PAR 30+ RATE               │
+│ EFFICIENCY   │ (B1 -> B2)   │              │              │                            │
+│   94.8%      │    6.2%      │    72.4%     │    68.1%     │    3.8%                    │
+│  ▲ +1.2% MoM │   ▼ -0.8%    │   ▲ +2.1%    │   ▲ +4.0%    │   ▼ -0.3%                  │
+├──────────────┴──────────────┴──────────────┼──────────────┴────────────────────────────┤
+│ 1. DAILY COLLECTION TREND vs DEMAND        │ 2. DELINQUENCY BUCKET MIGRATION (ROLLS)   │
+│    [Area Chart: Demand vs Actual Collected]│    [Stacked Bar: Current / B1 / B2 / B3]  │
+│    Shows cumulative monthly pacing.        │    Shows whether arrears are shrinking.   │
+├────────────────────────────────────────────┴───────────────────────────────────────────┤
+│ 3. REGIONAL & CALLING QUEUE DRILL-DOWN TABLE (Actionable at Agent Level)              │
+│    Branch / Team    Overdue Accounts   Connected %   PTP Logged   PTP Kept %   Escalate│
+│    Pune Central          1,420            71.2%         680         74.1%      [View]  │
+│    Surat Ring Rd         1,180            58.4%         410         62.0%      [Alert] │
+│    Lucknow West          1,650            64.0%         590         69.5%      [View]  │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+## Model recommendation
+
+1. **Adopt a 3-Tier Visual Layout (5 Cards + 2 Trends + 1 Table):**
+   - **Top Row (Executive Cards):** 5 KPI cards with color-coded variance indicators (Green = meets target, Red = breach).
+   - **Middle Row (Analytical Trends):** 2 visual charts (Cumulative monthly pacing curve + Delinquency bucket migration).
+   - **Bottom Row (Actionable Queue Table):** Branch-level table with interactive drill-through into account call lists.
+2. **Hybrid Refresh Cadence:** Schedule automated overnight batch refreshes at 04:00 AM for core banking interest and penalty calculations, coupled with an hourly scheduled refresh for digital UPI repayments during the 09:00 AM to 08:00 PM calling window.
+3. **Embed in Daily Operational Rituals:** A dashboard unused by the field is useless. Institute a mandatory **15-minute 09:15 AM Stand-Up** where team leads open the dashboard to identify red-flagged branches before assigning daily call batches.
+4. **Projected Impact & Guardrail:** Replacing static Excel sheets with automated tracking reduces supervisor reporting overhead by 1.5 hours daily and cuts Bucket 1 roll rates by 1.8 percentage points. Enforce strict role-level security (RLS) as a data guardrail so branch agents view only their assigned regional borrowers.
+
+## Evaluation rubric
+
+| Score | Criteria | What the Interviewer Looks For |
+|---|---|---|
+| **4 / 4** | **Structure** | Organizes by audience, metric definitions, layout hierarchy, and refresh cadence. |
+| **4 / 4** | **Business Sense** | Understands lending operations: roll rates, promise-to-pay (PTP), and portfolio at risk (PAR). |
+| **4 / 4** | **Data Approach** | Recommends a hybrid refresh (overnight core banking + hourly UPI streaming); accounts for RLS security. |
+| **4 / 4** | **Numbers / Rigor** | Defines operational targets for each KPI (`>= 94%` efficiency, `<= 8%` roll rate, `>= 70%` PTP). |
+| **4 / 4** | **Communication** | Employs clean ASCII/visual layout wireframes and focuses on user adoption rituals rather than mere chart aesthetics. |
+
+## Follow-up questions
+
+- **Interviewer:** *"How do you prevent a dashboard from becoming cluttered with 30 vanity metrics?"*  
+  **Candidate:** *"Every metric on an operational dashboard must have an associated decision rule. If a number turns red, does a manager know exactly what operational action to take? If a metric does not trigger a decision (e.g. 'Average Borrower Age'), it belongs in an exploratory ad-hoc report, not on an operations dashboard."*
+- **Interviewer:** *"What is Role-Level Security (RLS) in Power BI and why is it critical here?"*  
+  **Candidate:** *"RLS filters data based on user identity. A branch manager in Lucknow should see only Lucknow overdue loans, while the Head of Collections sees all 24 branches. This preserves borrower privacy and prevents field officers from being overwhelmed by non-relevant accounts."*
+- **Interviewer:** *"How would you handle a situation where core banking data fails to refresh at 04:00 AM?"*  
+  **Candidate:** *"I would add a prominent 'Data Freshness Banner' at the top of the dashboard showing the last successful timestamp. If the sync failed, the banner turns amber stating: 'Warning: Displaying yesterday's balances; sync in progress.' This prevents supervisors from calling borrowers who already paid overnight."*

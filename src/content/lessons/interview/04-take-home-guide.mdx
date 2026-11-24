@@ -1,0 +1,249 @@
+---
+title: "Take-home assignments: structure that gets you hired"
+description: "How to plan, analyze, and present an analytics take-home assignment in four hours with an executive summary that stands out."
+module: interview
+order: 4
+estimatedMinutes: 35
+objectives:
+  - "Allocate a strict 4-hour time budget across reading, data cleaning, analysis, and writing"
+  - "Structure a professional submission document with an executive summary placed first"
+  - "Identify data quality issues (duplicates, nulls, outliers) and document explicit assumptions"
+  - "Translate SQL query results into clean charts and business recommendations for leadership"
+  - "Avoid the six fatal flaws that lead to immediate rejection in take-home evaluations"
+tags: ["interview", "take-home", "portfolio", "data-cleaning", "communication"]
+---
+
+## Learning objectives
+
+- Manage a 4-hour analytics take-home assignment using a structured phase-by-phase time budget.
+- Format a professional submission document placing the executive summary and key findings at the top.
+- Conduct initial data hygiene checks (duplicates, outliers, missing values) and write an assumptions log.
+- Present insights using clear visual hierarchy, avoiding raw database dumps and chart clutter.
+- Identify and eliminate the six common mistakes that cause hiring teams to reject candidate submissions.
+
+## Why this matters for a Data Analyst job
+
+The take-home assignment is your most powerful tool to bypass the noise of resume screenings. Unlike a 45-minute timed live coding test where one syntax slip can derail you, a take-home allows you to demonstrate how you work in an actual office setting.
+
+However, many freshers fail take-homes because they misunderstand who reads them. Senior analysts and engineering managers do not spend four hours grading your assignment; they spend five to ten minutes scanning it over coffee. If your submission is a messy 800-line Jupyter Notebook filled with raw tables and uncaptioned charts, it will be discarded. If your submission opens with a crisp, three-bullet executive summary followed by documented assumptions and clean SQL, you advance immediately to the final interview.
+
+<RealWorld>
+A candidate applying for a Data Analyst role at a digital consumer lending startup receives a 48-hour take-home task with a 50,000-row transaction dataset. Candidate A spends 12 hours building complex random forest churn models and submits a dense notebook with code errors. Candidate B spends 3 hours writing clean, modular SQL, isolates that 89 rows were duplicate records, documents their failure rate formula clearly, and writes a one-page PDF summary highlighting two operational fixes for bank timeouts. Candidate B receives an offer within 48 hours; Candidate A is rejected without review.
+</RealWorld>
+
+## Concept
+
+### What hiring managers look for
+
+Hiring managers evaluate take-home submissions against nine workplace criteria:
+
+1. **Answers the Prompt:** Did you directly answer the core business questions requested?
+2. **Executive Summary First:** Can a director understand the core findings in 60 seconds?
+3. **Data Quality Awareness:** Did you spot duplicates, extreme outliers, and null values?
+4. **Transparent Assumptions:** Did you clearly explain how edge cases (like PENDING transactions) were handled?
+5. **Reproducible Code:** Does your SQL script or notebook run smoothly from top to bottom without crashing?
+6. **Thoughtful Visualizations:** Are charts clean, correctly labeled, and free of 3D or rainbow clutter?
+7. **Actionable Recommendations:** Did you propose concrete operational steps with estimated impact?
+8. **Awareness of Limitations:** Did you acknowledge data gaps, confounding factors, and sample size bounds?
+9. **Time Respect:** Did you stay within the suggested scope rather than over-engineering models?
+
+### The 4-hour time budget
+
+Never spend 20 hours on a take-home unless explicitly requested for an advanced capstone. Enforce this strict 4-hour allocation:
+
+```
+[20m] Read & Clarify  ──► [30m] Explore & Clean ──► [100m] Core Analysis
+                                                            │
+[10m] Final Review    ◄── [40m] Executive Write-up ◄── [40m] Clean Visuals
+```
+
+- **00:00–00:20 (Read & Plan):** Read the brief twice. Highlight explicit deliverables. Note ambiguous terms.
+- **00:20–00:50 (Explore & Clean):** Check total rows vs distinct IDs. Check date formats. Inspect nulls and outliers.
+- **00:50–02:30 (Analyze):** Write and test SQL queries. Verify totals and baseline rates.
+- **02:30–03:10 (Visuals & Tables):** Create 2 to 3 focused charts or summary tables. Add descriptive titles and units.
+- **03:10–03:50 (Executive Summary):** Write the 1-page summary (Headline, 3 Findings, 3 Recommendations, Limits).
+- **03:50–04:00 (Sanity Check):** Re-run code from scratch. Check spelling. Export clean PDF.
+
+<FormulaCard title="The Standard 8-Section Take-Home Structure">
+1. **Executive Summary:** Headline + 3 quantified findings + 3 actionable recommendations.
+2. **Business Question Restated:** 2 sentences rephrasing the core problem and objectives.
+3. **Data Dictionary & Assumptions Log:** Bulleted list of data cleaning steps, handling of duplicates, and metric definitions.
+4. **Methodology:** Tools used (SQLite, PostgreSQL, pandas, Power BI) and validation steps.
+5. **Key Findings:** 3 to 4 sections, each featuring a visual or table and a 1-sentence insight headline.
+6. **Recommendations & Expected Impact:** Operational actions, expected metric improvement, and owner teams.
+7. **Limitations & Next Steps:** Missing data, causal caveats, and what you would explore with more time.
+8. **Appendix (Code & Validation Queries):** Clean, formatted SQL scripts or reproducible Python code.
+</FormulaCard>
+
+### Communicating with recruiters during take-homes
+
+If a dataset has corrupted files, missing columns, or fundamentally contradictory prompt instructions, email the recruiter promptly within the first 6 hours:
+
+> *"Hi [Recruiter Name], thank you for sharing the assessment. I am reviewing the dataset and noticed that the `transactions` table has missing date values for November 2024. For the purpose of this analysis, I will assume these represent unlogged offline transactions and benchmark against October 2024. Please let me know if there is an updated file I should use instead. Looking forward to submitting by [Date/Time]. Best regards, [Your Name]."*
+
+Stating your assumption and moving forward signals initiative, whereas waiting 48 hours to complain about missing data signals helplessness.
+
+## Worked examples
+
+### Example 1: Bad vs. good executive summary rewrite
+
+**The Bad Version (Academic, Process-Heavy, Vague):**
+> *"In this assignment, I loaded the SQLite database into pandas. First, I cleaned the duplicate rows and handled the null values in the merchant column. Then I plotted several charts of transactions over time. We can see that payments fail often. I recommend that the company fix their banking infrastructure and improve the app so that users have a better experience."*
+
+**The Good Version (Executive, Quantified, Actionable):**
+> **Executive Summary:**
+> - **Failure Concentration:** Overall UPI payment failure rate is **2.70%**, but is heavily concentrated in **Kaveri Co-op Bank at 6.06%** (more than 2x other partner banks), contributing 24.8% of all failed transactions despite handling only 7.6% of volume.
+> - **Peak Hour Infrastructure Overload:** Kaveri Bank failures spike during peak traffic hours (9:00 AM and 7:00–8:00 PM), with failure rates exceeding **11% to 13%** due to core banking server timeouts (`BANK_SERVER_TIMEOUT`).
+> - **Recommended Action & Impact:** Implement an automated retry with exponential backoff for timeout errors (currently showing a **74% recovery rate** when retried) and display in-app bank health alerts; this is projected to reduce overall system failure rates from 2.70% to under 2.25%.
+
+### Example 2: Running baseline data hygiene checks in SQL
+
+Before running business aggregations, always execute a baseline uniqueness and duplicate check on the dataset:
+
+<SqlPlayground
+  dataset="fintech"
+  query={`SELECT
+  COUNT(*) AS total_rows,
+  COUNT(DISTINCT txn_id) AS unique_txn_ids
+FROM transactions;`}
+  title="Checking Transaction Row Count vs Unique IDs"
+/>
+
+The output shows **22,389 total rows** against **22,300 unique IDs**, revealing **89 duplicate rows**. Mentioning this in your assumptions log immediately elevates your submission above peers who aggregated the uncleaned table directly.
+
+### Example 3: The professional assumptions log
+
+Include a concise table or bulleted list documenting your data choices:
+
+| Category | Observation | Analytical Decision & Assumption |
+|---|---|---|
+| **Duplicates** | 89 duplicate rows found in `transactions.txn_id`. | Deduplicated by `txn_id` using a CTE prior to all aggregations. |
+| **Pending States** | 89 transactions have `status = 'PENDING'`. | Excluded from failure rate calculations; metric defined strictly as `FAILED / (SUCCESS + FAILED)`. |
+| **Missing Merchants** | 24% of transactions have `merchant_id = NULL`. | Identified as intentional P2P personal transfers; retained for total volume analysis. |
+| **Outliers** | 10 transactions exceed ₹50,000 (up to ₹95,484). | Retained for volume totals; isolated when calculating average ticket sizes to avoid skew. |
+| **Retry Status** | `failed_transactions.retry_succeeded` is NULL when `retried = 0`. | Filtered for `retried = 1` when calculating recovery success rates. |
+
+## Common mistakes
+
+<CommonMistake>
+Submitting raw code files without a summary document. Reviewers will not dig through 500 lines of uncommented code to deduce your findings.
+</CommonMistake>
+
+<CommonMistake>
+Over-engineering with machine learning when the prompt asks for business analysis. Submitting a random forest model when the stakeholder asked 'why are payments failing?' displays poor business judgment.
+</CommonMistake>
+
+<CommonMistake>
+Silently aggregating tables with duplicate records, leading to incorrect transaction totals that fail the evaluator's automated solution key.
+</CommonMistake>
+
+<CommonMistake>
+Pasting giant raw SQL query output tables (40 rows x 10 columns) directly into the body text instead of summarizing with a small 4-row highlight table or a clean bar chart.
+</CommonMistake>
+
+<CommonMistake>
+Proposing recommendations with no estimated impact numbers or operational owner (e.g., 'we should market more').
+</CommonMistake>
+
+<CommonMistake>
+Submitting code that throws errors when run from a fresh environment because of hard-coded local file paths (like `C:\Users\John\Downloads\data.csv`).
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet ids={[
+  "interview-pr-takehome-001",
+  "interview-pr-takehome-002",
+  "interview-pr-takehome-003",
+  "interview-pr-takehome-004"
+]} />
+
+## Mini quiz
+
+<Quiz questions={[
+  {
+    q: "What should always be placed on the very first page of an analytics take-home submission?",
+    options: [
+      "Your full resume and university transcripts",
+      "The full raw Python or SQL code",
+      "A crisp Executive Summary featuring quantified findings and recommendations",
+      "A glossary of every term in statistics"
+    ],
+    answer: 2,
+    explanation: "Senior reviewers spend 5 minutes evaluating submissions and expect the executive summary on page one."
+  },
+  {
+    q: "If an initial query shows 22,389 total rows and 22,300 distinct transaction IDs, what should you do?",
+    options: [
+      "Delete the database and email the recruiter that the file is broken",
+      "Deduplicate the table, explain the 89 duplicate rows in your assumptions log, and proceed with clean data",
+      "Ignore the difference and assume all rows are valid",
+      "Invent 89 new transaction IDs"
+    ],
+    answer: 1,
+    explanation: "Real-world data is messy; detecting duplicates, removing them, and documenting your decision in the assumptions log demonstrates analytical rigor."
+  },
+  {
+    q: "How should you handle ambiguous instructions in a take-home brief?",
+    options: [
+      "Wait until 1 hour before the deadline to ask",
+      "State a sensible assumption clearly in your assumptions log, justify it, and proceed",
+      "Submit two completely separate 20-page documents covering every possibility",
+      "Skip the section entirely"
+    ],
+    answer: 1,
+    explanation: "Hiring managers value autonomy and clear reasoning. Documenting your assumption and proceeding is the standard professional response."
+  },
+  {
+    q: "What is the recommended time allocation for a standard 4-hour take-home task?",
+    options: [
+      "3.5 hours writing code and 30 minutes reading the prompt",
+      "20m planning, 30m cleaning, 100m analyzing, 40m charting, 40m executive summary writing, 10m review",
+      "4 hours building a deep neural network",
+      "10 minutes writing SQL and 3 hours formatting fonts"
+    ],
+    answer: 1,
+    explanation: "A balanced phase-by-phase allocation ensures equal weight is given to data verification, analysis, and executive communication."
+  },
+  {
+    q: "Which chart is most effective for comparing transaction failure rates across 8 partner banks?",
+    options: [
+      "A 3D exploded pie chart with 8 bright colors",
+      "A horizontal bar chart sorted descending by failure rate with value labels",
+      "A multi-line area chart with no axis labels",
+      "A scatter plot with no trendline"
+    ],
+    answer: 1,
+    explanation: "A sorted horizontal bar chart allows instant comparison across discrete categories and provides ample room for bank name labels."
+  }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+If you are invited to an interview after submitting a take-home, the entire technical conversation will revolve around defending your assumptions, query logic, and recommendations.
+</InterviewAlert>
+
+<InterviewQ q="Tell me about a time you analyzed an ambiguous dataset end-to-end.">
+In a recent take-home analysis on UPI transactions, I explored 22,000+ records to diagnose elevated failure rates. First, I ran baseline data hygiene checks and discovered 89 duplicate records, which I deduplicated. Next, I segmented the data across partner banks and client apps, uncovering that Kaveri Co-op Bank had a 6.06% failure rate during evening peak hours due to server timeouts. Finally, I demonstrated that 74% of timeout failures recovered upon retry, and recommended an automated retry policy that projected a 0.45 percentage point drop in overall network failure rates.
+</InterviewQ>
+
+<InterviewQ q="How did you validate that your take-home numbers were accurate before submitting?">
+I applied three sanity checks. First, I verified that the sum of segmented parts equaled the whole—for example, confirming that transactions grouped by status matched total deduplicated records. Second, I checked cross-tabulated denominators to ensure that excluding PENDING transactions did not artificially inflate rates. Third, I reviewed order-of-magnitude bounds, ensuring that average ticket sizes matched expected retail UPI patterns.
+</InterviewQ>
+
+<InterviewQ q="If you had one more week to work on your take-home submission, what would you explore next?">
+With more time, I would pursue three areas: first, conduct a deeper cohort retention analysis to measure how experiencing a payment failure impacts user transaction frequency over the subsequent 30 days. Second, evaluate merchant-side impacts by analyzing whether failure rates correlate with specific Merchant Category Codes (such as fuel or groceries). Third, build an automated anomaly detection query that flags bank server degradation in real time before failure rates cross critical thresholds.
+</InterviewQ>
+
+## Key takeaways
+
+- Treat a take-home assignment as a professional work sample, not an academic coding exam.
+- Always lead with an executive summary: headline finding, quantified root cause, and actionable recommendations.
+- Run baseline data hygiene checks (row count vs unique IDs, outliers, missing values) before computing aggregations.
+- Maintain an explicit assumptions log documenting how edge cases, nulls, and formula denominators were handled.
+- Keep visualizations simple, labeled, and sorted; prioritize clarity and business utility over decorative complexity.
+
+## Further reading
+
+<FurtherReading ids={["kaggle-learn", "mode-sql"]} />

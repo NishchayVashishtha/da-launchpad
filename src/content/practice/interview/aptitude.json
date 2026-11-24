@@ -1,0 +1,148 @@
+[
+  {
+    "id": "interview-pr-aptitude-001",
+    "module": "interview",
+    "topic": "aptitude",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "In a data team meeting, a manager states that a campaign resulted in a 16.67% increase in monthly active users. If the previous month had 42,000 active users, calculate the exact new user count using fractional mental math.",
+    "dataset": "none",
+    "hint": "Recall that 16.67% is approximately 1/6.",
+    "expectedOutput": {
+      "value": 49000
+    },
+    "solution": "### Shortcut Calculation:\n- Notice that `16.67% = 1/6`.\n- Increase in users = `42,000 * (1/6) = 7,000`.\n- New active user count = `42,000 + 7,000 = 49,000`.",
+    "explanation": "Memorizing core fraction-to-percentage conversions (such as 1/6 = 16.67%, 1/7 = 14.28%, 1/8 = 12.5%, 1/9 = 11.11%) allows you to solve percentage increase and decrease questions in under 15 seconds without manual long division.",
+    "commonMistake": "Multiplying 42,000 by 0.1667 by hand, which wastes 2 minutes and introduces rounding errors.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": ["aptitude", "percentages", "shortcuts"]
+  },
+  {
+    "id": "interview-pr-aptitude-002",
+    "module": "interview",
+    "topic": "aptitude",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "A software tool has a base subscription price of ₹2,400 per month. An 18% GST is added to the base price, followed by a 10% promotional festival discount applied to the total GST-inclusive amount. What is the final price paid by the customer?",
+    "dataset": "none",
+    "hint": "Calculate the price after 18% GST (or multiply by 1.18), then apply the 10% discount (multiply by 0.90).",
+    "expectedOutput": {
+      "value": 2548.8
+    },
+    "solution": "### Step-by-Step Calculation:\n1. Base price = ₹2,400.\n2. Price with 18% GST = `2,400 * 1.18 = ₹2,832`.\n3. 10% discount on ₹2,832 = `₹2,832 * 0.10 = ₹283.20`.\n4. Final price = `2,832 - 283.20 = ₹2,548.80`.\n\nAlternatively, using the net multiplier: `2,400 * 1.18 * 0.90 = 2,400 * 1.062 = ₹2,548.80`.",
+    "explanation": "Successive percentage changes multiply their respective factors. Adding 18% gives a factor of 1.18, and deducting 10% gives a factor of 0.90. The overall factor is `1.18 * 0.90 = 1.062`, meaning an effective net increase of 6.2%.",
+    "commonMistake": "Subtracting 10% directly from 18% to assume an 8% flat tax on the base price (2,400 * 1.08 = 2,592), which ignores the compounding effect.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": ["aptitude", "percentages", "gst"]
+  },
+  {
+    "id": "interview-pr-aptitude-003",
+    "module": "interview",
+    "topic": "aptitude",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "A quarterly department incentive pool of ₹56,000 is to be split between two analyst cohorts, Junior Analysts and Senior Analysts, in the ratio 3:4. What is the share received by the Senior Analysts?",
+    "dataset": "none",
+    "hint": "Total parts = 3 + 4 = 7. Find the value of one part.",
+    "expectedOutput": {
+      "value": 32000
+    },
+    "solution": "### Unit Method Calculation:\n1. Ratio = 3 : 4, so Total parts = `3 + 4 = 7 parts`.\n2. 1 part = `₹56,000 / 7 = ₹8,000`.\n3. Senior Analysts share (4 parts) = `4 * ₹8,000 = ₹32,000`.\n(Junior Analysts share = 3 * ₹8,000 = ₹24,000).",
+    "explanation": "The unit method converts any ratio split into equal parts. Dividing the total amount by the sum of ratio terms gives the value of a single unit, which is then multiplied by each cohort's respective share.",
+    "commonMistake": "Dividing ₹56,000 by 4 or 3 directly instead of dividing by the sum of parts (7).",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": ["aptitude", "ratios", "shortcuts"]
+  },
+  {
+    "id": "interview-pr-aptitude-004",
+    "module": "interview",
+    "topic": "aptitude",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "Five junior analysts on a project report monthly stipend amounts of ₹38,000, ₹42,000, ₹45,000, ₹49,000, and ₹51,000. Calculate their average monthly stipend using the assumed mean shortcut with an assumed mean of ₹45,000.",
+    "dataset": "none",
+    "hint": "Compute the deviations of each salary from ₹45,000, sum them, divide by 5, and adjust ₹45,000.",
+    "expectedOutput": {
+      "value": 45000
+    },
+    "solution": "### Assumed Mean Calculation:\n1. Pick assumed mean `A = ₹45,000`.\n2. Compute deviations `d = (X - A)`:\n   - 38,000 - 45,000 = -7,000\n   - 42,000 - 45,000 = -3,000\n   - 45,000 - 45,000 = 0\n   - 49,000 - 45,000 = +4,000\n   - 51,000 - 45,000 = +6,000\n3. Sum of deviations = `-7,000 - 3,000 + 0 + 4,000 + 6,000 = 0`.\n4. Average = `A + (Sum of deviations / n) = 45,000 + (0 / 5) = ₹45,000`.",
+    "explanation": "Using an assumed mean reduces large five-digit additions to single-digit mental arithmetic. If the sum of deviations from the assumed mean is zero, the assumed mean is exactly the arithmetic average.",
+    "commonMistake": "Adding up 38,000 + 42,000 + 45,000 + 49,000 + 51,000 = 225,000 by hand and then dividing by 5, which is slow and prone to carrying errors.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": ["aptitude", "averages", "shortcuts"]
+  },
+  {
+    "id": "interview-pr-aptitude-005",
+    "module": "interview",
+    "topic": "aptitude",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "A data engineering pipeline uses three worker queues. Worker A can process an ingestion batch in 12 hours, Worker B in 15 hours, and cleanup Worker C deletes expired data at a rate equivalent to emptying a batch in 20 hours. If all three workers operate concurrently on a shared queue, how many hours does it take to complete processing one full batch?",
+    "dataset": "none",
+    "hint": "Take the LCM of 12, 15, and 20 as the total units of work. Worker C performs negative work.",
+    "expectedOutput": {
+      "value": 10
+    },
+    "solution": "### LCM Work-Unit Method:\n1. Total work = `LCM(12, 15, 20) = 60 units`.\n2. Worker rates:\n   - Worker A = `60 / 12 = +5 units/hour`\n   - Worker B = `60 / 15 = +4 units/hour`\n   - Worker C = `60 / 20 = -3 units/hour` (negative work/drain)\n3. Net hourly rate = `5 + 4 - 3 = +6 units/hour`.\n4. Time required = `60 units / 6 units/hour = 10 hours`.",
+    "explanation": "The LCM method eliminates fractions in time-and-work and pipes-and-cisterns problems. Defining total work as the least common multiple of all time values turns each worker's speed into an integer rate per unit of time.",
+    "commonMistake": "Adding the times directly (12 + 15 - 20 = 7 hours) instead of converting to rates of work.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": ["aptitude", "time-and-work", "lcm"]
+  },
+  {
+    "id": "interview-pr-aptitude-006",
+    "module": "interview",
+    "topic": "aptitude",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "A beverage brand blends two grades of Assam tea: Grade A costing ₹80 per kg and Grade B costing ₹120 per kg. In what ratio must Grade A and Grade B be mixed to produce a commercial blend worth ₹95 per kg?",
+    "dataset": "none",
+    "hint": "Use the rule of alligation: (Price of B - Mean price) / (Mean price - Price of A).",
+    "solution": "### Alligation Cross Method:\n- Price of Cheaper (Grade A) = 80\n- Price of Dearer (Grade B) = 120\n- Mean Price (Target) = 95\n\nCross differences:\n- Difference for Cheaper (Right) = `120 - 95 = 25`\n- Difference for Dearer (Left) = `95 - 80 = 15`\n\nRatio of Grade A to Grade B = `25 : 15 = 5 : 3`.",
+    "explanation": "The alligation cross rule solves weighted average mixture problems instantly. The ratio of the cheaper component to the dearer component equals `(Dearer - Mean) : (Mean - Cheaper)`, which simplifies to `25:15 = 5:3`.",
+    "commonMistake": "Setting up complicated simultaneous algebraic equations (`80x + 120y = 95(x+y)`) and getting confused during manual fraction reduction.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": ["aptitude", "alligation", "averages"]
+  },
+  {
+    "id": "interview-pr-aptitude-007",
+    "module": "interview",
+    "topic": "aptitude",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "An e-commerce store offers a double discount during a weekend sale: an initial 20% site-wide discount plus an additional 10% instant bank cashback discount applied successively. Calculate the single equivalent discount percentage.",
+    "dataset": "none",
+    "hint": "Use the formula for successive discounts: Equivalent Discount = d1 + d2 - (d1 * d2) / 100.",
+    "expectedOutput": {
+      "value": 28
+    },
+    "solution": "### Successive Discount Formula:\n- Formula: `Net Discount = a + b - (a * b) / 100`\n- Here `a = 20` and `b = 10`.\n- `Net Discount = 20 + 10 - (20 * 10) / 100 = 30 - 2 = 28%`.\n\nVerification on ₹100 base:\n1. After 20% discount = ₹80.\n2. After 10% discount on ₹80 = `80 - 8 = ₹72`.\n3. Total reduction from ₹100 = `100 - 72 = ₹28` (28%).",
+    "explanation": "Successive discounts never add up linearly because the second discount applies only to the already discounted price. 20% plus 10% successive discounts equal 28%, not 30%.",
+    "commonMistake": "Adding the percentages together (20% + 10% = 30%), which fails to account for the diminished base of the second discount.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": ["aptitude", "profit-and-loss", "shortcuts"]
+  },
+  {
+    "id": "interview-pr-aptitude-008",
+    "module": "interview",
+    "topic": "aptitude",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "A regional bank evaluates annual disbursements across three urban branches over two fiscal years:\n- Branch A: Year 1 = ₹40 Lakh, Year 2 = ₹50 Lakh\n- Branch B: Year 1 = ₹60 Lakh, Year 2 = ₹72 Lakh\n- Branch C: Year 1 = ₹25 Lakh, Year 2 = ₹32 Lakh\n\nWhich branch recorded the highest percentage growth, and what was its growth rate? Additionally, what is the difference in percentage points between the highest and lowest growth rates among the three branches?",
+    "dataset": "none",
+    "hint": "Calculate the growth rate for each branch as `((Year 2 - Year 1) / Year 1) * 100`. Then subtract the lowest rate from the highest.",
+    "solution": "### Analysis and Calculations:\n\n1. **Growth Rate Calculation by Branch:**\n   - **Branch A:** `(50 - 40) / 40 = 10 / 40 = 25.0%`\n   - **Branch B:** `(72 - 60) / 60 = 12 / 60 = 20.0%`\n   - **Branch C:** `(32 - 25) / 25 = 7 / 25 = 28.0%`\n\n2. **Highest Growth Branch:**\n   - **Branch C** achieved the highest percentage growth at **28.0%**.\n\n3. **Difference in Percentage Points:**\n   - Highest growth rate = `28.0%` (Branch C)\n   - Lowest growth rate = `20.0%` (Branch B)\n   - Difference in percentage points = `28.0 - 20.0 = 8.0 percentage points`.",
+    "explanation": "Branch C grew by the highest percentage (28.0%) despite having the lowest absolute increase (₹7 Lakh vs ₹12 Lakh for Branch B) due to its smaller initial base. When comparing two percentages (28.0% and 20.0%), the gap of 8.0 is expressed in 'percentage points', whereas the relative change between them would be `(8/20) * 100 = 40%`.",
+    "commonMistake": "Assuming Branch B grew the most because its absolute increase was ₹12 Lakh (highest absolute volume), or confusing percentage points (8 pp) with percentage difference.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": ["aptitude", "data-interpretation", "caselet"]
+  }
+]

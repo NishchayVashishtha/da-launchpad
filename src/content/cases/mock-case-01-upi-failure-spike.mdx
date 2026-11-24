@@ -1,0 +1,104 @@
+---
+title: "UPI Payment Failure Spike"
+industry: "Fintech"
+difficulty: medium
+type: mock-case
+estimatedMinutes: 40
+---
+
+## Problem
+
+You are interviewing for a Data Analyst role at "SabPay", a fictional digital payments platform in India processing over ₹40 Crore in monthly UPI transactions. 
+
+The Vice President of Merchant Operations enters the room and states:
+> *"Over the past month, our overall UPI payment failure rate jumped from a historical baseline of 2.3% to 3.4%. Merchant complaints are rising, and our support desk is overwhelmed with dropped checkout tickets. What is driving this failure surge, and what should we do to fix it?"*
+
+You have 35 minutes to diagnose the problem, structure an investigation, analyze the data, and deliver an actionable recommendation.
+
+## Clarifying questions to ask
+
+Before formulating hypotheses or proposing queries, ask the interviewer these four clarifying questions:
+
+1. **Definition of Failure:** *"How is the 3.4% failure rate calculated? Are transactions with status 'PENDING' treated as failures, or is the metric strictly `FAILED / (SUCCESS + FAILED)`?"*
+   - *Interviewer response:* Assume PENDING is excluded; failure rate is strictly failed attempts divided by total terminal attempts.
+2. **Timeline and Suddenness:** *"Did the jump occur abruptly on a specific day or deployment date, or did it increase steadily over the last four weeks?"*
+   - *Interviewer response:* Failures spiked sharply during the second week of the month and remained elevated during specific hours.
+3. **User vs Merchant Scope:** *"Is the failure spike concentrated in Person-to-Person (P2P) transfers or Person-to-Merchant (P2M) checkouts?"*
+   - *Interviewer response:* Both types show issues, but high-volume merchant checkouts are generating 80% of customer complaints.
+4. **Platform Scope:** *"Have there been any major app releases, gateway migrations, or partner bank onboarding changes recently?"*
+   - *Interviewer response:* No internal core gateway changes, but two regional partner banks reported sporadic core banking upgrades.
+
+## Suggested structure
+
+Deconstruct the overall failure rate into a Mutually Exclusive and Collectively Exhaustive (MECE) tree:
+
+```
+Overall Payment Failure Rate
+  ├── 1. By Partner Bank (Acquiring & Issuing Banks)
+  │     ├── Major PSU / Private Banks (Himalaya Trust, Bharat Union, Sundaram)
+  │     └── Regional / Co-op Banks (Kaveri Co-op Bank, PayNova Small Finance)
+  ├── 2. By Client Application & Gateway Bridge
+  │     ├── SabPay Native Android / iOS
+  │     └── Third-Party UPI Apps (NammaPay, QuickPaisa, RupeeRocket)
+  ├── 3. By Error Code Classification
+  │     ├── User Errors (INSUFFICIENT_FUNDS, INCORRECT_PIN, LIMIT_EXCEEDED)
+  │     └── Infrastructure Failures (BANK_SERVER_TIMEOUT, UPI_SYSTEM_DOWN, NETWORK_ERROR)
+  └── 4. By Time & Operating Window
+        ├── Peak Business Rush Hours (09:00–11:00 AM, 19:00–21:00 PM)
+        └── Off-Peak Hours
+```
+
+## Analysis plan
+
+Guide the interviewer through your targeted data investigation using the `fintech` transaction database:
+
+1. **Segment by Partner Bank:** Isolate failure rates across the 8 partner banks to identify infrastructure outliers.
+2. **Segment by Client Payment App:** Check whether client gateways (e.g. NammaPay) experienced gateway outages.
+3. **Analyze Failure Codes:** Run a Pareto breakdown on failure reasons to distinguish user balance shortfalls from bank server timeouts.
+4. **Time-of-Day Cross-Tabulation:** Cross-reference the highest-failure bank with operating hours to spot capacity bottlenecks.
+
+<SqlPlayground
+  dataset="fintech"
+  query={`WITH clean AS (
+  SELECT DISTINCT txn_id, bank, status
+  FROM transactions
+)
+SELECT
+  bank,
+  COUNT(*) AS n_txns,
+  ROUND(100.0 * SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) / COUNT(*), 2) AS fail_pct
+FROM clean
+GROUP BY bank
+ORDER BY fail_pct DESC, bank ASC;`}
+  title="Try It: Failure Rate by Partner Bank"
+/>
+
+**Analysis Finding:** Deduplicating transactions reveals that **Kaveri Co-op Bank** is the primary culprit with a **6.06% failure rate** (103 failures out of 1,700 transactions), compared to 2.16%–2.94% for other banks. Furthermore, cross-tabulating Kaveri Bank with `strftime('%H', txn_datetime)` reveals that its failure rate surges to **11.6% to 13.0%** during peak evening rush hours (7:00–8:00 PM) due to `BANK_SERVER_TIMEOUT`.
+
+## Model recommendation
+
+Present a three-part structured operational plan:
+
+1. **Immediate Operational Fix (Smart Retries with Backoff):** Deploy an automated in-app retry with exponential backoff (2s, 5s) specifically for `BANK_SERVER_TIMEOUT` and `NETWORK_ERROR`. Empirical data proves timeout errors recover at a **74.07% rate** upon retry.
+2. **User Experience Routing (Dynamic Health Banners):** When Kaveri Bank failure rates exceed 8% during peak evening hours, display an in-app prompt recommending users pay via a secondary linked bank account or UPI Lite.
+3. **Partner Escalation:** Share the hourly server timeout telemetry with Kaveri Bank's technology team to request allocated capacity during evening peak windows.
+4. **Projected Impact & Guardrail:** Recovering 70% of timeout failures will reduce Kaveri Bank's net failure rate to ~3.5% and bring SabPay's overall failure rate from 3.4% down to under 2.5% within 14 days. Monitor average checkout latency as a guardrail.
+
+## Evaluation rubric
+
+| Score | Criteria | What the Interviewer Looks For |
+|---|---|---|
+| **4 / 4** | **Structure** | Uses a clean MECE framework; clarifies PENDING definition upfront; prioritizes bank and error cuts. |
+| **4 / 4** | **Business Sense** | Understands that user balance errors cannot be retried automatically; focuses on timeout recovery. |
+| **4 / 4** | **Data Approach** | Deduplicates transactions; calculates excess failures; isolates peak hours without getting tricked by small n. |
+| **4 / 4** | **Numbers / Rigor** | Quantifies that Kaveri Bank contributes ~25% of all network failures; cites the 74% retry recovery benchmark. |
+| **4 / 4** | **Communication** | Delivers a 60-second executive conclusion with clear action items, expected impact, and guardrail metrics. |
+
+## Follow-up questions
+
+- **Interviewer:** *"If automated retries recover 74% of timeouts, why shouldn't we auto-retry all failed transactions?"*  
+  **Candidate:** *"Because retrying non-technical errors like `INSUFFICIENT_FUNDS` succeeds only 13% of the time. Auto-retrying balance errors creates useless load on banking switches and degrades user trust."*
+- **Interviewer:** *"How would you set up an automated alert to detect this issue in real time?"*  
+  **Candidate:** *"I would configure a 15-minute rolling window monitoring failure rate by partner bank. If any bank with volume >= 50 transactions exceeds a 6% failure rate threshold, trigger a P1 Slack alert to the operations desk."*
+- **Interviewer:** *"What if Kaveri Bank refuses to upgrade their server capacity?"*  
+  **Candidate:** *"We would introduce dynamic payment routing, temporarily demoting Kaveri Bank from default selection in the payment sheet during peak evening hours."*

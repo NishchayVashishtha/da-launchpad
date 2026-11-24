@@ -78,8 +78,10 @@ if (sqlQs.length) {
 
 // ---------- Python ----------
 if (pyQs.length) {
-  const venv = join(ROOT, '.venv/bin/python');
-  const py = existsSync(venv) ? venv : 'python3';
+  const venv = process.platform === 'win32'
+    ? join(ROOT, '.venv/Scripts/python.exe')
+    : join(ROOT, '.venv/bin/python');
+  const py = existsSync(venv) ? venv : (process.platform === 'win32' ? 'python' : 'python3');
   const tmp = mkdtempSync(join(tmpdir(), 'dal-py-'));
   const BATCH = 60;
   for (let i = 0; i < pyQs.length; i += BATCH) {

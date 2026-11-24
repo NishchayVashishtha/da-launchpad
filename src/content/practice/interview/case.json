@@ -1,0 +1,192 @@
+[
+  {
+    "id": "interview-pr-case-001",
+    "module": "interview",
+    "topic": "case",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "The Operations Lead wants to identify which partner banks have the highest UPI transaction failure rates. Write a query on the `fintech` dataset to calculate the total transaction count (`n_txns`) and failure rate percentage (`fail_pct`) for each bank. Exclude duplicate transactions, round `fail_pct` to 2 decimal places, and order by `fail_pct` descending, then `bank` ascending.",
+    "dataset": "fintech",
+    "hint": "Deduplicate transactions first using a CTE or subquery with DISTINCT txn_id, bank, status. Compute failure rate as 100.0 * SUM(status = 'FAILED') / COUNT(*).",
+    "solutionSql": "WITH clean AS (\n  SELECT DISTINCT txn_id, bank, status\n  FROM transactions\n)\nSELECT\n  bank,\n  COUNT(*) AS n_txns,\n  ROUND(100.0 * SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) / COUNT(*), 2) AS fail_pct\nFROM clean\nGROUP BY bank\nORDER BY fail_pct DESC, bank ASC;",
+    "expectedOutput": {
+      "columns": ["bank", "n_txns", "fail_pct"],
+      "rows": [
+        ["Kaveri Co-op Bank", 1700, 6.06],
+        ["PayNova Small Finance Bank", 782, 2.94],
+        ["Sundaram Bank", 4658, 2.6],
+        ["Coromandel Bank", 1959, 2.55],
+        ["Himalaya Trust Bank", 3077, 2.44],
+        ["Bharat Union Bank", 5097, 2.35],
+        ["Malabar Savings Bank", 1315, 2.21],
+        ["Rajdhani National Bank", 3712, 2.16]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Deduplicating by `txn_id` removes approximately 89 duplicate rows that would otherwise distort the counts. Kaveri Co-op Bank emerges as a clear outlier with a 6.06% failure rate, more than double the industry baseline of 2.2% to 2.9%.",
+    "commonMistake": "Failing to deduplicate transactions before aggregating, which includes repeated rows and alters percentage values.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": ["case", "fintech", "aggregation", "deduplication"]
+  },
+  {
+    "id": "interview-pr-case-002",
+    "module": "interview",
+    "topic": "case",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "The Product team suspects that a specific client payment app is causing elevated UPI failure rates. Write a query on the `fintech` dataset to compute the transaction count (`n_txns`) and failure rate percentage (`fail_pct`) for each `payment_app`. Deduplicate transactions by `txn_id`, round `fail_pct` to 2 decimal places, and order by `fail_pct` descending, then `payment_app` ascending.",
+    "dataset": "fintech",
+    "hint": "Deduplicate transactions first. Calculate the percentage of transactions where status = 'FAILED'.",
+    "solutionSql": "WITH clean AS (\n  SELECT DISTINCT txn_id, payment_app, status\n  FROM transactions\n)\nSELECT\n  payment_app,\n  COUNT(*) AS n_txns,\n  ROUND(100.0 * SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) / COUNT(*), 2) AS fail_pct\nFROM clean\nGROUP BY payment_app\nORDER BY fail_pct DESC, payment_app ASC;",
+    "expectedOutput": {
+      "columns": ["payment_app", "n_txns", "fail_pct"],
+      "rows": [
+        ["NammaPay", 3922, 5.1],
+        ["PayZippy", 7190, 2.25],
+        ["QuickPaisa", 5443, 2.24],
+        ["SabPay", 3043, 2.2],
+        ["RupeeRocket", 2702, 1.85]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Segmenting by `payment_app` isolates NammaPay as an operational risk with a 5.10% failure rate, compared to 1.85%–2.25% for other apps like PayZippy and QuickPaisa. This isolates app-specific gateway outages from broader banking infrastructure issues.",
+    "commonMistake": "Counting PENDING transactions as failed or failing to deduplicate `transactions`, skewing the app benchmark comparison.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": ["case", "fintech", "segmentation", "payment-apps"]
+  },
+  {
+    "id": "interview-pr-case-003",
+    "module": "interview",
+    "topic": "case",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "To understand the root cause of Kaveri Co-op Bank's high failure rate, analyze its failure performance by hour of day. Write a query on `fintech` transactions for `bank = 'Kaveri Co-op Bank'` returning the two-digit hour (`hour`), total transactions (`n_txns`), and failure rate percentage (`fail_pct`). Deduplicate by `txn_id`, round `fail_pct` to 2 decimals, order by `fail_pct` descending, then `hour` ascending, and return the top 5 hours.",
+    "dataset": "fintech",
+    "hint": "Extract the hour using strftime('%H', txn_datetime). Filter for bank = 'Kaveri Co-op Bank' before grouping.",
+    "solutionSql": "WITH clean AS (\n  SELECT DISTINCT txn_id, bank, status, strftime('%H', txn_datetime) AS hour\n  FROM transactions\n  WHERE bank = 'Kaveri Co-op Bank'\n)\nSELECT\n  hour,\n  COUNT(*) AS n_txns,\n  ROUND(100.0 * SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) / COUNT(*), 2) AS fail_pct\nFROM clean\nGROUP BY hour\nORDER BY fail_pct DESC, hour ASC\nLIMIT 5;",
+    "expectedOutput": {
+      "columns": ["hour", "n_txns", "fail_pct"],
+      "rows": [
+        ["04", 2, 50.0],
+        ["20", 131, 12.98],
+        ["09", 103, 11.65],
+        ["01", 10, 10.0],
+        ["19", 172, 9.88]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Hourly analysis reveals a critical statistical nuance: hour 04 shows a 50% failure rate on only 2 transactions (statistical noise), whereas peak commercial hours 09 (11.65%), 19 (9.88%), and 20 (12.98%) process hundreds of transactions with double-digit failure rates, indicating severe server capacity bottlenecks at peak times.",
+    "commonMistake": "Sorting hour as text without 2-digit zero-padding or over-indexing on hour 04's 50% rate without evaluating sample size.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": ["case", "fintech", "time-analysis", "sample-size"]
+  },
+  {
+    "id": "interview-pr-case-004",
+    "module": "interview",
+    "topic": "case",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "The engineering team needs a Pareto breakdown of failure codes. Write a query on `failed_transactions` in the `fintech` dataset to count the number of failures (`n`) and the percentage of all failures (`pct_of_failures`) for each `failure_code`. Deduplicate by `failed_txn_id`, round `pct_of_failures` to 2 decimals, and order by `n` descending, then `failure_code` ascending.",
+    "dataset": "fintech",
+    "hint": "Deduplicate failed_transactions first. Use a subquery or window function to get the total failure count for the percentage denominator.",
+    "solutionSql": "WITH clean_failed AS (\n  SELECT DISTINCT failed_txn_id, failure_code\n  FROM failed_transactions\n)\nSELECT\n  failure_code,\n  COUNT(*) AS n,\n  ROUND(100.0 * COUNT(*) / (SELECT COUNT(*) FROM clean_failed), 2) AS pct_of_failures\nFROM clean_failed\nGROUP BY failure_code\nORDER BY n DESC, failure_code ASC;",
+    "expectedOutput": {
+      "columns": ["failure_code", "n", "pct_of_failures"],
+      "rows": [
+        ["INSUFFICIENT_FUNDS", 138, 22.96],
+        ["UPI_SYSTEM_DOWN", 118, 19.63],
+        ["BANK_DECLINED", 99, 16.47],
+        ["INCORRECT_PIN", 71, 11.81],
+        ["NETWORK_ERROR", 69, 11.48],
+        ["LIMIT_EXCEEDED", 64, 10.65],
+        ["BANK_SERVER_TIMEOUT", 42, 6.99]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "This breakdown divides failure codes into user-side errors (INSUFFICIENT_FUNDS at 22.96%, INCORRECT_PIN at 11.81%) and infrastructure bottlenecks (UPI_SYSTEM_DOWN at 19.63%, NETWORK_ERROR at 11.48%, and BANK_SERVER_TIMEOUT at 6.99%). This distinction determines whether fixes require user UX alerts or banking API retry policies.",
+    "commonMistake": "Dividing by total transactions (22,300) instead of total failed transactions (601 deduped), resulting in tiny, unreadable percentages.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": ["case", "fintech", "failure-codes", "pareto"]
+  },
+  {
+    "id": "interview-pr-case-005",
+    "module": "interview",
+    "topic": "case",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "For transactions that were retried (`retried = 1`), analyze how effectively retries recover failed payments across different failure codes. Write a query on `failed_transactions` returning `failure_code`, the count of retried transactions (`retried_n`), the count of successful retries (`recovered_n`), and the recovery percentage (`recovery_pct`). Deduplicate by `failed_txn_id`, round `recovery_pct` to 2 decimals, and order by `recovery_pct` descending, then `retried_n` descending, then `failure_code` ascending.",
+    "dataset": "fintech",
+    "hint": "Filter WHERE retried = 1. A retry is recovered when retry_succeeded = 1.",
+    "solutionSql": "WITH clean_failed AS (\n  SELECT DISTINCT failed_txn_id, failure_code, retried, retry_succeeded\n  FROM failed_transactions\n  WHERE retried = 1\n)\nSELECT\n  failure_code,\n  COUNT(*) AS retried_n,\n  SUM(CASE WHEN retry_succeeded = 1 THEN 1 ELSE 0 END) AS recovered_n,\n  ROUND(100.0 * SUM(CASE WHEN retry_succeeded = 1 THEN 1 ELSE 0 END) / COUNT(*), 2) AS recovery_pct\nFROM clean_failed\nGROUP BY failure_code\nORDER BY recovery_pct DESC, retried_n DESC, failure_code ASC;",
+    "expectedOutput": {
+      "columns": ["failure_code", "retried_n", "recovered_n", "recovery_pct"],
+      "rows": [
+        ["INCORRECT_PIN", 25, 21, 84.0],
+        ["BANK_SERVER_TIMEOUT", 27, 20, 74.07],
+        ["NETWORK_ERROR", 49, 33, 67.35],
+        ["BANK_DECLINED", 36, 24, 66.67],
+        ["LIMIT_EXCEEDED", 20, 13, 65.0],
+        ["UPI_SYSTEM_DOWN", 82, 50, 60.98],
+        ["INSUFFICIENT_FUNDS", 52, 7, 13.46]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Technical and transient errors recover remarkably well through automated or manual retries: INCORRECT_PIN recovers at 84%, BANK_SERVER_TIMEOUT at 74.07%, and NETWORK_ERROR at 67.35%. In contrast, INSUFFICIENT_FUNDS recovers only 13.46% of the time, proving that aggressive auto-retries should be limited to network and timeout errors.",
+    "commonMistake": "Ignoring NULL values in `retry_succeeded` when transactions were not retried (`retried = 0`), which skews denominator counts if not filtered upfront.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": ["case", "fintech", "retries", "recovery"]
+  },
+  {
+    "id": "interview-pr-case-006",
+    "module": "interview",
+    "topic": "case",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "In a case interview, the interviewer states: 'Our company's revenue dropped by 15% last month. What would you do?' Before formulating any hypothesis or writing SQL, write the 4 clarifying questions you must ask to properly define the problem scope.",
+    "dataset": "none",
+    "hint": "Clarify metric definition, time horizon, baseline comparison, and geography/product scope.",
+    "solution": "### 4 Essential Clarifying Questions:\n\n1. **Metric Definition & Measurement:** How exactly is revenue measured here (gross bookings, net revenue after refunds, or invoiced revenue), and were there changes in how this metric is logged?\n2. **Time Window & Baseline:** Was the 15% drop observed month-over-month (MoM vs previous month), year-over-year (YoY vs same month last year), or against forecasted targets?\n3. **Scope & Segmentation:** Did the drop occur across all product lines, user tiers, and cities, or is it concentrated in a specific region or segment?\n4. **Sudden vs Gradual Trend:** Did the decline happen suddenly on a specific date (suggesting a release bug, outage, or policy change) or drift down steadily over the past four weeks?",
+    "explanation": "Jumping into solutions without clarifying the problem is the primary reason candidates fail case rounds. Clarifying questions establish whether the problem is real or a data logging artifact, whether it reflects seasonality (e.g., post-Diwali dip), and which dimension cuts should be prioritized.",
+    "commonMistake": "Immediately proposing hypotheses or SQL queries ('Maybe user churn increased!') without verifying whether the drop was MoM, YoY, or localized to a single category.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": ["case", "clarifying", "framework"]
+  },
+  {
+    "id": "interview-pr-case-007",
+    "module": "interview",
+    "topic": "case",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "A food delivery platform experiences a 20% spike in late delivery complaints (>45 minutes). Construct a comprehensive metric tree decomposing total delivery time into its constituent operational stages to isolate where delays occur.",
+    "dataset": "none",
+    "hint": "Decompose total delivery time into sequential timestamps from order placement to customer doorstep handover.",
+    "solution": "### Metric Tree: Total Delivery Time Decomposition\n\n$$\\text{Total Delivery Time} = T_1 + T_2 + T_3 + T_4 + T_5$$\n\n1. **Order Acceptance Time ($T_1$):** Time from customer checkout to restaurant acceptance.\n   - *Failure modes:* Restaurant tablet offline, kitchen busy, staff delay.\n2. **Kitchen Preparation Time ($T_2$):** Time from acceptance until the order is packed and marked 'Ready for Pickup'.\n   - *Failure modes:* Kitchen overload, complex recipes, delayed order marking.\n3. **Rider Assignment & Transit to Restaurant ($T_3$):** Time to dispatch and rider travel to the merchant.\n   - *Failure modes:* Delivery partner supply shortage, traffic congestion, bad weather.\n4. **Rider Wait Time at Merchant ($T_4$):** Time rider spends waiting at the merchant counter.\n   - *Failure modes:* False 'Ready' signal by restaurant, packaging bottleneck.\n5. **Transit to Customer & Handover ($T_5$):** Time from pickup to customer doorstep delivery.\n   - *Failure modes:* Route navigation issues, apartment security delays, customer unreachable.",
+    "explanation": "A mutually exclusive and collectively exhaustive (MECE) metric tree breaks down an ambiguous end-to-end duration into sequential operational components. By querying timestamps for each stage ($T_1$ to $T_5$), an analyst can instantly identify whether delays stem from restaurant kitchen delays ($T_2$) or rider supply deficits ($T_3$).",
+    "commonMistake": "Blaming delivery riders exclusively without isolating restaurant kitchen preparation time and merchant wait time.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": ["case", "metric-tree", "operations"]
+  },
+  {
+    "id": "interview-pr-case-008",
+    "module": "interview",
+    "topic": "case",
+    "difficulty": "hard",
+    "language": "text",
+    "question": "Estimate the total number of daily UPI QR payments made at tea stalls and small roadside snack vendors in a tier-1 Indian city (population 1.2 Crore). State your assumptions clearly and provide a sanity check for your final estimate.",
+    "dataset": "none",
+    "hint": "Use a supply-side or demand-side Fermi estimation. For supply-side: estimate number of tea stalls, average daily customers, and UPI adoption share.",
+    "solution": "### Supply-Side Fermi Estimation:\n\n1. **Population & Urban Density:**\n   - City population = `1.2 Crore (12 million)`.\n   - Assume 1 tea stall / roadside beverage kiosk per 600 residents.\n   - Estimated tea stalls = `12,000,000 / 600 = 20,000 stalls` across the city.\n\n2. **Daily Footfall per Stall:**\n   - Operating hours: 6:00 AM to 10:00 PM (16 hours).\n   - Peak hours (8-11 AM, 4-7 PM = 6 hrs): ~30 customers/hour = 180 customers.\n   - Non-peak hours (10 hrs): ~12 customers/hour = 120 customers.\n   - Total daily customers per stall = `180 + 120 = 300 customers`.\n\n3. **UPI Adoption at Roadside Stalls:**\n   - In tier-1 cities, UPI QR penetration among urban tea stalls is very high: assume 85% of stalls display QR codes.\n   - Among customers at these stalls, assume 70% pay via UPI (micro-payments ₹10 to ₹30) and 30% pay cash.\n   - UPI transactions per stall with QR = `300 * 0.70 = 210 UPI payments/day`.\n\n4. **City-Wide Daily Volume:**\n   - Stalls with UPI = `20,000 * 0.85 = 17,000 stalls`.\n   - Total daily UPI transactions = `17,000 * 210 = 3,570,000 (~35.7 Lakh payments/day)`.\n\n5. **Sanity Check (Demand-Side):**\n   - Target population (adults 18-60): ~60% of 1.2 Cr = `72 Lakh adults`.\n   - If 25% of working adults buy one tea/snack daily via UPI = `18 Lakh people`.\n   - If daily consumers average 2 cups/transactions per day = `36 Lakh transactions/day`.\n   - Both supply-side (35.7 Lakh) and demand-side (36 Lakh) estimates converge tightly.",
+    "explanation": "Fermi estimation tests structured decomposition, sensible real-world assumptions, and sanity-checking. Interviewers evaluate how cleanly you partition the problem into transparent levers (stalls, customers per hour, payment split) rather than whether you know the exact census figure.",
+    "commonMistake": "Giving a random guess (e.g. 'probably 10 million') without breaking down operating hours, customer throughput, and payment splits, or failing to sanity check against the adult population.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 8,
+    "tags": ["case", "fermi-estimation", "guesstimate"]
+  }
+]

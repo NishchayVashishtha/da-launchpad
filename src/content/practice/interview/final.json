@@ -1,0 +1,77 @@
+[
+  {
+    "id": "interview-pr-final-001",
+    "module": "interview",
+    "topic": "final",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "You have an interview scheduled for next Monday with a fintech company. You have 5 hours available each day. Design your Day -7 to Day -1 preparation schedule, specifying the exact skills, exercises, and time allocation for each day.",
+    "dataset": "none",
+    "hint": "Allocate days systematically: JD research, SQL patterns, stats/BI tools, project pitch, behavioral answers, full mock, and light review.",
+    "solution": "### 7-Day Interview Revision Schedule (5 Hours/Day):\n\n| Day | Focus Area | Detailed Activities & Exercises | Hours |\n|---|---|---|---||\n| **Day -7** | **JD & Company Research** | Map job description requirements to projects; read fintech product docs & recent news. | 5 hrs |\n| **Day -6** | **SQL Core Patterns** | Solve 25 timed queries: joins, window functions (ROW_NUMBER, DENSE_RANK, LAG/LEAD), CTEs. | 5 hrs |\n| **Day -5** | **Excel & Power BI Review** | Practice dynamic DAX measures (CALCULATE, time intelligence); review Excel XLOOKUP & pivot tables. | 5 hrs |\n| **Day -4** | **Portfolio Project Drill** | Rehearse 2-minute pitch for 2 portfolio projects; prepare answers for 10 challenging project questions. | 5 hrs |\n| **Day -3** | **HR & Behavioral Rehearsal** | Practice aloud: 'Tell me about yourself', 'Why Data Analytics?', and transition story from UI/UX. | 5 hrs |\n| **Day -2** | **Full Simulation & Case** | Complete a timed 45-minute SQL mock test and solve 2 business case studies aloud. | 5 hrs |\n| **Day -1** | **Calm Polish & Logistics** | Skim one-page cheat sheets; test camera/microphone/internet; prepare clothes and rest early. | 3 hrs |",
+    "explanation": "A structured 7-day schedule replaces anxiety with deliberate practice. Dedicating specific days to SQL, BI tools, project storytelling, and behavioral preparation ensures balanced readiness without last-minute panic.",
+    "commonMistake": "Cramming new complex algorithms on Day -1 or treating every day as unstructured, repetitive LeetCode practice.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": ["final", "revision", "schedule", "planning"]
+  },
+  {
+    "id": "interview-pr-final-002",
+    "module": "interview",
+    "topic": "final",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "At the conclusion of a technical interview, the interviewer asks: 'Do you have any questions for us?' Write 3 insightful questions that demonstrate analytical curiosity, product understanding, and team awareness.",
+    "dataset": "none",
+    "hint": "Ask about the data stack, typical sprint deliverables, and the biggest data quality challenge facing the team.",
+    "solution": "### 3 Insightful Questions for the Interviewer:\n\n1. **On Workflow & Architecture:** *'How does data currently flow from your production transactional databases into the analytical reporting layer—are you primarily using dbt and scheduled models, or querying data lakes directly?'*\n2. **On Business Priorities:** *'What is the single biggest analytics challenge or data quality bottleneck your team is working to solve over the next two quarters?'*\n3. **On Success Metrics for Freshers:** *'For a junior analyst joining this team, what would a successful first 90 days look like, and what kind of project would they own first?'*",
+    "explanation": "Ending with targeted, domain-aware questions sets you apart from candidates who ask generic questions or say 'No, you answered everything'. It positions you as an engaged peer who is already thinking about how to create value on the team.",
+    "commonMistake": "Asking only about vacation days, shift timings, or salary during the technical round, or asking nothing at all.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": ["final", "questions-to-ask", "interview-closing"]
+  },
+  {
+    "id": "interview-pr-final-003",
+    "module": "interview",
+    "topic": "final",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "A candidate with an internship background in UI/UX design is interviewing for a Junior Data Analyst role. The interviewer asks: 'Why are you switching from UI/UX design to Data Analytics?' Draft a compelling, positive 3-sentence answer that bridges design empathy with analytical problem-solving.",
+    "dataset": "none",
+    "hint": "Highlight how design taught you to understand users, explain your passion for quantifying decisions with data, and show how both skills combine in dashboard design.",
+    "solution": "### 3-Sentence Pivot Response:\n\n*'During my UI/UX internship, I loved designing interfaces for users, but I found myself constantly asking: how can we prove with hard numbers which design actually drives higher conversions and fewer dropped checkouts? That curiosity led me to dive deeply into SQL, Python, and data modeling, where I discovered that finding answers in data and diagnosing operational bottlenecks is what I enjoy doing most every single day. My design background now serves as an asset because it allows me to build intuitive, executive-ready Power BI dashboards that non-technical business leaders can understand and act on immediately.'*",
+    "explanation": "Effective pivot stories never criticize past choices ('I hated Figma' or 'Design had too few jobs'). Instead, they frame previous experience as an additive superpower: design provides human empathy and visual hierarchy, while data analytics provides mathematical rigor.",
+    "commonMistake": "Badmouthing UI/UX design or giving a purely negative reason ('There were no design jobs available, so I decided to learn SQL').",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": ["final", "career-switch", "behavioral", "storytelling"]
+  },
+  {
+    "id": "interview-pr-final-004",
+    "module": "interview",
+    "topic": "final",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "As a quick 5-minute warm-up query on the morning of your interview, calculate the transaction volume handled by each payment app in the `fintech` database. Return `payment_app` and the total transaction count (`n_txns`). Deduplicate by `txn_id`, order by `n_txns` descending, then `payment_app` ascending.",
+    "dataset": "fintech",
+    "hint": "Deduplicate transactions first using a subquery or CTE, then group by payment_app and sort descending.",
+    "solutionSql": "WITH clean AS (\n  SELECT DISTINCT txn_id, payment_app\n  FROM transactions\n)\nSELECT\n  payment_app,\n  COUNT(*) AS n_txns\nFROM clean\nGROUP BY payment_app\nORDER BY n_txns DESC, payment_app ASC;",
+    "expectedOutput": {
+      "columns": ["payment_app", "n_txns"],
+      "rows": [
+        ["PayZippy", 7190],
+        ["QuickPaisa", 5443],
+        ["NammaPay", 3922],
+        ["SabPay", 3043],
+        ["RupeeRocket", 2702]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Running a simple 3-line query on the morning of an interview warms up your fingers and syntax reflexes without causing intellectual fatigue. PayZippy leads volume with 7,190 transactions, followed by QuickPaisa and NammaPay.",
+    "commonMistake": "Failing to deduplicate transactions before aggregating counts.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 3,
+    "tags": ["final", "warm-up", "fintech", "aggregation"]
+  }
+]

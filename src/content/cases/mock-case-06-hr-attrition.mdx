@@ -1,0 +1,102 @@
+---
+title: "HR Employee Attrition Investigation"
+industry: "HR & People Analytics"
+difficulty: medium
+type: mock-case
+estimatedMinutes: 40
+---
+
+## Problem
+
+You are interviewing for an HR People Analytics Analyst role at "TataNova Solutions", a major IT and business operations company employing 2,400+ professionals across India.
+
+The Chief Human Resources Officer (CHRO) opens the case:
+> *"Our annual employee attrition rate surged to 22.7% this past fiscal year, with voluntary resignations spiking dramatically in our front-line departments. Replacing a trained analyst or operations specialist costs us over ₹3.5 Lakh in recruitment, onboarding, and lost productivity. Why are employees leaving, which departments are in crisis, and what targeted retention strategies should we deploy?"*
+
+You have 35 minutes to structure an investigation, analyze employee demographics and compensation, and deliver an actionable retention playbook.
+
+## Clarifying questions to ask
+
+1. **Definition of Attrition:** *"Does the 22.7% attrition figure encompass all exits (including involuntary terminations, contract expirations, and retirements), or is it focused strictly on voluntary resignations?"*
+   - *Interviewer response:* Overall exits; however, voluntary resignations (`exit_type = 'Resignation'`) account for over 75% of departures.
+2. **Regretted vs Non-Regretted Loss:** *"Do exit logs track 'regretted attrition' (high performers receiving top ratings who resigned) versus natural exits of underperforming staff?"*
+   - *Interviewer response:* Yes, our attrition records include a `regretted_loss` indicator (1 for high-performing departures).
+3. **Departmental Concentration:** *"Are exits occurring uniformly across our corporate and engineering wings, or concentrated in operations?"*
+   - *Interviewer response:* Customer Support and Sales show disproportionate turnover, while Engineering and Finance remain relatively stable.
+4. **Tenure Dynamics:** *"At what career tenure are employees resigning—during their initial 12-month probationary period or after multi-year tenures?"*
+   - *Interviewer response:* Early-career staff with less than 24 months of tenure show the highest departure rates.
+
+## Suggested structure
+
+Deconstruct employee turnover into four structural pillars:
+
+```
+Employee Attrition Rate
+  ├── 1. Departmental & Role Pressures
+  │     ├── High-Burnout Front-Line Roles (Customer Support & Sales)
+  │     └── Knowledge Roles (Engineering, Product, Analytics)
+  ├── 2. Compensation & Reward Discrepancies
+  │     ├── Base Salary Benchmarks vs Market Rates
+  │     └── Annual Appraisal Hike Percentage (<4% vs >10%)
+  ├── 3. Workload & Management Culture
+  │     ├── Chronic Overtime Hours (>10 hrs/month)
+  │     └── Manager Review Scores & Disconnect
+  └── 4. Tenure & Career Growth Opportunities
+        ├── Early-Career Attrition (<2 Years Tenure)
+        └── Promotion Stagnation
+```
+
+## Analysis plan
+
+Using the `hr` database, query employee records to uncover attrition drivers:
+
+1. **Deduplicate Records:** Ensure 12 duplicate records in `employees` are removed using `DISTINCT`.
+2. **Benchmark Attrition by Department:** Group employees by `department_name` and count `employment_status = 'Exited'` to isolate departmental outliers.
+3. **Analyze Exit Reasons:** Inspect `attrition.exit_reason` to rank stated departure motivations.
+4. **Evaluate Overtime and Hike Correlation:** Cross-tabulate exits against `performance_reviews.avg_monthly_overtime_hours` and `salaries.hike_pct`.
+
+<SqlPlayground
+  dataset="hr"
+  query={`WITH clean_emp AS (
+  SELECT DISTINCT employee_id, department_id, employment_status
+  FROM employees
+)
+SELECT
+  d.department_name,
+  COUNT(ce.employee_id) AS total_headcount,
+  SUM(CASE WHEN ce.employment_status = 'Exited' THEN 1 ELSE 0 END) AS exits,
+  ROUND(100.0 * SUM(CASE WHEN ce.employment_status = 'Exited' THEN 1 ELSE 0 END) / COUNT(ce.employee_id), 2) AS attrition_pct
+FROM clean_emp ce
+JOIN departments d ON ce.department_id = d.department_id
+GROUP BY d.department_name
+ORDER BY attrition_pct DESC;`}
+  title="Try It: Attrition Rate by Department"
+/>
+
+**Analysis Finding:** Departmental analysis reveals severe operational divergence: **Customer Support (33.64%)** and **Sales (31.23%)** suffer catastrophic turnover, with nearly one in three employees leaving annually. In contrast, Product (15.54%) and Finance (14.56%) remain near baseline. Analyzing exit reasons shows that **'Better compensation' (117 exits)** and **'Career growth' (110 exits)** lead, followed by **'Manager issues' (66)** and **'Work-life balance / overtime' (54)**. In Customer Support, high turnover correlates directly with low starting salaries and chronic monthly overtime exceeding 12 hours.
+
+## Model recommendation
+
+1. **Market Correction for Front-Line Tiers:** Implement a targeted salary band adjustment for Customer Support and Junior Sales staff who achieve 'Exceeds Expectations' ratings, lifting entry bands by 12% to eliminate the compensation gap.
+2. **Overtime Cap & Shift Rebalancing:** Institute a mandatory cap of 8 overtime hours per month in Customer Support. Automatically trigger workload redistributions to cloud shifts when ticket volume surges.
+3. **Quarterly 'Stay Interviews' for High Performers:** Require department heads to conduct structured stay interviews for all employees flagged as high performers (`regretted_loss = 1`) at the 12-month tenure mark to identify growth aspirations before resignation letters are submitted.
+4. **Projected Impact & Guardrail:** Correcting entry pay and capping overtime will reduce Customer Support attrition from 33.6% down to ~22%, saving ₹85 Lakh in annual re-hiring and training expenses. Monitor customer response time SLAs as a guardrail.
+
+## Evaluation rubric
+
+| Score | Criteria | What the Interviewer Looks For |
+|---|---|---|
+| **4 / 4** | **Structure** | Divides turnover into compensation, workload, management, and tenure; clarifies voluntary vs involuntary exits. |
+| **4 / 4** | **Business Sense** | Understands replacement hiring costs, burn-out in support roles, and the concept of regretted attrition. |
+| **4 / 4** | **Data Approach** | Cleans duplicate employees; links departments, reviews, and salary tables; checks overtime correlation. |
+| **4 / 4** | **Numbers / Rigor** | Cites exact department benchmarks: Customer Support at 33.64% vs Finance at 14.56%. |
+| **4 / 4** | **Communication** | Delivers actionable people solutions (overtime caps, stay interviews) rather than generic 'improve culture' platitudes. |
+
+## Follow-up questions
+
+- **Interviewer:** *"What is the ethical consideration of building a predictive machine learning model to flag employees likely to resign?"*  
+  **Candidate:** *"Predictive attrition models must be used to support employees, never to penalize them. If a manager knows an employee is at risk of leaving, they should not deny promotions or bonuses; instead, HR should investigate whether the employee is facing burnout, unfair compensation, or lack of mentorship."*
+- **Interviewer:** *"Why does Customer Support consistently experience higher attrition across the IT industry?"*  
+  **Candidate:** *"Customer Support features high emotional labor, repetitive ticket queues, and strict shift rotations, combined with relatively lower starting pay. Without clear internal mobility pathways into operations or quality assurance, employees view the role as a short-term stepping stone."*
+- **Interviewer:** *"How would you measure whether our salary adjustments actually improved retention?"*  
+  **Candidate:** *"By running a difference-in-differences analysis tracking the 12-month survival rate of the salary-adjusted support cohort against an unadjusted historical control group, while controlling for seasonal exit spikes around appraisal cycles."*

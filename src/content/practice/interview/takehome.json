@@ -1,0 +1,89 @@
+[
+  {
+    "id": "interview-pr-takehome-001",
+    "module": "interview",
+    "topic": "takehome",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "Before analyzing transaction data for an analytics take-home assignment, you must inspect dataset integrity. Write a query on the `fintech` database to compute the total number of recorded rows (`total_rows`) and the count of distinct transaction IDs (`unique_txn_ids`) in the `transactions` table.",
+    "dataset": "fintech",
+    "hint": "Use COUNT(*) for total rows and COUNT(DISTINCT txn_id) for unique transactions.",
+    "solutionSql": "SELECT\n  COUNT(*) AS total_rows,\n  COUNT(DISTINCT txn_id) AS unique_txn_ids\nFROM transactions;",
+    "expectedOutput": {
+      "columns": ["total_rows", "unique_txn_ids"],
+      "rows": [
+        [22389, 22300]
+      ]
+    },
+    "orderMatters": false,
+    "explanation": "This simple query uncovers 89 duplicate transaction rows (22,389 total rows vs 22,300 unique IDs). In any professional take-home assignment, reporting this finding in your assumptions section immediately signals analytical thoroughness.",
+    "commonMistake": "Assuming that an id column in an offline CSV or SQLite database is inherently unique without running a baseline duplicate check.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 3,
+    "tags": ["takehome", "fintech", "data-quality", "duplicates"]
+  },
+  {
+    "id": "interview-pr-takehome-002",
+    "module": "interview",
+    "topic": "takehome",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "In the `fintech` dataset, identify extreme transaction amounts that could distort average metrics. Write a query to find all unique transactions where `amount > 50000`. Return `txn_id`, `user_id`, `amount`, and `txn_datetime`. Deduplicate by `txn_id`, order by `amount` descending, then `txn_id` ascending, and limit to the top 10 rows.",
+    "dataset": "fintech",
+    "hint": "Deduplicate transactions first. Filter for amount > 50000 and order by amount descending.",
+    "solutionSql": "WITH clean AS (\n  SELECT DISTINCT txn_id, user_id, amount, txn_datetime\n  FROM transactions\n)\nSELECT\n  txn_id,\n  user_id,\n  amount,\n  txn_datetime\nFROM clean\nWHERE amount > 50000\nORDER BY amount DESC, txn_id ASC\nLIMIT 10;",
+    "expectedOutput": {
+      "columns": ["txn_id", "user_id", "amount", "txn_datetime"],
+      "rows": [
+        [7003, 108, 95484.05, "2023-10-07 11:23:48"],
+        [2180, 1174, 94459.0, "2023-04-02 19:24:42"],
+        [8050, 368, 79704.0, "2023-11-10 14:07:19"],
+        [6043, 989, 72657.27, "2023-09-02 19:50:01"],
+        [19969, 1115, 69433.0, "2024-10-31 10:02:41"],
+        [21125, 342, 63987.79, "2024-11-29 18:30:41"],
+        [3154, 632, 60746.02, "2023-05-13 15:54:01"],
+        [8465, 2039, 59826.31, "2023-11-22 16:12:22"],
+        [19067, 1647, 59401.05, "2024-10-10 10:18:58"],
+        [21594, 254, 53409.64, "2024-12-13 18:02:07"]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Transactions exceeding ₹50,000 represent large outliers that represent high ticket values compared to typical P2P and micro-merchant UPI payments. In a take-home analysis, noting these outliers prevents skewed mean calculations.",
+    "commonMistake": "Failing to deduplicate transactions before querying outliers, leading to repeated IDs in executive reporting.",
+    "interviewFrequency": "medium",
+    "estimatedMinutes": 4,
+    "tags": ["takehome", "fintech", "outliers", "data-cleaning"]
+  },
+  {
+    "id": "interview-pr-takehome-003",
+    "module": "interview",
+    "topic": "takehome",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "You have completed your take-home analysis on UPI payment failures and found the following key numbers:\n- Baseline failure rate is 2.7%, but Kaveri Co-op Bank accounts for 6.1% failure rate (more than 2x other banks).\n- Kaveri Co-op Bank failures cluster at peak evening hours (9 PM and 10 PM) with BANK_SERVER_TIMEOUT.\n- Automated retries recover 74% of bank server timeout failures, but only 13% of insufficient funds failures.\n\nDraft a concise 3-bullet Executive Summary suitable for the top of your take-home submission document.",
+    "dataset": "none",
+    "hint": "Put the headline problem and largest contributor first, followed by root cause, and then your operational recommendation.",
+    "solution": "### Executive Summary:\n\n- **Failure Concentration:** Overall UPI failure rate stands at 2.70%, but is disproportionately driven by Kaveri Co-op Bank at a 6.06% failure rate, contributing nearly 25% of all network failures despite processing only 7.6% of total transaction volume.\n- **Root Cause & Peak Windows:** Kaveri Bank failures cluster heavily during peak traffic windows (9:00 AM and 7:00–8:00 PM), where failure rates exceed 11% to 13% predominantly due to `BANK_SERVER_TIMEOUT` errors during core banking system overloads.\n- **Actionable Recommendation & Impact:** Implement an automated retry mechanism with exponential backoff for timeout errors (which currently demonstrates a 74.07% recovery success rate), while providing real-time in-app bank health alerts; this is projected to reduce overall system failure rates from 2.70% down to under 2.25%.",
+    "explanation": "A high-impact executive summary leads with the core business problem and quantified magnitude, explains the specific operational bottleneck, and closes with a concrete recommendation and expected metric uplift. Reviewers spend less than two minutes deciding whether to advance a candidate based on this summary.",
+    "commonMistake": "Writing an essay describing process ('First I loaded the SQLite database into pandas and cleaned the duplicates...') rather than stating the business findings and recommendations upfront.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": ["takehome", "executive-summary", "communication"]
+  },
+  {
+    "id": "interview-pr-takehome-004",
+    "module": "interview",
+    "topic": "takehome",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "Before writing analysis queries on the UPI payment transactions dataset, you conduct initial data exploration. List 5 essential assumptions and data hygiene rules that you would explicitly document in your take-home submission.",
+    "dataset": "none",
+    "hint": "Think about duplicates, pending transactions, outliers, merchant nulls, and currency text symbols.",
+    "solution": "### 5 Documented Data Assumptions:\n\n1. **Duplicate Handling:** Identified 89 duplicate rows (22,389 raw rows vs 22,300 unique `txn_id`). All analyses deduplicate by `txn_id` prior to computing aggregations.\n2. **Failure Rate Definition:** Transactions with `status = 'PENDING'` (89 rows) represent unresolved states and are excluded from both the numerator and denominator; failure rate is strictly calculated as `FAILED / (SUCCESS + FAILED)`.\n3. **P2P vs P2M Missing Values:** Verified that `merchant_id` is NULL for P2P transfers (~24%) and `receiver_user_id` is NULL for merchant payments; these represent intentional database design, not missing data defects.\n4. **Outlier Treatment:** Flagged 10 transactions exceeding ₹50,000 as extreme values; they are retained for volume totals but isolated when reporting median user spend.\n5. **Retry Logic Accounting:** In `failed_transactions`, `retry_succeeded` is NULL when `retried = 0`; recovery rates are evaluated strictly over the subset of transactions where `retried = 1`.",
+    "explanation": "Documenting data assumptions protects you from being accused of wrong numbers. Stating your definitions clearly (e.g., how PENDING is handled and how duplicates were removed) demonstrates senior-level communication and data maturity.",
+    "commonMistake": "Making silent assumptions without documenting them, leaving the hiring manager to wonder why your total transaction count differs from their uncleaned raw count.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": ["takehome", "assumptions", "data-hygiene"]
+  }
+]

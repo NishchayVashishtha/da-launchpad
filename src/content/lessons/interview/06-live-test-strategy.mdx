@@ -1,0 +1,309 @@
+---
+title: "Live tests: time, thinking aloud, and getting unstuck"
+description: "A disciplined strategy for live coding rounds in SQL, Excel, and Power BI under screen share observation."
+module: interview
+order: 6
+estimatedMinutes: 35
+objectives:
+  - "Allocate a 45-minute live test budget with an 8-minute cap per problem"
+  - "Narrate your query design using six structured think-aloud transition phrases"
+  - "Execute a 5-step routine to recover when stuck on a query or formula"
+  - "Avoid tool-specific pitfalls including join fan-out, NOT IN with NULLs, and VLOOKUP approximate matching"
+  - "Maintain professional screen-share and communication etiquette during live evaluations"
+tags: ["interview", "live-test", "sql", "excel", "power-bi", "screen-share"]
+---
+
+## Learning objectives
+
+- Budget a 45-minute live technical test into distinct triage, execution, and verification phases.
+- Narrate your problem-solving process aloud while writing queries to demonstrate structured reasoning.
+- Apply a systematic 5-step unstuck routine when a query returns unexpected results or syntax errors.
+- Identify and prevent fatal SQL bugs: Cartesian product fan-outs, NULL values in `NOT IN` subqueries, and improper aggregate filtering.
+- Apply practical Excel and Power BI live testing techniques under screen-share observation.
+
+## Why this matters for a Data Analyst job
+
+Live coding tests are not pure knowledge exams; they are psychological stress tests. Sitting on a Google Meet or Zoom call with a senior engineer watching your cursor while you type creates immense pressure. Under this pressure, candidates frequently freeze, type in complete silence for ten minutes, or panic when an initial query returns an error.
+
+Pilots do not rely on raw inspiration during an emergency; they rely on checklists. Similarly, clearing live technical interviews requires a standardized operating procedure: how you restate the prompt, how you structure your initial query skeleton, what you say while typing, and how you systematically isolate bugs when an output looks incorrect.
+
+<RealWorld>
+During a live technical round for a fintech analyst opening in Mumbai, a candidate is asked to find all users who registered but never transacted. The candidate writes `WHERE user_id NOT IN (SELECT user_id FROM transactions)`. The query unexpectedly returns zero rows because the transactions table contains a few test rows with NULL user IDs. An unprepared candidate panics and claims the database is broken. A prepared candidate immediately recognizes the three-valued logic pitfall of `NOT IN`, states the reason aloud to the interviewer, and refactors to `NOT EXISTS` in twenty seconds. The interviewer is so impressed by their debugging composure that they recommend hiring them immediately.
+</RealWorld>
+
+## Concept
+
+### The 45-minute live test pacing plan
+
+A standard live screening contains 3 to 5 questions. Never attack questions in strict chronological order; manage your 45-minute budget systematically:
+
+| Phase | Time | Action | Objective |
+|---|---|---|---|
+| **Phase 1: Triage** | 00–05 min | Read all questions; inspect schema; ask clarifying questions. | Pick the easiest 2 questions to bank immediate momentum. |
+| **Phase 2: Execution** | 05–35 min | Solve questions in order of difficulty; cap each problem at 8 minutes. | Ensure at least 80% of questions have working solutions. |
+| **Phase 3: Deep Dives** | 35–40 min | Tackle the hardest question; write pseudo-code if time is short. | Secure partial credit on complex window/ranking logic. |
+| **Phase 4: Sanity Check** | 40–45 min | Check edge cases (NULLs, duplicates, order limits); clean formatting. | Verify formatting and confirm all column names match the spec. |
+
+### The 5 universal steps for every live problem
+
+Whenever the interviewer gives you a new task:
+
+1. **Read Twice & Restate:** Repeat the question in your own words: *"So we want the top 3 merchant categories by total transaction value for each month of 2024, correct?"*
+2. **Inspect the Schema:** Run a quick `LIMIT 5` query or check column names. Confirm data types (e.g., whether dates are stored as strings or datetimes).
+3. **Write the Skeleton First:** Write the outer query structure before adding complex joins:
+   ```sql
+   SELECT ...
+   FROM ...
+   WHERE ...
+   GROUP BY ...
+   ORDER BY ... LIMIT ...;
+   ```
+4. **Test Incrementally:** Run intermediate subqueries or CTEs on small samples before assembling the final nested query.
+5. **Sanity Check Output:** Look at row counts and magnitudes. Do average order values look realistic? Are there duplicate IDs?
+
+### The 6 think-aloud transition phrases
+
+Silence is your enemy in a live test. If you type quietly for five minutes, the interviewer has no idea whether you are analyzing or lost. Use these transition phrases:
+
+<FormulaCard title="6 Live Test Think-Aloud Phrases">
+1. **Clarifying:** *"Let me verify the expected grain of the output: are we reporting at the order level or customer level?"*
+2. **Declaring Logic:** *"I will start by drafting a CTE to deduplicate the transactions table before joining."*
+3. **Stating Assumptions:** *"I am assuming we only want to count transactions with status = 'SUCCESS', excluding pending or failed attempts."*
+4. **Anticipating Edge Cases:** *"I will use a LEFT JOIN here instead of an INNER JOIN so we don't accidentally drop customers with zero orders."*
+5. **Debugging Out Loud:** *"Looking at the output, the row count is higher than expected; let me check if our join between orders and payments caused a Cartesian product."*
+6. **Closing:** *"The results match the criteria: 10 rows returned, sorted descending by total revenue with tie-breakers in place."*
+</FormulaCard>
+
+### The 5-step unstuck protocol
+
+If your query throws a syntax error or returns incorrect numbers, do not delete everything and panic. Execute this recovery checklist:
+
+1. **Isolate to One Table:** Comment out joins and verify the base table with `SELECT * FROM table LIMIT 5`.
+2. **Run the Innermost Query:** If using a CTE or subquery, run the innermost block independently to inspect its output.
+3. **Check for Join Duplication:** Count rows before and after the join (`COUNT(*)` before vs after). If the row count spikes, you have a 1-to-N fan-out.
+4. **State What You Tried & Ask a Hint:** Say: *"My query is grouping correctly, but the window rank is repeating ties unexpectedly. Let me check if my PARTITION BY clause needs the date truncated to month. Would you suggest adjusting the partition or the order clause?"* Interviewers love giving small hints to candidates who explain their thought process.
+5. **Fall Back to Pseudo-Code:** If time expires on a question, do not leave a blank screen. Write clean pseudo-code explaining your intended logic to earn 70% partial credit.
+
+### Tool-specific pitfalls to remember
+
+- **SQL:**
+  - `NOT IN` fails completely if the subquery returns even one NULL; use `NOT EXISTS` or `LEFT JOIN ... WHERE right.id IS NULL`.
+  - Joining 1-to-N tables (e.g. `orders` to `order_items` and `payments`) multiplies line items; aggregate child tables *before* joining.
+  - SQLite uses `strftime('%Y-%m', col)` for date formatting, whereas PostgreSQL uses `TO_CHAR()` or `DATE_TRUNC()`.
+- **Excel:**
+  - Always specify the match mode in lookups: use `XLOOKUP(..., 0)` for exact match.
+  - Use `search_mode = -1` in XLOOKUP to scan bottom-to-top for the latest price or status.
+  - Never use merged cells in data tables; they break formulas and pivot tables.
+- **Power BI:**
+  - Confirm relationship filter direction (prefer single-direction over bi-directional to prevent ambiguous filter paths).
+  - Use measures for dynamic aggregations (`[Total Sales] = SUM(...)`), never calculated columns for aggregations.
+
+## Worked examples
+
+### Example 1: Demonstrating think-aloud query design (Fintech)
+
+**Task:** *"Find the top 3 merchant categories by total transaction volume in successful transactions."*
+
+Here is how a prepared candidate narrates their solution through SQL comments:
+
+<SqlPlayground
+  dataset="fintech"
+  query={`-- Step 1: Filter for successful transactions with non-null merchants and deduplicate
+WITH clean_txns AS (
+  SELECT DISTINCT txn_id, merchant_id, amount
+  FROM transactions
+  WHERE status = 'SUCCESS' AND merchant_id IS NOT NULL
+),
+-- Step 2: Join with merchants to obtain human-readable category names
+cat_totals AS (
+  SELECT
+    m.category,
+    ROUND(SUM(t.amount), 2) AS total_volume
+  FROM clean_txns t
+  JOIN merchants m ON t.merchant_id = m.merchant_id
+  GROUP BY m.category
+)
+-- Step 3: Sort descending by total volume and extract top 3
+SELECT
+  category,
+  total_volume
+FROM cat_totals
+ORDER BY total_volume DESC
+LIMIT 3;`}
+  title="Top 3 Merchant Categories with Think-Aloud Structure"
+/>
+
+The candidate explains each step before running the query, demonstrating clear architectural thinking.
+
+### Example 2: The classic join fan-out trap and how to fix it
+
+**Task:** *"Calculate total revenue per order in the ecommerce database."*
+
+If a candidate joins `orders`, `order_items`, and `payments` together:
+```sql
+-- WRONG: Cartesian product multiplies revenue if an order has 2 payments
+SELECT o.order_id, SUM(oi.line_total) AS wrong_revenue
+FROM orders o
+JOIN order_items oi ON o.order_id = oi.order_id
+JOIN payments p ON o.order_id = p.order_id
+GROUP BY o.order_id;
+```
+If an order has 2 payment rows, each order item is counted twice!
+
+**The Clean Fix:** Aggregate directly from `order_items`:
+
+<SqlPlayground
+  dataset="ecommerce"
+  query={`SELECT
+  order_id,
+  ROUND(SUM(line_total), 2) AS revenue
+FROM order_items
+GROUP BY order_id
+ORDER BY revenue DESC, order_id ASC
+LIMIT 10;`}
+  title="Correct Aggregation without Fan-Out"
+/>
+
+### Example 3: The NOT IN vs NOT EXISTS NULL trap
+
+**Task:** *"Count registered users who have zero transactions in fintech."*
+
+In SQLite, if we use `NOT IN (SELECT user_id FROM transactions)` and transactions contains even one NULL `user_id`, the query returns `0` because `x NOT IN (1, 2, NULL)` evaluates to UNKNOWN for every row.
+
+**The Bulletproof Fix:** Always use `NOT EXISTS`:
+
+<SqlPlayground
+  dataset="fintech"
+  query={`SELECT COUNT(*) AS zero_txn_users
+FROM (
+  SELECT DISTINCT user_id FROM users
+) u
+WHERE NOT EXISTS (
+  SELECT 1 FROM transactions t WHERE t.user_id = u.user_id
+);`}
+  title="Safe Anti-Join with NOT EXISTS"
+/>
+
+The query safely outputs **1,127 users** who have never transacted.
+
+## Common mistakes
+
+<CommonMistake>
+Typing in total silence for several minutes. The interviewer cannot evaluate your thought process if you do not explain your logic aloud.
+</CommonMistake>
+
+<CommonMistake>
+Spending 20 minutes trying to solve Question 1 because of stubborn pride, leaving zero time for easy questions downstream.
+</CommonMistake>
+
+<CommonMistake>
+Hitting 'Run' once on a giant 40-line nested query without testing intermediate CTEs on small `LIMIT 5` batches.
+</CommonMistake>
+
+<CommonMistake>
+Saying 'I don't know this' and immediately giving up, instead of stating what you understand and sketching the pseudo-code logic.
+</CommonMistake>
+
+<CommonMistake>
+Using `NOT IN` with subqueries without verifying whether the target column contains NULL values.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet ids={[
+  "interview-pr-live-001",
+  "interview-pr-live-002",
+  "interview-pr-live-003",
+  "interview-pr-live-004",
+  "interview-pr-live-005"
+]} />
+
+## Mini quiz
+
+<Quiz questions={[
+  {
+    q: "What should you do immediately if you get stuck on a query during a live coding test?",
+    options: [
+      "Apologize, close your laptop, and end the interview call",
+      "Isolate the innermost query or CTE, run it on a small sample, and state your debugging reasoning aloud",
+      "Delete all code and start over from scratch in complete silence",
+      "Ask the interviewer to write the query for you"
+    ],
+    answer: 1,
+    explanation: "Isolating components and debugging aloud shows composure, analytical troubleshooting, and maturity under pressure."
+  },
+  {
+    q: "Why is an 8-minute cap per problem recommended in a 45-minute live test?",
+    options: [
+      "Because compilers stop working after 8 minutes",
+      "To prevent spending half the interview stalled on one question while easy points remain untouched downstream",
+      "Because interviewers leave after 8 minutes",
+      "Because SQL queries take 8 minutes to execute"
+    ],
+    answer: 1,
+    explanation: "Time capping prevents the sunk-cost trap and ensures you maximize aggregate test score across all questions."
+  },
+  {
+    q: "What happens in SQL when you execute 'SELECT * FROM table WHERE id NOT IN (SELECT other_id FROM other_table)' if other_table contains a NULL other_id?",
+    options: [
+      "It returns all matching records normally",
+      "It throws a fatal syntax error and crashes",
+      "It returns zero rows because comparison with NULL evaluates to UNKNOWN",
+      "It deletes the table"
+    ],
+    answer: 2,
+    explanation: "In SQL three-valued logic, checking if a value is NOT IN a list containing NULL evaluates to UNKNOWN, filtering out all rows."
+  },
+  {
+    q: "What is the primary cause of join fan-out when computing total sales per order?",
+    options: [
+      "Joining orders with both order_items and payments without pre-aggregating, creating a Cartesian product",
+      "Using UPPERCASE in table names",
+      "Using a GROUP BY clause",
+      "Sorting descending instead of ascending"
+    ],
+    answer: 0,
+    explanation: "Joining multiple 1-to-N relationship tables simultaneously multiplies child rows against each other, inflating aggregate calculations."
+  },
+  {
+    q: "In an Excel live assessment, which function and setting searches from bottom to top to find the latest record?",
+    options: [
+      "VLOOKUP with match_mode TRUE",
+      "XLOOKUP with search_mode set to -1",
+      "HLOOKUP with exact match",
+      "CONCATENATE with reverse order"
+    ],
+    answer: 1,
+    explanation: "Setting XLOOKUP's search_mode argument to -1 instructs Excel to scan from last row to first row, returning the newest record."
+  }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+Interviewers deliberately introduce ambiguous requirements or messy edge cases in live tests to see if you ask clarifying questions or make reckless assumptions.
+</InterviewAlert>
+
+<InterviewQ q="What do you do if your SQL query returns an unexpected row count or strange number during a live test?">
+I remain calm and follow my debugging checklist. First, I compare row counts before and after joins to ensure no unintended Cartesian products occurred. Second, I inspect whether `WHERE` filters inadvertently eliminated records due to NULLs. Third, I verify group-by aggregations by testing individual segments with small `LIMIT 5` batches. Most importantly, I explain each diagnostic step aloud so the interviewer observes my systematic troubleshooting methodology.
+</InterviewQ>
+
+<InterviewQ q="How do you validate that a join did not duplicate rows?">
+Before and after running the join query, I run quick verification counts. For example, if I am joining `orders` to `customers`, I run `SELECT COUNT(*), COUNT(DISTINCT order_id) FROM orders` and confirm that the post-join query retains the exact same distinct order count. If the post-join count is larger than the pre-join count, I know immediately that the right table contains duplicate keys and must be pre-aggregated or deduplicated.
+</InterviewQ>
+
+<InterviewQ q="How do you handle a live problem when you have never encountered that specific function or syntax before?">
+I immediately decouple the business logic from the specific tool syntax. I clearly describe my intended algorithmic approach to the interviewer: *'Logically, what we need here is to partition by month, rank items by volume, and filter for rank 1. In standard SQL, I would use DENSE_RANK().'* If the specific platform uses a different dialect, I politely ask whether I may consult documentation or use standard ANSI SQL. Interviewers care about analytical logic over memorized dialect idiosyncrasies.
+</InterviewQ>
+
+## Key takeaways
+
+- Budget 45-minute live technical tests into triage, execution, and sanity check phases with an 8-minute cap per problem.
+- Always narrate your query design aloud; silence deprives the interviewer of evaluating your problem decomposition.
+- Execute the 5-step unstuck routine: isolate to one table, run inner CTEs, check join row counts, and explain logic.
+- Replace `NOT IN` with `NOT EXISTS` to avoid three-valued logic failures when handling nullable foreign keys.
+- Avoid join fan-out bugs by pre-aggregating child tables before joining multiple 1-to-N relationships.
+
+## Further reading
+
+<FurtherReading ids={["sqlbolt", "mode-sql", "excel-support", "power-bi-docs"]} />

@@ -1,0 +1,288 @@
+---
+title: "Aptitude shortcuts that save minutes"
+description: "Fast mental math and estimation techniques for percentages, ratios, averages, profit and loss, time and work, and data interpretation."
+module: interview
+order: 2
+estimatedMinutes: 40
+objectives:
+  - "Apply five core mental-math shortcuts to solve quantitative aptitude problems in under 60 seconds"
+  - "Calculate percentage changes, ratios, and averages using unit and assumed-mean methods"
+  - "Set up complex time-and-work and pipe-filling problems instantly using the LCM work-unit technique"
+  - "Extract insights from Data Interpretation charts and distinguish between percentage change and percentage points"
+  - "Execute a three-pass pacing strategy to maximize cut-off clearance in timed Online Assessments"
+tags: ["aptitude", "shortcuts", "math", "data-interpretation", "assessment"]
+---
+
+## Learning objectives
+
+- Apply five mental-math shortcuts to solve standard quantitative aptitude questions in under 60 seconds.
+- Compute successive percentage changes, GST impacts, and weighted averages without tedious scratchpad division.
+- Model multi-worker and pipe-drain workflows rapidly using the Least Common Multiple (LCM) work-unit method.
+- Interpret complex Data Interpretation (DI) tables and avoid the trap of confusing percentage points with relative growth.
+- Implement a disciplined 3-pass test strategy to clear high-stakes screening cut-offs.
+
+## Why this matters for a Data Analyst job
+
+Every fresher applicant faces an Online Assessment (OA) before speaking with an engineer or hiring manager. Platforms like HackerRank, Mettl, and CoCubes administer tests with 30 to 50 questions in 45 to 60 minutes. That leaves an average of 60 to 90 seconds per question.
+
+Candidates who rely on schoolbook algebra and manual long division run out of time with a third of the test untouched. Furthermore, the ability to perform rapid sanity checks is an everyday workplace requirement. When a business leader asks during a stand-up meeting whether a 15% drop on ₹80 Lakh revenue matches expected seasonality, an analyst who can compute mental bounds instantly commands immediate trust.
+
+<RealWorld>
+In an analytics team at an e-commerce company, a promotion offers 20% off on a cart, followed by an extra 10% instant discount with an allied bank credit card. A junior analyst is asked to estimate the net discount impact on gross margins across ₹2.5 Crore of weekend sales. If the analyst assumes a flat 30% reduction, their forecast is off by ₹5 Lakh. Applying the successive discount shortcut `20 + 10 - (20 * 10)/100 = 28%` yields the exact ₹70 Lakh discount figure in five seconds.
+</RealWorld>
+
+## Concept
+
+### The Online Assessment budget
+
+Online Assessments are sprints that reward speed and disciplined question triage. Your default time budget per question is 60 to 90 seconds. To maximize score efficiency, categorize every problem into one of three buckets:
+
+- **Bucket 1 (Instant, 30–45s):** Pure arithmetic, fraction-to-percentage conversions, and standard ratio splits.
+- **Bucket 2 (Standard, 60–90s):** Multi-step time-and-work, alligation, and standard DI table lookups.
+- **Bucket 3 (Skip / Flag, >90s):** Lengthy algebraic equations, convoluted permutations, or multi-paragraph caselets.
+
+<FormulaCard title="Core Fraction to Percentage Conversions">
+- `1/2 = 50.0%`
+- `1/3 = 33.33%`
+- `1/4 = 25.0%`
+- `1/5 = 20.0%`
+- `1/6 = 16.67%`
+- `1/7 = 14.28%`
+- `1/8 = 12.5%`
+- `1/9 = 11.11%`
+- `1/11 = 9.09%`
+- `1/12 = 8.33%`
+</FormulaCard>
+
+### 1. Percentages and successive changes
+
+- **Reversibility Rule:** `x% of y = y% of x`. If asked to compute `16% of 50`, reverse it to `50% of 16 = 8`.
+- **Successive Percentage Change:** If a value changes by `+a%` and then `+b%`, the net percentage change is:
+  `Net Change = a + b + (a * b) / 100`
+  For discounts or decreases, treat `b` as negative. For example, `+20%` followed by `-10%` gives `20 - 10 - 200/100 = +8%`.
+
+### 2. Ratio and proportion: the unit method
+
+Never write multiple variable equations (`3x + 4x = 56,000`) for simple splits.
+1. Sum the terms of the ratio: for `3 : 4`, total units = `7`.
+2. Find the value of one unit: `₹56,000 / 7 = ₹8,000`.
+3. Multiply by the required term: Senior share = `4 * 8,000 = ₹32,000`.
+4. **Chaining Ratios:** If `A : B = 2 : 3` and `B : C = 4 : 5`, equate `B` by multiplying the first ratio by 4 and the second by 3: `A : B : C = 8 : 12 : 15`.
+
+### 3. Averages: assumed mean and alligation
+
+- **Assumed Mean:** When averaging numbers close to a central value (e.g., 42, 45, 48, 51, 39), set `A = 45`. Compute deviations: `-3, 0, +3, +6, -6`. The sum of deviations is `0`, so the true average is exactly `45 + (0/5) = 45`.
+- **Rule of Alligation (Mixture of Two Quantities):**
+  When mixing items of cost C1 (cheaper) and C2 (dearer) to achieve average target price M:
+  `Quantity of Cheaper / Quantity of Dearer = (C2 - M) / (M - C1)`
+
+### 4. Profit, loss, and discounts
+
+- **Base 100 Trick:** Always assume base Cost Price (CP) is 100. A 25% markup gives Marked Price (MP) = 125. A 20% discount on MP reduces it by `0.20 * 125 = 25`, yielding Selling Price (SP) = 100 (break-even).
+- **Two Successive Discounts:**
+  `Equivalent Discount = d1 + d2 - (d1 * d2) / 100`
+
+### 5. Time and work: the LCM method
+
+Never add daily fractions like `1/12 + 1/15 - 1/20`.
+1. Compute `LCM(12, 15, 20) = 60 units` (total capacity).
+2. Compute worker rates: Worker A = `60/12 = +5 u/hr`, Worker B = `60/15 = +4 u/hr`, Drain Pipe C = `60/20 = -3 u/hr`.
+3. Combined net rate: `5 + 4 - 3 = +6 units/hr`.
+4. Total time required: `60 / 6 = 10 hours`.
+
+### 6. Time, speed, and distance
+
+- **Average Speed for Equal Distance:** Travelling distance D at speed x and returning at speed y:
+  `Average Speed = 2xy / (x + y)`
+- **Unit Conversion:** Convert km/h to m/s by multiplying by `5/18`. Convert m/s to km/h by multiplying by `18/5`.
+
+### 7. Probability and permutations
+
+- **Complement Rule:** When asked for "at least one", calculate `1 - P(none)`. For example, the probability of getting at least one head in 3 coin tosses is `1 - (1/2)^3 = 1 - 1/8 = 7/8`.
+- **Combinations Symmetry:** `nCr = nC(n-r)`. For example, `10C8 = 10C2 = (10 * 9) / (2 * 1) = 45`.
+
+### 8. Data Interpretation: speed rules
+
+- **Read the Axes and Units First:** Check if numbers are in Crores, Lakhs, thousands, or percentages before calculating.
+- **Percentage Change vs Percentage Points:**
+  If an attrition rate increases from 10% to 15%, the change is **5 percentage points**, but the relative increase is `(15 - 10) / 10 = 50%`. Confusing these two is the most common pitfall in company tests.
+- **Pie Chart Conversion:** 1% = 3.6 degrees. To find the angle for 25%, calculate `25 * 3.6 = 90` degrees.
+
+<Tip>
+In Online Assessments without a negative marking penalty, never leave a question blank. In tests with negative marking (-0.25), guess only if you can eliminate at least two options through parity or magnitude bounds.
+</Tip>
+
+## Worked examples
+
+### Example 1: Net price calculation with GST and discount
+
+A commercial database subscription has a base price of ₹2,400. The invoice adds 18% GST and then applies a 10% promotional rebate.
+
+- **Slow method:** `2,400 * 0.18 = 432`. `2,400 + 432 = 2,832`. Then `2,832 * 0.10 = 283.20`. Finally `2,832 - 283.20 = ₹2,548.80`. (Takes 75 seconds).
+- **Shortcut method:** Net multiplier = `1.18 * 0.90 = 1.062`. `2,400 * 1.062 = 2,400 + 144 + 4.80 = ₹2,548.80`. (Takes 20 seconds).
+
+### Example 2: Time and work with concurrent workers
+
+Worker A completes a report in 12 hours, Worker B in 18 hours, and Worker C in 36 hours. How long does it take if all three collaborate?
+
+1. Find the LCM of 12, 18, and 36: Total work = `36 units`.
+2. Compute individual hourly rates:
+   - Worker A: `36 / 12 = 3 units/hr`
+   - Worker B: `36 / 18 = 2 units/hr`
+   - Worker C: `36 / 36 = 1 unit/hr`
+3. Combined rate: `3 + 2 + 1 = 6 units/hr`.
+4. Time to finish: `36 units / 6 units/hr = 6 hours`.
+
+### Example 3: Alligation mixture cross
+
+A distributor blends ₹80/kg Grade A rice with ₹120/kg Grade B rice to create a wholesale mix selling at ₹95/kg. Find the required ratio.
+
+1. Set up the cross:
+   ```
+   Cheaper (80)         Dearer (120)
+                \     /
+                Mean (95)
+                /     \
+   (120 - 95 = 25)    (95 - 80 = 15)
+   ```
+2. Ratio of Cheaper to Dearer = `25 : 15 = 5 : 3`.
+
+### Example 4: Data interpretation caselet — percentage points vs growth
+
+| City Branch | FY23 Sales | FY24 Sales |
+|---|---|---|
+| Bengaluru | ₹40 Lakh | ₹50 Lakh |
+| Hyderabad | ₹60 Lakh | ₹72 Lakh |
+| Pune | ₹25 Lakh | ₹32 Lakh |
+
+1. **Growth rates:**
+   - Bengaluru: `(50 - 40) / 40 = 10 / 40 = 25.0%`
+   - Hyderabad: `(72 - 60) / 60 = 12 / 60 = 20.0%`
+   - Pune: `(32 - 25) / 25 = 7 / 25 = 28.0%`
+2. Pune recorded the highest percentage growth (28.0%) despite having the lowest absolute growth (₹7 Lakh vs ₹12 Lakh in Hyderabad).
+3. The gap between Pune and Hyderabad is `28.0 - 20.0 = 8.0 percentage points`.
+
+## Common mistakes
+
+<CommonMistake>
+Confusing percentage points with percentage change. If churn moves from 2% to 4%, it increased by 2 percentage points, but churn volume doubled (100% increase).
+</CommonMistake>
+
+<CommonMistake>
+Averaging averages without weighting. If Team A (10 people) averages 80% and Team B (40 people) averages 90%, the combined average is not `(80 + 90)/2 = 85%`, but `(10*80 + 40*90)/50 = 88%`.
+</CommonMistake>
+
+<CommonMistake>
+Assuming a +20% increase followed by a -20% decrease returns to original value. `100 -> 120 -> 96` results in a net 4% loss.
+</CommonMistake>
+
+<CommonMistake>
+Adding worker days directly instead of rates. If Person A takes 4 days and Person B takes 4 days, working together takes 2 days, not 8 days.
+</CommonMistake>
+
+<CommonMistake>
+Getting stuck on a single question for five minutes. In an OA, every question carries equal marks; abandon stalled calculations after 90 seconds.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet ids={[
+  "interview-pr-aptitude-001",
+  "interview-pr-aptitude-002",
+  "interview-pr-aptitude-003",
+  "interview-pr-aptitude-004",
+  "interview-pr-aptitude-005",
+  "interview-pr-aptitude-006",
+  "interview-pr-aptitude-007",
+  "interview-pr-aptitude-008"
+]} />
+
+## Mini quiz
+
+<Quiz questions={[
+  {
+    q: "A product is offered with successive discounts of 20% and 10%. What is the single equivalent discount?",
+    options: [
+      "30%",
+      "28%",
+      "18%",
+      "25%"
+    ],
+    answer: 1,
+    explanation: "Using the formula d1 + d2 - (d1 * d2)/100 gives 20 + 10 - 200/100 = 28%."
+  },
+  {
+    q: "A delivery vehicle travels 60 km at 40 km/h and returns along the same route at 60 km/h. What is the average speed for the round trip?",
+    options: [
+      "50 km/h",
+      "48 km/h",
+      "45 km/h",
+      "52 km/h"
+    ],
+    answer: 1,
+    explanation: "For equal distances, the average speed is the harmonic mean: 2xy / (x + y) = 2(40)(60) / (40 + 60) = 4800 / 100 = 48 km/h."
+  },
+  {
+    q: "What is the fraction 1/7 expressed as a percentage?",
+    options: [
+      "12.5%",
+      "16.67%",
+      "14.28%",
+      "11.11%"
+    ],
+    answer: 2,
+    explanation: "1/7 is approximately 14.28% (or 14 2/7%)."
+  },
+  {
+    q: "Three fair coins are tossed simultaneously. What is the probability of getting at least one head?",
+    options: [
+      "1/2",
+      "3/8",
+      "7/8",
+      "3/4"
+    ],
+    answer: 2,
+    explanation: "Using the complement rule: P(at least one head) = 1 - P(no heads) = 1 - (1/2)^3 = 1 - 1/8 = 7/8."
+  },
+  {
+    q: "If an app's conversion rate rises from 4% to 5%, how should this change be accurately described?",
+    options: [
+      "An increase of 1% and 1 percentage point",
+      "An increase of 25% and 1 percentage point",
+      "An increase of 20% and 2 percentage points",
+      "An increase of 1% and 25 percentage points"
+    ],
+    answer: 1,
+    explanation: "The absolute difference is 5% - 4% = 1 percentage point. The relative change is (5 - 4) / 4 = 1/4 = 25%."
+  }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+During technical interviews and case rounds, interviewers often ask you to perform mental calculations or estimate order-of-magnitude bounds aloud without opening Excel or Python.
+</InterviewAlert>
+
+<InterviewQ q="How do you handle severe time pressure during timed online assessments?">
+I enforce a strict three-pass strategy. On pass one, I solve all immediate 30-second questions (percentages, standard unit splits, clear lookups) and never pause on long texts. On pass two, I allocate 60 to 90 seconds to multi-step work and DI problems. On pass three, if time remains, I tackle complex puzzles. If a question exceeds 90 seconds without a clear path to resolution, I eliminate obviously flawed options and move on to protect easier marks downstream.
+</InterviewQ>
+
+<InterviewQ q="How do you quickly sanity-check numbers before presenting them to stakeholders?">
+I use order-of-magnitude bounds and reverse math. For example, if total revenue is ₹50 Lakh and a segment accounts for 14.2%, I instantly approximate 1/7 of 50 Lakh (~₹7.1 Lakh). If my SQL query outputs ₹14 Lakh, I know immediately that an inner join caused a fan-out duplicate error without having to inspect all 10,000 rows.
+</InterviewQ>
+
+<InterviewQ q="Explain the difference between a percentage change and a percentage point change to a non-technical manager.">
+Percentage points represent the simple subtraction between two percentages. For instance, if our UPI failure rate moves from 2% to 3%, it grew by 1 percentage point. However, percentage change reflects the relative increase: 3% is 50% higher than 2%. Describing it as a 50% surge explains the operational impact on customer support tickets, while saying 'it went up by 1 point' describes the metric scale.
+</InterviewQ>
+
+## Key takeaways
+
+- Memorize fractions from 1/2 to 1/12 to eliminate long division in percentage calculations.
+- Use the LCM method for time-and-work and pipes problems to convert fractional days into integer unit rates.
+- Understand that successive percentages multiply their factors rather than adding linearly (`+20%` and `-10%` = `+8%`).
+- In Data Interpretation, always inspect table units and distinguish percentage point differences from relative percentage growth.
+- Protect your testing time: never spend more than 90 seconds on a single question in an Online Assessment.
+
+## Further reading
+
+<FurtherReading ids={["khan-stats"]} />

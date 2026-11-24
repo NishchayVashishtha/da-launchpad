@@ -1,0 +1,336 @@
+---
+title: "Sample take-home: UPI failures, with a model submission"
+description: "Study an end-to-end take-home analytics assignment from raw business brief to clean SQL and executive recommendation."
+module: interview
+order: 5
+estimatedMinutes: 50
+objectives:
+  - "Deconstruct a realistic fintech take-home brief into structured analytical milestones"
+  - "Execute production-grade SQL data cleaning and aggregation on real transaction data"
+  - "Isolate system bottlenecks across partner banks, client apps, and peak operating hours"
+  - "Synthesize empirical query results into a high-impact one-page executive memo"
+  - "Evaluate candidate submissions using an objective hiring manager grading rubric"
+tags: ["take-home", "fintech", "upi", "model-answer", "sql"]
+---
+
+## Learning objectives
+
+- Translate an ambiguous business brief into four structured technical tasks and deliverables.
+- Perform baseline data hygiene checks in SQLite to handle duplicate rows, missing values, and outliers.
+- Query transaction volumes and failure rates across partner banks, client applications, and time windows.
+- Draft an executive-ready one-page memo containing headline findings, root causes, and quantified recommendations.
+- Benchmark candidate work against an objective 5-part evaluation rubric used by hiring teams.
+
+## Why this matters for a Data Analyst job
+
+The fastest way to master take-home assignments is to study a complete, production-grade model submission. Most candidates understand SQL syntax in isolation, but struggle to connect the dots: How do you document assumptions? How do you choose between presenting a raw table or a summary? How do technical failure codes translate into business recommendations that an Operations Director will fund?
+
+This lesson presents a real-world scenario from a fictional digital payments platform ("PayZippy"). You will review the original task brief, study the exact queries and outputs, and read the final one-page executive summary that secured an interview.
+
+<RealWorld>
+In a fast-growing Indian payments company processing over ₹50 Crore in monthly UPI volume, a 0.5% increase in failure rate results in thousands of angry merchants and over ₹15 Lakh in lost checkout commissions. When leadership requests a take-home analysis, they are not grading academic code elegance; they are searching for an analyst who can pinpoint the exact failing infrastructure component, calculate excess failure costs, and deliver a risk-managed rollout plan.
+</RealWorld>
+
+## Concept
+
+### The business brief
+
+Imagine receiving the following email from the Head of Operations at digital payments platform PayZippy:
+
+> **Take-Home Brief: UPI Transaction Failure Investigation**
+> 
+> *Hi Candidate,*
+> 
+> *Over the past several quarters, our merchant partners have raised concerns regarding elevated UPI transaction failures. Our engineering logs are available in the attached `fintech` database (`transactions` and `failed_transactions` tables).*
+> 
+> *Please complete the following in 4 hours:*
+> 1. *Calculate our overall failure rate and evaluate the monthly failure trend over the last 24 months.*
+> 2. *Identify where failures concentrate: isolate specific partner banks, client payment apps, time-of-day windows, and transaction amount bands.*
+> 3. *Analyze our primary failure codes and assess whether customer retries effectively recover failed transactions.*
+> 4. *Provide three concrete, data-backed operational recommendations with projected recovery impact.*
+> 
+> *Deliverable: A clean SQL script and a 1-page executive summary.*
+
+### The hiring manager grading rubric
+
+Submissions are evaluated against five weighted criteria (total 100 points):
+
+| Criteria | Weight | What Earns Top Marks (4/4) | What Triggers Deductions (1-2/4) |
+|---|---|---|---|
+| **Data Hygiene & Assumptions** | 25% | Identifies 89 duplicate rows; excludes PENDING cleanly; notes P2P null merchants. | Aggregates raw table with duplicates; silent assumptions on PENDING. |
+| **Analytical Rigor** | 20% | Correct failure rate formulas; isolates Kaveri Bank and NammaPay outage windows. | Confuses transaction counts with failure rates; ignores denominator scale. |
+| **Root Cause Depth** | 20% | Pinpoints Kaveri Bank evening server timeouts and NammaPay discrete outage dates. | Generic claims like 'users have low balance' without segmenting. |
+| **Executive Communication** | 20% | Crisp 1-page memo leading with quantified impact; clean tables; no jargon. | 15-page dump of raw code; burying findings under process descriptions. |
+| **Actionable Recommendations** | 15% | Proposes error-code specific retry policies with empirical recovery rates. | Vague advice like 'improve server performance' or 'talk to banks'. |
+
+## Worked examples
+
+### Step 1: Initial data hygiene and assumption verification
+
+We first inspect total records versus unique transaction IDs:
+
+<SqlPlayground
+  dataset="fintech"
+  query={`SELECT
+  COUNT(*) AS total_rows,
+  COUNT(DISTINCT txn_id) AS unique_txn_ids
+FROM transactions;`}
+  title="Step 1: Duplicate Check on Transactions"
+/>
+
+**Finding:** The table contains **22,389 rows** but only **22,300 unique transactions** (89 exact duplicates). We establish an explicit analytical rule: all subsequent queries will deduplicate by `txn_id` using a CTE `clean`, and failure rate will be defined strictly as `FAILED / (SUCCESS + FAILED)`.
+
+### Step 2: Monthly failure rate trend
+
+Next, we evaluate whether failures are steady or characterized by sudden spikes:
+
+<SqlPlayground
+  dataset="fintech"
+  query={`WITH clean AS (
+  SELECT DISTINCT txn_id, status, strftime('%Y-%m', txn_datetime) AS month
+  FROM transactions
+)
+SELECT
+  month,
+  COUNT(*) AS n_txns,
+  ROUND(100.0 * SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) / COUNT(*), 2) AS fail_pct
+FROM clean
+GROUP BY month
+ORDER BY month ASC
+LIMIT 12;`}
+  title="Step 2: Monthly Failure Trend (First 12 Months)"
+/>
+
+**Finding:** Baseline failure rate normally fluctuates between **1.5% and 2.2%**. However, four distinct months exhibit dramatic spikes: March 2023 (7.12%), September 2023 (6.28%), February 2024 (4.99%), and July 2024 (4.46%).
+
+### Step 3: Failure concentration by bank and client app
+
+We segment failure rates by partner bank to calculate excess failure volume:
+
+<SqlPlayground
+  dataset="fintech"
+  query={`WITH clean AS (
+  SELECT DISTINCT txn_id, bank, status
+  FROM transactions
+),
+overall AS (
+  SELECT 1.0 * SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) / COUNT(*) AS overall_rate
+  FROM clean
+),
+bank_stats AS (
+  SELECT
+    bank,
+    SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) AS failed,
+    COUNT(*) AS n_txns
+  FROM clean
+  GROUP BY bank
+)
+SELECT
+  bank,
+  failed,
+  ROUND(n_txns * (SELECT overall_rate FROM overall), 2) AS expected,
+  ROUND(failed - n_txns * (SELECT overall_rate FROM overall), 2) AS excess
+FROM bank_stats
+ORDER BY excess DESC, bank ASC
+LIMIT 3;`}
+  title="Step 3: Excess Failures by Partner Bank"
+/>
+
+**Finding:** **Kaveri Co-op Bank** generated **103 failures** compared to an expected 45.82 at network average, contributing **57.18 excess failures**. It has a **6.06% failure rate**, while all other partner banks maintain rates between 2.16% and 2.94%.
+
+### Step 4: Hourly bottlenecks and ticket size analysis
+
+We cross-tabulate Kaveri Bank's performance by hour of day:
+
+<SqlPlayground
+  dataset="fintech"
+  query={`WITH clean AS (
+  SELECT DISTINCT txn_id, bank, status, strftime('%H', txn_datetime) AS hour
+  FROM transactions
+  WHERE bank = 'Kaveri Co-op Bank'
+)
+SELECT
+  hour,
+  COUNT(*) AS n_txns,
+  ROUND(100.0 * SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) / COUNT(*), 2) AS fail_pct
+FROM clean
+GROUP BY hour
+ORDER BY fail_pct DESC, hour ASC
+LIMIT 5;`}
+  title="Step 4: Kaveri Co-op Bank Hourly Failure Peak"
+/>
+
+**Finding:** Excluding the tiny 2-transaction sample at hour 04, Kaveri Bank's failures cluster severely during peak evening retail hours: **hour 20 (12.98%)**, **hour 09 (11.65%)**, and **hour 19 (9.88%)**. Core banking systems become congested during evening rush hours.
+
+### Step 5: Failure code Pareto and retry recovery efficiency
+
+We evaluate which failure codes recover when customers or systems trigger retries:
+
+<SqlPlayground
+  dataset="fintech"
+  query={`WITH clean_failed AS (
+  SELECT DISTINCT failed_txn_id, failure_code, retried, retry_succeeded
+  FROM failed_transactions
+  WHERE retried = 1
+)
+SELECT
+  failure_code,
+  COUNT(*) AS retried_n,
+  SUM(CASE WHEN retry_succeeded = 1 THEN 1 ELSE 0 END) AS recovered_n,
+  ROUND(100.0 * SUM(CASE WHEN retry_succeeded = 1 THEN 1 ELSE 0 END) / COUNT(*), 2) AS recovery_pct
+FROM clean_failed
+GROUP BY failure_code
+ORDER BY recovery_pct DESC, retried_n DESC, failure_code ASC;`}
+  title="Step 5: Retry Recovery Success Rate by Error Code"
+/>
+
+**Finding:** Technical timeout errors recover remarkably well: **`BANK_SERVER_TIMEOUT` recovers at 74.07%** and `NETWORK_ERROR` recovers at 67.35%. In contrast, user balance issues (`INSUFFICIENT_FUNDS`) recover only **13.46%** of the time.
+
+### Step 6: The final 1-page executive submission
+
+Below is the complete, formatted executive summary submitted to the hiring manager:
+
+> ### Executive Memorandum: UPI Transaction Failure Diagnosis & Action Plan
+> **To:** Head of Operations, PayZippy  
+> **From:** Data Analyst Candidate  
+> **Date:** November 2024  
+> **Objective:** Diagnose elevated payment failure rates across 22,300 unique transactions and propose operational remediation.
+> 
+> ---
+> 
+> #### 1. Key Findings & Root Cause Analysis
+> - **Overall System Performance:** The baseline UPI failure rate across the network is **2.70%** (601 failed transactions out of 22,300 deduplicated records). However, failures are not uniformly distributed.
+> - **Primary Infrastructure Bottleneck (Kaveri Co-op Bank):** Kaveri Co-op Bank exhibits a **6.06% failure rate**, generating **57.18 excess failures** (nearly 25% of all network failures despite processing only 7.6% of volume). Failures peak during commercial rush hours (9:00 AM and 7:00–8:00 PM) at **11.6% to 13.0%**, predominantly logged as `BANK_SERVER_TIMEOUT`.
+> - **Client App Outage Clusters (NammaPay):** The NammaPay payment app averaged a **5.10% failure rate**. Investigation isolates this entirely to four discrete outage days (2023-03-14, 2023-09-21, 2024-02-06, and 2024-07-16) where failure rates exceeded **31% to 40%** due to `UPI_SYSTEM_DOWN`. On normal days, NammaPay operates at a healthy 2.0% baseline.
+> - **High-Value Limit Bottlenecks:** Transactions exceeding ₹50,000 fail at **10.0%** (vs 2.66% for micro-transactions), driven by user banking transfer caps (`LIMIT_EXCEEDED`).
+> 
+> #### 2. Operational Recommendations & Projected Impact
+> 1. **Implement Automated Smart Retries for Server Timeouts:** Deploy an in-app automated retry with exponential backoff (2s, 5s) exclusively for `BANK_SERVER_TIMEOUT` and `NETWORK_ERROR` codes. Retries for timeout errors currently exhibit a **74.07% recovery rate**. This will recover ~30 failed transactions monthly, reducing Kaveri Bank's net failure rate to ~3.5%.
+> 2. **Dynamic In-App Bank Health Banners:** When Kaveri Bank failure rates exceed 8% during evening peak hours, trigger a gentle UI notification advising users to switch to an alternative linked bank account.
+> 3. **Proactive Outage Circuit-Breakers for NammaPay:** Establish real-time telemetry alerting operations when NammaPay failure rates exceed 10% in a 15-minute rolling window, automatically routing transactions to secondary gateway bridges.
+> 
+> #### 3. Data Assumptions & Limitations
+> - Deduplicated 89 duplicate `txn_id` records. Excluded 89 PENDING transactions from failure rate calculations.
+> - Analysis does not account for user lifetime value (LTV) or merchant churn costs. Recommended next step is to link transaction logs to 30-day merchant retention data.
+
+## Common mistakes
+
+<CommonMistake>
+Reporting failure rate using the uncleaned raw row count (22,389), which includes 89 duplicate records and produces conflicting numbers with the evaluator's answer key.
+</CommonMistake>
+
+<CommonMistake>
+Treating PENDING transactions (89 rows) as successful payments, which artificially deflates the reported failure rate.
+</CommonMistake>
+
+<CommonMistake>
+Over-indexing on hour 04's 50% failure rate for Kaveri Bank without noticing that it represents only 2 total transactions (1 failure, 1 success).
+</CommonMistake>
+
+<CommonMistake>
+Recommending blind automatic retries for all transactions, ignoring that retrying INSUFFICIENT_FUNDS succeeds only 13% of the time and creates unnecessary load on banking servers.
+</CommonMistake>
+
+<CommonMistake>
+Writing a 15-page essay describing your SQL syntax line by line instead of packaging findings into an executive-ready memo with bold headings and bullet points.
+</CommonMistake>
+
+## Practice questions
+
+<PracticeSet ids={[
+  "interview-pr-sampletake-001",
+  "interview-pr-sampletake-002",
+  "interview-pr-sampletake-003",
+  "interview-pr-sampletake-004",
+  "interview-pr-sampletake-005"
+]} />
+
+## Mini quiz
+
+<Quiz questions={[
+  {
+    q: "Why is calculating 'excess failures' more actionable for leadership than comparing raw failure percentages alone?",
+    options: [
+      "Because excess failures always equals zero",
+      "Because multiplying failure rate differences by transaction volume quantifies the exact count of recoverable customer transactions",
+      "Because raw percentages cannot be plotted on a bar chart",
+      "Because executive leaders do not understand percentages"
+    ],
+    answer: 1,
+    explanation: "Excess failures weights the percentage delta by transaction volume, proving which partner bank causes the greatest absolute operational damage."
+  },
+  {
+    q: "What was the root cause behind Kaveri Co-op Bank's 6.06% failure rate?",
+    options: [
+      "Malicious cyber attacks occurring at 3:00 AM",
+      "Core banking server timeouts clustering during peak morning (9 AM) and evening (7-8 PM) traffic hours",
+      "Users entering incorrect UPI PINs",
+      "Lack of smartphone internet connectivity in rural branches"
+    ],
+    answer: 1,
+    explanation: "Hourly segmentation proves that failures cluster during peak commercial traffic hours (11% to 13%) primarily with BANK_SERVER_TIMEOUT codes."
+  },
+  {
+    q: "How did NammaPay's failure performance differ from Kaveri Co-op Bank?",
+    options: [
+      "NammaPay failed consistently every single hour of every day",
+      "NammaPay operated cleanly at 2.0% on normal days, but suffered four discrete multi-hour outage days where failures exceeded 31% to 40%",
+      "NammaPay had zero failed transactions in two years",
+      "NammaPay only failed for transactions below 10 rupees"
+    ],
+    answer: 1,
+    explanation: "Isolating daily failure rates reveals that NammaPay's annual 5.10% failure rate was caused entirely by four severe outage incidents, not chronic daily instability."
+  },
+  {
+    q: "Why should automatic retries be restricted to timeout and network failure codes rather than applied to all failures?",
+    options: [
+      "Because retries cost 100 rupees per call",
+      "Because technical timeout errors recover at 74%, while insufficient funds errors recover only 13% and cause useless server load",
+      "Because credit cards do not allow retries",
+      "Because users always uninstall apps when retries happen"
+    ],
+    answer: 1,
+    explanation: "Empirical data proves that user balance deficits do not resolve within seconds; retrying them wastes system resources and frustrates users."
+  },
+  {
+    q: "What is the primary function of the Limitations section in a take-home submission?",
+    options: [
+      "Apologizing for poor coding skills",
+      "Demonstrating commercial maturity by stating unmeasured variables, data gaps, and recommended future iterations",
+      "Asking the recruiter for a deadline extension",
+      "Listing your favorite programming languages"
+    ],
+    answer: 1,
+    explanation: "Acknowledging data limitations (e.g., lack of user LTV or merchant churn data) signals intellectual honesty and analytical depth."
+  }
+]} />
+
+## Interview angle
+
+<InterviewAlert>
+When discussing a completed take-home assignment, interviewers will challenge your metric definitions. Be prepared to defend why you excluded PENDING transactions and how you isolated outliers.
+</InterviewAlert>
+
+<InterviewQ q="Walk me through how you structured your take-home analysis on UPI payment failures.">
+I structured my analysis into four distinct phases. First, I verified data hygiene, identifying and deduplicating 89 duplicate rows to ensure clean counts. Second, I examined the 24-month trend, discovering that failures were not random but clustered in specific months and hours. Third, I segmented failures across banks and apps, isolating that Kaveri Co-op Bank accounted for 57 excess failures due to evening peak-hour timeouts, while NammaPay suffered four discrete outage days. Finally, I synthesized the findings into an executive memo proposing smart retries for timeout codes, which currently recover 74% of failed transactions.
+</InterviewQ>
+
+<InterviewQ q="How did you decide whether to include PENDING transactions in your failure rate denominator?">
+I treated PENDING transactions as unconfirmed states rather than terminal outcomes. Including them as successes would artificially deflate the failure rate, while counting them as failures would overstate technical errors. Therefore, I explicitly documented the decision in my assumptions log: failure rate was strictly calculated over resolved transactions as `FAILED / (SUCCESS + FAILED)`. I also verified that PENDING records accounted for only 0.4% of total volume, ensuring that excluding them did not distort baseline benchmarks.
+</InterviewQ>
+
+<InterviewQ q="What would be your immediate next step if this recommendation was approved by leadership?">
+My immediate next step would be setting up an A/B test for the automated retry policy. We would roll out the exponential backoff retry mechanism to 10% of users experiencing `BANK_SERVER_TIMEOUT` errors with Kaveri Co-op Bank. I would monitor two metrics daily: the primary metric (recovered payment percentage) and the guardrail metric (average checkout latency). Once we confirm that checkout latency remains within acceptable thresholds, we would scale the policy to 100% of partner banks.
+</InterviewQ>
+
+## Key takeaways
+
+- Study high-scoring submissions to understand how empirical SQL outputs transform into persuasive business prose.
+- Always lead with an executive memo: state overall failure volume, root cause concentration, and quantified fixes upfront.
+- Calculate excess failures to demonstrate commercial prioritization rather than relying solely on raw percentages.
+- Differentiate between chronic infrastructure bottlenecks (Kaveri Bank peak hours) and acute outage events (NammaPay discrete dates).
+- Propose error-specific product solutions: retries work exceptionally well for timeouts (74%), but fail for insufficient funds (13%).
+
+## Further reading
+
+<FurtherReading ids={["mode-sql", "sqlite-docs"]} />

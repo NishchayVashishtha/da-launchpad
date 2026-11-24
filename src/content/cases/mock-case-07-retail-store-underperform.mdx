@@ -1,0 +1,99 @@
+---
+title: "Retail Store Cluster Underperformance"
+industry: "Retail & Consumer"
+difficulty: medium
+type: mock-case
+estimatedMinutes: 40
+---
+
+## Problem
+
+You are interviewing for a Commercial Retail Analyst position at "Vasudha Retail", an omni-channel supermarket and convenience store chain with 24 physical outlets across India.
+
+The Regional Retail Director starts the case discussion:
+> *"A cluster of our suburban supermarket and express outlets has consistently missed monthly sales targets by 5% to 10% over the past two quarters. Operating leases in these locations represent high fixed costs, and the executive committee is debating whether to close these underperforming stores or invest in operational turnarounds. How would you evaluate whether this underperformance is driven by weak local footfall, incorrect product assortment, or internal supply chain failure? Should we close them or fix them?"*
+
+You have 35 minutes to structure an investigation, analyze sales and inventory records, and present an objective store turnaround framework.
+
+## Clarifying questions to ask
+
+1. **Definition of 'Underperformance':** *"Is underperformance defined by target sales attainment percentage (`actual_sales / target_sales`), gross margin profitability, or revenue per square foot?"*
+   - *Interviewer response:* Target attainment against set revenue targets, with target misses clustered around 95% or below.
+2. **Data Gaps in Targets:** *"Are targets available across all store locations, or are there regional reporting variances?"*
+   - *Interviewer response:* Note that our East region stores (Kolkata, Patna, Guwahati) currently operate without formal targets, so target attainment analysis is restricted to North, South, and West regions.
+3. **Store Format & Vintage:** *"Does the underperformance cluster in large supermarket formats (`>8,000 sq ft`) or smaller Express stores (`<4,000 sq ft`), and how old are these locations?"*
+   - *Interviewer response:* Both formats appear in the underperforming list, and all evaluated stores have been open for over 18 months (mature stores).
+4. **Local Footfall vs Inventory Availability:** *"Have store managers reported declining customer walk-ins, or are they experiencing product stockouts on shelves?"*
+   - *Interviewer response:* Store managers complain frequently about delayed distribution center shipments and stockouts of high-velocity fast-moving consumer goods (FMCG).
+
+## Suggested structure
+
+Deconstruct retail store sales into demand levers, inventory supply, and operational efficiency:
+
+```
+Store Revenue Performance
+  ├── 1. Demand & Customer Footfall
+  │     ├── Footfall Traffic & Local Competition
+  │     └── Average Basket Size & Units Per Transaction (UPT)
+  ├── 2. Inventory Availability & Supply Chain
+  │     ├── Out-of-Stock Frequency (Days Out of Stock per SKU)
+  │     └── Reorder Level Compliance & Distribution Latency
+  ├── 3. Assortment & Merchandise Mix
+  │     ├── Fast-Moving Groceries vs Slow-Moving Home Decor
+  │     └── Local Assortment Fit vs Regional Preferences
+  └── 4. Unit Economics & Store Profitability
+        ├── Rent / Carpet Area (Revenue per Sq Ft)
+        └── Decision Rule: Remediate vs Relocate vs Close
+```
+
+## Analysis plan
+
+Using the `retail` database, investigate store-level operational metrics:
+
+1. **Clean Sales Data:** Deduplicate 350 duplicate rows in `sales` and filter out six 100x data-entry outliers (`net_amount_inr > 500000`).
+2. **Evaluate Target Attainment:** Calculate target attainment across stores where targets exist.
+3. **Analyze Inventory Stockouts:** Query the `inventory` table to measure `days_out_of_stock` across all 24 stores to determine whether shelves are empty.
+4. **Inspect Category Inventory Days:** Compare sales velocity across categories (Groceries vs Home Decor) to identify tied-up working capital.
+
+<SqlPlayground
+  dataset="retail"
+  query={`SELECT
+  st.store_name,
+  UPPER(TRIM(st.city)) AS city,
+  SUM(inv.days_out_of_stock) AS total_stockout_days,
+  ROUND(AVG(inv.days_out_of_stock), 2) AS avg_stockout_days
+FROM inventory inv
+JOIN stores st ON inv.store_id = st.store_id
+GROUP BY st.store_name, st.city
+ORDER BY total_stockout_days DESC
+LIMIT 5;`}
+  title="Try It: Store Inventory Stockout Days"
+/>
+
+**Analysis Finding:** The underperformance is overwhelmingly driven by **catastrophic inventory stockouts**, not lack of consumer demand. Four specific locations—**Gomti Nagar (2,862 stockout days)**, **Velachery (2,733)**, **Adajan (2,716)**, and **Kharadi (2,676)**—experience more than **13x the stockout frequency** of peer stores (which average 180 to 220 stockout days). Customers are walking into stores, finding empty shelves for basic staples, and leaving without purchasing. Furthermore, inventory analysis shows that Home Decor has 6 to 10 months of stagnant stock, tying up store working capital that should fund grocery replenishment.
+
+## Model recommendation
+
+1. **Do NOT Close the Stores; Fix Distribution Fulfillment:** Closing mature stores with strong suburban footfall would sacrifice customer goodwill and incur heavy lease termination penalties. The root cause is supply chain distribution failure.
+2. **Automated Replenishment for Core SKUs:** Reconfigure automated reorder levels at regional distribution centers for the top 100 daily grocery SKUs, guaranteeing safety stock for Velachery, Adajan, Gomti Nagar, and Kharadi.
+3. **Liquidate Stagnant Home Decor Inventory:** Mark down slow-moving Home Decor items by 30% to clear shelf space and recover working capital, reallocating shelf area to high-velocity packaged food and dairy.
+4. **Establish a Two-Quarter Decision Rule:** Implement supply chain fixes immediately. If a store fails to exceed 95% target attainment and generate positive store-level EBITDA after two consecutive quarters of full stock availability, initiate lease renegotiation or store closure.
+
+## Evaluation rubric
+
+| Score | Criteria | What the Interviewer Looks For |
+|---|---|---|
+| **4 / 4** | **Structure** | Distinguishes footfall demand from supply-side stockout issues; notes the East region target data gap. |
+| **4 / 4** | **Business Sense** | Understands store lease commitments, working capital lock-in, and the commercial cost of premature closure. |
+| **4 / 4** | **Data Approach** | Cleans 350 duplicate sales rows; filters 100x sales outliers; connects inventory stockouts to sales misses. |
+| **4 / 4** | **Numbers / Rigor** | Quantifies that the four failing stores have 2,600+ stockout days (13x higher than peers averaging ~200 days). |
+| **4 / 4** | **Communication** | Delivers an unambiguous executive decision: 'Fix, do not close', supported by an objective 2-quarter review rule. |
+
+## Follow-up questions
+
+- **Interviewer:** *"Why did the East region stores have no target data in our tables, and how does an analyst handle missing benchmarks?"*  
+  **Candidate:** *"In real-world retail systems, regional expansions or franchise acquisitions often run on legacy ERPs before centralized targets are integrated. Instead of discarding East stores, an analyst benchmarks them on internal growth metrics: year-over-year sales growth, sales per square foot, and stockout frequency relative to peers."*
+- **Interviewer:** *"What is the risk of cannibalization when opening a new Express outlet near an existing Supermarket?"*  
+  **Candidate:** *"If an Express store opens within 1.5 km of a Supermarket, it may siphon convenience shoppers who previously visited the larger store for quick trips. We measure cannibalization by tracking whether the Supermarket's basket count drops while its average basket size increases (customers visiting only for bulk monthly grocery runs)."*
+- **Interviewer:** *"How would you measure the revenue lost specifically due to out-of-stock items?"*  
+  **Candidate:** *"By calculating `Lost Sales = Days Out of Stock * Average Daily Sales Volume * Unit Price` for each out-of-stock SKU during its in-stock baseline weeks."*

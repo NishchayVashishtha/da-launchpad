@@ -1,0 +1,103 @@
+---
+title: "E-Commerce Return Rate Surge"
+industry: "E-Commerce"
+difficulty: medium
+type: mock-case
+estimatedMinutes: 40
+---
+
+## Problem
+
+You are interviewing for a Senior Business Analyst position at "ShopBharat", a major multi-category e-commerce marketplace in India.
+
+The Category Director for Apparel and Lifestyle begins the case:
+> *"During our recent festive Diwali sale, gross merchandise value (GMV) hit record highs. However, our 30-day post-sale returns rate in the Fashion category surged from a normal 12% baseline to over 20%. Reverse logistics costs and restocking fees are wiping out our sale margins. What caused this spike, and how do we reduce returns without crushing top-line sales?"*
+
+You have 35 minutes to structure the problem, analyze the data, and deliver a strategic remediation plan.
+
+## Clarifying questions to ask
+
+1. **Definition of Return Rate:** *"Is the return rate calculated as returned items divided by total items ordered, or returned GMV divided by total gross sales?"*
+   - *Interviewer response:* Assume item-level return rate: `COUNT(returned_items) / COUNT(ordered_items)`.
+2. **Category Specificity:** *"Did returns rise across all merchandise categories (Electronics, Grocery, Home), or is it isolated to Fashion and Footwear?"*
+   - *Interviewer response:* The surge is heavily concentrated in Fashion and Footwear; Electronics and Grocery return rates remained virtually flat.
+3. **Customer Cohort Effect:** *"Did the festive sale attract a large influx of first-time discount shoppers, and how does their return behavior compare to Prime or loyal members?"*
+   - *Interviewer response:* Yes, first-time shoppers using deep festive coupons exhibited higher return rates than repeat customers.
+4. **Payment Mode Split:** *"Did Cash on Delivery (COD) orders experience higher return-to-origin (RTO) or doorstep rejections compared to prepaid UPI orders?"*
+   - *Interviewer response:* COD orders had slightly higher doorstep rejections, but customer-initiated returns post-delivery drove the primary volume spike.
+
+## Suggested structure
+
+Deconstruct return rate into mutually exclusive drivers:
+
+```
+Fashion Return Rate
+  ├── 1. Product & Sizing Mismatch
+  │     ├── Size / Fit Discrepancies (Customer ordered wrong size)
+  │     └── Inaccurate Product Descriptions / Photos vs Reality
+  ├── 2. Discount Depth & Consumer Intent
+  │     ├── 'Wardrobing' / Bracket Buying (Ordering size M & L, returning one)
+  │     └── Impulse Buying Driven by Deep Festive Discounts (>60% off)
+  ├── 3. Seller & Fulfillment Quality
+  │     ├── High-Return Vendor / SKU Concentration
+  │     └── Packaging Damage & Wrong Item Dispatched
+  └── 4. Customer Cohort & Payment Mechanism
+        ├── New Shoppers vs Prime Members
+        └── COD vs Prepaid UPI
+```
+
+## Analysis plan
+
+Using the `ecommerce` database, formulate a targeted SQL exploration:
+
+1. **Clean Category Values:** Apply `UPPER(TRIM(category))` to standardize minor casing and whitespace anomalies in `products`.
+2. **Benchmark Return Rates Across Categories:** Confirm that Fashion and Footwear are true outliers relative to Grocery and Electronics.
+3. **Analyze Stated Return Reasons:** Query `returns.return_reason` to isolate the dominant driver of customer returns.
+4. **Evaluate COD vs Prepaid Return Patterns:** Check whether payment method correlates with return propensity.
+
+<SqlPlayground
+  dataset="ecommerce"
+  query={`WITH clean_items AS (
+  SELECT DISTINCT oi.order_item_id, oi.product_id
+  FROM order_items oi
+)
+SELECT
+  UPPER(TRIM(p.category)) AS category,
+  COUNT(ci.order_item_id) AS items_sold,
+  COUNT(r.return_id) AS items_returned,
+  ROUND(100.0 * COUNT(r.return_id) / COUNT(ci.order_item_id), 2) AS return_pct
+FROM clean_items ci
+JOIN products p ON ci.product_id = p.product_id
+LEFT JOIN returns r ON ci.order_item_id = r.order_item_id
+GROUP BY UPPER(TRIM(p.category))
+ORDER BY return_pct DESC;`}
+  title="Try It: Return Rate by Product Category"
+/>
+
+**Analysis Finding:** Category analysis confirms that **Fashion (20.21%)** and **Footwear (14.94%)** have dramatically higher return rates than Electronics (6.31%), Home & Kitchen (4.42%), and Grocery (1.23%). Furthermore, analyzing `returns.return_reason` reveals that **'Size / fit issue' accounts for 39.18%** of all returns, followed by **'Not as described' at 21.90%**. Together, sizing and description mismatches drive over 61% of all e-commerce returns.
+
+## Model recommendation
+
+1. **Interactive Sizing & Fit Advisor:** Implement an interactive size recommendation tool (prompting user height, weight, and fit preference) and show customer review fit distributions ("Runs small: 65%"). This directly targets the 39.18% size/fit return reason.
+2. **Combat 'Bracket Buying':** Detect when a user adds the same garment in two adjacent sizes (e.g., Size 38 and Size 40) to their cart; trigger an in-cart sizing prompt rather than fulfilling duplicate sizes that guarantee a return.
+3. **Vendor Quality Control & Delisting:** Establish a 25% return rate threshold for marketplace apparel sellers. Vendors exceeding this threshold undergo mandatory image audits or SKU delisting.
+4. **Projected Impact & Guardrail:** Improving size recommendations is projected to reduce Fashion return rates from 20.2% down to ~15.5%, saving ₹1.2 Crore in annual reverse logistics costs. Monitor gross apparel checkout conversion as a guardrail.
+
+## Evaluation rubric
+
+| Score | Criteria | What the Interviewer Looks For |
+|---|---|---|
+| **4 / 4** | **Structure** | Dissects returns into product fit, pricing incentives, seller quality, and payment mode. |
+| **4 / 4** | **Business Sense** | Recognizes bracket buying behavior and the high margin erosion of reverse shipping. |
+| **4 / 4** | **Data Approach** | Handles category string cleaning (`UPPER(TRIM())`); links returns to order items and products. |
+| **4 / 4** | **Numbers / Rigor** | Cites exact empirical benchmarks: Fashion at 20.21%, sizing issues driving 39.18% of returns. |
+| **4 / 4** | **Communication** | Balances customer experience solutions (better fit guides) with commercial policy enforcement. |
+
+## Follow-up questions
+
+- **Interviewer:** *"Why not simply make all deep-discount festive items non-returnable?"*  
+  **Candidate:** *"A strict no-return policy in Fashion causes cart abandonment to surge by 30% because customers fear unwearable clothes. A better approach is exchange-only policies for sizes, converting potential returns into retained revenue."*
+- **Interviewer:** *"What is the true operational cost of an e-commerce return in India?"*  
+  **Candidate:** *"A return costs far more than forward shipping: forward delivery (~₹60), reverse pickup (~₹80), warehouse inspection and restocking (~₹40), and inventory depreciation while goods are in transit (10–14 days)."*
+- **Interviewer:** *"How would you detect fraudulent return activity?"*  
+  **Candidate:** *"By monitoring customer accounts with return rates > 70% across 10+ orders, particularly when return reasons cite 'defective' but warehouse inspection finds missing tags or worn garments."*

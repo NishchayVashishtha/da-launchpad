@@ -1,0 +1,97 @@
+---
+title: "Product Launch Go / No-Go: Buy Now Pay Later"
+industry: "Fintech Product"
+difficulty: hard
+type: mock-case
+estimatedMinutes: 45
+---
+
+## Problem
+
+You are interviewing for a Product Data Analyst role at "KwikCredit", an Indian digital payments and consumer checkout platform.
+
+The Head of Credit Products presents an executive dilemma:
+> *"Three months ago, we launched a pilot of our 'KwikPay Later' feature (instant 30-day interest-free micro-credit at checkout) to a randomized 10% pilot cohort of 100,000 active shoppers. Checkout conversion rose by 4.0 percentage points, generating strong merchant praise. However, our 60-day loan default rate among Pay Later users came in higher than anticipated at 1.8%. We are meeting the Executive Committee tomorrow to decide: do we roll out 100%, roll back the pilot, or alter the policy? What is your recommendation?"*
+
+You have 40 minutes to evaluate the A/B test integrity, calculate unit economics, isolate credit risk segments, and deliver an evidence-based Go / No-Go decision.
+
+## Clarifying questions to ask
+
+1. **Revenue Model & Merchant Take-Rate:** *"How does KwikCredit monetize Pay Later? What is our merchant discount rate (MDR) commission per transaction?"*
+   - *Interviewer response:* Assume we earn a 2.0% merchant commission on gross order value (₹24 per ₹1,200 order).
+2. **Definition of Default:** *"What constitutes a default in this pilot? Is it 30-day past due (DPD 30) or 60-day unrecoverable write-off?"*
+   - *Interviewer response:* DPD 60 (unpaid 60 days after the statement date, after collection outreach). Assume unrecovered debt is a 100% loss absorbed by our balance sheet.
+3. **Cohort Seasonality & Pilot Integrity:** *"Was the 10% pilot randomized cleanly at the user level, and did it span a normal shopping window or a festive discount period?"*
+   - *Interviewer response:* Randomized cleanly across all active users in August–October; no festive skew.
+4. **Credit Underwriting Segmentation:** *"Were all 100,000 pilot users given identical credit limits, or did we segment by KYC tier and bureau score?"*
+   - *Interviewer response:* All pilot users were assigned a flat ₹5,000 credit limit with zero underwriting checks.
+
+## Suggested structure
+
+Deconstruct the Go / No-Go evaluation into test validity, unit economics, risk segmentation, and decision modeling:
+
+```
+Product Launch Go / No-Go Evaluation
+  ├── 1. A/B Test Statistical Validity & Novelty Effect
+  │     ├── Sample Size, Randomization & Statistical Significance
+  │     └── Novelty Effect (Did conversion lift decay after Month 1?)
+  ├── 2. Unit Economics & Break-Even Analysis
+  │     ├── Gross Merchant Commission per Order (2.0% of AOV)
+  │     ├── Cost of Capital & Payment Processing Fees
+  │     └── Expected Credit Loss (Default Rate * AOV)
+  ├── 3. Risk Segmentation & Delinquency Drivers
+  │     ├── High-Risk: New / Thin-File Users (No Bureau Score)
+  │     └── Low-Risk: KYC-Verified Loyal Users with Transaction History
+  └── 4. Staged Rollout Decision Framework
+        ├── Option A: 100% Full Rollout (High Default Risk)
+        ├── Option B: Full Rollback (Leaves GMV & Merchant Goodwill on Table)
+        └── Option C: Gated Phased Rollout with Credit Bureau Underwriting (Optimal)
+```
+
+## Analysis plan
+
+Evaluate unit economics using assumed business metrics:
+
+| Metric | Control Group (Standard Pay) | Treatment Group (Pay Later Pilot) | Delta |
+|---|---|---|---|
+| **Users in Cohort** | 900,000 (90%) | 100,000 (10%) | - |
+| **Average Order Value (AOV)** | ₹1,200 | ₹1,200 | ₹0 |
+| **Checkout Conversion Rate** | 15.0% | 19.0% | **+4.0 percentage points (+26.7% relative)** |
+| **Merchant Commission (MDR 2.0%)** | ₹24.00 / order | ₹24.00 / order | ₹0 |
+| **60-Day Default Rate** | 0.0% | 1.8% of credit volume | **+1.8% credit loss** |
+| **Credit Loss per Order** | ₹0.00 | `1.8% * ₹1,200 = ₹21.60` | +₹21.60 |
+| **Net Contribution Margin per Order** | **₹24.00** | `₹24.00 - ₹21.60 = ₹2.40` | **-₹21.60 (-90%)** |
+
+**Critical Economic Finding:** While the 4.0 percentage point conversion surge drives GMV, the unit economics are razor-thin: net contribution margin collapses by 90% from ₹24.00 to barely ₹2.40 per order. If defaults increase even slightly to 2.1% (due to macroeconomic stress), KwikCredit will lose money on every single Pay Later checkout.
+
+**Risk Segmentation Drill-Down:**
+- **Tier 1 (KYC-Verified, 12+ months history):** Default rate is only **0.6%** (Loss = ₹7.20, Net Margin = **+₹16.80** — highly profitable).
+- **Tier 2 (New / Thin-File Users, `<3 months` history):** Default rate is **4.2%** (Loss = ₹50.40, Net Margin = **-₹26.40** — catastrophic loss).
+
+## Model recommendation
+
+**Verdict: CONDITIONAL GO (Phased Rollout with Tiered Underwriting). Do NOT roll out 100% to all users.**
+
+1. **Eliminate Flat ₹5,000 Credit for Thin-File Users:** Immediately disable Pay Later for unverified, zero-history users where the 4.2% default rate burns ₹26.40 per transaction.
+2. **Scale Rollout to 25% for Tier 1 (Prime/KYC) Users:** Expand Pay Later to users with established transaction histories and bureau scores > 720. At a 0.6% default rate, this segment delivers ₹16.80 net margin per order while capturing the 4% conversion lift.
+3. **Dynamic Micro-Limits for Tier 2:** For new users, replace the flat ₹5,000 limit with an initial micro-limit of ₹500 to ₹1,000. Increase limits only after three consecutive on-time monthly repayments.
+4. **Projected Impact & Guardrail:** Captures 75% of total GMV uplift while slashing credit losses by 65%. Monitor 30-day delinquency (DPD 30) weekly as a leading indicator guardrail before 60-day defaults materialize.
+
+## Evaluation rubric
+
+| Score | Criteria | What the Interviewer Looks For |
+|---|---|---|
+| **4 / 4** | **Structure** | Balances top-line growth (conversion lift) against bottom-line risk (credit loss and margin erosion). |
+| **4 / 4** | **Business Sense** | Understands credit unit economics, underwriting risk, and rejects binary 'all-or-nothing' rollout decisions. |
+| **4 / 4** | **Data Approach** | Calculates contribution margin per order; segments users into prime vs thin-file credit tiers. |
+| **4 / 4** | **Numbers / Rigor** | Proves mathematically that a flat 1.8% default rate leaves only ₹2.40 margin, risking immediate loss. |
+| **4 / 4** | **Communication** | Delivers an executive-level conditional decision with concrete underwriting risk guardrails. |
+
+## Follow-up questions
+
+- **Interviewer:** *"Why is DPD 30 a better operational guardrail than DPD 60 during a rollout?"*  
+  **Candidate:** *"DPD 60 is a lagging indicator; by the time an unpaid loan hits 60 days past due, two additional cohorts have already been exposed to the bad underwriting model. DPD 30 provides an early warning signal 30 days earlier, allowing operations to pause credit issuance before losses compound."*
+- **Interviewer:** *"What is the 'novelty effect' in A/B testing and how might it affect this pilot?"*  
+  **Candidate:** *"The novelty effect occurs when users try a new feature purely out of curiosity during the first few weeks, inflating conversion. Over time, conversion lift often decays from +4% to +2.5% as the novelty fades. We verify this by tracking weekly conversion lift cohorts over the 3-month pilot."*
+- **Interviewer:** *"How should KwikCredit handle algorithmic bias in credit limit assignment?"*  
+  **Candidate:** *"We must ensure our underwriting models rely on objective financial telemetry (repayment track record, bank account age, transaction frequency) and exclude protected demographic attributes like gender, religion, or pin-code redlining."*

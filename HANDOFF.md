@@ -71,7 +71,7 @@ Check each item with `ls`, audit and validate:
 | Power BI | 19 | 83 | |
 | Python | 20 | 130 | 8 notebooks, EDA checklist |
 | Statistics | 17 | 170 | 136 MCQs |
-| Interview | 0 (outlined) | 0 (outlined) | 475 bank items, 320 aptitude MCQs |
+| Interview | 8 | 41 | 475 bank items, 320 aptitude MCQs, 10 mock cases |
 | Business | 0 (outlined) | 0 (outlined) | 25 cases outlined |
 
 Tool pages are built and registered in tools.json:
@@ -84,10 +84,10 @@ Tool pages are built and registered in tools.json:
 They are NOT yet checked in a browser.
 
 ## NEXT SESSION: do these in order
-1. **Interview hub writers (Haiku):** use `.work/writer-brief.md` and `.work/outlines/interview/_plan.md`.
+1. **[DONE] Interview hub writers:**
    - Tasks L1–L5: 8 lessons + 41 practice, ids `interview-pr-*`.
    - Tasks C1–C2: 10 mock cases in `src/content/cases/mock-case-NN-*.mdx`, type "mock-case".
-   - The banks (B1–B12b) are DONE; skip them.
+   - Deleted placeholder `sample-case.mdx` and `_sample.json`. All 4 gates green (check:mdx, validate, audit, build).
 2. **Business writers (Haiku):** use `.work/writer-brief.md` and `.work/outlines/business/_plan.md` (9 tasks: lessons + 25 cases from `cases.md`; facts are in `_facts.md`).
    - First verify that the schema accepts `module: business` (`npx astro sync`).
    - Decide on adding a DPDP Act link to links.json for lesson 13.

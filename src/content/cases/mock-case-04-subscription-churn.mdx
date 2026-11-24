@@ -1,0 +1,98 @@
+---
+title: "Subscription App Churn Diagnosis"
+industry: "Subscription App"
+difficulty: hard
+type: mock-case
+estimatedMinutes: 45
+---
+
+## Problem
+
+You are interviewing for a Senior Growth & Analytics role at "LearnStream", an Indian subscription-based ed-tech and video streaming app with 5,000+ active subscribers.
+
+The Chief Product Officer opens the discussion:
+> *"Our monthly subscriber churn rate crept up from a healthy 5% to over 7.2% last quarter. Our customer acquisition cost (CAC) is ₹1,800, and with lifetime value (LTV) deteriorating rapidly, we are burning cash. What is causing subscribers to churn, how do we distinguish voluntary churn from involuntary billing failure, and what product experiment should we run to reverse it?"*
+
+You have 40 minutes to deconstruct retention curves, formulate behavioral hypotheses, and propose a data-driven retention experiment.
+
+## Clarifying questions to ask
+
+1. **Definition of Churn Rate:** *"Is churn measured as user churn (`cancelled_users / active_users_at_start`) or revenue churn (`lost_mrr / starting_mrr`)?"*
+   - *Interviewer response:* Assume user logo churn: percentage of active paid subscribers who cancelled within the monthly billing window.
+2. **Voluntary vs Involuntary Churn:** *"Do our subscription logs distinguish between voluntary cancellations (user clicked 'Cancel Subscription') and involuntary churn (recurring credit card or UPI auto-pay mandate failed)?"*
+   - *Interviewer response:* Currently lumped together, but payment gateway logs show ~3.5% of recurring charges fail, leading to dropped accounts.
+3. **Billing Cycle Dynamics:** *"How does churn compare across our Monthly plans versus Annual plans?"*
+   - *Interviewer response:* Annual plans show low churn during the first 11 months, while Monthly plans experience heavy drop-offs after months 1 and 2.
+4. **Cohort Horizon:** *"Has the churn spike occurred across older mature cohorts or is it concentrated in recent signup cohorts?"*
+   - *Interviewer response:* Recent cohorts acquired in Q1 showed a faster drop-off curve in their first 30 days.
+
+## Suggested structure
+
+Deconstruct subscription churn into operational and behavioral drivers:
+
+```
+Monthly Subscription Churn
+  ├── 1. Involuntary Churn (Payment & Banking Failures)
+  │     ├── Expired Cards & Insufficient Funds on Recurring Date
+  │     └── UPI Auto-Pay Mandate Technical Timeouts & RBI E-Mandate Failures
+  ├── 2. Voluntary Churn (Customer Dissatisfaction & Disengagement)
+  │     ├── Early Disengagement (Low App Opens / Content Views in First 14 Days)
+  │     └── Price Sensitivity & Plan Selection (Basic vs Premium)
+  ├── 3. Acquisition Source Quality
+  │     ├── Organic & Referral Subscribers vs Paid Ad Channels
+  │     └── Promotional Discount Hunters (Cancelled once trial ends)
+  └── 4. Billing Cadence & Lock-In
+        ├── Monthly vs Annual Billing Plans
+        └── Renewal Count Fatigue (Month 1 drop vs Month 6 retention)
+```
+
+## Analysis plan
+
+Using the `subscription` database, execute an empirical analysis:
+
+1. **Segment Churn by Plan and Billing Cycle:** Group `subscriptions` by `plan` and `billing_cycle` to calculate cancellation rates.
+2. **Analyze Early Engagement Telemetry:** Query `events` to check whether users who eventually churn display declining `content_view` frequency within the first 14 days of paid subscription.
+3. **Cohort Retention Curves:** Track survival rates across quarterly cohorts to determine if a specific acquisition month suffered an onboarding defect.
+4. **Quantify Involuntary Mandate Failures:** Measure the impact of payment failure events on total cancellations.
+
+<SqlPlayground
+  dataset="subscription"
+  query={`SELECT
+  plan,
+  billing_cycle,
+  COUNT(*) AS total_subs,
+  SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) AS cancelled_subs,
+  ROUND(100.0 * SUM(CASE WHEN status = 'cancelled' THEN 1 ELSE 0 END) / COUNT(*), 2) AS churn_pct
+FROM subscriptions
+GROUP BY plan, billing_cycle
+ORDER BY churn_pct DESC;`}
+  title="Try It: Churn Rate by Plan & Billing Cycle"
+/>
+
+**Analysis Finding:** Billing cadence and plan tier are primary churn determinants. **Monthly Basic plans suffer a 24.43% churn rate** and Monthly Standard suffers **23.79%**, whereas **Annual plans experience only 3.6% to 7.6% churn**. Users committing to Annual plans exhibit 4x higher retention. Furthermore, analysis of `events` reveals that churned users show an 80% drop in `content_view` sessions after day 10, proving that disengagement happens early in the lifecycle.
+
+## Model recommendation
+
+1. **Automated Dunning & Retry Schedule for Involuntary Churn:** Implement an intelligent smart-retry cadence for failed recurring payments: retry at 24 hours, 72 hours, and 5 days, coupled with automated WhatsApp payment recovery links. This directly recovers ~40% of involuntary billing failures.
+2. **First-14-Days Activation Playbook:** Introduce a personalized onboarding nudge. If a new subscriber watches zero content in days 3 to 7, trigger an automated push notification highlighting trending educational videos matching their declared interests.
+3. **Annual Plan Upgrade Incentive Experiment:** Launch an in-app A/B test offering monthly users an upgrade to the Annual plan at a 35% discount during day 20 of their billing cycle.
+4. **Projected Impact & Guardrail:** Recovering involuntary churn plus incentivizing annual lock-in is projected to reduce overall monthly churn from 7.2% down to 5.2%, expanding customer LTV from ₹3,400 to ₹4,800. Monitor gross subscription revenue to ensure heavy annual discounting does not compress cash flow.
+
+## Evaluation rubric
+
+| Score | Criteria | What the Interviewer Looks For |
+|---|---|---|
+| **4 / 4** | **Structure** | Explicitly separates voluntary from involuntary churn; builds a cohort survival framework. |
+| **4 / 4** | **Business Sense** | Understands LTV/CAC dynamics, RBI e-mandate friction, and the power of annual billing lock-in. |
+| **4 / 4** | **Data Approach** | Links subscriptions with event telemetry; measures engagement drop-offs within the first 14 days. |
+| **4 / 4** | **Numbers / Rigor** | Quantifies that Monthly Basic churns at 24.43% vs Annual at 3.6%–7.6%; benchmarks LTV uplift. |
+| **4 / 4** | **Communication** | Outlines an experiment design with clear test/control groups, primary metrics, and guardrails. |
+
+## Follow-up questions
+
+- **Interviewer:** *"What is survivorship bias in churn analysis and how did you account for it?"*  
+  **Candidate:** *"Survivorship bias occurs when looking only at active tenured users (e.g. Month 12 users) and concluding churn is low, ignoring that the weakest 50% already dropped out in Months 1 and 2. We account for this by running cohort-based survival curves tracking each cohort from day zero."*
+- **Interviewer:** *"How does involuntary churn differ from voluntary churn in terms of product fixes?"*  
+  **Candidate:** *"Voluntary churn requires product engagement, content discovery, and pricing fixes. Involuntary churn is purely engineering and payments infrastructure: retrying failed cards, supporting multiple payment methods (UPI auto-pay, net banking, cards), and dunning emails."*
+- **Interviewer:** *"If we offer a steep discount on annual plans, won't we lose short-term revenue?"*  
+  **Candidate:** *"Annual plans collect 12 months of cash upfront, eliminating monthly churn risk. Even at a 30% discount, an annual user generates ₹2,400 guaranteed cash versus a monthly user who churns after 2.5 months paying only ₹750."*

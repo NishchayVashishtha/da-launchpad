@@ -1,0 +1,154 @@
+[
+  {
+    "id": "interview-pr-sampletake-001",
+    "module": "interview",
+    "topic": "sampletake",
+    "difficulty": "easy",
+    "language": "sql",
+    "question": "As the first step in a take-home assignment, calculate the monthly UPI payment volume and failure rate trend. Write a query on the `fintech` database to return the year-month (`month`), total transaction count (`n_txns`), and failure rate percentage (`fail_pct`). Deduplicate transactions by `txn_id`, round `fail_pct` to 2 decimal places, order chronologically by `month` ascending, and limit to 50 rows.",
+    "dataset": "fintech",
+    "hint": "Extract the year and month using strftime('%Y-%m', txn_datetime). Calculate failure rate as 100.0 * SUM(status = 'FAILED') / COUNT(*).",
+    "solutionSql": "WITH clean AS (\n  SELECT DISTINCT txn_id, status, strftime('%Y-%m', txn_datetime) AS month\n  FROM transactions\n)\nSELECT\n  month,\n  COUNT(*) AS n_txns,\n  ROUND(100.0 * SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) / COUNT(*), 2) AS fail_pct\nFROM clean\nGROUP BY month\nORDER BY month ASC\nLIMIT 50;",
+    "expectedOutput": {
+      "columns": ["month", "n_txns", "fail_pct"],
+      "rows": [
+        ["2023-01", 707, 1.84],
+        ["2023-02", 658, 1.82],
+        ["2023-03", 772, 7.12],
+        ["2023-04", 718, 1.53],
+        ["2023-05", 751, 2.26],
+        ["2023-06", 795, 1.76],
+        ["2023-07", 797, 1.88],
+        ["2023-08", 793, 2.14],
+        ["2023-09", 844, 6.28],
+        ["2023-10", 896, 2.79],
+        ["2023-11", 965, 2.8],
+        ["2023-12", 917, 1.64],
+        ["2024-01", 941, 1.7],
+        ["2024-02", 922, 4.99],
+        ["2024-03", 983, 1.53],
+        ["2024-04", 922, 1.84],
+        ["2024-05", 1011, 1.68],
+        ["2024-06", 985, 2.84],
+        ["2024-07", 1167, 4.46],
+        ["2024-08", 1051, 2.19],
+        ["2024-09", 1102, 3.18],
+        ["2024-10", 1327, 2.64],
+        ["2024-11", 1162, 2.24],
+        ["2024-12", 1114, 1.53]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Chronological monthly analysis immediately reveals that overall failure rate is normally 1.5% to 2.2%, but spikes severely in four specific months: 2023-03 (7.12%), 2023-09 (6.28%), 2024-02 (4.99%), and 2024-07 (4.46%), pointing to transient system-wide outage events.",
+    "commonMistake": "Failing to deduplicate transactions before computing monthly aggregations, slightly skewing monthly failure percentages.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 4,
+    "tags": ["sampletake", "fintech", "monthly-trend", "time-series"]
+  },
+  {
+    "id": "interview-pr-sampletake-002",
+    "module": "interview",
+    "topic": "sampletake",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "To determine where remediation effort will save the most transactions, calculate the 'excess failures' for each partner bank in the `fintech` dataset. Excess failures is defined as `failed - (n_txns * overall_rate)`. Write a query returning `bank`, total failed transactions (`failed`), expected failures (`expected` rounded to 2 decimals), and excess failures (`excess` rounded to 2 decimals). Deduplicate by `txn_id`, order by `excess` descending, then `bank` ascending, and return the top 3 banks.",
+    "dataset": "fintech",
+    "hint": "Use a CTE to compute the overall network failure rate across all deduplicated transactions, then join or cross-apply it to bank aggregates.",
+    "solutionSql": "WITH clean AS (\n  SELECT DISTINCT txn_id, bank, status\n  FROM transactions\n),\noverall AS (\n  SELECT 1.0 * SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) / COUNT(*) AS overall_rate\n  FROM clean\n),\nbank_stats AS (\n  SELECT\n    bank,\n    SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) AS failed,\n    COUNT(*) AS n_txns\n  FROM clean\n  GROUP BY bank\n)\nSELECT\n  bank,\n  failed,\n  ROUND(n_txns * (SELECT overall_rate FROM overall), 2) AS expected,\n  ROUND(failed - n_txns * (SELECT overall_rate FROM overall), 2) AS excess\nFROM bank_stats\nORDER BY excess DESC, bank ASC\nLIMIT 3;",
+    "expectedOutput": {
+      "columns": ["bank", "failed", "expected", "excess"],
+      "rows": [
+        ["Kaveri Co-op Bank", 103, 45.82, 57.18],
+        ["PayNova Small Finance Bank", 23, 21.08, 1.92],
+        ["Coromandel Bank", 50, 52.8, -2.8]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Calculating excess failures identifies the true operational priority: Kaveri Co-op Bank generated 103 failures against 45.82 expected at the network average, yielding 57.18 excess failures. This single bank accounts for virtually all excess failures in the network.",
+    "commonMistake": "Focusing purely on raw failure percentages without multiplying by volume to calculate the absolute volume of excess failed transactions.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": ["sampletake", "fintech", "excess-failures", "benchmarking"]
+  },
+  {
+    "id": "interview-pr-sampletake-003",
+    "module": "interview",
+    "topic": "sampletake",
+    "difficulty": "medium",
+    "language": "sql",
+    "question": "Segment transactions by transaction value to evaluate whether payment failures correlate with ticket size. Write a query on the `fintech` dataset to group transactions into four amount bands: '1. <=500', '2. 501-5000', '3. 5001-50000', and '4. >50000'. Return the band label (`band`), total transactions (`n_txns`), and failure rate percentage (`fail_pct`). Deduplicate by `txn_id`, round `fail_pct` to 2 decimals, and order by `band` ascending.",
+    "dataset": "fintech",
+    "hint": "Use a CASE statement on amount to assign the four bands, group by the expression, and calculate 100.0 * failed / total.",
+    "solutionSql": "WITH clean AS (\n  SELECT DISTINCT txn_id, amount, status\n  FROM transactions\n)\nSELECT\n  CASE\n    WHEN amount <= 500 THEN '1. <=500'\n    WHEN amount <= 5000 THEN '2. 501-5000'\n    WHEN amount <= 50000 THEN '3. 5001-50000'\n    ELSE '4. >50000'\n  END AS band,\n  COUNT(*) AS n_txns,\n  ROUND(100.0 * SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) / COUNT(*), 2) AS fail_pct\nFROM clean\nGROUP BY band\nORDER BY band ASC;",
+    "expectedOutput": {
+      "columns": ["band", "n_txns", "fail_pct"],
+      "rows": [
+        ["1. <=500", 10240, 2.66],
+        ["2. 501-5000", 10906, 2.75],
+        ["3. 5001-50000", 1144, 2.45],
+        ["4. >50000", 10, 10.0]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "Transactions under ₹50,000 exhibit consistent failure rates around 2.45%–2.75%. In contrast, high-value transactions (>₹50,000) show an elevated 10.0% failure rate, predominantly driven by daily bank UPI transfer limits (`LIMIT_EXCEEDED`).",
+    "commonMistake": "Overlapping CASE boundaries (e.g., using `< 500` and then `< 5000` without explicit ordering or `WHEN <= 500`).",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": ["sampletake", "fintech", "case-when", "amount-bands"]
+  },
+  {
+    "id": "interview-pr-sampletake-004",
+    "module": "interview",
+    "topic": "sampletake",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "For the take-home report's retry policy section, calculate the recovery efficiency of retried transactions across each failure code in the `fintech` dataset. Filter for transactions where `retried = 1`. Return `failure_code`, the number of retried transactions (`retried_n`), the count of successful retries (`recovered_n`), and the recovery percentage (`recovery_pct`). Deduplicate by `failed_txn_id`, round `recovery_pct` to 2 decimals, and order by `recovery_pct` descending, then `retried_n` descending, then `failure_code` ascending.",
+    "dataset": "fintech",
+    "hint": "Filter WHERE retried = 1. A recovered retry has retry_succeeded = 1.",
+    "solutionSql": "WITH clean_failed AS (\n  SELECT DISTINCT failed_txn_id, failure_code, retried, retry_succeeded\n  FROM failed_transactions\n  WHERE retried = 1\n)\nSELECT\n  failure_code,\n  COUNT(*) AS retried_n,\n  SUM(CASE WHEN retry_succeeded = 1 THEN 1 ELSE 0 END) AS recovered_n,\n  ROUND(100.0 * SUM(CASE WHEN retry_succeeded = 1 THEN 1 ELSE 0 END) / COUNT(*), 2) AS recovery_pct\nFROM clean_failed\nGROUP BY failure_code\nORDER BY recovery_pct DESC, retried_n DESC, failure_code ASC;",
+    "expectedOutput": {
+      "columns": ["failure_code", "retried_n", "recovered_n", "recovery_pct"],
+      "rows": [
+        ["INCORRECT_PIN", 25, 21, 84.0],
+        ["BANK_SERVER_TIMEOUT", 27, 20, 74.07],
+        ["NETWORK_ERROR", 49, 33, 67.35],
+        ["BANK_DECLINED", 36, 24, 66.67],
+        ["LIMIT_EXCEEDED", 20, 13, 65.0],
+        ["UPI_SYSTEM_DOWN", 82, 50, 60.98],
+        ["INSUFFICIENT_FUNDS", 52, 7, 13.46]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "This query provides the empirical foundation for a product recommendation: automated retries are highly effective for technical timeout (74.07%) and network errors (67.35%), but useless for INSUFFICIENT_FUNDS (13.46%), proving that retry automation should be error-code specific.",
+    "commonMistake": "Failing to filter for `retried = 1`, which leads to counting non-retried transactions as failed recovery attempts.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": ["sampletake", "fintech", "retries", "product-optimization"]
+  },
+  {
+    "id": "interview-pr-sampletake-005",
+    "module": "interview",
+    "topic": "sampletake",
+    "difficulty": "hard",
+    "language": "sql",
+    "question": "Isolate the severe outage windows for the `NammaPay` payment app in the `fintech` dataset. Find all dates (`txn_date` in YYYY-MM-DD format) where NammaPay had at least 10 transactions (`n_txns >= 10`) and a failure rate exceeding 20% (`fail_pct > 20.0`). Return `txn_date`, `n_txns`, and `fail_pct` (rounded to 2 decimals), ordered chronologically by `txn_date` ascending.",
+    "dataset": "fintech",
+    "hint": "Extract the date with date(txn_datetime). Filter for payment_app = 'NammaPay', group by date, and use a HAVING clause for the count and failure rate filters.",
+    "solutionSql": "WITH clean AS (\n  SELECT DISTINCT txn_id, payment_app, status, date(txn_datetime) AS txn_date\n  FROM transactions\n  WHERE payment_app = 'NammaPay'\n)\nSELECT\n  txn_date,\n  COUNT(*) AS n_txns,\n  ROUND(100.0 * SUM(CASE WHEN status = 'FAILED' THEN 1 ELSE 0 END) / COUNT(*), 2) AS fail_pct\nFROM clean\nGROUP BY txn_date\nHAVING COUNT(*) >= 10 AND fail_pct > 20.0\nORDER BY txn_date ASC;",
+    "expectedOutput": {
+      "columns": ["txn_date", "n_txns", "fail_pct"],
+      "rows": [
+        ["2023-03-14", 79, 40.51],
+        ["2023-09-21", 80, 38.75],
+        ["2024-02-06", 82, 31.71],
+        ["2024-07-16", 80, 37.5]
+      ]
+    },
+    "orderMatters": true,
+    "explanation": "This query isolates the four specific NammaPay outage windows: 2023-03-14 (40.51%), 2023-09-21 (38.75%), 2024-02-06 (31.71%), and 2024-07-16 (37.50%). On normal operating days, NammaPay maintains an expected 2.0% failure rate; these four isolated incidents explain the app's entire annual failure rate inflation.",
+    "commonMistake": "Omitting the minimum transaction count threshold (`COUNT(*) >= 10`), which causes single isolated transaction days to trigger false outage alarms.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 6,
+    "tags": ["sampletake", "fintech", "outages", "incident-analysis"]
+  }
+]

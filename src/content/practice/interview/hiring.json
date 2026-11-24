@@ -1,0 +1,34 @@
+[
+  {
+    "id": "interview-pr-hiring-001",
+    "module": "interview",
+    "topic": "hiring",
+    "difficulty": "easy",
+    "language": "text",
+    "question": "A job posting for a 'Junior Data Analyst (0-1 yrs exp)' at a Bengaluru fintech startup lists: 'Must know SQL (joins, aggregations), Excel (lookups, pivots), and Power BI. Selection involves an online test, technical round with case discussion, and culture fit.' Based on this posting, list the 5 interview stages you should prepare for in their likely order, and state in one sentence what each round tests.",
+    "dataset": "none",
+    "hint": "Think about the progressive hiring funnel that eliminates specific risks at each stage.",
+    "solution": "### 5 Hiring Stages to Prepare:\n\n1. **Resume & ATS Screen:** Filters applicants by checking for keywords, relevant coursework, and portfolio projects in SQL and Power BI.\n2. **Online Assessment (OA):** A 45-60 minute test testing quantitative aptitude, logical reasoning, and basic SQL to verify baseline numerical competence.\n3. **Live Technical Test:** A 45-minute live screen-sharing round writing SQL queries and building Excel models to prove hands-on coding ability without external help.\n4. **Business Case Round:** A 30-45 minute problem-solving discussion (e.g., diagnosing a drop in UPI success rate) to assess structured thinking, metric trees, and communication.\n5. **HR & Culture Fit Round:** A 20-30 minute conversation covering salary expectations, notice period, location flexibility, and personal alignment with company culture.",
+    "explanation": "Companies structure their hiring process as a risk-reduction funnel. Even when a job description highlights only two rounds, candidates typically pass through an automated filter, a timed baseline check, a live technical verification, a business problem-solving case, and an HR alignment discussion.",
+    "commonMistake": "Preparing solely for technical SQL questions and neglecting the initial aptitude cut-off or the final HR round, which leads to early elimination or post-interview offer revocations.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": ["hiring", "interview-prep", "rounds"]
+  },
+  {
+    "id": "interview-pr-hiring-002",
+    "module": "interview",
+    "topic": "hiring",
+    "difficulty": "medium",
+    "language": "text",
+    "question": "A recruiter calls you for an initial 10-minute phone screen for a Data Analyst opening. Before ending the call, you want to clarify the selection process so you can prepare effectively. Write 3 professional questions to ask the recruiter regarding the rounds, evaluation criteria, and timeline.",
+    "dataset": "none",
+    "hint": "Ask about the sequence of assessment rounds, the tool environment tested, and the expected hiring timeline.",
+    "solution": "### 3 Essential Questions for the Recruiter:\n\n1. **What are the specific stages in your interview process, and will there be a live coding assessment or an offline take-home assignment?**\n2. **Which SQL dialect (e.g., PostgreSQL, MySQL, SQLite) and BI tools will the technical interview focus on, and will I be testing in an online sandbox or on my local machine?**\n3. **What is your target timeline for this role, and when can I expect to hear feedback regarding the next step?**",
+    "explanation": "Asking structured process questions demonstrates professionalism and ownership. It gives you the necessary parameters to tailor your preparation—for instance, knowing whether to practice timed LeetCode-style queries or build an end-to-end dashboard deck for a take-home presentation.",
+    "commonMistake": "Focusing exclusively on salary packages and leave policies during the initial introductory call instead of clarifying technical expectations and format requirements.",
+    "interviewFrequency": "high",
+    "estimatedMinutes": 5,
+    "tags": ["hiring", "recruiter", "questions"]
+  }
+]

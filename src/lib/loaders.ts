@@ -1,6 +1,7 @@
 import type { Loader } from 'astro/loaders';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join, relative } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 function walk(dir: string, out: string[] = []): string[] {
   let names: string[] = [];
@@ -22,7 +23,7 @@ export function jsonArrayLoader(opts: { base: string }): Loader {
   return {
     name: 'json-array-loader',
     load: async ({ store, parseData, generateDigest, config, logger, watcher }) => {
-      const root = new URL(opts.base.replace(/\/?$/, '/'), config.root).pathname;
+      const root = fileURLToPath(new URL(opts.base.replace(/\/?$/, '/'), config.root));
       const run = async () => {
         store.clear();
         const seen = new Map<string, string>();

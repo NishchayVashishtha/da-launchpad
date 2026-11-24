@@ -48,19 +48,20 @@ const lessons = walk(join(ROOT, 'src/content/lessons'), '.mdx');
 const lessonRoutes = new Set();
 const lessonData = lessons.map((file) => {
   const m = readMdx(file);
-  const module = m.fm.module ?? file.split('/').slice(-2)[0];
-  const slug = file.split('/').pop().replace(/\.mdx$/, '');
+  const norm = file.replace(/\\/g, '/');
+  const module = m.fm.module ?? norm.split('/').slice(-2)[0];
+  const slug = norm.split('/').pop().replace(/\.mdx$/, '');
   lessonRoutes.add(`/${module}/${slug}/`);
   return { file, ...m, module, slug };
 });
 const other = [...walk(join(ROOT, 'src/content/projects'), '.mdx'), ...walk(join(ROOT, 'src/content/cases'), '.mdx')].map((file) => ({ file, ...readMdx(file) }));
-const projectIds = other.filter((o) => o.file.includes('/projects/')).map((o) => o.fm.id).filter(Boolean);
+const projectIds = other.filter((o) => o.file.replace(/\\/g, '/').includes('/projects/')).map((o) => o.fm.id).filter(Boolean);
 for (const o of other) if (PLACEHOLDER.test(o.raw) && !/sample/i.test(o.file)) warn(rel(o.file), 'placeholder text');
 
 const staticRoutes = new Set(['/', '/profile/', '/practice/', '/bookmarks/', '/playground/', '/datasets/', '/404/']);
 for (const m of MODULES) staticRoutes.add(`/${m}/`);
 for (const p of projectIds) staticRoutes.add(`/projects/${p}/`);
-for (const o of other.filter((x) => x.file.includes('/cases/'))) staticRoutes.add(`/business/cases/${o.file.split('/').pop().replace(/\.mdx$/, '')}/`);
+for (const o of other.filter((x) => x.file.replace(/\\/g, '/').includes('/cases/'))) staticRoutes.add(`/business/cases/${o.file.replace(/\\/g, '/').split('/').pop().replace(/\.mdx$/, '')}/`);
 try {
   const ds = JSON.parse(readFileSync(join(ROOT, existsSync(join(ROOT, 'src/data/datasets.json')) ? 'src/data/datasets.json' : 'src/data/datasets.test.json'), 'utf8'));
   for (const d of ds) staticRoutes.add(`/datasets/${d.id}/`);
@@ -76,7 +77,7 @@ for (const l of lessonData) {
     const h2 = [...l.body.replace(/```[\s\S]*?```/g, '').matchAll(/^## (.+?)\s*$/gm)].map((x) => x[1]);
     if (h2.join('|') !== HEADINGS.join('|')) warn(w, `H2 headings must be exactly, in order: ${HEADINGS.join(' / ')}. Found: ${h2.join(' / ') || '(none)'}`);
     if (PLACEHOLDER.test(l.body)) warn(w, 'placeholder text');
-    if (l.fm.module && l.fm.module !== l.file.split('/').slice(-2)[0]) warn(w, `frontmatter module "${l.fm.module}" does not match folder`);
+    if (l.fm.module && l.fm.module !== l.file.replace(/\\/g, '/').split('/').slice(-2)[0]) warn(w, `frontmatter module "${l.fm.module}" does not match folder`);
   }
 }
 for (const f of allMdx) {

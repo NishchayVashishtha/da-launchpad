@@ -1,0 +1,101 @@
+---
+title: "Food Delivery Delay Surge"
+industry: "Food Delivery"
+difficulty: medium
+type: mock-case
+estimatedMinutes: 40
+---
+
+## Problem
+
+You are interviewing for an Operations Analytics role at "QuickBite", an on-demand food delivery app operating across eight major Indian cities. 
+
+The Vice President of Logistics opens the case discussion:
+> *"Over the past three weeks, late deliveries (orders taking more than 10 minutes past their promised delivery window) surged by 20% across our network. Customer CSAT has dropped by 0.8 points, and refund payouts are eroding our unit economics. Why are deliveries suddenly arriving late, and how do we solve this without hiring thousands of redundant drivers?"*
+
+You have 35 minutes to structure an operational investigation, isolate the bottlenecks, and deliver an actionable fleet management plan.
+
+## Clarifying questions to ask
+
+1. **Definition of 'Late Delivery':** *"Is a late delivery defined against estimated time of arrival (ETA) at checkout, or against a static 45-minute threshold?"*
+   - *Interviewer response:* Late delivery is defined as actual delivery duration exceeding promised time by more than 10 minutes (`delay_minutes > 10`).
+2. **Geographic Localization:** *"Did the late delivery spike occur uniformly across all cities, or is it localized to specific metropolitan zones?"*
+   - *Interviewer response:* Mumbai and Kolkata show severe increases, while Bengaluru and Delhi remain relatively stable.
+3. **Time-of-Day Dynamics:** *"Are delays concentrated during lunch (12:00–14:00) and dinner (19:30–22:00) peak hours, or occurring throughout the day?"*
+   - *Interviewer response:* Delays are concentrated heavily in evening dinner hours, especially on weekends.
+4. **Supply vs Demand Context:** *"Did order volume spike due to a festival promotion, or did active delivery partner counts drop?"*
+   - *Interviewer response:* Overall order volume grew 10%, but active driver hours in coastal cities showed sharp localized drops.
+
+## Suggested structure
+
+Decompose the end-to-end delivery cycle into four sequential operational phases:
+
+```
+Total Delivery Duration (Checkout to Doorstep)
+  ├── 1. Merchant Acceptance & Kitchen Prep Time
+  │     ├── Cloud Kitchen vs Dine-In Restaurant
+  │     └── Kitchen Overload & Delayed 'Food Ready' Signal
+  ├── 2. Partner Assignment & Dispatch Latency
+  │     ├── Delivery Partner Supply vs Open Orders
+  │     └── Distance of Assigned Partner to Merchant
+  ├── 3. In-Transit Travel Time
+  │     ├── Adverse Weather Conditions (Monsoon / Heavy Rain)
+  │     └── Peak Hour Traffic & Road Congestion
+  └── 4. Last-Mile Doorstep Handover
+        └── Gated Apartment Security & Customer Unreachability
+```
+
+## Analysis plan
+
+Using the `food_delivery` database, query the operational stages to isolate root causes:
+
+1. **Clean City Data:** Apply `UPPER(TRIM(city))` to resolve inconsistent casing and whitespace.
+2. **Evaluate Weather Impact:** Group completed deliveries by `weather` condition to check whether monsoon rain is impeding partner transit speeds.
+3. **Analyze Kitchen Prep vs Transit:** Compare `avg_prep_minutes` across cloud kitchens and regular restaurants.
+4. **Assess Delivery Partner Tenure:** Evaluate whether new delivery partners (`joined_date < 60 days`) have higher average delay minutes.
+
+<SqlPlayground
+  dataset="food_delivery"
+  query={`WITH clean AS (
+  SELECT DISTINCT delivery_id, UPPER(TRIM(city)) AS city, weather, delay_minutes, delivery_status
+  FROM deliveries
+  WHERE delivery_status = 'Delivered'
+)
+SELECT
+  weather,
+  COUNT(*) AS total_delivered,
+  ROUND(AVG(delay_minutes), 2) AS avg_delay_mins,
+  ROUND(100.0 * SUM(CASE WHEN delay_minutes > 10 THEN 1 ELSE 0 END) / COUNT(*), 2) AS late_pct
+FROM clean
+GROUP BY weather
+ORDER BY late_pct DESC;`}
+  title="Try It: Delivery Delays by Weather Condition"
+/>
+
+**Analysis Finding:** Weather conditions are the overwhelming operational catalyst. Under **Heavy Rain**, late deliveries jump to **52.95%** with an average delay of **11.74 minutes**, compared to only **15.05%** under Clear conditions. Coastal cities like Mumbai and Kolkata experienced severe monsoon precipitation, reducing partner vehicle speeds and causing riders to decline orders.
+
+## Model recommendation
+
+1. **Dynamic Weather-Based ETA Buffering:** Automatically add 8 to 12 minutes to customer promised delivery windows when local rainfall sensors indicate precipitation, preventing false 'late delivery' penalties and managing customer expectations.
+2. **Monsoon Surge Pay & Rain Gear Subsidies:** Introduce a ₹15 to ₹25 per-delivery monsoon allowance for delivery partners during rainy slots, maintaining active rider supply on the road.
+3. **Kitchen Prep-Time Throttling:** For restaurants with kitchen prep times exceeding 25 minutes during dinner peaks, throttle incoming online orders by expanding estimated prep times in the app.
+4. **Expected Impact & Guardrail:** Dynamic ETAs and rain incentives will reduce customer late complaints by 40% in monsoon zones. Monitor cancellation rates as a guardrail to ensure longer promised ETAs do not hurt checkout conversion.
+
+## Evaluation rubric
+
+| Score | Criteria | What the Interviewer Looks For |
+|---|---|---|
+| **4 / 4** | **Structure** | Decomposes delivery time into kitchen prep, rider dispatch, and transit; clarifies delay metric. |
+| **4 / 4** | **Business Sense** | Understands the trade-off between promised ETA and order cancellation rates during rain storms. |
+| **4 / 4** | **Data Approach** | Cleans city strings using `TRIM(UPPER())`; checks weather segmentation and partner tenure. |
+| **4 / 4** | **Numbers / Rigor** | Cites exact empirical benchmarks: 52.95% late rate during heavy rain vs 15.05% during clear weather. |
+| **4 / 4** | **Communication** | Outlines operational solutions targeting both supply (surge pay) and demand (ETA buffering). |
+
+## Follow-up questions
+
+- **Interviewer:** *"If we increase promised delivery times by 10 minutes during rain, won't customers abandon their carts?"*  
+  **Candidate:** *"A slight increase in estimated delivery time causes a ~3% dip in checkout conversion, but arriving 15 minutes past a false promised window causes an 80% drop in CSAT and expensive customer refund payouts. Under-promising and over-delivering protects long-term retention."*
+- **Interviewer:** *"How would you distinguish whether a delay was caused by the restaurant or the delivery partner?"*  
+  **Candidate:** *"By analyzing the timestamp gap between 'Order Ready for Pickup' marked by the restaurant and 'Rider Arrival at Store'. If the rider waits 15 minutes at the counter, the restaurant prep was the bottleneck."*
+- **Interviewer:** *"What guardrail metric should we monitor when offering rain surge incentives to riders?"*  
+  **Candidate:** *"Delivery cost per order. If surge pay exceeds gross delivery fee revenue, we must test capping the subsidy or passing a transparent ₹10 rain fee to the consumer."*

@@ -1,0 +1,109 @@
+---
+title: "Marketing Campaign ROI & Budget Allocation"
+industry: "Marketing"
+difficulty: medium
+type: mock-case
+estimatedMinutes: 40
+---
+
+## Problem
+
+You are interviewing for a Marketing Analytics Analyst role at "IndiMart", a direct-to-consumer (D2C) retail brand in India spending ₹40 Lakh per month across digital acquisition channels.
+
+The Chief Marketing Officer (CMO) sits down with you:
+> *"Our quarterly marketing budget is being reviewed by the board next week. Overall return on ad spend (ROAS) has dipped, and I need to cut our worst-performing acquisition channel to reallocate ₹15 Lakh into higher-performing growth engines. Which channel should we cut, what attribution caveats should we keep in mind, and how do we ensure we don't accidentally kill long-term brand equity?"*
+
+You have 35 minutes to analyze channel efficiency, evaluate CAC and ROAS, and present a balanced budget reallocation proposal.
+
+## Clarifying questions to ask
+
+1. **Definition of 'Worst-Performing':** *"Does 'worst-performing' refer to lowest Return on Ad Spend (ROAS = Revenue / Ad Spend), highest Customer Acquisition Cost (CAC), or lowest top-of-funnel conversion rate?"*
+   - *Interviewer response:* Assume primarily Return on Ad Spend (ROAS), but factor in customer acquisition volume.
+2. **Attribution Model in Use:** *"Are our conversion metrics based on a last-click attribution model or a multi-touch attribution model?"*
+   - *Interviewer response:* Currently last-click attribution via Google Analytics.
+3. **Channel Objectives:** *"Are all channels expected to drive immediate e-commerce purchases, or are YouTube and Display intended for upper-funnel brand awareness and email signups?"*
+   - *Interviewer response:* YouTube and Display are awareness channels generating signups, whereas Google Search, Meta, and Influencer campaigns are measured directly on sales revenue.
+4. **Time Horizon:** *"Are we looking at annual performance or a recent holiday campaign window?"*
+   - *Interviewer response:* Review full-year performance, with particular focus on Q3 and Q4 festive pushes.
+
+## Suggested structure
+
+Deconstruct marketing efficiency into revenue efficiency, acquisition cost, and attribution integrity:
+
+```
+Marketing Efficiency & Budget Allocation
+  ├── 1. Direct Return Metrics (Bottom-Funnel)
+  │     ├── Return on Ad Spend (ROAS = Revenue / Spend)
+  │     └── Cost Per Acquisition (CPA = Spend / Conversions)
+  ├── 2. Top-of-Funnel Unit Economics
+  │     ├── Cost Per Click (CPC = Spend / Clicks)
+  │     └── Click-Through Rate (CTR = Clicks / Impressions)
+  ├── 3. Attribution Caveats & Channel Roles
+  │     ├── Last-Click Bias Against Upper-Funnel Awareness (YouTube / Display)
+  │     └── Incrementality vs Cannibalization (Bidding on own brand keywords)
+  └── 4. Reallocation & Experimentation Strategy
+        ├── Gradual Phased Budget Reallocation (vs Abrupt Cuts)
+        └── Geo-Holdout Testing for Incremental Lift
+```
+
+## Analysis plan
+
+Using the `marketing` database, formulate an aggregated channel ROI query:
+
+1. **Clean Data Quality Issues:** Remove duplicate rows in `clicks` and exclude 100x outlier values in `ad_spend.spend_inr`.
+2. **Aggregate Spend and Revenue by Channel:** Join `campaigns`, `ad_spend`, and `conversions` to calculate total spend, total revenue, and ROAS per channel.
+3. **Evaluate CPC and Conversion Rates:** Identify whether low ROAS is caused by inflated click costs (high CPC) or weak landing page conversion.
+4. **Isolate Underperforming Campaigns:** Drill into specific campaigns within the weakest channel to identify burning budgets.
+
+<SqlPlayground
+  dataset="marketing"
+  query={`WITH spend AS (
+  SELECT campaign_id, SUM(spend_inr) AS total_spend
+  FROM ad_spend
+  GROUP BY campaign_id
+),
+rev AS (
+  SELECT campaign_id, SUM(revenue_inr) AS total_rev
+  FROM conversions
+  GROUP BY campaign_id
+)
+SELECT
+  c.channel,
+  ROUND(SUM(s.total_spend), 2) AS spend,
+  ROUND(SUM(COALESCE(r.total_rev, 0)), 2) AS revenue,
+  ROUND(SUM(COALESCE(r.total_rev, 0)) / SUM(s.total_spend), 2) AS roas
+FROM campaigns c
+JOIN spend s ON c.campaign_id = s.campaign_id
+LEFT JOIN rev r ON c.campaign_id = r.campaign_id
+GROUP BY c.channel
+ORDER BY roas DESC;`}
+  title="Try It: ROAS by Marketing Channel"
+/>
+
+**Analysis Finding:** **Influencer marketing** is the single worst revenue-generating channel by a wide margin, delivering an abysmal **0.20 ROAS** (generating only ₹28,966 in revenue on ₹1,45,291 of spend—losing 80 paise per rupee spent). Drilling deeper into campaigns shows that one single campaign, *'Influencer Mega Reach Oct-24'*, burned over 60% of this budget at 2.3x normal CPC with virtually zero conversions. Meanwhile, **Google Search delivers a healthy 5.76 ROAS**, and owned channels (WhatsApp and Email) exhibit exceptional returns (>40x ROAS).
+
+## Model recommendation
+
+1. **Cut the 'Mega Reach' Influencer Budget Immediately:** Reallocate 70% of the ₹15 Lakh influencer budget away from broad celebrity influencer campaigns. Retain only micro-influencers with dedicated affiliate tracking links.
+2. **Double Down on Google Search & Meta Performance Ads:** Reallocate ₹10 Lakh into high-intent Google Search (5.76 ROAS) and targeted Meta Ads (3.89 ROAS), scaling campaign sets with demonstrated ROAS > 4.0.
+3. **Protect YouTube and Display as Upper-Funnel Feeder Channels:** Do not cut YouTube (1.34 ROAS) or Display (0.94 ROAS) abruptly. Acknowledge that under last-click attribution, awareness channels appear weak because users view videos on mobile and later purchase via direct search.
+4. **Run a 30-Day Geo-Holdout Test:** To measure true incremental lift, turn off influencer spend in 3 tier-1 cities (control group) while keeping it active in 3 similar cities, evaluating net sales variance.
+
+## Evaluation rubric
+
+| Score | Criteria | What the Interviewer Looks For |
+|---|---|---|
+| **4 / 4** | **Structure** | Evaluates ROAS, CAC, CPC, and attribution models; asks about channel role before cutting. |
+| **4 / 4** | **Business Sense** | Understands last-click attribution bias against video; proposes phased reallocations. |
+| **4 / 4** | **Data Approach** | Aggregates spend and conversions accurately; joins on campaign_id; isolates rogue campaigns. |
+| **4 / 4** | **Numbers / Rigor** | Cites exact channel metrics: Influencer at 0.20 ROAS vs Search at 5.76 ROAS. |
+| **4 / 4** | **Communication** | Balances cost-cutting decisiveness with commercial risk awareness (geo-testing). |
+
+## Follow-up questions
+
+- **Interviewer:** *"If last-click attribution penalizes YouTube, how would you measure its true contribution?"*  
+  **Candidate:** *"I would implement a Marketing Mix Model (MMM) or run a geo-lift holdout experiment. In a geo-lift test, we black out YouTube in selected states (e.g., Gujarat and Rajasthan) for four weeks and measure whether organic and direct search traffic in those states drops relative to non-blackout regions."*
+- **Interviewer:** *"Google Search has a 5.76 ROAS. Why not shift 100% of our marketing budget into Search?"*  
+  **Candidate:** *"Because high-intent search queries suffer from diminishing marginal returns. Once you capture the available search volume for your keywords, bidding on broader terms increases CPC and compresses ROAS. Furthermore, without top-of-funnel channels building brand awareness, generic search volume eventually dries up."*
+- **Interviewer:** *"What is the danger of bidding aggressively on our own brand keyword on Google Search?"*  
+  **Candidate:** *"Brand bidding often causes cannibalization: paying ₹15 per click for users who would have clicked our free organic search link anyway. We should test pausing brand search when organic ranking #1 is unthreatened by competitor conquesting ads."*

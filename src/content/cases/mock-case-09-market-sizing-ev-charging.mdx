@@ -1,0 +1,115 @@
+---
+title: "Market Sizing: Public EV Charging Infrastructure"
+industry: "Market Sizing & Estimation"
+difficulty: medium
+type: mock-case
+estimatedMinutes: 30
+---
+
+## Problem
+
+You are interviewing for an Analytics Consultant role at an infrastructure and clean-tech advisory firm.
+
+The Practice Lead presents an open-ended market sizing challenge:
+> *"A state government energy agency wants to plan public electric vehicle (EV) charging infrastructure for a major Tier-1 Indian metropolitan city (population 1.2 Crore) over a 5-year planning horizon. Estimate the total number of commercial public EV fast-charging guns required to meet daily demand in five years. State your assumptions clearly and provide a sensitivity analysis."*
+
+You have 25 minutes to structure the Fermi estimation, calculate the charger requirements, and explain how an analyst would validate these assumptions with real data.
+
+## Clarifying questions to ask
+
+1. **Vehicle Type Scope:** *"Are we sizing chargers strictly for 4-wheelers (private cars, commercial taxis), or do we also include 2-wheelers (scooters/motorcycles) and 3-wheeler auto-rickshaws?"*
+   - *Interviewer response:* Focus primarily on 4-wheeler DC fast-chargers; 2-wheelers largely rely on home slow charging or battery-swapping stations.
+2. **Charging Type:** *"Are we sizing public DC fast-chargers (30–60 kW commercial hubs) or slow AC home-charging points?"*
+   - *Interviewer response:* Dedicated public and semi-public DC fast-chargers located in commercial hubs, malls, and transit corridors.
+3. **Time Horizon:** *"Is the 5-year target a static snapshot or a dynamic ramp-up curve?"*
+   - *Interviewer response:* Sizing for the terminal state: the active daily operational demand at Year 5.
+
+## Suggested structure
+
+Deconstruct the estimation into five sequential mathematical tiers:
+
+```
+Total Public 4W EV Fast Chargers Needed
+  ├── 1. Total 4W Vehicle Population in Year 5
+  │     ├── Households & Vehicle Ownership (Private Cars)
+  │     └── Commercial Fleet Size (Ride-Hailing Taxis & Delivery Vans)
+  ├── 2. EV Penetration Rate (5-Year Target)
+  │     ├── Private Car EV Adoption %
+  │     └── Commercial Fleet EV Mandate %
+  ├── 3. Public Charging Dependency
+  │     ├── Share of Private EV Owners without Dedicated Home Parking (~25%)
+  │     └── Share of Commercial Fleets Needing Mid-Day Fast Charges (100%)
+  ├── 4. Charger Daily Throughput & Utilization
+  │     ├── Average Charge Duration (45 mins / car on 60 kW DC)
+  │     └── Operating Hours & Real-World Utilization Factor (~70%)
+  └── 5. Total Charger Guns Required = Daily Public Charges / Daily Throughput per Gun
+```
+
+## Analysis plan
+
+Execute the Fermi estimation step by step:
+
+### Step 1: Population to total 4-wheeler vehicle base
+- City population: **1.2 Crore (12,000,000 residents)**.
+- Average household size = 4 people → **3,000,000 households**.
+- 4-wheeler car penetration in tier-1 cities = 25% of households → **750,000 total 4-wheelers**.
+  - Private passenger cars: **700,000 cars**.
+  - Commercial ride-hailing taxis / fleet vehicles: **50,000 vehicles**.
+
+### Step 2: 5-Year EV penetration assumptions
+- Private car EV adoption by Year 5: **15%** → `700,000 * 0.15 = 105,000 private EVs`.
+- Commercial fleet EV adoption (driven by corporate and policy mandates): **50%** → `50,000 * 0.50 = 25,000 commercial fleet EVs`.
+- Total 4W EV fleet = `105,000 + 25,000 = 130,000 EVs`.
+
+### Step 3: Public charging demand calculation
+- **Commercial Fleet EVs (25,000 vehicles):** High daily mileage (150–200 km/day). Need **1 full fast charge per day** → **25,000 daily commercial charges**.
+- **Private Car EVs (105,000 vehicles):** Average mileage (30 km/day). Most charge at home. Assume **25% lack dedicated residential parking** and rely on public hubs. At 1 charge every 3 days → `(105,000 * 0.25) / 3 = 8,750 daily private charges`.
+- **Total daily public charging sessions = `25,000 + 8,750 = 33,750 charges/day`**.
+
+### Step 4: Charger throughput capacity
+- Commercial DC fast-charger rating: 50–60 kW.
+- Average charging time to 80% state of charge: **45 minutes**.
+- Active operational window: 16 hours daily.
+- Theoretical capacity per charger gun: `(16 hours * 60 mins) / 45 mins = 21.3 charges/day`.
+- Applying a realistic **70% utilization factor** (accounting for vehicle repositioning and non-peak downtime):
+  `Effective Throughput = 21.3 * 0.70 ≈ 15 charging sessions/gun/day`
+
+### Step 5: Total public charger requirement
+`Total Fast-Charger Guns = 33,750 daily sessions / 15 sessions/gun/day = 2,250 commercial charger guns`
+
+Assuming standard multi-gun hubs with 4 charging guns per location:
+`Total Charging Hubs Required = 2,250 / 4 ≈ 560 public charging stations`
+
+## Model recommendation
+
+### Sensitivity Analysis: Adoption Scenarios
+
+| Scenario | Private EV Share | Fleet EV Share | Daily Charges | Guns Required (At 15 charges/gun) |
+|---|---|---|---|---|
+| **Conservative (Low)** | 10% | 35% | 23,250 | **1,550 guns** (~390 hubs) |
+| **Base Case** | **15%** | **50%** | **33,750** | **2,250 guns** (~560 hubs) |
+| **Aggressive (High)** | 25% | 75% | 59,500 | **3,960 guns** (~990 hubs) |
+
+### How an analyst validates this model with real data:
+1. **Regional Transport Office (RTO) Registration Data:** Query monthly VAHAN portal EV registration trendlines to confirm the 5-year CAGR growth assumption.
+2. **Commercial Telematics Data:** Analyze telematics logs from commercial ride-hailing fleets (Ola, Uber, BluSmart) to measure real daily mileage and kilowatt-hour consumption.
+3. **Grid Substation Capacity:** Cross-reference proposed hub clusters with state electricity distribution companies (DISCOMs) to verify 11 kV feeder line capacity.
+
+## Evaluation rubric
+
+| Score | Criteria | What the Interviewer Looks For |
+|---|---|---|
+| **4 / 4** | **Structure** | Clear top-down hierarchy: population → vehicles → EV share → public reliance → charger throughput. |
+| **4 / 4** | **Business Sense** | Recognizes that commercial taxis drive disproportionate charging demand compared to private cars. |
+| **4 / 4** | **Data Approach** | Incorporates a 70% utilization factor and 45-minute charge cycle; avoids 100% capacity assumptions. |
+| **4 / 4** | **Numbers / Rigor** | Computes clean round figures; delivers a 2,250 gun estimate with a three-scenario sensitivity table. |
+| **4 / 4** | **Communication** | Explains the methodology transparently and proposes concrete real-world data sources (VAHAN, telematics). |
+
+## Follow-up questions
+
+- **Interviewer:** *"Which assumption in your calculation introduces the greatest sensitivity error?"*  
+  **Candidate:** *"The commercial fleet EV adoption share and daily charge frequency. Because commercial taxis charge daily while private owners charge weekly, a 10% shift in commercial adoption moves charger demand far more than a 10% shift in private car sales."*
+- **Interviewer:** *"How would power grid constraints alter your recommendation?"*  
+  **Candidate:** *"A hub with four 60 kW chargers requires 240 kW peak power. In dense commercial zones with constrained grid transformers, we must recommend battery-buffered charging stations (storing off-peak energy) to avoid expensive substation overhauls."*
+- **Interviewer:** *"Why not install only slow AC chargers since they are 80% cheaper?"*  
+  **Candidate:** *"Slow AC chargers take 6 to 8 hours per vehicle, making them viable only for overnight residential parking. In public commercial hubs, long dwell times reduce throughput to only 2 cars per day, leading to severe congestion for commercial drivers."*
