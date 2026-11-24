@@ -5,7 +5,7 @@
     "topic": "cleaning",
     "difficulty": "medium",
     "language": "python",
-    "question": "HR is merging gender codes. Remove exact duplicate employee rows, map `M` to `Male` and `F` to `Female`, and fill any missing gender with `Unknown`. Return the count per gender as a Series, most common first.",
+    "question": "HR is merging gender codes. Remove exact duplicate employee rows, map `M` to `Male` and `F` to `Female`, and fill any missing gender with `Unknown`. Return a DataFrame with columns `gender` and `count`, most common first.",
     "dataset": "hr",
     "hint": "Dedupe first, then replace the codes, then count.",
     "solutionCode": "e = load('hr', 'employees').drop_duplicates()\ng = e['gender'].replace({'M': 'Male', 'F': 'Female'}).fillna('Unknown')\nresult = g.value_counts().rename_axis('gender').reset_index(name='count')",
@@ -26,7 +26,7 @@
       ]
     },
     "orderMatters": true,
-    "explanation": "Deduping removes the repeats, the replace step turns the codes into full words, and `fillna` catches any blanks. `value_counts` gives the count per gender.",
+    "explanation": "Deduping removes the repeats, the replace step turns the codes into full words, and `fillna` catches any blanks. `value_counts` gives the count per gender, and `rename_axis` with `reset_index` names the columns `gender` and `count`.",
     "commonMistake": "Counting before deduping. The 5 repeated employee rows are counted twice and inflate the totals.",
     "interviewFrequency": "high",
     "estimatedMinutes": 4,
@@ -52,7 +52,7 @@
       }
     },
     "orderMatters": false,
-    "explanation": "The `rows` count shows the table size after duplicates are gone. Cleaning the city text first means `nunique()` counts real cities, not spelling variants.",
+    "explanation": "The `rows` count shows the table size after duplicates are gone. Cleaning the city text first means `nunique()` counts real cities, not spelling variants. Each `str` method runs on the whole column at once, so the code stays short.",
     "commonMistake": "Counting distinct cities before the strip and title step. ' Pune' and 'pune' then count as two cities.",
     "interviewFrequency": "high",
     "estimatedMinutes": 4,
@@ -126,7 +126,7 @@
       ]
     },
     "orderMatters": true,
-    "explanation": "Lowercasing merges the spelling variants into one event name. Sorting with a second key makes the top 5 deterministic when counts tie.",
+    "explanation": "Lowercasing merges the spelling variants into one event name. Sorting with a second key makes the top 5 deterministic when counts tie. The `reset_index()` call turns the counts into a two-column table that matches the output names the team asked for.",
     "commonMistake": "Counting before lowercasing. 'APP_OPEN' and 'app_open' split into two groups, so each event looks smaller than it is.",
     "interviewFrequency": "high",
     "estimatedMinutes": 5,
@@ -189,7 +189,7 @@
     "topic": "cleaning",
     "difficulty": "medium",
     "language": "python",
-    "question": "The ads team wants clicks per device. Remove duplicate `click_id` rows, then clean `device` (strip spaces, lowercase). Return the clicks per device as a Series, largest first.",
+    "question": "The ads team wants clicks per device. Remove duplicate `click_id` rows, then clean `device` (strip spaces, lowercase). Return a DataFrame with columns `device` and `clicks`, largest count first.",
     "dataset": "marketing",
     "hint": "Dedupe on the id, clean the text, then count.",
     "solutionCode": "c = load('marketing', 'clicks').drop_duplicates(subset=['click_id'])\ndev = c['device'].str.strip().str.lower()\nresult = dev.value_counts().rename_axis('device').reset_index(name='clicks')",
@@ -214,7 +214,7 @@
       ]
     },
     "orderMatters": false,
-    "explanation": "Stripping and lowercasing merges the messy device labels into three clean groups. Deduping on `click_id` stops repeated clicks from being counted twice.",
+    "explanation": "Stripping and lowercasing merges the messy device labels into three clean groups. Deduping on `click_id` stops repeated clicks from being counted twice. The `rename_axis` and `reset_index` calls give the columns the names `device` and `clicks`.",
     "commonMistake": "Skipping the lowercase step. 'Mobile' and 'MOBILE' are then counted as separate devices and each looks smaller.",
     "interviewFrequency": "high",
     "estimatedMinutes": 3,

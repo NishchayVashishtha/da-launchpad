@@ -226,7 +226,7 @@
     "id": "statistics-outliers-010",
     "module": "statistics",
     "topic": "outliers",
-    "difficulty": "hard",
+    "difficulty": "medium",
     "language": "text",
     "question": "A store records daily sales in lakh rupees: 12, 14, 15, 15, 16, 18, 95. Its Q1 is 14 and Q3 is 18. Using the 1.5 x IQR rule, what is the upper fence? Give the number only.",
     "dataset": "none",

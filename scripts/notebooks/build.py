@@ -5,7 +5,13 @@ root = pathlib.Path(__file__).resolve().parents[2]
 out = root / "public" / "downloads" / "notebooks"; out.mkdir(parents=True, exist_ok=True)
 for spec_path in sorted((root / "scripts" / "notebooks" / "specs").glob("*.json")):
     s = json.loads(spec_path.read_text())
+    ds = [d.strip() for d in str(s.get("dataset", "")).replace("+", ",").split(",") if d.strip() and d.strip() != "none"]
     cells = []
+    if ds:
+        zips = ", ".join(f"`data/zip/{d}.zip`" for d in ds)
+        cells.append({"cell_type": "markdown", "metadata": {}, "source": [
+            "**Setup:** download " + zips + " from the DA Launchpad Datasets page and unzip it in the same folder as this notebook, "
+            "so that paths like `" + ds[0] + "/<table>.csv` work. Needs pandas (and matplotlib/seaborn for charts)."]})
     for c in s["cells"]:
         src = c["source"] if isinstance(c["source"], str) else "".join(c["source"])
         lines = src.splitlines(keepends=True)

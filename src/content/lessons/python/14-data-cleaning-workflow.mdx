@@ -117,6 +117,7 @@ Output:
 gender
 Male      1495
 Female     912
+Name: count, dtype: int64
 ```
 
 Next, the city column. It has 36 spellings before cleaning and 6 after. Strip and title case fix most of them.
@@ -308,5 +309,9 @@ Amounts stored as rupee text cannot be summed reliably, so a total built on the 
 <Download href="/downloads/eda-checklist.md" label="EDA checklist" />
 
 ## Further reading
+
+Free download: the UPI cleaning notebook walks through the same duplicate, rupee-text and date fixes on the fintech table.
+
+<Download href="/downloads/notebooks/02-fintech-upi-cleaning.ipynb" label="UPI cleaning notebook" />
 
 <FurtherReading ids={["pandas-docs","kaggle-learn"]} />

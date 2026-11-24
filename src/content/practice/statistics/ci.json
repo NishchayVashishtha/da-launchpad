@@ -117,7 +117,7 @@
       }
     },
     "orderMatters": false,
-    "explanation": "The same method gives the treatment interval. Keeping the cleaning identical matters, because a different cleaning step would make the two intervals not comparable.",
+    "explanation": "The same method gives the treatment interval. Keeping the cleaning identical matters, because a different cleaning step would make the two intervals not comparable. The final dict keys match the names the growth team asked for.",
     "commonMistake": "Cleaning only the control arm. The two intervals then rest on different rows, and the comparison is not fair.",
     "interviewFrequency": "medium",
     "estimatedMinutes": 5,

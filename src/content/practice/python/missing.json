@@ -13,7 +13,7 @@
       "value": 47
     },
     "orderMatters": false,
-    "explanation": "`duplicated()` marks every row after its first exact copy. Summing the True flags counts the extra copies. Without a subset, all columns must match.",
+    "explanation": "`duplicated()` marks every row after its first exact copy. Summing the True flags counts the extra copies. Without a subset, all columns must match, and the answer is an integer that you can check against the table size.",
     "commonMistake": "Passing `subset=['txn_id']` to `duplicated()`. That counts rows with a repeated id, which is a different number, because some repeats differ in format.",
     "interviewFrequency": "medium",
     "estimatedMinutes": 3,
@@ -36,7 +36,7 @@
       "value": 7.26
     },
     "orderMatters": false,
-    "explanation": "`isna()` flags each missing email. `.mean()` turns those flags into a share, and multiplying by 100 gives a percent.",
+    "explanation": "`isna()` marks each missing email as True and each filled email as False. `.mean()` averages those flags, which gives the share of missing rows. Multiplying by 100 turns that share into a percent, and `round(..., 2)` keeps two decimals.",
     "commonMistake": "Counting after dropping duplicates. The question asks for the raw table, so the share changes if you dedupe first.",
     "interviewFrequency": "medium",
     "estimatedMinutes": 3,
@@ -76,7 +76,7 @@
       ]
     },
     "orderMatters": true,
-    "explanation": "`isna().sum()` counts blanks in each column. Filtering with `> 0` keeps only the problem columns, and the sort puts the worst first.",
+    "explanation": "`isna().sum()` counts blanks in each column. Filtering with `> 0` keeps only the problem columns, and the sort puts the worst first. Columns with zero blanks must not appear in the result at all.",
     "commonMistake": "Filtering with `miss > 0` before sorting is fine, but forgetting the filter returns every column, including those with zero missing.",
     "interviewFrequency": "high",
     "estimatedMinutes": 4,
@@ -155,7 +155,7 @@
       ]
     },
     "orderMatters": false,
-    "explanation": "`str.strip()` removes stray spaces and `str.title()` fixes the case. `fillna` gives blanks a visible label, and `value_counts` ranks the cities.",
+    "explanation": "`str.strip()` removes stray spaces and `str.title()` fixes the case. `fillna` gives blanks a visible label, and `value_counts` ranks the cities. Calling `head(3)` keeps only the three largest counts, so the answer is short.",
     "commonMistake": "Counting before stripping and title-casing. ' delhi' and 'Delhi' then count as two cities and the top 3 list is wrong.",
     "interviewFrequency": "high",
     "estimatedMinutes": 4,
@@ -233,7 +233,7 @@
       ]
     },
     "orderMatters": true,
-    "explanation": "A median ignores extreme values, so it describes a typical sale. The 10x rule removes entry errors before the final median.",
+    "explanation": "A median ignores extreme values, so it describes a typical sale. The 10x rule removes entry errors before the final median. The `groupby` step then finds the median inside each category, and the final sort keeps the output order fixed.",
     "commonMistake": "Using the mean instead of the median per category. A few huge sales pull the mean up and make the typical value look too high.",
     "interviewFrequency": "high",
     "estimatedMinutes": 8,
@@ -298,7 +298,7 @@
       }
     },
     "orderMatters": false,
-    "explanation": "After cleaning, each city has one spelling, so `mode()` counts it correctly. The blanks are counted separately to show how many would be filled.",
+    "explanation": "After cleaning, each city has one spelling, so `mode()` counts it correctly. Calling `[0]` picks the first value from the `mode()` Series. The blanks are counted separately to show how many would be filled.",
     "commonMistake": "Finding the mode before cleaning the case. 'mumbai' and 'Mumbai' are counted separately, so the true top city shows a lower count than it should.",
     "interviewFrequency": "high",
     "estimatedMinutes": 4,

@@ -189,7 +189,7 @@
     "language": "text",
     "question": "A test has a Type II error rate (beta) of 0.20. What is its power? Give the number.",
     "dataset": "none",
-    "hint": "Power = 1 minus beta.",
+    "hint": "Power is the opposite of beta. Ask yourself what chance is left once beta, the chance of missing a real effect, is taken out.",
     "solution": "**Step 1:** Beta = 0.20 is the chance of missing a real effect.\n\n**Step 2:** Power = 1 - beta = 1 - 0.20 = **0.8**.\n\nThat means an 80 percent chance to detect a real effect of the planned size.",
     "explanation": "Power is the chance that the test finds a real effect. It is the complement of beta, the chance of a Type II error. Teams often aim for 0.8 as a default target.",
     "commonMistake": "Reporting beta as the power. A beta of 0.20 is a weak test, and it means 1 in 5 real effects is missed.",

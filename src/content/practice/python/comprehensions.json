@@ -17,7 +17,7 @@
       ]
     },
     "orderMatters": false,
-    "explanation": "The comprehension loops over each amount and keeps only the ones that pass the test. The output keeps the original order: [1200, 80000, 9100].",
+    "explanation": "The comprehension loops over each amount and keeps only the ones that pass the test. The `if` part at the end is the filter: a value is kept only when `a > 1000` is True. The output keeps the original order: [1200, 80000, 9100].",
     "commonMistake": "Putting the condition before the `for`, such as `[a if a > 1000 for a in amounts]`. That is a syntax error, because the `if` alone cannot skip items.",
     "interviewFrequency": "high",
     "estimatedMinutes": 3,

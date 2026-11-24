@@ -290,7 +290,7 @@
     "dataset": "none",
     "hint": "Find the Tier-2 share of all users, then apply it to 500.",
     "solution": "Total users = 6,000 + 4,000 = 10,000.\n\nTier-2 share = 4,000 / 10,000 = 40%.\n\nTier-2 in the sample = 40% of 500 = **200**. The Metro share gets the other 300.",
-    "explanation": "A proportional stratified sample keeps each group's share of the population. Tier-2 is 40% of users, so it should be 40% of the sample.",
+    "explanation": "A proportional stratified sample keeps each group's share of the population. Tier-2 is 40% of users, so it should be 40% of the sample. Check: 200 Tier-2 plus 300 Metro gives the full 500.",
     "commonMistake": "Taking 500 Tier-2 users, or splitting 500 evenly into 250 and 250. Equal splits do not match the real mix unless the groups are the same size.",
     "interviewFrequency": "medium",
     "estimatedMinutes": 3,

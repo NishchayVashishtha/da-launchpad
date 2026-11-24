@@ -34,11 +34,11 @@ Think of a pile of bills on your desk. You sort them into piles by month. Then y
 ```python
 import pandas as pd
 
-def load(dataset, table):      # the runner gives you this function
-    ...
+def load(dataset, table):      # reads a CSV from the dataset folder next to your notebook
+    return pd.read_csv(f"{dataset}/{table}.csv")
 
 txns = load("fintech", "transactions").drop_duplicates(subset="txn_id")
-txns.groupby("bank")["amount"].sum()        # one total per bank
+txns.groupby("bank")["txn_id"].count()       # one count per bank
 ```
 
 ### One key, one column, one summary
@@ -52,7 +52,7 @@ Use `.agg()` with names on the left. This gives clear column names in one step.
 ```python
 txns.groupby("bank").agg(
     transactions=("txn_id", "count"),
-    total_amount=("amount", "sum"),
+    unique_users=("user_id", "nunique"),
 )
 ```
 
@@ -294,5 +294,13 @@ I make a month column from the order date, then use groupby on that month and ca
 - Use `reset_index()` or `as_index=False` so the results are plain tables.
 
 ## Further reading
+
+Free download: the failure analysis notebook uses groupby to compare failure rates by bank, app and hour.
+
+<Download href="/downloads/notebooks/03-fintech-failure-analysis.ipynb" label="UPI failure analysis notebook" />
+
+Free download: the funnel notebook groups users by platform, source and signup month, the same way as this lesson.
+
+<Download href="/downloads/notebooks/05-subscription-funnel-retention.ipynb" label="Subscription funnel notebook" />
 
 <FurtherReading ids={["pandas-docs", "mode-sql"]} />

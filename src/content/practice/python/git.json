@@ -21,7 +21,7 @@
     "topic": "git",
     "difficulty": "easy",
     "language": "text",
-    "question": "What is the difference between `git commit` and `git push`?",
+    "question": "A new analyst on the team keeps mixing up two Git commands before a shared project review. What is the difference between `git commit` and `git push`?",
     "dataset": "none",
     "hint": "One saves on your own computer. The other sends to a shared place online.",
     "solution": "- **`git commit`** saves a snapshot of the staged changes in your local repository, on your own computer. It works without internet.\n- **`git push`** sends your local commits to the remote repository, such as GitHub, so others and recruiters can see them.\n\nYou can make many commits locally and push them together later.",

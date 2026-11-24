@@ -150,7 +150,7 @@
     "dataset": "none",
     "hint": "Count everyone who is flagged first. Then ask how many of them churned.",
     "solution": "Flagged users = 18 churners + 98 non-churners = 116.\n\nP(churn | flagged) = 18 / 116 = 0.1552, which is **15.5%**.\n\nThe base rate is 2%, but a flag lifts the chance to about 15.5%. It is still far from certain.",
-    "explanation": "Among the 116 flagged users, 18 really churned. The answer is the share of churners inside the flagged group.",
+    "explanation": "Among the 116 flagged users, 18 really churned. The answer is the share of churners inside the flagged group. Only the flagged users matter now, so we divide the 18 true churners by all 116 flags.",
     "commonMistake": "Answering 18 / 20 = 90%. That is P(flagged | churn), which is the reverse of what was asked.",
     "interviewFrequency": "medium",
     "estimatedMinutes": 3,

@@ -209,7 +209,7 @@
     "id": "statistics-clt-010",
     "module": "statistics",
     "topic": "clt",
-    "difficulty": "hard",
+    "difficulty": "medium",
     "language": "text",
     "question": "The SD of order values at a fictional Delhi grocery chain is 15 rupees. The analyst wants the standard error of the sample mean to be 1 rupee. What sample size n is needed? Answer with one whole number.",
     "dataset": "none",

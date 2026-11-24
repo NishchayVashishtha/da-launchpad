@@ -64,7 +64,7 @@
       "value": 302
     },
     "explanation": "The flag is stored as 0 or 1. Adding the column gives the count of 1s, because 0 adds nothing. to_numpy() moves the column into a NumPy array first, and int() turns the result into a normal Python integer.",
-    "commonMistake": "Using len(df), which counts every transaction, flagged or not.",
+    "commonMistake": "Using `len(df)` or `df.shape[0]`. Both count every transaction, flagged or not, so the fraud desk gets a total far above the true flagged count.",
     "interviewFrequency": "medium",
     "estimatedMinutes": 4,
     "tags": [

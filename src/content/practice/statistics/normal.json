@@ -212,7 +212,7 @@
     "id": "statistics-normal-010",
     "module": "statistics",
     "topic": "normal",
-    "difficulty": "hard",
+    "difficulty": "medium",
     "language": "text",
     "question": "Order values at an online store follow a normal curve with mean Rs 800 and SD Rs 100. What percentage of orders are above Rs 1,000? Give the percentage rounded to 2 decimals.",
     "dataset": "none",

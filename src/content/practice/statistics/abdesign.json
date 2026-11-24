@@ -193,7 +193,7 @@
     "dataset": "none",
     "hint": "Add the two arms together first. Then divide by the daily traffic.",
     "solution": "### Working\n\n- Users needed in total = 20,000 + 20,000 = 40,000.\n- Days needed = 40,000 / 1,600 = 25.\n\nThe test runs for **25 days**. Rounding up is not needed here, but in real planning you round up to full weeks as well.",
-    "explanation": "Both arms come from the same traffic, so the total is what matters. Dividing the total need by the daily flow gives the days.",
+    "explanation": "Both arms come from the same traffic, so the total is what matters. Dividing the total need by the daily flow gives the days. Check the answer: 25 days times 1,600 users per day gives exactly 40,000 users.",
     "commonMistake": "Dividing 20,000 by 1,600. That counts only one arm and makes the test look twice as fast as it is.",
     "interviewFrequency": "medium",
     "estimatedMinutes": 3,
